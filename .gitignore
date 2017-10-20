@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.future
+README.html
+vignettes/*.html
+
+# macOS files
+.DS_Store

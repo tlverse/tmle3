@@ -1,0 +1,31 @@
+Package: tmle3
+Title: Point Treatment Targeted Minimum Loss-based Estimation
+Version: 0.0.0.9000
+Authors@R: c(person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
+           role = c("aut", "cre", "cph")))
+Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
+Description: Point Treatment TMLE.
+Depends: R (>= 3.2.2)
+License: GPL-3
+Imports:
+	 sl3,
+	 delayed,
+	 data.table,
+    assertthat,
+    origami,
+    R6,
+    uuid
+Suggests:
+	 testthat,
+	 knitr
+Remotes:
+    github::osofr/condensier,
+    github::jeremyrcoyle/delayed,
+    github::jeremyrcoyle/sl3
+URL: https://github.com/jeremyrcoyle/tmle3
+BugReports: https://github.com/jeremyrcoyle/tmle3/issues
+Encoding: UTF-8
+LazyData: yes
+LazyLoad: yes
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1.9000

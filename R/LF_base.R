@@ -1,4 +1,5 @@
 #' @importFrom R6 R6Class
+#' @export
 LF_base <- R6Class(classname = "LF_base",
                      portable = TRUE,
                      class = TRUE,

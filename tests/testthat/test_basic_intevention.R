@@ -1,3 +1,4 @@
+library(tmle3)
 library(testthat)
 library(sl3)
 library(uuid)

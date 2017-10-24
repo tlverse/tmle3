@@ -1,4 +1,5 @@
 #' @importFrom R6 R6Class
+#' @export
 LF_fit <- R6Class(classname = "LF_fit",
                              portable = TRUE,
                              class = TRUE,

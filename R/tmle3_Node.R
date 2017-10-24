@@ -43,4 +43,5 @@ tmle3_Node <- R6Class(classname = "tmle3_Node",
                      )
 )
 
+#' @export
 define_node <- tmle3_Node$new

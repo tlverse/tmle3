@@ -1,3 +1,4 @@
+library(tmle3)
 library(testthat)
 library(sl3)
 library(uuid)
@@ -56,7 +57,7 @@ a1z0 = define_cf(c(define_lf(LF_static, "A", value=1),
                    define_lf(LF_static, "Z", value=0)))
 
 
-cde <- Param_ATE$new(a0z0, a0z1)
+cde <- Param_ATE$new(a0z0, a1z0)
 
 
 tmle_likelihood <- fit_tmle_likelihood(likelihood, task, cde)

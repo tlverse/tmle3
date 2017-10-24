@@ -21,7 +21,7 @@ Suggests:
 Remotes:
    github::osofr/condensier,
    github::jeremyrcoyle/delayed,
-   github::jeremyrcoyle/sl3
+   github::jeremyrcoyle/sl3@tmle-improvements
 URL: https://github.com/jeremyrcoyle/tmle3
 BugReports: https://github.com/jeremyrcoyle/tmle3/issues
 Encoding: UTF-8

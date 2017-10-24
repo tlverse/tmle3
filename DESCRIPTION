@@ -11,17 +11,17 @@ Imports:
 	 sl3,
 	 delayed,
 	 data.table,
-    assertthat,
-    origami,
-    R6,
-    uuid
+   assertthat,
+   origami,
+   R6,
+   uuid
 Suggests:
 	 testthat,
 	 knitr
 Remotes:
-    github::osofr/condensier,
-    github::jeremyrcoyle/delayed,
-    github::jeremyrcoyle/sl3
+   github::osofr/condensier,
+   github::jeremyrcoyle/delayed,
+   github::jeremyrcoyle/sl3
 URL: https://github.com/jeremyrcoyle/tmle3
 BugReports: https://github.com/jeremyrcoyle/tmle3/issues
 Encoding: UTF-8

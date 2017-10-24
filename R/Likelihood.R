@@ -1,65 +1,158 @@
+#todo: different factor types
+#   marginal - empirical density of W Q
+#   conditional pdf - intervention nodes g's
+#   conditional mean - outcome node Q_bar
+#   integrate conditional mean Q_bar wrt to intervention g's. 
+#   If degenerate, this means just plugging in intervention values, otherwise have to actually do discrete expectation
+
 #' @importFrom R6 R6Class
 #' @importFrom sl3 Lrnr_base args_to_list
-#' @importFrom assertthat assert_that
-#' @importFrom delayed bundle_delayed
+#' @importFrom uuid UUIDgenerate
+#' @export
 Likelihood <- R6Class(classname = "Likelihood",
                       portable = TRUE,
                       class = TRUE,
                       inherit = Lrnr_base,
                       public = list(
-                        initialize = function(learner_list, ...){
+                        initialize = function(factor_list, ...){
                           params <- args_to_list()
-                          super$initialize(params=params, ...)
-                        }
-                      ),
-                      active = list(
-                        
-                      ),
-                      private = list(
-                        .pretrain = function(task){
-                          learner_list <- self$params$learner_list
-                          npsem <- task$npsem
                           
-                          nodes <- names(learner_list)
-                          assert_that(all(nodes%in%names(npsem)))
+                          factor_names <- sapply(factor_list, `[[`, "name")
+                          names(factor_list) <- factor_names
+                          params$factor_list <- factor_list
                           
-                          delayed_learner_fits <- lapply(nodes, function(node){
-                            node_task <- task$get_regression_task(node)
-                            delayed_learner_train(learner_list[[node]], node_task)
-                          })
-                          
-                          return(bundle_delayed(delayed_learner_fits))
+                          super$initialize(params)
                         },
-                        .train = function(task, learner_fits){
-                          names(learner_fits) <- names(self$params$learner_list)
-                          return(learner_fits)
+                        print = function(){
+                          lapply(self$factor_list, print)
+                          invisible(NULL)
                         },
-                        .predict = function(task){
-                          learner_fits <- private$.fit_object
-                          nodes <- names(learner_fits)
-                          n_to_pred <- task$nrow
-                          n_learners <- length(nodes)
+                        get_factor = function(factor_name){
+                          return(self$factor_list[[factor_name]])  
+                        },
+                        modify_factors = function(new_factor_list){
+                          new_factor_names <- sapply(new_factor_list, `[[`, "name")
+                          factor_list <- self$factor_list
+                          factor_list[new_factor_names] <- new_factor_list
+                          new_likelihood <- self$clone()
                           
-                          ## Cannot use := to add columns to a null data.table (no columns),
-                          ## hence we have to first seed an initial column, then delete it later
-                          learner_preds <- data.table::data.table(init_seed_preds_to_delete = rep(NA_real_,n_to_pred))
+                          new_likelihood$initialize(factor_list)
+                          new_likelihood$set_train(self$fit_object, self$training_task)
                           
-                          for(node in nodes) {
-                            current_fit  <- learner_fits[[node]]
-                            node_task <- task$get_regression_task(node)
-                            current_preds <- current_fit$predict(node_task)
-                            current_names <- node
-                            if (!is.na(safe_dim(current_preds)[2]) && safe_dim(current_preds)[2] > 1) {
-                              current_names <- paste0(learner_names[i], "_", names(current_preds))
-                              stopifnot(length(current_names) == safe_dim(current_preds)[2])
-                            }
-                            data.table::set(learner_preds, j = current_names, value = current_preds)
-                            invisible(NULL)
+                          return(new_likelihood)
+                        },
+                        validate_task = function(task){
+                          assert_that(is(task,"tmle_Task"))
+                          
+                          factor_list <- self$factor_list
+                          factor_names <- names(factor_list)
+                          task_nodes <- names(task$tmle_nodes)
+                          if(!setequal(task_nodes, factor_names)){
+                            stop("factor_list and task$tmle_nodes must have matching names")
+                          }
+                        },
+                        get_likelihoods = function(task, nodes = NULL){
+                          self$validate_task(task)
+                          factor_list <- self$factor_list
+                          if(!is.null(nodes)){
+                            factor_list <- factor_list[nodes]
+                          }
+                          likelist = list()
+                          for(likelihood_factor in factor_list){
+                            factor_name <- likelihood_factor$name
+                            likes <- likelihood_factor$get_likelihood(task, only_observed = TRUE)
+                            likelist[[factor_name]] <- likes
                           }
                           
-                          ## remove the initial seeded column by reference
-                          data.table::set(learner_preds, j = "init_seed_preds_to_delete", value = NULL)
-                          return(learner_preds)
+                          if(length(likelist)>1){
+                            return(as.data.table(likelist))
+                          } else{
+                            return(likelist[[1]])
+                          }
+                        },
+                        get_predictions = function(task, nodes = NULL){
+                          self$validate_task(task)
+                          factor_list <- self$factor_list
+                          if(!is.null(nodes)){
+                            factor_list <- factor_list[nodes]
+                          }
+                          
+                          predlist = list()
+                          for(likelihood_factor in factor_list){
+                            if(inherits(likelihood_factor, "LF_fit")){
+                              factor_name <- likelihood_factor$name
+                              preds <- likelihood_factor$get_prediction(task)
+                              predlist[[factor_name]] <- preds
+                            }
+                          }
+                          
+                          if(length(predlist)>1){
+                            return(as.data.table(predlist))
+                          } else{
+                            return(predlist[[1]])
+                          }
+                        },
+                        base_train = function(task, pretrain){
+                          self$validate_task(task)
+                          
+                          fit_object = private$.train(task)
+                        
+                          new_object = self$clone() # copy parameters, and whatever else
+                          new_object$set_train(fit_object, task)
+      
+                          return(new_object)
+                        },
+                        base_predict = function(task = NULL){
+                          
+                          
+                          if(is.null(task)){
+                            task <- private$.training_task
+                          }
+                          
+                          self$validate_task(task)
+                          
+                          predictions = private$.predict(task)
+                          
+                          return(predictions)
+                        },
+                        base_chain = function(task = NULL){
+                          
+                          
+                          if(is.null(task)){
+                            task <- private$.training_task
+                          }
+                          
+                          self$validate_task(task)
+                          
+                          predictions = private$.chain(task)
+                          
+                          return(predictions)
                         }
+                        
+                      ),
+                      active = list(
+                        factor_list = function(){
+                          return(self$params$factor_list)
+                        }
+                      ),
+                      private = list(
+                        .train = function(task){
+                          
+                          #todo: move some of this to .pretrain so we can delay it
+                          for(likelihood_factor in self$factor_list){
+                            if(inherits(likelihood_factor, "LF_fit")){
+                              likelihood_factor$fit_learner(task)
+                            }
+                          }
+                          #todo: we're mutating the factor list of the Lrnr_object instead of returning a fit
+                          #which is not what sl3 Lrnrs usually do
+                          return("trained")
+                        },
+                        .predict = function(task){
+                          return(self$get_predictions(task))
+                        }
+                        
+                        
                       )
 )
+

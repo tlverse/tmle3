@@ -2,7 +2,7 @@
 % Please edit documentation in R/LF_base.R
 \name{define_lf}
 \alias{define_lf}
-\title{Defines a likelihood functional}
+\title{Defining Likelihood Functionals}
 \usage{
 define_lf(LF_class, ...)
 }
@@ -12,5 +12,5 @@ define_lf(LF_class, ...)
 \item{...}{arguments that define the likelihood functional}
 }
 \description{
-Defines a likelihood functional
+Defining Likelihood Functionals
 }

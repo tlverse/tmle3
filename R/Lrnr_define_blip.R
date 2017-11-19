@@ -11,12 +11,12 @@
 #
 make_blip_chain_function <- function(counterfactual_0, counterfactual_1, V) {
   stop("not done yet")
-  ate <- Param_ATE$new(counterfactual_0, counterfactual_1)
+  ate = Param_ATE$new(counterfactual_0, counterfactual_1)
   #A-IPW transform is just ate_ic+psi
-  blip_chain <- function(likelihood, task) {
-    ests <- ate$estimates(likelihood, task)
-    blip <- ests$IC + ests$psi
-    covariates <- task$get_data(, V)
+  blip_chain = function(likelihood, task) {
+    ests = ate$estimates(likelihood, task)
+    blip = ests$IC + ests$psi
+    covariates = task$get_data(, V)
   }
   return(blip_chain)
 }

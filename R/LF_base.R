@@ -8,21 +8,21 @@ LF_base <- R6Class(classname = "LF_base",
                      portable = TRUE,
                      class = TRUE,
   public = list(
-    initialize <- function(name, ...) {
-      private$.name <- name
+    initialize = function(name, ...) {
+      private$.name = name
     },
-    get_likelihood <- function(task, only_observed = FALSE) {
+    get_likelihood = function(task, only_observed = FALSE) {
       stop("this is a base class")
     },
-    print <- function() {
+    print = function() {
       cat(sprintf("%s: %s\n", self$name, class(self)[1]))
     }
   ),
   active = list(
-    name <- function() {
+    name = function() {
       return(private$.name)
     },
-    is_degenerate <- function() {
+    is_degenerate = function() {
       return(private$.is_degenerate)
     }
   ),
@@ -39,7 +39,7 @@ LF_base <- R6Class(classname = "LF_base",
 #'
 #' @export
 #
-define_lf <- function(LF_class, ...) {
+define_lf = function(LF_class, ...) {
   return(LF_class$new(...))
 }
 

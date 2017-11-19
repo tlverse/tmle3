@@ -3,7 +3,6 @@
 ^\.gitignore$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^README\.md
 
 # Automated testing files.
 ^\.travis\.yml$
@@ -17,6 +16,7 @@
 # other miscellaneous non-CRAN files
 xgboost.model
 ^docs$
+^README\.md
 ^README\.Rmd$
 ^README\.html$
 ^README-.*\.png$
@@ -25,3 +25,4 @@ xgboost.model
 ^CONTRIBUTING\.md$
 ^Makefile$
 ^LICENSE$
+

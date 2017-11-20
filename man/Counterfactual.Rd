@@ -3,12 +3,12 @@
 \docType{data}
 \name{Counterfactual}
 \alias{Counterfactual}
-\title{Class for Counterfactuals}
+\title{Class for Defining Counterfactuals}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 Counterfactual
 }
 \description{
-Class for Counterfactuals
+Class for Defining Counterfactuals
 }
 \keyword{datasets}

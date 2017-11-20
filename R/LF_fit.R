@@ -1,13 +1,13 @@
-#' Fitting Likelihood Functionals
+#' Fitting Likelihoods
 #'
 #' @importFrom R6 R6Class
 #'
 #' @export
 #
 LF_fit <- R6Class(classname = "LF_fit",
-                             portable = TRUE,
-                             class = TRUE,
-                             inherit = LF_base,
+                  portable = TRUE,
+                  class = TRUE,
+                  inherit = LF_base,
   public = list(
     initialize = function(name, learner, expects_tmle_task = FALSE, ...) {
       private$.name = name
@@ -45,7 +45,7 @@ LF_fit <- R6Class(classname = "LF_fit",
         observed = outcome_type$format(learner_task$Y)
         if (outcome_type$type == "binomial") {
           likelihood = ifelse(observed == 1, preds, 1 - preds)
-        } else{
+        } else {
           stop("currently, only binomial likelihoods are supported")
         }
       } else {

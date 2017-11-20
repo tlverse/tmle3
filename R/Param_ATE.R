@@ -1,5 +1,7 @@
 #' Class for Estimation of ATE Parameter
 #'
+#' A class for estimating the Average Treatment Effect (ATE) parameter.
+#'
 #' @importFrom R6 R6Class
 #'
 #' @export

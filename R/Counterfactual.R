@@ -1,4 +1,4 @@
-#' Class for Counterfactuals
+#' Class for Defining Counterfactuals
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 Lrnr_base args_to_list
@@ -71,7 +71,7 @@ Counterfactual <- R6Class(classname = "Counterfactual",
 #'
 #' @export
 #
-define_cf = function(intervention_list, name = NULL) {
+define_cf <- function(intervention_list, name = NULL) {
   return(Counterfactual$new(intervention_list, name))
 }
 

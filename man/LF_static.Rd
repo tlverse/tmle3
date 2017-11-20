@@ -3,12 +3,12 @@
 \docType{data}
 \name{LF_static}
 \alias{LF_static}
-\title{Defining Likelihood Functionals for Static Interventions}
+\title{Define Likelihoods for Static Interventions}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 LF_static
 }
 \description{
-Defining Likelihood Functionals for Static Interventions
+Define Likelihoods for Static Interventions
 }
 \keyword{datasets}

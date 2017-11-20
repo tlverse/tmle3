@@ -34,7 +34,7 @@ tmle_Task <- R6Class(classname = "tmle_Task",
       outcome = target_node$variables
       parent_names = target_node$parents
       parent_nodes = nodes[parent_names]
-      covariates = unlist(lapply(parent_nodes,`[[`, "variables"))
+      covariates = unlist(lapply(parent_nodes, `[[`, "variables"))
       if (is.null(data)) {
         data = self$raw_data
       }

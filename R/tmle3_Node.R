@@ -9,7 +9,7 @@ tmle3_Node <- R6Class(classname = "tmle3_Node",
                       class = TRUE,
   public = list(
     initialize = function(name, variables, parents = c(),
-                           variable_type = NULL) {
+                          variable_type = NULL) {
       private$.name = name
       private$.variables = variables
       private$.parents = parents

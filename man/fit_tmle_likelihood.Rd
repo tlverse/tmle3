@@ -2,7 +2,7 @@
 % Please edit documentation in R/tmle3.R
 \name{fit_tmle_likelihood}
 \alias{fit_tmle_likelihood}
-\title{Fit TMLE for a Given Likelihood and Parameter}
+\title{Fit Targeted Maximum Likelihood Estimator}
 \usage{
 fit_tmle_likelihood(likelihood, task, param)
 }
@@ -14,5 +14,5 @@ fit_tmle_likelihood(likelihood, task, param)
 \item{param}{...}
 }
 \description{
-Fit TMLE for a Given Likelihood and Parameter
+Fit Targeted Maximum Likelihood Estimator
 }

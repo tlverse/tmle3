@@ -2,7 +2,7 @@
 % Please edit documentation in R/submodels.R
 \name{submodel_logit}
 \alias{submodel_logit}
-\title{Logistic Regression for Submodels}
+\title{Logistic Submodel Fluctuation}
 \usage{
 submodel_logit(eps, X, offset)
 }
@@ -14,5 +14,5 @@ submodel_logit(eps, X, offset)
 \item{offset}{...}
 }
 \description{
-Logistic Regression for Submodels
+Logistic Submodel Fluctuation
 }

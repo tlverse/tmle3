@@ -3,12 +3,12 @@
 \docType{data}
 \name{LF_fit}
 \alias{LF_fit}
-\title{Fitting Likelihood Functionals}
+\title{Fitting Likelihoods}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 LF_fit
 }
 \description{
-Fitting Likelihood Functionals
+Fitting Likelihoods
 }
 \keyword{datasets}

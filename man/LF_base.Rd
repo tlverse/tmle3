@@ -3,12 +3,12 @@
 \docType{data}
 \name{LF_base}
 \alias{LF_base}
-\title{Base Class for Likelihood Functionals}
+\title{Base Class for Defining Likelihoods}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 LF_base
 }
 \description{
-Base Class for Likelihood Functionals
+Base Class for Defining Likelihoods
 }
 \keyword{datasets}

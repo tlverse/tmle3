@@ -1,4 +1,4 @@
-#' Defining Likelihood Functionals for Static Interventions
+#' Define Likelihoods for Static Interventions
 #'
 #' @importFrom R6 R6Class
 #'
@@ -31,9 +31,9 @@ LF_static <- R6Class(classname = "LF_static",
           level_mat = matrix(levels, nrow = length(values),
                               ncol = length(levels), byrow = TRUE)
           likelihood = apply(level_mat, MARGIN = 2,
-                              function(level_vec) {
-                                as.numeric(level_vec == values)
-                              })
+                             function(level_vec) {
+                               as.numeric(level_vec == values)
+                             })
         } else {
           stop("currently, only binomial likelihoods are supported")
         }

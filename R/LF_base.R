@@ -1,12 +1,12 @@
-#' Base Class for Likelihood Functionals
+#' Base Class for Defining Likelihoods
 #'
 #' @importFrom R6 R6Class
 #'
 #' @export
 #
 LF_base <- R6Class(classname = "LF_base",
-                     portable = TRUE,
-                     class = TRUE,
+                   portable = TRUE,
+                   class = TRUE,
   public = list(
     initialize = function(name, ...) {
       private$.name = name
@@ -39,7 +39,7 @@ LF_base <- R6Class(classname = "LF_base",
 #'
 #' @export
 #
-define_lf = function(LF_class, ...) {
+define_lf <- function(LF_class, ...) {
   return(LF_class$new(...))
 }
 

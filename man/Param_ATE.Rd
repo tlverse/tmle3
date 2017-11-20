@@ -9,6 +9,6 @@
 Param_ATE
 }
 \description{
-Class for Estimation of ATE Parameter
+A class for estimating the Average Treatment Effect (ATE) parameter.
 }
 \keyword{datasets}

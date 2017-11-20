@@ -2,7 +2,7 @@
 % Please edit documentation in R/Lrnr_define_blip.R
 \name{make_blip_chain_function}
 \alias{make_blip_chain_function}
-\title{Defining Learners for Blip Regressions}
+\title{Learner Class for Blip Regressions}
 \usage{
 make_blip_chain_function(counterfactual_0, counterfactual_1, V)
 }
@@ -17,5 +17,5 @@ possible intervention}
 binary blip for now}
 }
 \description{
-Defining Learners for Blip Regressions
+Learner Class for Blip Regressions
 }

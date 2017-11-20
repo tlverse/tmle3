@@ -5,9 +5,9 @@
 #' @export
 #
 Param_TSM <- R6Class(classname = "Param_TSM",
-                      portable = TRUE,
-                      class = TRUE,
-                      inherit = Param_base,
+                     portable = TRUE,
+                     class = TRUE,
+                     inherit = Param_base,
   public = list(
     initialize = function(counterfactual, outcome_node = "Y") {
       private$.counterfactual = counterfactual

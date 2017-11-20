@@ -23,10 +23,12 @@ Imports:
     uuid
 Suggests:
     testthat,
-    knitr
+    knitr,
+    gentmle2
 Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,
+    github::jeremyrcoyle/gentmle2,
     github::jeremyrcoyle/sl3@tmle-improvements
 URL: https://github.com/jeremyrcoyle/tmle3
 BugReports: https://github.com/jeremyrcoyle/tmle3/issues

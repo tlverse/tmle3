@@ -1,0 +1,26 @@
+language: r
+sudo: required
+cache: packages
+warnings_are_errors: true
+
+before_install:
+  Rscript -e 'update.packages(ask = FALSE)'
+
+r_packages:
+  - covr
+
+r:
+  - oldrel
+  - release
+  - devel
+
+r_github_packages:
+  - jimhester/covr
+
+after_success:
+  - Rscript -e 'covr::codecov()'
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change

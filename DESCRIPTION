@@ -1,27 +1,35 @@
 Package: tmle3
-Title: Point Treatment Targeted Minimum Loss-based Estimation
+Title: Compute Targeted Minimum Loss-based Estimates for Point Treatments
 Version: 0.0.0.9000
-Authors@R: c(person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
-           role = c("aut", "cre", "cph")))
+Authors@R: c(
+  person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
+         role = c("aut", "cre", "cph"),
+         comment = c(ORCID = "0000-0002-9874-6649")),
+  person("Nima", "Hejazi", email = "nh@nimahejazi.org",
+         role = c("ctb"),
+         comment = c(ORCID = "0000-0002-7127-2789"))
+  )
 Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
-Description: Point Treatment TMLE.
+Description: Next-generation implementation of TMLEs for point treatments.
 Depends: R (>= 3.2.2)
 License: GPL-3
 Imports:
-	 sl3,
-	 delayed,
-	 data.table,
-   assertthat,
-   origami,
-   R6,
-   uuid
+    sl3,
+    delayed,
+    data.table,
+    assertthat,
+    origami,
+    R6,
+    uuid
 Suggests:
-	 testthat,
-	 knitr
+    testthat,
+    knitr,
+    gentmle2
 Remotes:
-   github::osofr/condensier,
-   github::jeremyrcoyle/delayed,
-   github::jeremyrcoyle/sl3@tmle-improvements
+    github::osofr/condensier,
+    github::jeremyrcoyle/delayed,
+    github::jeremyrcoyle/gentmle2,
+    github::jeremyrcoyle/sl3@tmle-improvements
 URL: https://github.com/jeremyrcoyle/tmle3
 BugReports: https://github.com/jeremyrcoyle/tmle3/issues
 Encoding: UTF-8

@@ -2,18 +2,20 @@
 % Please edit documentation in R/Lrnr_define_blip.R
 \name{make_blip_chain_function}
 \alias{make_blip_chain_function}
-\title{Function factory for blip regression}
+\title{Learner Class for Blip Regressions}
 \usage{
 make_blip_chain_function(counterfactual_0, counterfactual_1, V)
 }
 \arguments{
-\item{counterfactual_0}{A \code{Counterfactual} object defining one possible intervention}
+\item{counterfactual_0}{A \code{Counterfactual} object defining one possible
+intervention}
 
-\item{counterfactual_1}{A \code{Counterfactual} object defining a second possible intervention}
+\item{counterfactual_1}{A \code{Counterfactual} object defining a second
+possible intervention}
 
 \item{V}{A character vector listing the nodes on which to regress the blip
 binary blip for now}
 }
 \description{
-Function factory for blip regression
+Learner Class for Blip Regressions
 }

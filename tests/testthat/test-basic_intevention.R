@@ -16,10 +16,14 @@ cpp[is.na(cpp)] <- 0
 cpp$haz01 <- as.numeric(cpp$haz > 0)
 
 # define NPSEM as TMLE nodes and create a tmle3_task
-tmle_nodes <- list(define_node("W", c("apgar1", "apgar5", "gagebrth", "mage",
-                                      "meducyrs", "sexn")),
-                   define_node("A", c("parity01"), c("W")),
-                   define_node("Y", c("haz01"), c("A","W")))
+tmle_nodes <- list(
+  define_node("W", c(
+    "apgar1", "apgar5", "gagebrth", "mage",
+    "meducyrs", "sexn"
+  )),
+  define_node("A", c("parity01"), c("W")),
+  define_node("Y", c("haz01"), c("A", "W"))
+)
 task <- tmle_Task$new(cpp, tmle_nodes = tmle_nodes)
 
 # set up sl3 learners for tmle3 fit
@@ -27,9 +31,11 @@ lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
 lrnr_mean <- make_learner(Lrnr_mean)
 
 # define and fit likelihood
-factor_list <- list(define_lf(LF_static, "W", NA),
-                    define_lf(LF_fit, "A", lrnr_glm_fast),
-                    define_lf(LF_fit, "Y", lrnr_mean))
+factor_list <- list(
+  define_lf(LF_static, "W", NA),
+  define_lf(LF_fit, "A", lrnr_glm_fast),
+  define_lf(LF_fit, "Y", lrnr_mean)
+)
 
 likelihood_def <- Likelihood$new(factor_list)
 likelihood <- likelihood_def$train(task)
@@ -52,7 +58,8 @@ expect_lt(abs(ED), 1 / task$nrow)
 
 
 # compare to gentmle2
-Q1W <- likelihood$get_predictions(task, "Y")
+cf_likelihood <- tsm$counterfactual$cf_likelihood(likelihood)
+Q1W <- cf_likelihood$get_predictions(task, "Y")
 QAW <- likelihood$get_predictions(task, "Y")
 g1W <- likelihood$get_predictions(task, "A")
 A <- as.matrix(task$get_regression_task("A")$Y)
@@ -62,16 +69,20 @@ Y <- as.matrix(task$get_regression_task("Y")$Y)
 # to provide it
 tmledata <- data.frame(A = A, Y = Y, gk = g1W, Qk = QAW, Q1k = Q1W, Q0k = Q1W)
 
-result <- gentmle(tmledata, params = list(EY1 = param_EY1),
-                  submodel = submodel_logit,
-                  loss = gentmle2::loss_loglik)
+result <- gentmle(
+  tmledata, params = list(EY1 = param_EY1),
+  submodel = gentmle2:::Q_submodel_logit,
+  loss = gentmle2:::Q_loss_loglik
+)
 gentmle2_init_est <- result$initests
 gentmle2_tmle_est <- result$tmleests
 
 # TEST: new tmle3 estimates match those from the gentmle2 package
 expect_equivalent(tmle3_init_psi, gentmle2_init_est)
-expect_equal(tmle3_tmle_psi, gentmle2_tmle_est, tolerance = 1e-4,
-             check.attributes = FALSE)
+expect_equal(
+  tmle3_tmle_psi, gentmle2_tmle_est, tolerance = 1e-4,
+  check.attributes = FALSE
+)
 
 
 cf_a1 <- define_cf(define_lf(LF_static, "A", value = 1))
@@ -88,4 +99,3 @@ ED <- mean(tmle_ests$IC)
 
 # TEST: mean of the EIF is nearly zero.
 expect_lt(abs(ED), 1 / task$nrow)
-

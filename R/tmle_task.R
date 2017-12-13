@@ -2,6 +2,7 @@
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 sl3_Task
+#' @importFrom assertthat assert_that
 #'
 #' @export
 #
@@ -31,7 +32,14 @@ tmle_Task <- R6Class(
     },
     get_tmle_node = function(node_name) {
       node_var <- self$tmle_nodes[[node_name]]$variables
-      return(self$get_data(, node_var))
+
+      data <- self$get_data(, node_var)
+
+      if (ncol(data) == 1) {
+        return(unlist(data, use.names = FALSE))
+      } else {
+        return(data)
+      }
     },
     get_regression_task = function(target_node, data = NULL) {
       nodes <- self$tmle_nodes

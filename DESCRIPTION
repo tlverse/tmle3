@@ -20,7 +20,8 @@ Imports:
     assertthat,
     origami,
     R6,
-    uuid
+    uuid,
+    methods
 Suggests:
     testthat,
     knitr,

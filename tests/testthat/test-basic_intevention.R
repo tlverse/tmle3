@@ -4,7 +4,6 @@ library(sl3)
 library(uuid)
 library(assertthat)
 library(data.table)
-library(gentmle2)
 
 # setup data for test
 data(cpp)
@@ -44,7 +43,10 @@ likelihood <- likelihood_def$train(task)
 intervention <- define_cf(define_lf(LF_static, "A", value = 1))
 
 tsm <- Param_TSM$new(intervention)
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm)
+
+lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
+tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel)
+
 init_ests <- tsm$estimates(likelihood, task)
 tmle_ests <- tsm$estimates(tmle_likelihood, task)
 
@@ -57,30 +59,12 @@ ED <- mean(tmle_ests$IC)
 expect_lt(abs(ED), 1 / task$nrow)
 
 
-# compare to gentmle2
-cf_likelihood <- tsm$counterfactual$cf_likelihood(likelihood)
-Q1W <- cf_likelihood$get_predictions(task, "Y")
-QAW <- likelihood$get_predictions(task, "Y")
-g1W <- likelihood$get_predictions(task, "A")
-A <- as.matrix(task$get_regression_task("A")$Y)
-Y <- as.matrix(task$get_regression_task("Y")$Y)
-
-# new tmle3 doesn't need Q0k but since it's hard-coded in gentmle we still need
-# to provide it
-tmledata <- data.frame(A = A, Y = Y, gk = g1W, Qk = QAW, Q1k = Q1W, Q0k = Q1W)
-
-result <- gentmle(
-  tmledata, params = list(EY1 = param_EY1),
-  submodel = gentmle2:::Q_submodel_logit,
-  loss = gentmle2:::Q_loss_loglik
-)
-gentmle2_init_est <- result$initests
-gentmle2_tmle_est <- result$tmleests
-
-# TEST: new tmle3 estimates match those from the gentmle2 package
-expect_equivalent(tmle3_init_psi, gentmle2_init_est)
+# TEST: new tmle3 estimates match expected
+expected_init_psi <- 0.555170020818876
+expected_tmle_psi <- 0.526801368635302
+expect_equivalent(tmle3_init_psi, expected_init_psi)
 expect_equal(
-  tmle3_tmle_psi, gentmle2_tmle_est, tolerance = 1e-4,
+  tmle3_tmle_psi, expected_tmle_psi, tolerance = 1e-4,
   check.attributes = FALSE
 )
 
@@ -89,7 +73,7 @@ cf_a1 <- define_cf(define_lf(LF_static, "A", value = 1))
 cf_a0 <- define_cf(define_lf(LF_static, "A", value = 0))
 ate <- Param_ATE$new(cf_a0, cf_a1)
 
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, ate)
+tmle_likelihood <- fit_tmle_likelihood(likelihood, task, ate, lrnr_submodel)
 
 init_ests <- ate$estimates(likelihood, task)
 init_ests$psi

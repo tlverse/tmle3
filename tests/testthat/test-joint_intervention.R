@@ -45,7 +45,8 @@ intervention <- define_cf(c(
 ))
 
 tsm <- Param_TSM$new(intervention)
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm)
+lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
+tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel)
 
 init_ests <- tsm$estimates(likelihood, task)
 init_ests$psi
@@ -69,7 +70,7 @@ a1z0 <- define_cf(c(
 
 cde <- Param_ATE$new(a0z0, a1z0)
 
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, cde)
+tmle_likelihood <- fit_tmle_likelihood(likelihood, task, cde, lrnr_submodel)
 
 init_ests <- cde$estimates(likelihood, task)
 init_ests$psi

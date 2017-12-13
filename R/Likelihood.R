@@ -11,6 +11,7 @@
 #' @importFrom R6 R6Class
 #' @importFrom sl3 Lrnr_base args_to_list
 #' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
 #'
 #' @export
 #

@@ -4,12 +4,13 @@
 #'
 #' @export
 #
-Param_base <- R6Class(classname = "Param_base",
-                      portable = TRUE,
-                      class = TRUE,
+Param_base <- R6Class(
+  classname = "Param_base",
+  portable = TRUE,
+  class = TRUE,
   public = list(
     initialize = function(outcome_node) {
-      private$.outcome_node = outcome_node
+      private$.outcome_node <- outcome_node
     },
     HA = function(likelihood, task) {
       stop("Param_base is a base class")
@@ -27,4 +28,3 @@ Param_base <- R6Class(classname = "Param_base",
     .outcome_node = NULL
   )
 )
-

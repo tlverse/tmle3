@@ -4,7 +4,7 @@
 \alias{fit_tmle_likelihood}
 \title{Fit Targeted Maximum Likelihood Estimator}
 \usage{
-fit_tmle_likelihood(likelihood, task, param)
+fit_tmle_likelihood(likelihood, task, param, lrnr_submodel)
 }
 \arguments{
 \item{likelihood}{...}
@@ -12,6 +12,8 @@ fit_tmle_likelihood(likelihood, task, param)
 \item{task}{...}
 
 \item{param}{...}
+
+\item{lrnr_submodel}{...}
 }
 \description{
 Fit Targeted Maximum Likelihood Estimator

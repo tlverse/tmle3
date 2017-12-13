@@ -4,12 +4,13 @@
 #'
 #' @export
 #
-LF_base <- R6Class(classname = "LF_base",
-                   portable = TRUE,
-                   class = TRUE,
+LF_base <- R6Class(
+  classname = "LF_base",
+  portable = TRUE,
+  class = TRUE,
   public = list(
     initialize = function(name, ...) {
-      private$.name = name
+      private$.name <- name
     },
     get_likelihood = function(task, only_observed = FALSE) {
       stop("this is a base class")
@@ -42,4 +43,3 @@ LF_base <- R6Class(classname = "LF_base",
 define_lf <- function(LF_class, ...) {
   return(LF_class$new(...))
 }
-

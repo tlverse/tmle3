@@ -2,6 +2,7 @@ md:
 	Rscript -e "rmarkdown::render('README.Rmd', output_file = 'README.md')"
 
 site:
+	Rscript -e "rmarkdown::render('README.Rmd', output_file = 'README.md')"
 	Rscript -e "pkgdown::build_site()"
 
 check:
@@ -17,5 +18,8 @@ build:
 	Rscript -e "devtools::build()"
 
 cov:
-	Rscrip -e "covr::codecov()"
+	Rscript -e "covr::codecov()"
+
+style:
+	Rscript -e "styler::style_pkg()"
 

@@ -12,4 +12,3 @@ submodel_logit <- function(eps, X, offset) {
   preds <- stats::plogis(stats::qlogis(offset) + X %*% eps)
   return(preds)
 }
-

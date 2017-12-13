@@ -7,9 +7,9 @@
 define_cf(intervention_list, name = NULL)
 }
 \arguments{
-\item{name}{...}
+\item{intervention_list}{...}
 
-\item{invention_list}{...}
+\item{name}{...}
 }
 \description{
 Defining Counterfactuals

@@ -20,11 +20,14 @@ Imports:
     assertthat,
     origami,
     R6,
-    uuid
+    uuid,
+    methods
 Suggests:
     testthat,
     knitr,
-    gentmle2
+    gentmle2,
+    speedglm,
+    rmarkdown
 Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,

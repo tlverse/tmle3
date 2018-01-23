@@ -33,7 +33,7 @@ Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,
     github::jeremyrcoyle/gentmle2,
-    github::jeremyrcoyle/sl3@tmle-improvements
+    github::jeremyrcoyle/sl3@tmle-demo-fixes
 URL: https://github.com/jeremyrcoyle/tmle3
 BugReports: https://github.com/jeremyrcoyle/tmle3/issues
 Encoding: UTF-8

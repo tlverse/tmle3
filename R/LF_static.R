@@ -13,36 +13,13 @@ LF_static <- R6Class(
     initialize = function(name, value, ...) {
       private$.name <- name
       private$.value <- value
-    },
-    get_values = function(task) {
-      values <- rep(self$value, task$nrow)
-      return(values)
+      private$.variable_type <- variable_type("constant", value)
     },
     get_likelihood = function(task, only_observed = FALSE) {
-      node_task <- task$get_regression_task(self$name)
-      values <- self$get_values(task)
-      outcome_type <- node_task$outcome_type
-
-      if (only_observed) {
-        observed <- outcome_type$format(node_task$Y)
-        likelihood <- as.numeric(values == observed)
-      } else {
-        if (outcome_type$type == "binomial") {
-          levels <- outcome_type$levels
-          level_mat <- matrix(
-            levels, nrow = length(values),
-            ncol = length(levels), byrow = TRUE
-          )
-          likelihood <- apply(
-            level_mat, MARGIN = 2,
-            function(level_vec) {
-              as.numeric(level_vec == values)
-            }
-          )
-        } else {
-          stop("currently, only binomial likelihoods are supported")
-        }
-      }
+      
+        observed <- task$get_tmle_node(self$name)
+        likelihood <- as.numeric(self$value == observed)
+      
       return(likelihood)
     }
   ),

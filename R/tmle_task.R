@@ -61,6 +61,11 @@ tmle_Task <- R6Class(
       ))
     },
     generate_counterfactual_task = function(uuid, new_data) {
+      # for current_factor, generate counterfactual values
+      node_names <- names(new_data)
+      node_variables <- sapply(node_names, function(node_name) self$tmle_nodes[[node_name]]$variables)
+      setnames(new_data, node_names, node_variables)
+      
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(uuid, new_data)
       new_task$initialize(
@@ -76,6 +81,11 @@ tmle_Task <- R6Class(
   active = list(
     tmle_nodes = function() {
       return(private$.tmle_nodes)
+      
+    },
+    data=function(){
+      all_variables <- unlist(lapply(self$tmle_nodes,`[[`,"variables"))
+      self$get_data(columns = all_variables)
     }
   ),
   private = list(

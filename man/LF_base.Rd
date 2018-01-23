@@ -3,12 +3,15 @@
 \docType{data}
 \name{LF_base}
 \alias{LF_base}
-\title{Base Class for Defining Likelihoods}
+\title{Base Class for Defining Likelihood Factors}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 LF_base
 }
 \description{
-Base Class for Defining Likelihoods
+A Likelihood factor models a conditional density (continuous variable)
+or a conditional probability (discrete variable) function for a particular tmle node.
+The conditioning set is defined as all parent nodes (defined in tmle_task). In the case of a continuous
+outcome variable, where a full density isn't needed, this can also model a conditional mean.
 }
 \keyword{datasets}

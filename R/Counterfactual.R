@@ -36,13 +36,11 @@ Counterfactual <- R6Class(
         if (!current_factor$is_degenerate) {
           stop("intervention nodes must be degenerate (static/dynamic only)")
         }
-        # for current_factor, generate counterfactual values
-        node_variable <- cf_task$tmle_nodes[[node_name]]$variables
-        node_values <- current_factor$get_values(cf_task)
+        node_values <- current_factor$values
 
         # create new tmle task with counterfactual values
         new_data <- data.table(node_values)
-        setnames(new_data, names(new_data), node_variable)
+        setnames(new_data, node_name)
         cf_task <- cf_task$generate_counterfactual_task(self$fit_uuid, new_data)
       }
       return(cf_task)

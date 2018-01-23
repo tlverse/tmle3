@@ -1,4 +1,9 @@
-#' Base Class for Defining Likelihoods
+#' Base Class for Defining Likelihood Factors
+#'
+#' A Likelihood factor models a conditional density (continuous variable)
+#' or a conditional probability (discrete variable) function for a particular tmle node.
+#' The conditioning set is defined as all parent nodes (defined in tmle_task). In the case of a continuous
+#' outcome variable, where a full density isn't needed, this can also model a conditional mean.
 #'
 #' @importFrom R6 R6Class
 #'
@@ -12,7 +17,17 @@ LF_base <- R6Class(
     initialize = function(name, ...) {
       private$.name <- name
     },
-    get_likelihood = function(task, only_observed = FALSE) {
+    train = function(tmle_task) {
+      # get possible values from task if discrete
+      tmle_node <- tmle_task$tmle_nodes[[self$name]]
+      private$.variable_type <- tmle_node$variable_type
+      
+      # subclasses may do more, like fit sl3 models
+    },
+    get_density = function(tmle_task, only_observed = FALSE) {
+      stop("this is a base class")
+    },
+    get_mean = function(task) {
       stop("this is a base class")
     },
     print = function() {
@@ -23,13 +38,24 @@ LF_base <- R6Class(
     name = function() {
       return(private$.name)
     },
+    variable_type = function() {
+      return(private$.variable_type)
+    },
     is_degenerate = function() {
-      return(private$.is_degenerate)
+      return(length(self$variable_type$levels) == 1)
+    },
+    values = function(){
+      variable_type <- self$variable_type
+      if(!is.null(variable_type)){
+        return(variable_type$levels)
+      } else {
+        return(NULL)
+      }
     }
   ),
   private = list(
     .name = NULL,
-    .is_degenerate = FALSE
+    .variable_type = c()
   )
 )
 

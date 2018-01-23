@@ -1,6 +1,7 @@
 context("Basic interventions: TSM and ATE for single node interventions.")
 
 library(sl3)
+library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
@@ -23,7 +24,7 @@ tmle_nodes <- list(
   define_node("A", c("parity01"), c("W")),
   define_node("Y", c("haz01"), c("A", "W"))
 )
-task <- tmle_Task$new(cpp, tmle_nodes = tmle_nodes)
+tmle_task <- tmle_Task$new(cpp, tmle_nodes = tmle_nodes)
 
 # set up sl3 learners for tmle3 fit
 lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
@@ -31,19 +32,48 @@ lrnr_mean <- make_learner(Lrnr_mean)
 
 # define and fit likelihood
 factor_list <- list(
-  define_lf(LF_static, "W", NA),
+  define_lf(LF_np, "W", NA),
   define_lf(LF_fit, "A", lrnr_glm_fast),
-  define_lf(LF_fit, "Y", lrnr_mean)
+  define_lf(LF_fit, "Y", lrnr_glm_fast)
 )
 
+lf_a <- factor_list[[2]]
+lf_a$train(tmle_task)
+
 likelihood_def <- Likelihood$new(factor_list)
-likelihood <- likelihood_def$train(task)
+likelihood <- likelihood_def$train(tmle_task)
+
+
+cf_task1 <- cf_task(tmle_task, level_grid[1, ])
+cf_task1$data
+EY = function(tmle_task){
+  tmle_task$get_tmle_node("Y")
+}
+
+EY(tmle_task)
+likelihood$joint_likelihoods(tmle_task)
+# debugonce(likelihood$E_f_x)
+# debugonce(tmle_task$generate_counterfactual_task)
+likelihood$E_f_x(tmle_task, EY)
 
 # define parameter and get TMLE likelihood
 intervention <- define_cf(define_lf(LF_static, "A", value = 1))
-
 tsm <- Param_TSM$new(intervention)
 
+int_likelihood <- likelihood$modify_factors(intervention$intervention_list)
+int_likelihood$get_possible_counterfacutals()
+# debugonce(int_likelihood$get_likelihoods)
+library(microbenchmark)
+microbenchmark({
+  int_likelihood$E_f_x(tmle_task, EY)
+},{
+cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),data.table(A=1))
+ey=likelihood$get_factor("Y")$get_prediction(cf_task)
+mean(ey)
+},{
+int_likelihood$EY(tmle_task)
+}, check = my_check)
+tsm <- Param_TSM$new(intervention)
 lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
 tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel)
 
@@ -83,3 +113,9 @@ ED <- mean(tmle_ests$IC)
 
 # TEST: mean of the EIF is nearly zero.
 expect_lt(abs(ED), 1 / task$nrow)
+
+# ATE style estimates for categorical A
+
+# generate blip task from likelihood fit
+# fit blip with sl
+# function factor generates rule

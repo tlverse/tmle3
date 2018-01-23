@@ -29,6 +29,8 @@ Param_TSM <- R6Class(
       return(HA)
     },
     estimates = function(likelihood, task) {
+      #todo: get rid of counterfactual$cf_task (probably)
+      #instead, should be able to estimate whatever using new likelihood functions
       cf_task <- self$counterfactual$cf_task(task)
 
       Y <- task$get_regression_task(self$outcome_node)$Y

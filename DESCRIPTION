@@ -21,7 +21,8 @@ Imports:
     origami,
     R6,
     uuid,
-    methods
+    methods,
+    tableone
 Suggests:
     testthat,
     knitr,

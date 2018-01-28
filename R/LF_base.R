@@ -14,14 +14,15 @@ LF_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, ...) {
+    initialize = function(name, type = "density", ...) {
       private$.name <- name
+      private$.type <- type
     },
     train = function(tmle_task) {
       # get possible values from task if discrete
       tmle_node <- tmle_task$tmle_nodes[[self$name]]
       private$.variable_type <- tmle_node$variable_type
-      
+
       # subclasses may do more, like fit sl3 models
     },
     get_density = function(tmle_task, only_observed = FALSE) {
@@ -41,12 +42,12 @@ LF_base <- R6Class(
     variable_type = function() {
       return(private$.variable_type)
     },
-    is_degenerate = function() {
-      return(length(self$variable_type$levels) == 1)
+    type = function() {
+      return(private$.type)
     },
-    values = function(){
+    values = function() {
       variable_type <- self$variable_type
-      if(!is.null(variable_type)){
+      if (!is.null(variable_type)) {
         return(variable_type$levels)
       } else {
         return(NULL)
@@ -55,7 +56,8 @@ LF_base <- R6Class(
   ),
   private = list(
     .name = NULL,
-    .variable_type = c()
+    .variable_type = c(),
+    .type = NULL
   )
 )
 

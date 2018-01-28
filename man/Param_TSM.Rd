@@ -9,6 +9,9 @@
 Param_TSM
 }
 \description{
-Class for Estimation of TSM Parameter
+Current Limitations:
+clever covariates doesn't support updates; always uses initial (necessary for stochastic intervention)
+doesn't integrate over possible counterfactuals (necessary for stochastic intervention)
+clever covariate gets recalculated all the time (inefficient)
 }
 \keyword{datasets}

@@ -12,14 +12,14 @@ LF_static <- R6Class(
   public = list(
     initialize = function(name, value, ...) {
       private$.name <- name
+      private$.type <- "density"
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },
     get_likelihood = function(task, only_observed = FALSE) {
-      
-        observed <- task$get_tmle_node(self$name)
-        likelihood <- as.numeric(self$value == observed)
-      
+      observed <- task$get_tmle_node(self$name)
+      likelihood <- as.numeric(self$value == observed)
+
       return(likelihood)
     }
   ),

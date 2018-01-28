@@ -6,8 +6,8 @@
 #'
 #' @export
 #
-tmle_Task <- R6Class(
-  classname = "tmle_Task",
+tmle3_Task <- R6Class(
+  classname = "tmle3_Task",
   portable = TRUE,
   class = TRUE,
   inherit = sl3_Task,
@@ -65,7 +65,7 @@ tmle_Task <- R6Class(
       node_names <- names(new_data)
       node_variables <- sapply(node_names, function(node_name) self$tmle_nodes[[node_name]]$variables)
       setnames(new_data, node_names, node_variables)
-      
+
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(uuid, new_data)
       new_task$initialize(
@@ -76,15 +76,18 @@ tmle_Task <- R6Class(
     },
     next_in_chain = function(...) {
       return(super$next_in_chain(tmle_nodes = self$tmle_nodes, ...))
+    },
+    print = function() {
+      cat(sprintf("A sl3 Task with %d obs and these nodes:\n", self$nrow))
+      print(self$tmle_nodes)
     }
   ),
   active = list(
     tmle_nodes = function() {
       return(private$.tmle_nodes)
-      
     },
-    data=function(){
-      all_variables <- unlist(lapply(self$tmle_nodes,`[[`,"variables"))
+    data = function() {
+      all_variables <- unlist(lapply(self$tmle_nodes, `[[`, "variables"))
       self$get_data(columns = all_variables)
     }
   ),

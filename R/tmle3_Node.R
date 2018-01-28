@@ -61,37 +61,36 @@ define_node <- function(name, variables, parents=c(), variable_type = NULL) {
 }
 
 #' Find all ancestors of given node
-#' 
+#'
 #' @param node_name the node to search for ancestors of
 #' @param tmle_nodes the list of nodes and parents (i.e. the graph)
-all_ancestors <- function(node_name,tmle_nodes){
+all_ancestors <- function(node_name, tmle_nodes) {
   this_node <- tmle_nodes[[node_name]]
-  if(length(this_node$parents)>0){
-    ancestors <- unlist(lapply(this_node$parents,all_ancestors, tmle_nodes))
+  if (length(this_node$parents) > 0) {
+    ancestors <- unlist(lapply(this_node$parents, all_ancestors, tmle_nodes))
     ancestors <- unique(c(this_node$parents, ancestors))
     return(ancestors)
-  } else{
+  } else {
     return(NULL)
   }
 }
 
 #' Get time ordering of nodes
-#' 
+#'
 #' @param tmle_nodes the list of nodes and parents (i.e. the graph)
-time_ordering <- function(tmle_nodes){
+time_ordering <- function(tmle_nodes) {
   node_names <- lapply(tmle_nodes, `[[`, "name")
   node_parents <- lapply(tmle_nodes, `[[`, "parents")
   n_nodes <- length(tmle_nodes)
   ordered_nodes <- c()
-  while(length(ordered_nodes) < n_nodes){
-    parents_ordered <- sapply(node_parents, function(parents)all(parents%in%ordered_nodes))
+  while (length(ordered_nodes) < n_nodes) {
+    parents_ordered <- sapply(node_parents, function(parents) all(parents %in% ordered_nodes))
     new_ordered <- setdiff(unlist(node_names[parents_ordered]), ordered_nodes)
     ordered_nodes <- c(ordered_nodes, new_ordered)
-    if(length(new_ordered)==0){
+    if (length(new_ordered) == 0) {
       stop("failed to order nodes")
     }
   }
-  
+
   return(ordered_nodes)
 }
-

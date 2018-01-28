@@ -6,116 +6,74 @@ library(uuid)
 library(assertthat)
 library(data.table)
 
+
 # setup data for test
 data(cpp)
-cpp <- cpp[!is.na(cpp[, "haz"]), ]
-cpp$parity3 <- cpp$parity
-cpp$parity3[cpp$parity3 > 3] <- 3
-cpp$parity01 <- as.numeric(cpp$parity > 0)
-cpp[is.na(cpp)] <- 0
-cpp$haz01 <- as.numeric(cpp$haz > 0)
+data <- as.data.table(cpp)
 
-# define NPSEM as TMLE nodes and create a tmle3_task
-tmle_nodes <- list(
-  define_node("W", c(
+# todo: handle missingness better
+data[is.na(data)] <- 0
+node_list <- list(
+  W = c(
     "apgar1", "apgar5", "gagebrth", "mage",
     "meducyrs", "sexn"
-  )),
-  define_node("A", c("parity01"), c("W")),
-  define_node("Y", c("haz01"), c("A", "W"))
+  ),
+  A = "parity",
+  Y = "haz"
 )
-tmle_task <- tmle_Task$new(cpp, tmle_nodes = tmle_nodes)
+A_node <- node_list$A
+A_vals <- unlist(data[, A_node, with = FALSE])
 
-# set up sl3 learners for tmle3 fit
-lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
-lrnr_mean <- make_learner(Lrnr_mean)
+# todo: don't mutate cols, add new cols
+if (!is.factor(A_vals)) {
 
-# define and fit likelihood
-factor_list <- list(
-  define_lf(LF_np, "W", NA),
-  define_lf(LF_fit, "A", lrnr_glm_fast),
-  define_lf(LF_fit, "Y", lrnr_glm_fast)
-)
-
-lf_a <- factor_list[[2]]
-lf_a$train(tmle_task)
-
-likelihood_def <- Likelihood$new(factor_list)
-likelihood <- likelihood_def$train(tmle_task)
-
-
-cf_task1 <- cf_task(tmle_task, level_grid[1, ])
-cf_task1$data
-EY = function(tmle_task){
-  tmle_task$get_tmle_node("Y")
+  # todo: make cuts script_param
+  quants <- seq(from = 0, to = 1, length = 5)
+  cuts <- quantile(A_vals, quants)
+  A_factor <- cut(A_vals, cuts, right = FALSE, include.lowest = TRUE)
+  data[, A_node] <- A_factor
 }
 
-EY(tmle_task)
-likelihood$joint_likelihoods(tmle_task)
-# debugonce(likelihood$E_f_x)
-# debugonce(tmle_task$generate_counterfactual_task)
-likelihood$E_f_x(tmle_task, EY)
+Y_node <- node_list$Y
+Y_vals <- unlist(data[, Y_node, with = FALSE])
+min_Y <- min(Y_vals)
+max_Y <- max(Y_vals)
+range <- max_Y - min_Y
+lower <- min_Y - 0.1 * range
+upper <- max_Y + 0.1 * range
 
-# define parameter and get TMLE likelihood
-intervention <- define_cf(define_lf(LF_static, "A", value = 1))
-tsm <- Param_TSM$new(intervention)
-
-int_likelihood <- likelihood$modify_factors(intervention$intervention_list)
-int_likelihood$get_possible_counterfacutals()
-# debugonce(int_likelihood$get_likelihoods)
-library(microbenchmark)
-microbenchmark({
-  int_likelihood$E_f_x(tmle_task, EY)
-},{
-cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),data.table(A=1))
-ey=likelihood$get_factor("Y")$get_prediction(cf_task)
-mean(ey)
-},{
-int_likelihood$EY(tmle_task)
-}, check = my_check)
-tsm <- Param_TSM$new(intervention)
-lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel)
-
-init_ests <- tsm$estimates(likelihood, task)
-tmle_ests <- tsm$estimates(tmle_likelihood, task)
-
-# get initial and parameter estimates
-tmle3_init_psi <- init_ests$psi
-tmle3_tmle_psi <- tmle_ests$psi
-ED <- mean(tmle_ests$IC)
-
-# TEST: is the mean of the EIF nearly zero.
-expect_lt(abs(ED), 1 / task$nrow)
-
-
-# TEST: new tmle3 estimates match expected
-expected_init_psi <- 0.555170020818876
-expected_tmle_psi <- 0.526801368635302
-expect_equivalent(tmle3_init_psi, expected_init_psi)
-expect_equal(
-  tmle3_tmle_psi, expected_tmle_psi, tolerance = 1e-4,
-  check.attributes = FALSE
+Y_bounded <- (Y_vals - lower) / (upper - lower)
+data[, Y_node] <- Y_bounded
+qlib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glmnet",
+  "Lrnr_glm_fast",
+  "Lrnr_xgboost",
+  "Lrnr_randomForest"
 )
 
+glib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glmnet",
+  "Lrnr_xgboost"
+)
 
-cf_a1 <- define_cf(define_lf(LF_static, "A", value = 1))
-cf_a0 <- define_cf(define_lf(LF_static, "A", value = 0))
-ate <- Param_ATE$new(cf_a0, cf_a1)
+#todo: figure out how to correct for Ystar
+qlib <- glib <- make_learner_stack("Lrnr_mean")
+mn_metalearner <- make_learner(Lrnr_solnp, loss_function = loss_loglik_multinomial, learner_function = metalearner_linear_multinomial)
+metalearner <- make_learner(Lrnr_nnls)
+Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, mn_metalearner)
+learner_list <- list(Y=Q_learner, A=g_learner)
+tmle_fit <- tmle3(tmle_tsm_all(), data, node_list, learner_list)
+tmle_fit$summary
+tmle_fit$tmle_params[[1]]$cf_likelihood$name
+self <- tmle_fit$tmle_params[[1]]$cf_likelihood
 
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, ate, lrnr_submodel)
+tmle_fit$psi
+tmle_fit$ci
+unbound <- function(x, lower, upper){
+  (upper - lower) * x + lower
+}
 
-init_ests <- ate$estimates(likelihood, task)
-init_ests$psi
-tmle_ests <- ate$estimates(tmle_likelihood, task)
-tmle_ests$psi
-ED <- mean(tmle_ests$IC)
-
-# TEST: mean of the EIF is nearly zero.
-expect_lt(abs(ED), 1 / task$nrow)
-
-# ATE style estimates for categorical A
-
-# generate blip task from likelihood fit
-# fit blip with sl
-# function factor generates rule
+unbound(tmle_fit$psi, lower, upper)

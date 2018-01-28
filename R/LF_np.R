@@ -12,18 +12,17 @@ LF_np <- R6Class(
   public = list(
     initialize = function(name, ...) {
       private$.name <- name
+      private$.type <- "density"
     },
     get_prediction = function(task) {
       stop("nothing to predict")
     },
     get_likelihood = function(task, only_observed = FALSE) {
       weights <- task$weights
-      return(weights/sum(weights))
-
+      return(weights / sum(weights))
     }
   ),
-  active = list(
-  ),
+  active = list(),
   private = list(
     .name = NULL
   )

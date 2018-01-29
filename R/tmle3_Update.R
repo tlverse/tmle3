@@ -34,7 +34,7 @@ tmle3_Update <- R6Class(
       dt <- do.call(cbind, clever_covariates)
       # clever_covariates <- tmle_param$clever_covariates(tmle_task)
       submodel_data <- list(
-        observed = tmle_task$get_tmle_node(update_node),
+        observed = tmle_task$get_tmle_node(update_node, bound = TRUE),
         H = dt,
         initial = unlist(likelihood_observed[, update_node, with = FALSE])
       )
@@ -43,7 +43,9 @@ tmle3_Update <- R6Class(
     fit_submodel = function(submodel_data) {
       # fit submodel
       # submodel function might be predict here, but generally _is_ a function we're trying to fit
+      suppressWarnings({
       submodel_fit <- glm(observed~H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
+      })
       epsilon <- coef(submodel_fit)
       private$.epsilons <- c(private$.epsilons, list(epsilon))
       return(epsilon)

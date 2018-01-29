@@ -95,43 +95,43 @@ Likelihood <- R6Class(
       level_grid <- expand.grid(all_levels)
       return(level_grid)
     },
-    E_f_x = function(tmle_task, f_x) {
-      cf_grid <- self$get_possible_counterfacutals()
-      # todo: rewrite this so it does't recalculate likelihoods (ie recursively)
-      # should start with base node and go forward
-      prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-        cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, ]))
-        likelihoods <- self$joint_likelihoods(cf_task)
-        f_vals <- f_x(cf_task)
-        return(f_vals * likelihoods)
-      })
-
-      prodmat <- do.call(cbind, prods)
-      result <- sum(prodmat)
-
-      return(result)
-    },
-    EY = function(tmle_task, mean_node_name="Y") {
-      # identify set of all ancestors
-      nodes <- tmle_task$tmle_nodes
-      mean_node <- nodes[[mean_node_name]]
-      ancestor_nodes <- all_ancestors(mean_node_name, nodes)
-      mean_factor <- self$factor_list[[mean_node_name]]
-      # get cf possibilities only for these ancestors
-      cf_grid <- self$get_possible_counterfacutals(ancestor_nodes)
-
-      prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-        cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, , drop = FALSE]))
-        ey <- mean_factor$get_prediction(cf_task)
-        likelihoods <- self$joint_likelihoods(cf_task, ancestor_nodes)
-        return(ey * likelihoods)
-      })
-
-      prodmat <- do.call(cbind, prods)
-      result <- sum(prodmat)
-
-      return(result)
-    },
+    # E_f_x = function(tmle_task, f_x) {
+    #   cf_grid <- self$get_possible_counterfacutals()
+    #   # todo: rewrite this so it does't recalculate likelihoods (ie recursively)
+    #   # should start with base node and go forward
+    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
+    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, ]))
+    #     likelihoods <- self$joint_likelihoods(cf_task)
+    #     f_vals <- f_x(cf_task)
+    #     return(f_vals * likelihoods)
+    #   })
+    # 
+    #   prodmat <- do.call(cbind, prods)
+    #   result <- sum(prodmat)
+    # 
+    #   return(result)
+    # },
+    # EY = function(tmle_task, mean_node_name="Y") {
+    #   # identify set of all ancestors
+    #   nodes <- tmle_task$tmle_nodes
+    #   mean_node <- nodes[[mean_node_name]]
+    #   ancestor_nodes <- all_ancestors(mean_node_name, nodes)
+    #   mean_factor <- self$factor_list[[mean_node_name]]
+    #   # get cf possibilities only for these ancestors
+    #   cf_grid <- self$get_possible_counterfacutals(ancestor_nodes)
+    # 
+    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
+    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, , drop = FALSE]))
+    #     ey <- mean_factor$get_prediction(cf_task)
+    #     likelihoods <- self$joint_likelihoods(cf_task, ancestor_nodes)
+    #     return(ey * likelihoods)
+    #   })
+    # 
+    #   prodmat <- do.call(cbind, prods)
+    #   result <- sum(prodmat)
+    # 
+    #   return(result)
+    # },
     get_predictions = function(task, nodes = NULL) {
       self$validate_task(task)
       factor_list <- self$factor_list

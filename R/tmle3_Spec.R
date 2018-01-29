@@ -18,10 +18,25 @@ tmle3_Spec <- R6Class(
     },
     make_tmle_task = function(data, node_list) {
       # todo: generalize
+      
+      # bound Y if continuous
+      Y_node <- node_list$Y
+      Y_vals <- unlist(data[, Y_node, with = FALSE])
+      Y_variable_type <- variable_type(x=Y_vals)
+      if(Y_variable_type$type=="continuous"){
+        min_Y <- min(Y_vals)
+        max_Y <- max(Y_vals)
+        range <- max_Y - min_Y
+        lower <- min_Y - 0.1 * range
+        upper <- max_Y + 0.1 * range
+        Y_variable_type <- variable_type(type="continuous", bounds=c(lower, upper))
+      }
+    
+      # make tmle_task
       tmle_nodes <- list(
         define_node("W", node_list$W),
         define_node("A", node_list$A, c("W")),
-        define_node("Y", node_list$Y, c("A", "W"))
+        define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
 
       tmle_task <- tmle3_Task$new(data, tmle_nodes = tmle_nodes)

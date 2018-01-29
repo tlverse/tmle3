@@ -42,8 +42,10 @@ Param_TSM <- R6Class(
       cfs <- self$cf_likelihood$get_possible_counterfacutals()
       cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
 
+      
       Y <- tmle_task$get_tmle_node(self$outcome_node)
-
+      
+      
       # clever_covariates happen here (for this param) only, but this is repeated computation
       HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
 
@@ -53,6 +55,15 @@ Param_TSM <- R6Class(
       # clever_covariates happen here (for all fit params)
       EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names=FALSE)
       
+      # todo: integrate unbounding logic into likelihood class, or at least put it in a function
+      variable_type <- tmle_task$tmle_nodes[[self$outcome_node]]$variable_type
+      if((variable_type$type=="continuous")&&(!is.na(variable_type$bounds))){
+        bounds <- variable_type$bounds
+        scale <- bounds[2] - bounds[1]
+        shift <- bounds[1]
+        EY <- EY * scale + shift
+        EY1 <- EY1 * scale + shift
+      }
       # todo: separate out psi
       psi <- mean(EY1)
       IC <- HA * (Y - EY) + EY1 - psi

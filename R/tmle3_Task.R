@@ -28,13 +28,23 @@ tmle3_Task <- R6Class(
         }
       }
       private$.tmle_nodes <- tmle_nodes
-      y_task <- self$get_regression_task("Y", data)
     },
-    get_tmle_node = function(node_name) {
-      node_var <- self$tmle_nodes[[node_name]]$variables
+    get_tmle_node = function(node_name, bound = FALSE) {
+      tmle_node <-self$tmle_nodes[[node_name]] 
+      node_var <- tmle_node$variables
 
       data <- self$get_data(, node_var)
-
+      
+      if(bound){
+        bounds <- tmle_node$variable_type$bounds
+        if(!is.null(bounds)){
+          scale = bounds[2] - bounds[1]
+          shift = bounds[1]
+          data <- data[, lapply(.SD, function(vals) (vals - shift) / scale)]
+        }
+      }
+      
+      
       if (ncol(data) == 1) {
         return(unlist(data, use.names = FALSE))
       } else {
@@ -42,22 +52,44 @@ tmle3_Task <- R6Class(
       }
     },
     get_regression_task = function(target_node, data = NULL) {
-      nodes <- self$tmle_nodes
-      target_node <- nodes[[target_node]]
-      outcome <- target_node$variables
+      
+      
+      
+      tmle_nodes <- self$tmle_nodes
+      target_node <- tmle_nodes[[target_node]]
       parent_names <- target_node$parents
-      parent_nodes <- nodes[parent_names]
+      parent_nodes <- tmle_nodes[parent_names]
+      outcome <- target_node$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
+      
       if (is.null(data)) {
+        #todo: consider if self$data isn't a better option here
         data <- self$raw_data
       }
-      # TODO: transfer goodies like weights and ids and folds over
-      # TODO: fix next_in_chain and maybe use that
-      # TODO: subset based on censoring nodes, etc
+
+      # bound continuous outcome if bounds are specified to variable_type
+      variable_type <- target_node$variable_type
+      column_names <- self$column_names
+      if((variable_type$type=="continuous")&&(!is.na(variable_type$bounds))){
+        #todo: make quasibinomial, make more learners play nice with quasibinomial outcomes
+        bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
+        col_name <- sprintf("__%s_bounded", target_node$name)
+        set(data, , col_name, bounded_vals)
+        column_names[col_name] <- col_name
+        outcome <- col_name
+        
+      }
+      
+      nodes <- self$nodes
+      nodes$outcome <- outcome
+      nodes$covariates <- covariates
+      
+      #todo: make sure folds transfer      
       return(sl3_Task$new(
-        data, covariates = covariates, outcome = outcome,
-        outcome_type = target_node$variable_type,
-        column_names = self$column_names
+        data, nodes = nodes,
+        outcome_type = variable_type,
+        column_names = column_names
+        
       ))
     },
     generate_counterfactual_task = function(uuid, new_data) {

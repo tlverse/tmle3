@@ -24,15 +24,10 @@ get_propensity_scores <- function(likelihood, tmle_task, node="A") {
   tmle_node <- tmle_task$tmle_nodes[[node]]
   node_values <- tmle_node$variable_type$levels
   node_parents <- tmle_node$parents
-  # todo: rewrite to avoid get_factor
-  lf <- likelihood$get_factor(node)
-  scoremat <- lf$get_likelihood(tmle_task, only_observed = FALSE)
+  scoremat <- likelihood$get_initial_likelihoods(tmle_task, node, only_observed = FALSE)
   colnames(scoremat) <- node_values
-  propensity_scores <- melt(scoremat)
-  setDT(propensity_scores)
-
-  setnames(propensity_scores, c("junk", "value", "likelihood"))
-  propensity_scores[, junk := NULL]
+  propensity_scores <- melt.data.table(scoremat, measure=node_values)
+  setnames(propensity_scores, c("value", "likelihood"))
   propensity_scores[, value := factor(value)]
   return(propensity_scores)
 }

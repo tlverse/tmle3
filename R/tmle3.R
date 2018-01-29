@@ -134,7 +134,7 @@ fit_tmle3 <- function(tmle_task, likelihood, tmle_params, updater) {
 
 #' @export
 tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
-  tmle_spec$tmle3(data, node_list, learner_list = NULL)
+  tmle_spec$tmle3(data, node_list, learner_list)
 }
 
 #' @export
@@ -147,5 +147,5 @@ plot.tmle3_Fit = function(x){
   long[variable=="Initial", lower:=NA]
   long[variable=="Initial", upper:=NA]
   ggplot(long, aes(y=param, x=value, xmin=lower, xmax=upper, color=variable))+
-    geom_point()+geom_errorbarh()+theme_bw()+xlab("Value")+ylab("Parameter")+scale_color_discrete("")
+    geom_point()+geom_errorbarh(data=long[!is.na(lower)])+theme_bw()+xlab("Value")+ylab("Parameter")+scale_color_discrete("")
 }

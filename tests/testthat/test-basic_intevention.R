@@ -56,8 +56,8 @@ glib <- make_learner_stack(
 #also failure of get_levels
 #probably want to use values insteads
 #todo: figure out how to correct for Ystar
-lrnr_mean <- make_learner("Lrnr_mean")
-qlib <- glib <- list(lrnr_mean)#make_learner_stack("Lrnr_mean")
+# lrnr_mean <- make_learner("Lrnr_mean")
+qlib <- glib <- make_learner_stack("Lrnr_glmnet")
 mn_metalearner <- make_learner(Lrnr_solnp, loss_function = loss_loglik_multinomial, learner_function = metalearner_linear_multinomial)
 metalearner <- make_learner(Lrnr_nnls)
 Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
@@ -67,6 +67,24 @@ tmle_fit <- tmle3(tmle_tsm_all(), data, node_list, learner_list)
 tmle_fit$summary
 tmle3_Spec$debug("make_likelihood")
 tmle3_Update$debug("update_step")
+
+
+
+
+psis <- tmle_fit$psi
+ICs <- tmle_fit$IC
+psi_baseline <- psis[baseline]
+psi_other <- psis[-baseline]
+IC_baseline <- ICs[,baseline]
+IC_other <- ICs[,-baseline]
+psi_contrasts <- psi_other - psi_baseline
+IC_contrasts <- apply(IC_other, 2, function(IC) IC-IC_baseline)
+
+# debugonce(tmle_param$estimates)
+# debugonce(tmle_param$cf_likelihood$get_likelihoods)
+tmle_task <- tmle_fit$tmle_task
+test <- tmle_param$estimates(tmle_task)
+plot(tmle_fit)
 
 # unbound <- function(x, lower, upper){
 #   (upper - lower) * x + lower

@@ -64,6 +64,7 @@ Param_TSM <- R6Class(
         EY <- EY * scale + shift
         EY1 <- EY1 * scale + shift
       }
+      
       # todo: separate out psi
       psi <- mean(EY1)
       IC <- HA * (Y - EY) + EY1 - psi

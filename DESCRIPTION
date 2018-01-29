@@ -11,7 +11,8 @@ Authors@R: c(
   )
 Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
 Description: Next-generation implementation of TMLEs for point treatments.
-Depends: R (>= 3.2.2)
+Depends: R (>= 3.2.2),
+         graphics
 License: GPL-3
 Imports:
     sl3,

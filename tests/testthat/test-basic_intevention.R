@@ -65,9 +65,7 @@ g_learner <- make_learner(Lrnr_sl, glib, mn_metalearner)
 learner_list <- list(Y=Q_learner, A=g_learner)
 tmle_fit <- tmle3(tmle_tsm_all(), data, node_list, learner_list)
 tmle_fit$summary
-tmle3_Spec$debug("make_likelihood")
-tmle3_Update$debug("update_step")
-
+tmle_fit$timings
 
 
 

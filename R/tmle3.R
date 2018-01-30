@@ -31,6 +31,13 @@ tmle3_Fit <- R6Class(
     print = function(){
       cat(sprintf("A tmle3_Fit that took %s step(s)\n",self$steps))
       print(self$summary)
+    },
+    set_timings = function(start_time, task_time, likelihood_time, params_time, fit_time){
+      timings <- list(make_tmle_task = task_time - start_time,
+                      fit_likelihood = likelihood_time - task_time,
+                      define_params = params_time - likelihood_time,
+                      tmle_update = fit_time - params_time)
+      private$.timings <- do.call(rbind,timings)
     }
   ),
   active = list(
@@ -93,6 +100,9 @@ tmle3_Fit <- R6Class(
       summary_dt <- as.data.table(list(self$tmle_param_names, self$initial_psi, self$psi, self$se, self$ci))
       setnames(summary_dt, c("param", "init_est", "tmle_est", "se", "lower","upper"))
       return(summary_dt)
+    },
+    timings = function(){
+      return(private$.timings)
     }
   ),
   private = list(
@@ -105,6 +115,7 @@ tmle3_Fit <- R6Class(
     .ED = NULL,
     .initial_psi = NULL,
     .estimates = NULL,
+    .timings = NULL,
     .tmle_fit = function(max_it=100){
       ED_criterion <- 1 / self$tmle_task$nrow
       
@@ -134,7 +145,25 @@ fit_tmle3 <- function(tmle_task, likelihood, tmle_params, updater) {
 
 #' @export
 tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
-  tmle_spec$tmle3(data, node_list, learner_list)
+  start_time <- proc.time()
+  
+  tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+  task_time <- proc.time()
+  
+  likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+  likelihood_time <- proc.time()
+  
+  tmle_params <- tmle_spec$make_params(tmle_task, likelihood)
+  params_time <- proc.time()
+  
+  updater <- tmle_spec$make_updater(likelihood, tmle_params)
+  fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater)
+  fit_time <- proc.time()
+  
+  fit$set_timings(start_time, task_time, likelihood_time, params_time, fit_time)
+  
+  return(fit)
+  
 }
 
 #' @export

@@ -81,14 +81,6 @@ tmle3_Spec <- R6Class(
       updater <- tmle3_Update$new(tmle_params)
       likelihood$update_list <- updater
       return(updater)
-    },
-    tmle3 = function(data, node_list, learner_list = NULL) {
-      tmle_task <- self$make_tmle_task(data, node_list)
-      likelihood <- self$make_likelihood(tmle_task, learner_list)
-      tmle_params <- self$make_params(tmle_task, likelihood)
-      updater <- self$make_updater(likelihood, tmle_params)
-      fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater)
-      return(fit)
     }
   ),
   active = list(

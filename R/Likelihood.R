@@ -194,11 +194,22 @@ Likelihood <- R6Class(
     }
   ),
   private = list(
-    .train = function(tmle_task) {
+    .train_sublearners = function(tmle_task) {
       # TODO: move some of this to .pretrain so we can delay it
-      for (likelihood_factor in self$factor_list) {
-        likelihood_factor$train(tmle_task)
+      
+      train_factor <- function(likelihood_factor, tmle_task) {
+        return(likelihood_factor$train(tmle_task))
       }
+      
+      delayed_factor_train <- delayed_fun(train_factor)
+      
+      # TODO: maybe write delayed_cross_validate (as it'd be a neat thing to
+      # have around anyway)
+      factor_fits <- lapply(self$factor_list, delayed_factor_train, tmle_task)
+      result <- bundle_delayed(factor_fits)
+    },
+    .train = function(tmle_task, factor_fits) {
+      
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
       return("trained")

@@ -4,7 +4,7 @@
 #' @importFrom sl3 Lrnr_base args_to_list
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
-#' @importFrom delayed delayed_fun
+#' @importFrom delayed delayed_fun bundle_delayed
 #'
 #' @export
 #

@@ -18,13 +18,29 @@ LF_fit <- R6Class(
     get_learner_task = function(task) {
       task$get_regression_task(self$name)
     },
-    train = function(tmle_task) {
-      super$train(tmle_task)
-      learner <- self$learner
-      if (!learner$is_trained) {
-        learner_task <- self$get_learner_task(tmle_task)
-        private$.learner <- learner$train(learner_task)
+    delayed_train = function(tmle_task){
+      # just return prefit learner if that's what we have
+      # otherwise, make a delayed fit and return that
+      if (self$learner$is_trained) {
+        return(self$learner)
       }
+      
+      outcome_node <- self$name
+      # todo: we don't support delayed tmle_tasks
+      # this relates to the issue of cross_validation for delayed tasks
+      # and not being able to generate delayed calls on-the-fly
+      get_learner_task <- function(tmle_task, outcome_node){
+        tmle_task$get_regression_task(outcome_node)
+      }
+      
+      # delayed_get_learner_task <- delayed_fun(get_learner_task)
+      learner_task <- get_learner_task(tmle_task, outcome_node)
+      learner_fit <- delayed_learner_train(self$learner, learner_task)
+      return(learner_fit)
+    },
+    train = function(tmle_task, learner_fit) {
+      super$train(tmle_task)
+      private$.learner <- learner_fit
     },
     get_prediction = function(tmle_task) {
       if (self$memoize_predictions) {

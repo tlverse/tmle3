@@ -5,8 +5,8 @@ library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
-
-
+library(future)
+plan(multicore, workers=2)
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)
@@ -66,26 +66,37 @@ learner_list <- list(Y=Q_learner, A=g_learner)
 tmle_fit <- tmle3(tmle_tsm_all(), data, node_list, learner_list)
 tmle_fit$summary
 tmle_fit$timings
-
-
-
-psis <- tmle_fit$psi
-ICs <- tmle_fit$IC
-psi_baseline <- psis[baseline]
-psi_other <- psis[-baseline]
-IC_baseline <- ICs[,baseline]
-IC_other <- ICs[,-baseline]
-psi_contrasts <- psi_other - psi_baseline
-IC_contrasts <- apply(IC_other, 2, function(IC) IC-IC_baseline)
-
-# debugonce(tmle_param$estimates)
-# debugonce(tmle_param$cf_likelihood$get_likelihoods)
-tmle_task <- tmle_fit$tmle_task
-test <- tmle_param$estimates(tmle_task)
-plot(tmle_fit)
-
-# unbound <- function(x, lower, upper){
-#   (upper - lower) * x + lower
-# }
+# tmle_spec <- tmle_tsm_all()
+# tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # 
-# unbound(tmle_fit$psi, lower, upper)
+# # LF_fit$debug("delayed_train")
+# factor_list <- list(
+#   define_lf(LF_np, "W", NA),
+#   define_lf(LF_fit, "A", learner_list[["A"]]),
+#   define_lf(LF_fit, "Y", learner_list[["Y"]], type = "mean")
+# )
+# 
+# likelihood_def <- Likelihood$new(factor_list)
+# debugonce(likelihood_def$.__enclos_env__$private$.train_sublearners)
+# likelihood_def$train(tmle_task)
+# 
+# psis <- tmle_fit$psi
+# ICs <- tmle_fit$IC
+# psi_baseline <- psis[baseline]
+# psi_other <- psis[-baseline]
+# IC_baseline <- ICs[,baseline]
+# IC_other <- ICs[,-baseline]
+# psi_contrasts <- psi_other - psi_baseline
+# IC_contrasts <- apply(IC_other, 2, function(IC) IC-IC_baseline)
+# 
+# # debugonce(tmle_param$estimates)
+# # debugonce(tmle_param$cf_likelihood$get_likelihoods)
+# tmle_task <- tmle_fit$tmle_task
+# test <- tmle_param$estimates(tmle_task)
+# plot(tmle_fit)
+# 
+# # unbound <- function(x, lower, upper){
+# #   (upper - lower) * x + lower
+# # }
+# # 
+# # unbound(tmle_fit$psi, lower, upper)

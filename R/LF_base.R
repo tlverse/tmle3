@@ -18,7 +18,10 @@ LF_base <- R6Class(
       private$.name <- name
       private$.type <- type
     },
-    train = function(tmle_task) {
+    delayed_train = function(tmle_task){
+      return(list())
+    },
+    train = function(tmle_task, ...) {
       # get possible values from task if discrete
       tmle_node <- tmle_task$tmle_nodes[[self$name]]
       private$.variable_type <- tmle_node$variable_type

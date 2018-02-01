@@ -155,7 +155,7 @@ Likelihood <- R6Class(
     },
     base_train = function(task, pretrain) {
       self$validate_task(task)
-      fit_object <- private$.train(task)
+      fit_object <- private$.train(task, pretrain)
       new_object <- self$clone() # copy parameters, and whatever else
       new_object$set_train(fit_object, task)
       return(new_object)
@@ -197,20 +197,27 @@ Likelihood <- R6Class(
   private = list(
     .train_sublearners = function(tmle_task) {
       # TODO: move some of this to .pretrain so we can delay it
-      
-      train_factor <- function(likelihood_factor, tmle_task) {
-        return(likelihood_factor$train(tmle_task))
-      }
-      
-      delayed_factor_train <- delayed_fun(train_factor)
-      
-      # TODO: maybe write delayed_cross_validate (as it'd be a neat thing to
-      # have around anyway)
-      factor_fits <- lapply(self$factor_list, delayed_factor_train, tmle_task)
+      #don't nest delayed calls
+      #get the delayed calls for training
+      #then pass them to other delayed methods
+      #remember that tmle_task could be delayed too
+      #delay get regression task
+      #get learner
+      #delay_learner_train the results
+      #set in .train via setter
+      #how do to this but still respect train methods for LFs?
+
+      factor_fits <- lapply(self$factor_list, function(factor) factor$delayed_train(tmle_task))
       result <- bundle_delayed(factor_fits)
+      return(result)
+
     },
     .train = function(tmle_task, factor_fits) {
-      
+      factor_list <- self$factor_list
+      for (i in seq_along(factor_list)) {
+          factor_list[[i]]$train(tmle_task, factor_fits[[i]])
+      }
+      #set learners here
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
       return("trained")

@@ -30,5 +30,5 @@ process_missing <- function(data, node_list, max_p_missing = 0.5){
     return(c(node_no_missing, node_imputed))
   })
   
-  return(list(data=processed, node_list=updated_nodes, n_dropped = n_dropped, dropped_cols <- to_drop))
+  return(list(data = processed, node_list = updated_nodes, n_dropped = n_dropped, dropped_cols = to_drop))
 }

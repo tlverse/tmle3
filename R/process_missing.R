@@ -1,5 +1,5 @@
 #' @export
-process_missing <- function(data, node_list){
+process_missing <- function(data, node_list, max_p_missing = 0.5){
   # todo - do IPCW instead of dropping these
   drop_vars <- c(node_list$A, node_list$Y)
   drop_rows <- data[, apply(is.na(.SD), 1, any), .SDcols=drop_vars]

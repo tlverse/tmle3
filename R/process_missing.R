@@ -13,7 +13,7 @@ process_missing <- function(data, node_list, max_p_missing = 0.5){
   no_missing <- names(p_missing[p_missing==0])
   no_missing <- c(no_missing, drop_vars)
   missing_indicators <- filtered[, lapply(.SD, is.na), .SDcols=to_impute]
-  missing_names <- sprintf("delta_%s" ,any_missing)
+  missing_names <- sprintf("delta_%s" ,to_impute)
   setnames(missing_indicators, missing_names)
   impute_median <- function(x){
     value <- median(as.numeric(x[!is.na(x)]))

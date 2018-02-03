@@ -2,11 +2,13 @@
 process_missing <- function(data, node_list){
   # todo - do IPCW instead of dropping these
   drop_vars <- c(node_list$A, node_list$Y)
-  to_drop <- data[, apply(is.na(.SD), 1, any), .SDcols=drop_vars]
-  filtered <- data[!to_drop]
+  drop_rows <- data[, apply(is.na(.SD), 1, any), .SDcols=drop_vars]
+  filtered <- data[!drop_rows]
+  n_dropped <- sum(drop_rows)
   
-  
+  impute_vars <- node_list$W
   p_missing <- sapply(filtered[,impute_vars, with=FALSE], function(x)mean(is.na(x)))
+  to_drop <- names(p_missing[(max_p_missing < p_missing)])
   to_impute <- names(p_missing[(0 < p_missing) & (p_missing < max_p_missing)])
   no_missing <- names(p_missing[p_missing==0])
   no_missing <- c(no_missing, drop_vars)
@@ -28,5 +30,5 @@ process_missing <- function(data, node_list){
     return(c(node_no_missing, node_imputed))
   })
   
-  return(list(data=processed, node_list=updated_nodes))
+  return(list(data=processed, node_list=updated_nodes, n_dropped = n_dropped, dropped_cols <- to_drop))
 }

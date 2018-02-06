@@ -11,10 +11,10 @@ discretize_variable <- function(data, variable, num_cats, breakpoints=NULL){
     }
     
     
-    indexes <- seq_len(num_cats)
+    indexes <- seq_len(length(breakpoints)-1)
     # manual labels because cut too easily defaults to scientific notation
     left_bracket <- "["
-    right_bracket <- ifelse(indexes<num_cats, ")", "]")
+    right_bracket <- ifelse(indexes < (length(breakpoints)-1), ")", "]")
     formatted <- format(breakpoints, trim=TRUE, digits=2)
     lb <- formatted[indexes]
     ub <- formatted[indexes+1]

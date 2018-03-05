@@ -65,7 +65,8 @@ These objects also contain information about the efficient influence function (E
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_TSM}},
-  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
+Other Parameters: \code{\link{Param_ATT}},
+  \code{\link{Param_TSM}}, \code{\link{define_param}},
+  \code{\link{tmle3_Fit}}
 }
 \keyword{data}

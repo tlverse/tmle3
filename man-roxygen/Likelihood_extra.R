@@ -20,7 +20,7 @@
 #'   }
 #'   }
 #'   
-#'\item{\code{get_initial_likelihoods(tmle_task, nodes=NULL, only_observed = TRUE)}}{
+#'\item{\code{get_initial_likelihoods(tmle_task, nodes=NULL)}}{
 #'   Gets initial (i.e. before any TMLE updates) likelihood values for the specified \code{nodes} (or all nodes if none are specified) 
 #'   for the observations in \code{tmle_task}.
 #'
@@ -29,12 +29,9 @@
 #'     }
 #'     \item{\code{nodes}: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.
 #'     }
-#'     \item{\code{only_observed}: logical, if TRUE, only the likelihood values for the observed values in \code{tmle_task} will be provided. Otherwise,
-#'     likelihood values will be provided for all possible observed_values. 
-#'     }
 #'   }
 #'   }
-#'\item{\code{get_likelihoods(tmle_task, nodes=NULL, only_observed = TRUE)}}{
+#'\item{\code{get_likelihoods(tmle_task, nodes=NULL)}}{
 #'   Gets updated (i.e. after all TMLE updates) likelihood values for the specified \code{nodes} (or all nodes if none are specified) 
 #'   for the observations in \code{tmle_task}.
 #'
@@ -42,9 +39,6 @@
 #'     \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
 #'     }
 #'     \item{\code{nodes}: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.
-#'     }
-#'     \item{\code{only_observed}: logical, if TRUE, only the likelihood values for the observed values in \code{tmle_task} will be provided. Otherwise,
-#'     likelihood values will be provided for all possible observed_values. 
 #'     }
 #'   }
 #'   }

@@ -73,7 +73,7 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_fit}}, \code{\link{LF_np}},
-  \code{\link{LF_static}}, \code{\link{Likelihood}},
-  \code{\link{define_lf}}
+  \code{\link{LF_shift}}, \code{\link{LF_static}},
+  \code{\link{Likelihood}}, \code{\link{define_lf}}
 }
 \keyword{data}

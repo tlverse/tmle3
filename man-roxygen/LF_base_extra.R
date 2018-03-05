@@ -13,14 +13,11 @@
 #' @section Methods:
 #'
 #' \describe{
-#' \item{\code{get_density(tmle_task, only_observed = FALSE)}}{
+#' \item{\code{get_density(tmle_task)}}{
 #'   Get conditional density values for for the observations in \code{tmle_task}.
 #'
 #'   \itemize{
 #'     \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
-#'     }
-#'     \item{\code{only_observed}: logical, if TRUE, only the likelihood values for the observed values in \code{tmle_task} will be provided. Otherwise,
-#'     likelihood values will be provided for all possible observed_values. 
 #'     }
 #'   }
 #'   }

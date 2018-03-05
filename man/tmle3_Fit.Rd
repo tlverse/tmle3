@@ -96,7 +96,8 @@ TMLE updates are calculated when the object is constructed.
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_TSM}},
-  \code{\link{Param_base}}, \code{\link{define_param}}
+Other Parameters: \code{\link{Param_ATT}},
+  \code{\link{Param_TSM}}, \code{\link{Param_base}},
+  \code{\link{define_param}}
 }
 \keyword{data}

@@ -52,7 +52,7 @@ Likelihood <- R6Class(
         stop("factor_list and task$tmle_nodes must have matching names")
       }
     },
-    get_initial_likelihoods = function(tmle_task, nodes = NULL, only_observed = TRUE) {
+    get_initial_likelihoods = function(tmle_task, nodes = NULL) {
       self$validate_task(tmle_task)
       factor_list <- self$factor_list
       if (!is.null(nodes)) {
@@ -65,7 +65,7 @@ Likelihood <- R6Class(
         if (likelihood_factor$type == "mean") {
           likes <- likelihood_factor$get_mean(tmle_task)
         } else {
-          likes <- likelihood_factor$get_likelihood(tmle_task, only_observed = only_observed)
+          likes <- likelihood_factor$get_likelihood(tmle_task)
         }
         likelist[[factor_name]] <- likes
       }
@@ -75,9 +75,9 @@ Likelihood <- R6Class(
       # return(likelist[[1]])
       # }
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, only_observed = TRUE) {
+    get_likelihoods = function(tmle_task, nodes = NULL) {
       # todo: maybe get all likelihoods here, then subset before returning
-      initial_likelihoods <- self$get_initial_likelihoods(tmle_task, nodes = nodes, only_observed = only_observed)
+      initial_likelihoods <- self$get_initial_likelihoods(tmle_task, nodes = nodes)
 
       # apply updates
       if (is.null(self$update_list)) {
@@ -89,7 +89,7 @@ Likelihood <- R6Class(
         return(updated_likeilhoods)
       }
     },
-    get_possible_counterfacutals = function(nodes=NULL) {
+    get_possible_counterfactuals = function(nodes=NULL) {
 
       # get factors for nodes
       factor_list <- self$factor_list

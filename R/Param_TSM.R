@@ -74,9 +74,8 @@ Param_TSM <- R6Class(
         tmle_task <- self$observed_likelihood$training_task
       }
 
-      # todo: extend for stochastic interventions
-      cfs <- self$cf_likelihood$get_possible_counterfacutals()
-      cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
+      # todo: extend for stochastic
+      cf_task <- self$cf_likelihood$cf_tasks[[1]]
 
 
       Y <- tmle_task$get_tmle_node(self$outcome_node)
@@ -85,10 +84,10 @@ Param_TSM <- R6Class(
       # clever_covariates happen here (for this param) only, but this is repeated computation
       HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
 
-      # clever_covariates happen here (for all fit params), but this is repeated computation
+      # clever_covariates happen here (for all fit params), and this is repeated computation
       EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
 
-      # clever_covariates happen here (for all fit params)
+      # clever_covariates happen here (for all fit params), and this is repeated computation
       EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
 
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function

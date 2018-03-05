@@ -80,29 +80,21 @@ LF_fit <- R6Class(
       }
       return(preds)
     },
-    get_likelihood = function(tmle_task, only_observed = FALSE) {
+    get_likelihood = function(tmle_task) {
       learner_task <- tmle_task$get_regression_task(self$name)
       preds <- self$learner$predict(learner_task)
       outcome_type <- self$learner$training_task$outcome_type
-      if (only_observed) {
-        observed <- outcome_type$format(learner_task$Y)
-        if (outcome_type$type == "binomial") {
-          likelihood <- ifelse(observed == 1, preds, 1 - preds)
-        } else if (outcome_type$type == "categorical") {
-          unpacked <- sl3::unpack_predictions(preds)
-          index_mat <- cbind(seq_along(observed), observed)
-          likelihood <- unpacked[index_mat]
-        } else {
-          stop("currently, only binomial and multinomial likelihoods are supported")
-        }
+      observed <- outcome_type$format(learner_task$Y)
+      if (outcome_type$type == "binomial") {
+        likelihood <- ifelse(observed == 1, preds, 1 - preds)
+      } else if (outcome_type$type == "categorical") {
+        unpacked <- sl3::unpack_predictions(preds)
+        index_mat <- cbind(seq_along(observed), observed)
+        likelihood <- unpacked[index_mat]
+      } else if (outcome_type$type == "continuous"){
+        likelihood <- unlist(preds)
       } else {
-        if (outcome_type$type == "binomial") {
-          likelihood <- cbind(1 - preds, preds)
-        } else if (outcome_type$type == "categorical") {
-          likelihood <- sl3::unpack_predictions(preds)
-        } else {
-          stop("currently, only binomial and multinomial likelihoods are supported")
-        }
+        stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       return(likelihood)
     }

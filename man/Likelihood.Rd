@@ -101,7 +101,7 @@ Each likelihood factor is represented by an object inheriting from \code{\link{L
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_base}}, \code{\link{LF_fit}},
-  \code{\link{LF_np}}, \code{\link{LF_static}},
-  \code{\link{define_lf}}
+  \code{\link{LF_np}}, \code{\link{LF_shift}},
+  \code{\link{LF_static}}, \code{\link{define_lf}}
 }
 \keyword{data}

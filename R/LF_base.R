@@ -37,11 +37,14 @@ LF_base <- R6Class(
 
       # subclasses may do more, like fit sl3 models
     },
-    get_density = function(tmle_task, only_observed = FALSE) {
+    get_density = function(tmle_task) {
       stop("this is a base class")
     },
-    get_mean = function(task) {
+    get_mean = function(tmle_task) {
       stop("this is a base class")
+    },
+    cf_values = function(tmle_task) {
+      stop(sprintf("%s is not a valid intervention type", class(self)[1])      )
     },
     print = function() {
       cat(sprintf("%s: %s\n", self$name, class(self)[1]))

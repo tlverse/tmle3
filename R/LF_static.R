@@ -48,11 +48,15 @@ LF_static <- R6Class(
     get_mean = function(tmle_task) {
       return(rep(self$value, tmle_task$nrow))
     },
-    get_likelihood = function(tmle_task, only_observed = FALSE) {
+    get_likelihood = function(tmle_task) {
       observed <- tmle_task$get_tmle_node(self$name)
       likelihood <- as.numeric(self$value == observed)
 
       return(likelihood)
+    },
+    cf_values = function(tmle_task) {
+      cf_values <- rep(self$value, tmle_task$nrow)
+      return(cf_values)
     }
   ),
   active = list(

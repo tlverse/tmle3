@@ -39,7 +39,7 @@ LF_np <- R6Class(
     get_mean = function(tmle_task) {
       stop("nothing to predict")
     },
-    get_likelihood = function(tmle_task, only_observed = FALSE) {
+    get_likelihood = function(tmle_task) {
       weights <- tmle_task$weights
       return(weights / sum(weights))
     }

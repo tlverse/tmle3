@@ -21,6 +21,7 @@ density_formula <- function(tmle_task, node = "A") {
 #' @rdname propensity_scores
 #' @export
 get_propensity_scores <- function(likelihood, tmle_task, node="A") {
+  stop("this needs to be re-factored to consider different intervention types. Currently disabled")
   tmle_node <- tmle_task$tmle_nodes[[node]]
   # kludge for Rcmd::check with data.table:
   # see https://github.com/Rdatatable/data.table/issues/850

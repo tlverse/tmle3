@@ -42,7 +42,7 @@ Currently, predictions are memoized to speed up multiple calls to \code{get_like
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_base}}, \code{\link{LF_np}},
-  \code{\link{LF_static}}, \code{\link{Likelihood}},
-  \code{\link{define_lf}}
+  \code{\link{LF_shift}}, \code{\link{LF_static}},
+  \code{\link{Likelihood}}, \code{\link{define_lf}}
 }
 \keyword{data}

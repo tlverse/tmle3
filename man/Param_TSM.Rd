@@ -51,7 +51,8 @@ Does yet not support dynamic rule or stochastic interventions.
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_base}},
-  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
+Other Parameters: \code{\link{Param_ATT}},
+  \code{\link{Param_base}}, \code{\link{define_param}},
+  \code{\link{tmle3_Fit}}
 }
 \keyword{data}

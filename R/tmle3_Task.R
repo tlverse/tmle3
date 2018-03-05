@@ -79,7 +79,7 @@ tmle3_Task <- R6Class(
       # bound continuous outcome if bounds are specified to variable_type
       variable_type <- target_node$variable_type
       column_names <- self$column_names
-      if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
+      if ((variable_type$type == "continuous") && (!is.null(variable_type$bounds))) {
         # todo: make quasibinomial, make more learners play nice with quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
         col_name <- sprintf("__%s_bounded", target_node$name)

@@ -18,20 +18,20 @@ tmle3_Spec <- R6Class(
     },
     make_tmle_task = function(data, node_list) {
       # todo: generalize
-      
+
       # bound Y if continuous
       Y_node <- node_list$Y
       Y_vals <- unlist(data[, Y_node, with = FALSE])
-      Y_variable_type <- variable_type(x=Y_vals)
-      if(Y_variable_type$type=="continuous"){
+      Y_variable_type <- variable_type(x = Y_vals)
+      if (Y_variable_type$type == "continuous") {
         min_Y <- min(Y_vals)
         max_Y <- max(Y_vals)
         range <- max_Y - min_Y
         lower <- min_Y - 0.1 * range
         upper <- max_Y + 0.1 * range
-        Y_variable_type <- variable_type(type="continuous", bounds=c(lower, upper))
+        Y_variable_type <- variable_type(type = "continuous", bounds = c(lower, upper))
       }
-    
+
       # make tmle_task
       tmle_nodes <- list(
         define_node("W", node_list$W),
@@ -49,8 +49,8 @@ tmle3_Spec <- R6Class(
       # todo: generalize
       factor_list <- list(
         define_lf(LF_np, "W", NA),
-        define_lf(LF_fit, "A", combined_learner_list[["A"]]),
-        define_lf(LF_fit, "Y", combined_learner_list[["Y"]], type = "mean")
+        define_lf(LF_fit, "A", type = "density", learner = combined_learner_list[["A"]]),
+        define_lf(LF_fit, "Y", type = "mean", learner = combined_learner_list[["Y"]])
       )
 
       likelihood_def <- Likelihood$new(factor_list)
@@ -61,16 +61,14 @@ tmle3_Spec <- R6Class(
     },
     make_params = function(tmle_task, likelihood) {
       # todo: generalize
-
+      browser()
       # todo: export and use sl3:::get_levels
       A_levels <- levels(tmle_task$get_tmle_node("A"))
       A_levels <- factor(A_levels, A_levels)
       A_level <- A_levels[[1]]
       tmle_params <- lapply(A_levels, function(A_level) {
-        intervention <- define_cf(define_lf(LF_static, "A", value = A_level))
-        tsm <- Param_TSM$new(intervention)
-        # todo: maybe put setup in constructor
-        tsm$setup(likelihood)
+        intervention <- define_lf(LF_static, "A", value = A_level)
+        tsm <- Param_TSM$new(likelihood, "Y", intervention)
         return(tsm)
       })
 
@@ -105,8 +103,10 @@ tmle3_Spec <- R6Class(
 #' Y=Outcome (binary or bounded continuous)
 #' @importFrom sl3 make_learner Lrnr_mean
 #' @export
-tmle_tsm_all <- function(){
-  #todo: unclear why this has to be in a factory function
-  tmle3_Spec$new(dag = list(Y = c("A", "W"), A = c("W"), W = c()),
-                 default_learner_list = list(A = make_learner(Lrnr_mean), Y = make_learner(Lrnr_mean)))
+tmle_tsm_all <- function() {
+  # todo: unclear why this has to be in a factory function
+  tmle3_Spec$new(
+    dag = list(Y = c("A", "W"), A = c("W"), W = c()),
+    default_learner_list = list(A = make_learner(Lrnr_mean), Y = make_learner(Lrnr_mean))
+  )
 }

@@ -3,12 +3,46 @@
 \docType{data}
 \name{LF_fit}
 \alias{LF_fit}
-\title{Fitting Likelihoods}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\title{Likelihood Factor Estimated from Data using sl3.}
+\format{\code{\link{R6Class}} object.}
 \usage{
 LF_fit
 }
-\description{
-Fitting Likelihoods
+\value{
+\code{LF_base} object
 }
-\keyword{datasets}
+\description{
+Uses an \code{sl3} learner to estimate a likelihood factor from data.
+Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
+Currently, predictions are memoized to speed up multiple calls to \code{get_likelihood} and \code{get_mean} for the same data.
+}
+\section{Constructor}{
+
+  \code{define_lf(LF_fit, name, type = "density", learner, ...)}
+
+  \describe{
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+    }
+    \item{\code{learner}}{An sl3 learner to be used to estimate the factor
+    }
+    \item{\code{...}}{Not currently used.
+    }
+    }
+}
+
+\section{Fields}{
+
+\describe{
+    \item{\code{learner}}{The learner or learner fit object}
+    }
+}
+
+\seealso{
+Other Likelihood objects: \code{\link{CF_Likelihood}},
+  \code{\link{LF_base}}, \code{\link{LF_np}},
+  \code{\link{LF_static}}, \code{\link{Likelihood}},
+  \code{\link{define_lf}}
+}
+\keyword{data}

@@ -5,7 +5,7 @@
 \alias{get_propensity_scores}
 \alias{propensity_score_plot}
 \alias{propensity_score_table}
-\title{Helper functions to get and plot propensity scores}
+\title{Get and Plot Propensity Scores}
 \usage{
 density_formula(tmle_task, node = "A")
 
@@ -23,5 +23,5 @@ propensity_score_table(likelihood, tmle_task, node = "A")
 \item{likelihood}{a fitted likelihood object}
 }
 \description{
-Helper functions to get and plot propensity scores
+Get and Plot Propensity Scores
 }

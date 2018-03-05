@@ -54,9 +54,10 @@ likelihood_def <- Likelihood$new(factor_list)
 likelihood <- likelihood_def$train(tmle_task)
 
 # define parameter
-intervention <- define_lf(LF_static, "A", value = 1)
-tsm <- define_param(Param_TSM, likelihood, "Y", intervention)
-
+intervention_treatment <- define_lf(LF_static, "A", value = 1)
+intervention_control <- define_lf(LF_static, "A", value = 0)
+att <- define_param(Param_ATT, likelihood, "Y", intervention_treatment, intervention_control)
+self <- att
 # define update method (submodel + loss function)
 updater <- tmle_spec$make_updater(likelihood, list(tsm))
 

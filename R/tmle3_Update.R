@@ -2,8 +2,8 @@
 #'
 #' Current Limitations:
 #' only updating one node
-#' loss function and submodel are harcoded (need to accept arguments for these)
-#' no support for one-step (recurisve tmle)
+#' loss function and submodel are hard-coded (need to accept arguments for these)
+#' no support for one-step (recursive TMLE)
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -12,7 +12,6 @@ tmle3_Update <- R6Class(
   classname = "tmle3_Update",
   portable = TRUE,
   class = TRUE,
-  inherit = Likelihood,
   public = list(
     initialize = function(tmle_params) {
       if (inherits(tmle_params, "Param_base")) {
@@ -44,7 +43,7 @@ tmle3_Update <- R6Class(
       # fit submodel
       # submodel function might be predict here, but generally _is_ a function we're trying to fit
       suppressWarnings({
-      submodel_fit <- glm(observed~H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
+        submodel_fit <- glm(observed~H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
       })
       epsilon <- coef(submodel_fit)
       private$.epsilons <- c(private$.epsilons, list(epsilon))

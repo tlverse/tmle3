@@ -4,14 +4,76 @@
 \name{LF_base}
 \alias{LF_base}
 \title{Base Class for Defining Likelihood Factors}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\format{\code{\link{R6Class}} object.}
 \usage{
 LF_base
 }
-\description{
-A Likelihood factor models a conditional density (continuous variable)
-or a conditional probability (discrete variable) function for a particular tmle node.
-The conditioning set is defined as all parent nodes (defined in tmle_task). In the case of a continuous
-outcome variable, where a full density isn't needed, this can also model a conditional mean.
+\value{
+\code{LF_base} object
 }
-\keyword{datasets}
+\description{
+A Likelihood factor models a conditional density function.
+The conditioning set is defined as all parent nodes (defined in \code{\link{tmle3_Task}}). In the case of a continuous
+outcome variable, where a full density isn't needed, this can also model a conditional mean. This is the base class, which
+is intended to be abstract. See below for a list of possible likelihood factor classes.
+}
+\section{Constructor}{
+
+  \code{define_lf(LF_base, name, type = "density", ...)}
+                     
+  \describe{
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+    }
+    \item{\code{...}}{Not currently used.
+    }
+    }
+}
+
+\section{Methods}{
+
+
+\describe{
+\item{\code{get_density(tmle_task, only_observed = FALSE)}}{
+  Get conditional density values for for the observations in \code{tmle_task}.
+
+  \itemize{
+    \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
+    }
+    \item{\code{only_observed}: logical, if TRUE, only the likelihood values for the observed values in \code{tmle_task} will be provided. Otherwise,
+    likelihood values will be provided for all possible observed_values. 
+    }
+  }
+  }
+\item{\code{get_mean(tmle_task)}}{
+  Get conditional mean values for for the observations in \code{tmle_task}.
+  \itemize{
+    \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
+    }
+  }
+  }
+}
+}
+
+\section{Fields}{
+
+\describe{
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+    }
+    \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of the outcome variable. Only available after Likelihood training.
+    }
+    \item{\code{values}}{Possible values of the outcome variable, retrivied from the \code{variable_type} object. Only available after Likelihood training.
+    }
+}
+}
+
+\seealso{
+Other Likelihood objects: \code{\link{CF_Likelihood}},
+  \code{\link{LF_fit}}, \code{\link{LF_np}},
+  \code{\link{LF_static}}, \code{\link{Likelihood}},
+  \code{\link{define_lf}}
+}
+\keyword{data}

@@ -3,12 +3,45 @@
 \docType{data}
 \name{LF_static}
 \alias{LF_static}
-\title{Define Likelihoods for Static Interventions}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\title{Static Likelihood Factor}
+\format{\code{\link{R6Class}} object.}
 \usage{
 LF_static
 }
-\description{
-Define Likelihoods for Static Interventions
+\value{
+\code{LF_base} object
 }
-\keyword{datasets}
+\description{
+Likelihood factor for a variable that only has one value with probability 1. This is used for static interventions.
+Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
+}
+\section{Constructor}{
+
+  \code{define_lf(LF_static, name, type, value, ...)}
+
+  \describe{
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+    }
+    \item{\code{value}}{the static value
+    }
+    \item{\code{...}}{Not currently used.
+    }
+    }
+}
+
+\section{Fields}{
+
+\describe{
+    \item{\code{value}}{the static value.}
+    }
+}
+
+\seealso{
+Other Likelihood objects: \code{\link{CF_Likelihood}},
+  \code{\link{LF_base}}, \code{\link{LF_fit}},
+  \code{\link{LF_np}}, \code{\link{Likelihood}},
+  \code{\link{define_lf}}
+}
+\keyword{data}

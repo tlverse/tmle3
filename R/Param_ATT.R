@@ -1,6 +1,6 @@
-#' Treatment Specific Mean
+#' Additive Effect of Treatment Among the Treated
 #'
-#' Parameter definition for the Treatment Specific Mean (TSM). Currently supports multiple static intervention nodes.
+#' Parameter definition for the Additive Effect of Treatment Among the Treated (ATT). Currently supports multiple static intervention nodes.
 #' Does yet not support dynamic rule or stochastic interventions.
 #'
 #' @section Current Issues:
@@ -20,14 +20,16 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @section Constructor:
-#'   \code{define_param(Param_TSM, observed_likelihood, outcome_node, intervention_list, ...)}
+#'   \code{define_param(Param_ATT, observed_likelihood, outcome_node, intervention_list, ...)}
 #'
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
 #'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
 #'     }
-#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
+#'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
+#'     }
+#'     \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.
 #'     }
 #'     \item{\code{...}}{Not currently used.
 #'     }
@@ -36,33 +38,63 @@
 
 #' @section Fields:
 #' \describe{
-#'     \item{\code{cf_likelihood}}{the counterfactual likelihood for this treatment
+#'     \item{\code{cf_likelihood_treatment}}{the counterfactual likelihood for the treatment
 #'     }
-#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention
+#'     \item{\code{cf_likelihood_control}}{the counterfactual likelihood for the control
+#'     }
+#'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention
+#'     }
+#'     \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention
 #'     }
 #' }
 #' @export
-Param_TSM <- R6Class(
-  classname = "Param_TSM",
+Param_ATT <- R6Class(
+  classname = "Param_ATT",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, outcome_node = "Y", intervention_list) {
+    initialize = function(observed_likelihood, outcome_node = "Y", intervention_list_treatment, intervention_list_control) {
       super$initialize(observed_likelihood, outcome_node)
-      private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
+      private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
+      private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
-      intervention_nodes <- names(self$intervention_list)
+      
+      # todo: actually the union of the treatment and control nodes?
+      intervention_nodes <- names(self$intervention_list_treatment)
+      
       # todo: make sure we support updating these params
       pA <- self$observed_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
-      cf_pA <- self$cf_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
-
-      HA <- cf_pA / pA
-
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_initial_likelihoods(tmle_task, intervention_nodes)
+      cf_pA_control <- self$cf_likelihood_control$get_initial_likelihoods(tmle_task, intervention_nodes)
+      
+      #todo: rethink that last term
+      HA <- cf_pA_treatment - cf_pA_control * ((1-pA)/pA)
+      
+      #todo: rethink variable names
+      
+      # todo: extend for stochastic interventions
+      cfs <- self$cf_likelihood_treatment$get_possible_counterfacutals()
+      cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
+      
+      
+      Y <- tmle_task$get_tmle_node(self$outcome_node)
+      
+      
+      # clever_covariates happen here (for this param) only, but this is repeated computation
+      HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
+      
+      # clever_covariates happen here (for all fit params), but this is repeated computation
+      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
+      
+      # clever_covariates happen here (for all fit params)
+      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
+      
+      EY1 <- 
       # collapse across multiple intervention nodes
       if (!is.null(ncol(HA)) && ncol(HA) > 1) {
         HA <- apply(HA, 1, prod)
@@ -114,17 +146,24 @@ Param_TSM <- R6Class(
       param_form <- sprintf("E[%s_{%s}]", self$outcome_node, self$cf_likelihood$name)
       return(param_form)
     },
-    cf_likelihood = function() {
-      return(private$.cf_likelihood)
+    cf_likelihood_treatment = function() {
+      return(private$.cf_likelihood_treatment)
     },
-    intervention_list = function() {
-      return(self$cf_likelihood$intervention_list)
+    cf_likelihood_control = function() {
+      return(private$.cf_likelihood_control)
+    },
+    intervention_list_treatment = function() {
+      return(self$cf_likelihood_treatment$intervention_list)
+    },
+    intervention_list_control = function() {
+      return(self$cf_likelihood_control$intervention_list)
     },
     update_nodes = function() {
       return(self$outcome_node)
     }
   ),
   private = list(
-    .cf_likelihood = NULL
+    .cf_likelihood_treatment = NULL,
+    .cf_likelihood_control = NULL
   )
 )

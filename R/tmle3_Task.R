@@ -1,11 +1,25 @@
-#' Class for Storing and Computing TMLEs as Tasks
+#' Class for Storing Data and NPSEM for TMLE
+#'
+#' This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the methods supported by \code{\link[sl3]{sl3_Task}}, it supports the following.
+#'
+#' @docType class
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 sl3_Task
-#' @importFrom assertthat assert_that
+#' @import data.table
 #'
 #' @export
-#
+#'
+#' @keywords data
+#'
+#' @return \code{tmle3_Task} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @template tmle3_Task_extra
+#'
+#' @export
+
 tmle3_Task <- R6Class(
   classname = "tmle3_Task",
   portable = TRUE,
@@ -30,66 +44,59 @@ tmle3_Task <- R6Class(
       private$.tmle_nodes <- tmle_nodes
     },
     get_tmle_node = function(node_name, bound = FALSE) {
-      tmle_node <-self$tmle_nodes[[node_name]] 
+      tmle_node <- self$tmle_nodes[[node_name]]
       node_var <- tmle_node$variables
 
       data <- self$get_data(, node_var)
-      
-      if(bound){
+
+      if (bound) {
         bounds <- tmle_node$variable_type$bounds
-        if(!is.null(bounds)){
-          scale = bounds[2] - bounds[1]
-          shift = bounds[1]
+        if (!is.null(bounds)) {
+          scale <- bounds[2] - bounds[1]
+          shift <- bounds[1]
           data <- data[, lapply(.SD, function(vals) (vals - shift) / scale)]
         }
       }
-      
-      
+
+
       if (ncol(data) == 1) {
         return(unlist(data, use.names = FALSE))
       } else {
         return(data)
       }
     },
-    get_regression_task = function(target_node, data = NULL) {
-      
-      
-      
+    get_regression_task = function(target_node) {
       tmle_nodes <- self$tmle_nodes
       target_node <- tmle_nodes[[target_node]]
       parent_names <- target_node$parents
       parent_nodes <- tmle_nodes[parent_names]
       outcome <- target_node$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
-      
-      if (is.null(data)) {
-        #todo: consider if self$data isn't a better option here
-        data <- self$raw_data
-      }
+
+      # todo: consider if self$data isn't a better option here
+      data <- self$raw_data
 
       # bound continuous outcome if bounds are specified to variable_type
       variable_type <- target_node$variable_type
       column_names <- self$column_names
-      if((variable_type$type=="continuous")&&(!is.na(variable_type$bounds))){
-        #todo: make quasibinomial, make more learners play nice with quasibinomial outcomes
+      if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
+        # todo: make quasibinomial, make more learners play nice with quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
         col_name <- sprintf("__%s_bounded", target_node$name)
         set(data, , col_name, bounded_vals)
         column_names[col_name] <- col_name
         outcome <- col_name
-        
       }
-      
+
       nodes <- self$nodes
       nodes$outcome <- outcome
       nodes$covariates <- covariates
-      
-      #todo: make sure folds transfer      
+
+      # todo: make sure folds transfer
       return(sl3_Task$new(
         data, nodes = nodes,
         outcome_type = variable_type,
         column_names = column_names
-        
       ))
     },
     generate_counterfactual_task = function(uuid, new_data) {
@@ -127,3 +134,12 @@ tmle3_Task <- R6Class(
     .tmle_nodes = NULL
   )
 )
+
+#' @param ... Passes all arguments to the constructor. See documentation for the
+#'  Constructor below.
+#'
+#' @rdname tmle3_Task
+#'
+#' @export
+#
+make_tmle3_Task <- tmle3_Task$new

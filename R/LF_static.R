@@ -1,23 +1,55 @@
-#' Define Likelihoods for Static Interventions
+#' Static Likelihood Factor
+#'
+#' Likelihood factor for a variable that only has one value with probability 1. This is used for static interventions.
+#' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
 #'
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Likelihood objects
+#' @keywords data
+#'
+#' @return \code{LF_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @section Constructor:
+#'   \code{define_lf(LF_static, name, type, value, ...)}
+#'
+#'   \describe{
+#'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+#'     }
+#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+#'     }
+#'     \item{\code{value}}{the static value
+#'     }
+#'     \item{\code{...}}{Not currently used.
+#'     }
+#'     }
+#'
+#' @section Fields:
+#' \describe{
+#'     \item{\code{value}}{the static value.}
+#'     }
+
 #'
 #' @export
-#
 LF_static <- R6Class(
   classname = "LF_static",
   portable = TRUE,
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, value, ...) {
-      private$.name <- name
-      private$.type <- "density"
+    initialize = function(name, type = "density", value, ...) {
+      super$initialize(name, type)
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },
-    get_likelihood = function(task, only_observed = FALSE) {
-      observed <- task$get_tmle_node(self$name)
+    get_mean = function(tmle_task) {
+      return(rep(self$value, tmle_task$nrow))
+    },
+    get_likelihood = function(tmle_task, only_observed = FALSE) {
+      observed <- tmle_task$get_tmle_node(self$name)
       likelihood <- as.numeric(self$value == observed)
 
       return(likelihood)

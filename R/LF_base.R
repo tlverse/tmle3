@@ -1,14 +1,23 @@
 #' Base Class for Defining Likelihood Factors
 #'
-#' A Likelihood factor models a conditional density (continuous variable)
-#' or a conditional probability (discrete variable) function for a particular tmle node.
-#' The conditioning set is defined as all parent nodes (defined in tmle_task). In the case of a continuous
-#' outcome variable, where a full density isn't needed, this can also model a conditional mean.
+#' A Likelihood factor models a conditional density function.
+#' The conditioning set is defined as all parent nodes (defined in \code{\link{tmle3_Task}}). In the case of a continuous
+#' outcome variable, where a full density isn't needed, this can also model a conditional mean. This is the base class, which
+#' is intended to be abstract. See below for a list of possible likelihood factor classes.
 #'
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Likelihood objects
+#' @keywords data
+#'
+#' @return \code{LF_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @template LF_base_extra
 #'
 #' @export
-#
 LF_base <- R6Class(
   classname = "LF_base",
   portable = TRUE,
@@ -18,7 +27,7 @@ LF_base <- R6Class(
       private$.name <- name
       private$.type <- type
     },
-    delayed_train = function(tmle_task){
+    delayed_train = function(tmle_task) {
       return(list())
     },
     train = function(tmle_task, ...) {
@@ -64,11 +73,11 @@ LF_base <- R6Class(
   )
 )
 
-#' Defining Likelihood Functionals
+#' Define a Likelihood Factor
 #'
-#' @param LF_class the class of likelihood
-#' @param ... arguments that define the likelihood functional
-#'
+#' @param LF_class the class of likelihood factor. Should inherit from \code{\link{LF_base}}
+#' @param ... arguments that define the likelihood factor. See the constructor for the specified \code{LF_class}.
+#' @family Likelihood objects
 #' @export
 #
 define_lf <- function(LF_class, ...) {

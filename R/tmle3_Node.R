@@ -1,9 +1,55 @@
-#' Class for Nonparametric Structural Equation Models
+#' A Node (set of variables) in an NPSEM
+#'
+#' This class defines a node in an NPSEM
 #'
 #' @importFrom R6 R6Class
-#'
 #' @export
-#
+#'
+#' @keywords data
+#'
+#' @return \code{tmle3_Node} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @section Constructor:
+#'   \code{make_tmle3_task(name, variables, parents = c(), variable_type = NULL)}
+#'
+#'   \describe{
+#'     \item{\code{name}}{character, the name of node
+#'     }
+#'     \item{\code{variables}}{character vector, the names of the variables that comprise the node
+#'     }
+#'     \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+#'     }
+#'     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.
+#'     If missing, variable_type will be guessed later from the data.
+#'     }
+#'     }
+#'
+#' @section Methods:
+#'
+#' \describe{
+#' \item{\code{guess_variable_type(variable_data)}}{
+#'   Guesses the \code{\link[sl3]{variable_type}} from the provided data.
+#'   This will be called by the \code{\link{tmle3_Task}} constructor if no variable_type was provided.
+#'
+#'   \itemize{
+#'     \item{\code{variable_data}: the observed variable data.
+#'     }
+#'   }
+#'   }
+#' }
+#'
+#' @section Fields:
+#' \describe{
+#'     \item{\code{name}}{character, the name of node
+#'     }
+#'     \item{\code{variables}}{character vector, the names of the variables that comprise the node
+#'     }
+#'     \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+#'     }
+#'     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.}
+#' }
 tmle3_Node <- R6Class(
   classname = "tmle3_Node",
   portable = TRUE,
@@ -48,22 +94,21 @@ tmle3_Node <- R6Class(
   )
 )
 
-#' Define a Node (set of variables) in an NPSEM
-#'
-#' @param name A character, the name of node
-#' @param variables A character vector of the variables that comprise the node
-#' @param parents A character vector of the names of the parent nodes. If missing, node is assumed to have no parents.
-#' @param variable_type A \code{sl3} \code{variable_type} object specifying the data type of this variable.
-#' If missing, variable_type is guessed from the data
+#' @param ... Passes all arguments to the constructor. See documentation for the
+#'  Constructor below.
 #' @export
-define_node <- function(name, variables, parents=c(), variable_type = NULL) {
-  tmle3_Node$new(name, variables, parents, variable_type)
-}
+#' @rdname tmle3_Node
+define_node <- tmle3_Node$new
 
-#' Find all ancestors of given node
+#' Helper functions for the NPSEM
+#'
+#' \code{all_ancestors} returns a list of all_ancestors of the specified node.
+#' \code{time_ordering} attempts to find a time_ordering for the variables.
 #'
 #' @param node_name the node to search for ancestors of
-#' @param tmle_nodes the list of nodes and parents (i.e. the graph)
+#' @param tmle_nodes the NPSEM, defined by a list of \code{\link{tmle3_Node}} objects.
+#' @rdname npsem_helpers
+#' @export
 all_ancestors <- function(node_name, tmle_nodes) {
   this_node <- tmle_nodes[[node_name]]
   if (length(this_node$parents) > 0) {
@@ -77,7 +122,8 @@ all_ancestors <- function(node_name, tmle_nodes) {
 
 #' Get time ordering of nodes
 #'
-#' @param tmle_nodes the list of nodes and parents (i.e. the graph)
+#' @rdname npsem_helpers
+#' @export
 time_ordering <- function(tmle_nodes) {
   node_names <- lapply(tmle_nodes, `[[`, "name")
   node_parents <- lapply(tmle_nodes, `[[`, "parents")

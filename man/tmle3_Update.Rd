@@ -11,7 +11,7 @@ tmle3_Update
 \description{
 Current Limitations:
 only updating one node
-loss function and submodel are harcoded (need to accept arguments for these)
-no support for one-step (recurisve tmle)
+loss function and submodel are hard-coded (need to accept arguments for these)
+no support for one-step (recursive TMLE)
 }
 \keyword{datasets}

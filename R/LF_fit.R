@@ -1,60 +1,100 @@
-#' Fitting Likelihoods
+#' Likelihood Factor Estimated from Data using sl3.
+#'
+#' Uses an \code{sl3} learner to estimate a likelihood factor from data.
+#' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
+#' Currently, predictions are memoized to speed up multiple calls to \code{get_likelihood} and \code{get_mean} for the same data.
 #'
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Likelihood objects
+#' @keywords data
+#'
+#' @return \code{LF_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @section Constructor:
+#'   \code{define_lf(LF_fit, name, type = "density", learner, ...)}
+#'
+#'   \describe{
+#'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
+#'     }
+#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+#'     }
+#'     \item{\code{learner}}{An sl3 learner to be used to estimate the factor
+#'     }
+#'     \item{\code{...}}{Not currently used.
+#'     }
+#'     }
+#'
+#' @section Fields:
+#' \describe{
+#'     \item{\code{learner}}{The learner or learner fit object}
+#'     }
 #'
 #' @export
-#
 LF_fit <- R6Class(
   classname = "LF_fit",
   portable = TRUE,
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, expects_tmle_task = FALSE, ...) {
-      private$.name <- name
+    initialize = function(name, type="density", learner, ...) {
+      super$initialize(name, type)
       private$.learner <- learner
-      private$.expects_tmle_task <- expects_tmle_task
     },
+    delayed_train = function(tmle_task) {
+      # just return prefit learner if that's what we have
+      # otherwise, make a delayed fit and return that
+      if (self$learner$is_trained) {
+        return(self$learner)
+      }
 
-    get_learner_task = function(task) {
-      if (self$expects_tmle_task) {
-        return(task)
+      outcome_node <- self$name
+      # todo: we don't support delayed tmle_tasks
+      # this relates to the issue of cross_validation for delayed tasks
+      # and not being able to generate delayed calls on-the-fly
+      learner_task <- tmle_task$get_regression_task(outcome_node)
+      learner_fit <- delayed_learner_train(self$learner, learner_task)
+      return(learner_fit)
+    },
+    train = function(tmle_task, learner_fit) {
+      super$train(tmle_task)
+      private$.learner <- learner_fit
+    },
+    get_mean = function(tmle_task) {
+      if (self$memoize_predictions) {
+        uuid <- tmle_task$uuid
+        preds <- private$.memoized[[uuid]]
+        if (is.null(preds)) {
+          learner_task <- tmle_task$get_regression_task(self$name)
+          learner <- self$learner
+          preds <- learner$predict(learner_task)
+          private$.memoized[[uuid]] <- preds
+        }
       } else {
-        return(task$get_regression_task(self$name))
+        learner_task <- tmle_task$get_regression_task(self$name)
+        learner <- self$learner
+        preds <- learner$predict(learner_task)
       }
-    },
-    fit_learner = function(task) {
-      learner <- self$learner
-      if (!learner$is_trained) {
-        learner_task <- self$get_learner_task(task)
-        private$.learner <- learner$train(learner_task)
-      }
-    },
-    get_prediction = function(task) {
-      learner_task <- self$get_learner_task(task)
-      learner <- self$learner
-      preds <- learner$predict(learner_task)
       return(preds)
     },
-    get_likelihood = function(task, only_observed = FALSE) {
-      learner_task <- self$get_learner_task(task)
-      preds <- self$get_prediction(task)
-      # variable type should come from node type
-      # always store fit tmle_task (or at least fit node_list) for this info
+    get_likelihood = function(tmle_task) {
+      learner_task <- tmle_task$get_regression_task(self$name)
+      preds <- self$learner$predict(learner_task)
       outcome_type <- self$learner$training_task$outcome_type
-      if (only_observed) {
-        observed <- outcome_type$format(learner_task$Y)
-        if (outcome_type$type == "binomial") {
-          likelihood <- ifelse(observed == 1, preds, 1 - preds)
-        } else {
-          stop("currently, only binomial likelihoods are supported")
-        }
+      observed <- outcome_type$format(learner_task$Y)
+      if (outcome_type$type == "binomial") {
+        likelihood <- ifelse(observed == 1, preds, 1 - preds)
+      } else if (outcome_type$type == "categorical") {
+        unpacked <- sl3::unpack_predictions(preds)
+        index_mat <- cbind(seq_along(observed), observed)
+        likelihood <- unpacked[index_mat]
+      } else if (outcome_type$type == "continuous"){
+        likelihood <- unlist(preds)
       } else {
-        if (outcome_type$type == "binomial") {
-          likelihood <- cbind(1 - preds, preds)
-        } else {
-          stop("currently, only binomial likelihoods are supported")
-        }
+        stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       return(likelihood)
     }
@@ -63,13 +103,14 @@ LF_fit <- R6Class(
     learner = function() {
       return(private$.learner)
     },
-    expects_tmle_task = function() {
-      return(private$.expects_tmle_task)
+    memoize_predictions = function() {
+      return(private$.memoize_predictions)
     }
   ),
   private = list(
     .name = NULL,
     .learner = NULL,
-    .expects_tmle_task = FALSE
+    .memoize_predictions = TRUE,
+    .memoized = list()
   )
 )

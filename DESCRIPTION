@@ -1,5 +1,5 @@
 Package: tmle3
-Title: Compute Targeted Minimum Loss-based Estimates for Point Treatments
+Title: Extensible TMLE Framework
 Version: 0.0.0.9000
 Authors@R: c(
   person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
@@ -10,8 +10,9 @@ Authors@R: c(
          comment = c(ORCID = "0000-0002-7127-2789"))
   )
 Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
-Description: Next-generation implementation of TMLEs for point treatments.
-Depends: R (>= 3.2.2)
+Description: Extensible TMLE framework. tmle3 is a general framework that supports the implementation of a range of TMLE parameters with a unified interface. The goal is that the `tmle3` framework be as general as the mathematical framework upon which it's based. 
+Depends: R (>= 3.2.2),
+         graphics
 License: GPL-3
 Imports:
     sl3,
@@ -21,7 +22,10 @@ Imports:
     origami,
     R6,
     uuid,
-    methods
+    methods,
+    tableone,
+    ggplot2,
+    stats
 Suggests:
     testthat,
     knitr,
@@ -32,9 +36,9 @@ Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,
     github::jeremyrcoyle/gentmle2,
-    github::jeremyrcoyle/sl3@tmle-improvements
-URL: https://github.com/jeremyrcoyle/tmle3
-BugReports: https://github.com/jeremyrcoyle/tmle3/issues
+    github::jeremyrcoyle/sl3
+URL: https://tmle3.tlverse.com/
+BugReports: https://github.com/tlverse/tmle3/issues
 Encoding: UTF-8
 LazyData: yes
 LazyLoad: yes

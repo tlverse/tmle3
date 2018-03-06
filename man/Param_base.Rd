@@ -3,12 +3,70 @@
 \docType{data}
 \name{Param_base}
 \alias{Param_base}
-\title{Base Class for Parameter Estimation}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\title{Base Class for Defining Parameters}
+\format{\code{\link{R6Class}} object.}
 \usage{
 Param_base
 }
-\description{
-Base Class for Parameter Estimation
+\value{
+\code{Param_base} object
 }
-\keyword{datasets}
+\description{
+A parameter is a function of the likelihood. Once given a \code{\link{Likelihood}} object, a parameter will a value.
+These objects also contain information about the efficient influence function (EIF) of a parameter, as well as its clever covariate(s).
+}
+\section{Constructor}{
+
+  \code{define_param(Param_base, observed_likelihood, outcome_node, ...)}
+                     
+  \describe{
+    \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
+    }
+    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
+    }
+    \item{\code{...}}{Not currently used.
+    }
+    }
+}
+
+\section{Methods}{
+
+
+\describe{
+\item{\code{clever_covariates(tmle_task = NULL)}}{
+  Get the clever covariates for an TMLE update step.
+
+  \itemize{
+    \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get clever covariate values for. 
+    If NULL, the \code{tmle_task} used to train the \code{observed likelihood will be used}
+    }
+  }
+  }
+\item{\code{estimates(tmle_task = NULL)}}{
+  Get the parameter estimates and influence curve values.
+
+  \itemize{
+    \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get clever covariate values for. 
+    If NULL, the \code{tmle_task} used to train the \code{observed likelihood will be used}
+    }
+  }
+  }
+}
+}
+
+\section{Fields}{
+
+\describe{
+    \item{\code{observed_likelihood}}{the observed likelihood
+    }
+    \item{\code{outcome_node}}{character, the name of the outcome node
+    }
+}
+}
+
+\seealso{
+Other Parameters: \code{\link{Param_ATT}},
+  \code{\link{Param_TSM}}, \code{\link{define_param}},
+  \code{\link{tmle3_Fit}}
+}
+\keyword{data}

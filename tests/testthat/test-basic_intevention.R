@@ -1,85 +1,103 @@
 context("Basic interventions: TSM and ATE for single node interventions.")
 
 library(sl3)
+library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
+library(future)
 
 # setup data for test
 data(cpp)
-cpp <- cpp[!is.na(cpp[, "haz"]), ]
-cpp$parity3 <- cpp$parity
-cpp$parity3[cpp$parity3 > 3] <- 3
-cpp$parity01 <- as.numeric(cpp$parity > 0)
-cpp[is.na(cpp)] <- 0
-cpp$haz01 <- as.numeric(cpp$haz > 0)
-
-# define NPSEM as TMLE nodes and create a tmle3_task
-tmle_nodes <- list(
-  define_node("W", c(
+data <- as.data.table(cpp)
+data$parity01 <- as.numeric(data$parity > 0)
+data$parity01_fac <- factor(data$parity01)
+data$haz01 <- as.numeric(data$haz > 0)
+data[is.na(data)] <- 0
+node_list <- list(
+  W = c(
     "apgar1", "apgar5", "gagebrth", "mage",
     "meducyrs", "sexn"
-  )),
-  define_node("A", c("parity01"), c("W")),
-  define_node("Y", c("haz01"), c("A", "W"))
+  ),
+  A = "parity01",
+  Y = "haz01"
 )
-task <- tmle_Task$new(cpp, tmle_nodes = tmle_nodes)
 
-# set up sl3 learners for tmle3 fit
-lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
-lrnr_mean <- make_learner(Lrnr_mean)
+qlib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glm_fast"
+)
 
-# define and fit likelihood
+glib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glm_fast"
+)
+
+metalearner <- make_learner(Lrnr_nnls)
+Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, metalearner)
+learner_list <- list(Y=Q_learner, A=g_learner)
+tmle_spec <- tmle_tsm_all()
+
+# define data
+tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+
+# LF_fit$undebug("get_likelihood")
+# estimate likelihood
 factor_list <- list(
-  define_lf(LF_static, "W", NA),
-  define_lf(LF_fit, "A", lrnr_glm_fast),
-  define_lf(LF_fit, "Y", lrnr_mean)
+  define_lf(LF_np, "W", NA),
+  define_lf(LF_fit, "A", type = "density", learner = learner_list[["A"]]),
+  define_lf(LF_fit, "Y", type = "mean", learner = learner_list[["Y"]])
 )
 
 likelihood_def <- Likelihood$new(factor_list)
-likelihood <- likelihood_def$train(task)
+likelihood <- likelihood_def$train(tmle_task)
 
-# define parameter and get TMLE likelihood
-intervention <- define_cf(define_lf(LF_static, "A", value = 1))
+# define parameter
+intervention <- define_lf(LF_static, "A", value = 1)
+tsm <- define_param(Param_TSM, likelihood, "Y", intervention)
+result <- tsm$cf_likelihood$enumerate_cf_tasks(tmle_task)
+# define update method (submodel + loss function)
+updater <- tmle_spec$make_updater(likelihood, list(tsm))
 
-tsm <- Param_TSM$new(intervention)
+# fit tmle update
+tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
 
-lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel)
+# extract results
+tmle3_psi <- tmle_fit$summary$tmle_est
+tmle3_se <- tmle_fit$summary$se
 
-init_ests <- tsm$estimates(likelihood, task)
-tmle_ests <- tsm$estimates(tmle_likelihood, task)
+#################################################
+# compare with the tmle package
+library(tmle)
 
-# get initial and parameter estimates
-tmle3_init_psi <- init_ests$psi
-tmle3_tmle_psi <- tmle_ests$psi
-ED <- mean(tmle_ests$IC)
+# construct likelihood estimates
 
-# TEST: is the mean of the EIF nearly zero.
-expect_lt(abs(ED), 1 / task$nrow)
+# task for A=1
+cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A=1))
 
+# get Q
+EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
+EY1_final <- likelihood$get_likelihoods(cf_task, "Y")
+EY0 <- rep(0, length(EY1)) # not used
+Q = cbind(EY0, EY1)
 
-# TEST: new tmle3 estimates match expected
-expected_init_psi <- 0.555170020818876
-expected_tmle_psi <- 0.526801368635302
-expect_equivalent(tmle3_init_psi, expected_init_psi)
-expect_equal(
-  tmle3_tmle_psi, expected_tmle_psi, tolerance = 1e-4,
-  check.attributes = FALSE
-)
+# get G
+pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
+pDelta1 <- cbind(pA1, pA1)
+tmle_classic_fit <- tmle(Y=tmle_task$get_tmle_node("Y"), 
+                            A=NULL,
+                            W=tmle_task$get_tmle_node("W"),
+                            Delta = tmle_task$get_tmle_node("A"),
+                            Q = Q,
+                            pDelta1 = pDelta1)
 
+# extract estimates
+classic_psi <- tmle_classic_fit$estimates$EY1$psi
+classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 
-cf_a1 <- define_cf(define_lf(LF_static, "A", value = 1))
-cf_a0 <- define_cf(define_lf(LF_static, "A", value = 0))
-ate <- Param_ATE$new(cf_a0, cf_a1)
+# only approximately equal (although it's O(1/n))
+test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol=1e-3))
 
-tmle_likelihood <- fit_tmle_likelihood(likelihood, task, ate, lrnr_submodel)
-
-init_ests <- ate$estimates(likelihood, task)
-init_ests$psi
-tmle_ests <- ate$estimates(tmle_likelihood, task)
-tmle_ests$psi
-ED <- mean(tmle_ests$IC)
-
-# TEST: mean of the EIF is nearly zero.
-expect_lt(abs(ED), 1 / task$nrow)
+# only approximately equal (although it's O(1/n))
+test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol=1e-3))

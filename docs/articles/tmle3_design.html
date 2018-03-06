@@ -5,14 +5,23 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tmle3 Design • tmle3</title>
-<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<title>tmle3 Design • tmle</title>
+<!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script><script src="../pkgdown.js"></script><!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><!-- Google analytics --><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-115145808-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </head>
 <body>
     <div class="container template-vignette">
@@ -29,30 +38,18 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
-     
-  </a>
+  <a href="../articles/tmle3_design.html">Framemwork</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="../articles/tmle3_design.html">tmle3 Design</a>
-    </li>
-  </ul>
-</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/jeremyrcoyle/tmle3">
+  <a href="https://tlverse.org">tlverse</a>
+</li>
+<li>
+  <a href="https://github.com/tlverse/tmle3">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -72,7 +69,7 @@
       <h1>tmle3 Design</h1>
                         <h4 class="author">Jeremy Coyle</h4>
             
-            <h4 class="date">2017-12-13</h4>
+            <h4 class="date">2018-03-05</h4>
           </div>
 
     
@@ -81,8 +78,12 @@
 <div id="introduction" class="section level1">
 <h1 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h1>
-<p>The <code>tmle3</code> package attempts to directly model the key objects required to define and implement a TMLE estimator, while being general enough to support the wide variety of applications of the general TMLE concept present in the literature. These objects include the NPSEM, factorized likelihood, counterfactual interventions, parameters and their EIFs and clever covariates, parametric submodels, and loss function. To introduce how these concepts are defined in the <code>tmle</code> package, we work through a simple example below.</p>
-<p>We use data from the Collaborative Perinatal Project (CPP), available in the <code>sl3</code> package. To simplify this example, we define a binary intervention variable, <code>parity01</code> – an indicator of having one or more children before the current child and a binary outcome, <code>haz01</code> – an indicator of having an above average height for age. We do this because the current implementation of <code>tmle3</code> is limited to binary exposures and outcomes, although this is not a design limitation.</p>
+<p>The <code>tmle3</code> package differs from previous <code>tmle</code> software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE <em>framework</em> itself.</p>
+<p>Therefore, we explicitly define objects to model the NPSEM, the factorized likelihood, counterfactual interventions, parameters, and TMLE update procedures. The hope is that, in so doing, it will be possible to support a substantial subset of the vast array of TML estimators currently present in the literature (cite TL books), as well as those that have yet to be developed. In this vignette, we describe these mathematical objets, their software analogs in <code>tmle3</code>, and illustrate with a motivating example, described below. At the end, we describe how these objects can be bundled up into a specification of a TML estimation procedure that can be easily applied by an end user.</p>
+<div id="motivating-example" class="section level2">
+<h2 class="hasAnchor">
+<a href="#motivating-example" class="anchor"></a>Motivating Example</h2>
+<p>We use data from the Collaborative Perinatal Project (CPP), available in the <code>sl3</code> package. To simplify this example, we define a binary intervention variable, <code>parity01</code> – an indicator of having one or more children before the current child and a binary outcome, <code>haz01</code> – an indicator of having an above average height for age.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tmle3)
 <span class="kw">library</span>(sl3)
 <span class="kw">data</span>(cpp)
@@ -91,31 +92,43 @@ cpp<span class="op">$</span>parity01 &lt;-<span class="st"> </span><span class="
 cpp[<span class="kw">is.na</span>(cpp)] &lt;-<span class="st"> </span><span class="dv">0</span>
 cpp<span class="op">$</span>haz01 &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(cpp<span class="op">$</span>haz <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>)</code></pre></div>
 </div>
-<div id="tmle-workflow" class="section level1">
+</div>
+<div id="npsem" class="section level1">
 <h1 class="hasAnchor">
-<a href="#tmle-workflow" class="anchor"></a>TMLE Workflow</h1>
-<p>We now work through the steps to define and estimate the TMLE for a treatment specific mean (TSM) parameter on these data. Currently this requires the user to manually define a lot of objects, which illustrates the architecture of the package. We envision that these definitions could be bundled into a full defined “tmle” object that can then be defined to arbitrary datasets with minimal input from the user.</p>
-<div id="define-npsem-tmle3_node-object" class="section level3">
+<a href="#npsem" class="anchor"></a>NPSEM</h1>
+<p>TMLE requires the specification of a Nonparametric Structual Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.</p>
+<p>We start with a set of endogenous variables, <span class="math inline">\(X=(X_1,\ldots,X_J)\)</span>, that we want to model the relationship between. Each <span class="math inline">\(X_j\)</span> is at least partially observed in the dataset. The NPSEM defines each variable (<span class="math inline">\(X_j\)</span>) by a deterministic function (<span class="math inline">\(f_{X_j}\)</span>) of its parent nodes (<span class="math inline">\(Pa(X_j)\)</span>) and an exogenous random variable (<span class="math inline">\(U_{X_j}\)</span>):</p>
+<p><span class="math display">\[X_j=f_{X_j}(Pa(X_j), U_{X_j}),\;\; j\in \{1, \ldots, J\}\]</span></p>
+<p>The exact functional form of the functions <span class="math inline">\(f_{X_j}\)</span> is left unspecified at this step. If there is <em>a priori</em> knowledge for some of these functions, that can be specified during the likelihood step below.</p>
+<div id="causal-considerations" class="section level3">
 <h3 class="hasAnchor">
-<a href="#define-npsem-tmle3_node-object" class="anchor"></a>Define NPSEM (<code>tmle3_Node</code> object)</h3>
-<p>The first step is to define a <code>nodes</code> object that defines the roles and relationships between the variables:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmle_nodes &lt;-<span class="st"> </span><span class="kw">list</span>(
-  <span class="kw"><a href="../reference/define_node.html">define_node</a></span>(<span class="st">"W"</span>, <span class="kw">c</span>(
+<a href="#causal-considerations" class="anchor"></a>Causal Considerations</h3>
+<p>The collection of exogenous random variables defined by the NPSEM is <span class="math inline">\(U=(U_{X_1}, \ldots,U_{X_J})\)</span>. Typically, non-testable assumptions about the joint distribution of <span class="math inline">\(U\)</span> are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the <code>tmle3</code> framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal intepretation of estimates.</p>
+</div>
+<div id="example" class="section level2">
+<h2 class="hasAnchor">
+<a href="#example" class="anchor"></a>Example</h2>
+<p>In the case of our CPP example, we use the classic point treatment NPSEM which defines three nodes: <span class="math inline">\(X=(W,A,Y)\)</span>, where <span class="math inline">\(W\)</span> is a set of baseline covariates, <span class="math inline">\(A\)</span> is our exposure of interest (parity01), and <span class="math inline">\(Y\)</span> is our outcome of interest (haz01). We define the following SCM:</p>
+<p><span class="math display">\[W=f_W(U_W)\]</span> <span class="math display">\[A=f_A(W,U_A)\]</span> <span class="math display">\[Y=f_Y(W,U_Y)\]</span></p>
+<p>In <code>tmle3</code>, this is done using the <code>define_node</code> function for each node. <code>define_node</code> allows a user to specify the node_name, which columns in the data comprise the node, and a list of parent nodes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">npsem &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"W"</span>, <span class="kw">c</span>(
     <span class="st">"apgar1"</span>, <span class="st">"apgar5"</span>, <span class="st">"gagebrth"</span>, <span class="st">"mage"</span>,
     <span class="st">"meducyrs"</span>, <span class="st">"sexn"</span>
   )),
-  <span class="kw"><a href="../reference/define_node.html">define_node</a></span>(<span class="st">"A"</span>, <span class="kw">c</span>(<span class="st">"parity01"</span>), <span class="kw">c</span>(<span class="st">"W"</span>)),
-  <span class="kw"><a href="../reference/define_node.html">define_node</a></span>(<span class="st">"Y"</span>, <span class="kw">c</span>(<span class="st">"haz01"</span>), <span class="kw">c</span>(<span class="st">"A"</span>, <span class="st">"W"</span>))
+  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"A"</span>, <span class="kw">c</span>(<span class="st">"parity01"</span>), <span class="kw">c</span>(<span class="st">"W"</span>)),
+  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"Y"</span>, <span class="kw">c</span>(<span class="st">"haz01"</span>), <span class="kw">c</span>(<span class="st">"A"</span>, <span class="st">"W"</span>))
 )</code></pre></div>
-<p>Each node is defined by a node name (here <code>W</code>, <code>A</code>, and <code>Y</code>, a list of variables that comprise the node, and a list of parent nodes). Nodes also track information about the data types of the variables (continuous, categorical, binomial, etc). Here, that information is being estimated manually from the data. Going forward, each node will also contain information about censoring indicators, where applicable. Censoring indicators have not yet been implemented.</p>
+<p>Nodes also track information about the data types of the variables (continuous, categorical, binomial, etc). Here, that information is being estimated automatically from the data. In the future, each node will also contain information about censoring indicators, where applicable, but this is not yet implemented.</p>
 </div>
-<div id="define-data-tmle3_task-object" class="section level3">
-<h3 class="hasAnchor">
-<a href="#define-data-tmle3_task-object" class="anchor"></a>Define Data (<code>tmle3_Task</code> object)</h3>
-<p>Next, we define a <code>tmle3_Task</code> object that contains both the data and the NPSEM. This is an extension of the <code>sl3_Task</code> object that we used to define a regression task:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">task &lt;-<span class="st"> </span>tmle_Task<span class="op">$</span><span class="kw">new</span>(cpp, <span class="dt">tmle_nodes =</span> tmle_nodes)</code></pre></div>
+<div id="tmle3_task" class="section level2">
+<h2 class="hasAnchor">
+<a href="#tmle3_task" class="anchor"></a><code>tmle3_Task</code>
+</h2>
+<p>A <code>tmle3_Task</code> is an object comprised of data, and the NPSEM defined above:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">task &lt;-<span class="st"> </span>tmle3_Task<span class="op">$</span><span class="kw">new</span>(cpp, <span class="dt">npsem =</span> npsem)</code></pre></div>
 <p>This task object contains methods to help subset the data as needed for various tmle steps:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#get the outcome task</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#get the outcome node data</span>
 <span class="kw">head</span>(task<span class="op">$</span><span class="kw">get_tmle_node</span>(<span class="st">"Y"</span>))</code></pre></div>
 <pre><code>## [1] 1 1 1 0 0 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#get the sl3 task corresponding to an outcome regression</span>
@@ -139,152 +152,186 @@ task<span class="op">$</span><span class="kw">get_regression_task</span>(<span c
 ## $offset
 ## NULL</code></pre>
 </div>
-<div id="define-likelihood-likelihood-object" class="section level3">
-<h3 class="hasAnchor">
-<a href="#define-likelihood-likelihood-object" class="anchor"></a>Define Likelihood (<code>Likelihood</code> object)</h3>
-<p>Next, we define a <code>Likelihood</code> object corresponding to a the relevant factors of the factorized likelihood, and specify <code>sl3</code> learners as estimators for the likelihood factors:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set up sl3 learners for tmle3 fit</span>
-lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_glm_fast)
-lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_mean)
-
-<span class="co"># define and fit likelihood</span>
-factor_list &lt;-<span class="st"> </span><span class="kw">list</span>(
-  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_static, <span class="st">"W"</span>, <span class="ot">NA</span>),
-  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_fit, <span class="st">"A"</span>, lrnr_glm_fast),
-  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_fit, <span class="st">"Y"</span>, lrnr_mean)
-)</code></pre></div>
-<p>The <code>Likelihood</code> class is actually an extension of the <code>sl3</code> <code>Lrnr_base</code> base class, and so has methods for fitting and generating predictions from a likelihood specification and a dataset. Above, we see two types of likelihood factors <code>LF_fit</code>, specifies a factor that will be estimated from data using <code>sl3</code>, and <code>LF_static</code>, specifies a degenerate likelihood factor that takes a single value with probability one. Here, we use this for <code>W</code>, even though we are of course estimating the marginal density of <code>W</code> using the empirical likelihood. This is an implementation quirk that needs to be fixed. Additional likelihood factors types will be defined for things like known stochastic and rule based variables.</p>
-<p>We then fit those likelihood estimators to the <code>tmle3_Task</code> defined above, obtaining a fit likelihood estimate:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">likelihood_def &lt;-<span class="st"> </span>Likelihood<span class="op">$</span><span class="kw">new</span>(factor_list)
-likelihood &lt;-<span class="st"> </span>likelihood_def<span class="op">$</span><span class="kw">train</span>(task)
-<span class="kw">print</span>(likelihood)</code></pre></div>
-<pre><code>## W: LF_static
-## A: LF_fit
-## Y: LF_fit</code></pre>
 </div>
-<div id="define-counterfactual-counterfactual-object" class="section level3">
+<div id="likelihood" class="section level1">
+<h1 class="hasAnchor">
+<a href="#likelihood" class="anchor"></a>Likelihood</h1>
+<p>Having defined the NPSEM, we can now define a joint likelihood (probability density function) over the observed variables <span class="math inline">\(X\)</span>: <span class="math display">\[P(X_1, \ldots,X_J\in D)=\int_D f_{X_1, \ldots,X_J}(x_1,\ldots,x_J) dx_1,\ldots,dx_J\]</span> This can then be factorized into a series of conditional densities according to the NPSEM: <span class="math display">\[f_{X_1, \ldots,X_J}=\prod_j^J f_{X_j|Pa(X_j)}(x|Pa(x_j))\]</span></p>
+<p>Where each <span class="math inline">\(f_{X_j|Pa(X_j)\)</span> is a conditional pdf (or probability mass function for discrete <span class="math inline">\(X_j\)</span>), where the conditioning set is all parent nodes as defined in the NPSEM. We refer to these objects as <em>likelihood factors</em>.</p>
+<p>TMLE depends on estimates (or <em>a priori</em> knowledge) of the functional form of these likelihood factors. However, not all factors of the likelihood are always necessary for estimation, and only those necessary will be estimated.</p>
+<div id="likelihood-factor-objects" class="section level2">
+<h2 class="hasAnchor">
+<a href="#likelihood-factor-objects" class="anchor"></a>Likelihood Factor Objects</h2>
+<p><code>tmle3</code> models this likelihood as a list of likelihood factor objects, where each likeliood factor object describes either <em>a priori</em> knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the <code>LF_base</code> base class, and there are different types depending on which of a range of estimation strategies or <em>a priori</em> knowledge is appropriate.</p>
+<p>In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that’s required. Although conditional means are not truely likelihood factors, conditional means are also modelled using using likelihood factor objects.</p>
+<div id="lf_np" class="section level3">
 <h3 class="hasAnchor">
-<a href="#define-counterfactual-counterfactual-object" class="anchor"></a>Define Counterfactual (<code>Counterfactual</code> object)</h3>
-<p>Next, we define a counterfactual object comprised of alternative likelihood factors to replace those specified above:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">intervention &lt;-<span class="st"> </span><span class="kw"><a href="../reference/define_cf.html">define_cf</a></span>(<span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_static, <span class="st">"A"</span>, <span class="dt">value =</span> <span class="dv">1</span>))</code></pre></div>
-<p>This allows us to model a counterfactual likelihood as a likelihood where certain factors are replaced with their intervention counterparts:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cf_likelihood &lt;-<span class="st"> </span>intervention<span class="op">$</span><span class="kw">cf_likelihood</span>(likelihood)
-<span class="kw">print</span>(cf_likelihood)</code></pre></div>
-<pre><code>## W: LF_static
-## A: LF_static
-## Y: LF_fit</code></pre>
+<a href="#lf_np" class="anchor"></a><code>LF_np</code>
+</h3>
+<p><code>LF_np</code> represents a likelihood factor to be estimated using NP-MLE. That is, probability mass <span class="math inline">\(1/n\)</span> is placed on each observation in the observed dataset. Going forward, weights will be used if specified, although this is not yet supported. <span class="math inline">\(LF_np\)</span> only supports marginal densities. That is the conditioning set <span class="math inline">\(Pa(X_j)=\{\emptyset\}\)</span> must be empty. Therefore, it is only appropriate for estimation of the marginal density of baseline covariates.</p>
 </div>
-<div id="define-parameter-param_base-object-and-its-children" class="section level3">
+<div id="lf_fit" class="section level3">
 <h3 class="hasAnchor">
-<a href="#define-parameter-param_base-object-and-its-children" class="anchor"></a>Define Parameter (<code>Param_base</code> object and its children)</h3>
-<p>Next we define the parameter of interest, here a <code>Param_TSM</code> treatment specific mean parameter, which we can now define for arbitrary interventions.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsm &lt;-<span class="st"> </span>Param_TSM<span class="op">$</span><span class="kw">new</span>(intervention)</code></pre></div>
-<p>Let’s take a look at how parameters are defined:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#' Class for Estimation of TSM Parameter</span>
-<span class="co">#'</span>
-<span class="co">#' @importFrom R6 R6Class</span>
-<span class="co">#'</span>
-<span class="co">#' @export</span>
-<span class="co">#</span>
-Param_TSM &lt;-<span class="st"> </span><span class="kw">R6Class</span>(
-  <span class="dt">classname =</span> <span class="st">"Param_TSM"</span>,
-  <span class="dt">portable =</span> <span class="ot">TRUE</span>,
-  <span class="dt">class =</span> <span class="ot">TRUE</span>,
-  <span class="dt">inherit =</span> Param_base,
-  <span class="dt">public =</span> <span class="kw">list</span>(
-    <span class="dt">initialize =</span> <span class="cf">function</span>(counterfactual, <span class="dt">outcome_node =</span> <span class="st">"Y"</span>) {
-      private<span class="op">$</span>.counterfactual &lt;-<span class="st"> </span>counterfactual
-      private<span class="op">$</span>.outcome_node &lt;-<span class="st"> </span>outcome_node
-    },
-    <span class="dt">HA =</span> <span class="cf">function</span>(likelihood, task) {
-      intervention_nodes &lt;-<span class="st"> </span>self<span class="op">$</span>counterfactual<span class="op">$</span>intervention_nodes
-      cf_likelihood &lt;-<span class="st"> </span>self<span class="op">$</span>counterfactual<span class="op">$</span><span class="kw">cf_likelihood</span>(likelihood)
-
-      pA &lt;-<span class="st"> </span>likelihood<span class="op">$</span><span class="kw">get_likelihoods</span>(task, intervention_nodes)
-      cf_pA &lt;-<span class="st"> </span>cf_likelihood<span class="op">$</span><span class="kw">get_likelihoods</span>(task, intervention_nodes)
-      HA &lt;-<span class="st"> </span>cf_pA <span class="op">/</span><span class="st"> </span>pA
-
-      <span class="co"># collapse across multiple intervention nodes</span>
-      <span class="cf">if</span> (<span class="op">!</span><span class="kw">is.null</span>(<span class="kw">ncol</span>(HA)) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">ncol</span>(HA) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) {
-        HA &lt;-<span class="st"> </span><span class="kw">apply</span>(HA, <span class="dv">1</span>, prod)
-      }
-      <span class="kw">return</span>(HA)
-    },
-    <span class="dt">estimates =</span> <span class="cf">function</span>(likelihood, task) {
-      cf_task &lt;-<span class="st"> </span>self<span class="op">$</span>counterfactual<span class="op">$</span><span class="kw">cf_task</span>(task)
-
-      Y &lt;-<span class="st"> </span>task<span class="op">$</span><span class="kw">get_regression_task</span>(self<span class="op">$</span>outcome_node)<span class="op">$</span>Y
-      HA &lt;-<span class="st"> </span>self<span class="op">$</span><span class="kw">HA</span>(likelihood, task)
-
-      EY &lt;-<span class="st"> </span>likelihood<span class="op">$</span><span class="kw">get_predictions</span>(task, self<span class="op">$</span>outcome_node)
-      EY1 &lt;-<span class="st"> </span>likelihood<span class="op">$</span><span class="kw">get_predictions</span>(cf_task, self<span class="op">$</span>outcome_node)
-
-      psi &lt;-<span class="st"> </span><span class="kw">mean</span>(EY1)
-      IC &lt;-<span class="st"> </span>HA <span class="op">*</span><span class="st"> </span>(Y <span class="op">-</span><span class="st"> </span>EY) <span class="op">+</span><span class="st"> </span>EY1 <span class="op">-</span><span class="st"> </span>psi
-
-      result &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">psi =</span> psi, <span class="dt">IC =</span> IC)
-      <span class="kw">return</span>(result)
-    }
-  ),
-  <span class="dt">active =</span> <span class="kw">list</span>(
-    <span class="dt">counterfactual =</span> <span class="cf">function</span>() {
-      <span class="kw">return</span>(private<span class="op">$</span>.counterfactual)
-    }
-  ),
-  <span class="dt">private =</span> <span class="kw">list</span>(
-    <span class="dt">.counterfactual =</span> <span class="ot">NULL</span>
-  )
-)</code></pre></div>
-<p>There’s two key methods here. First, <code>Param_TSM$HA</code>, which defines the clever covariate to fluctuate the factor of the likelihood corresponding to the conditional mean of <span class="math inline">\(Y\)</span> on <span class="math inline">\(A\)</span> and <span class="math inline">\(W\)</span>. Currently, this limits <code>tmle3</code> to TMLEs that only fluctuate that factor. Of course, this needs to be expanded to support fluctuating any factor. This can be done by simply modifying the parameter definition to support multiple clever covariates.</p>
-<p>Second, <code>Param_TSM$estimates</code> defines the mapping from the data to estimates of the parameter and EIF.</p>
+<a href="#lf_fit" class="anchor"></a><code>LF_fit</code>
+</h3>
+<p><code>LF_fit</code> represents a likelihood factor to be estimated using the <code>sl3</code> framework. Based on the learner type used, this can fit a pmf (for binomial or categorical data, see <code><a href="http://www.rdocumentation.org/packages/sl3/topics/list_learners">sl3_list_learners("binomial")</a></code> and <code><a href="http://www.rdocumentation.org/packages/sl3/topics/list_learners">sl3_list_learners("categorical")</a></code> for lists), a conditional mean (most learners), or a conditional density (using <code>condensier</code> via <code>Lrnr_condensier</code>). <code>LF_fit</code> takes a <code>sl3</code> learner object as an argument, which is fit to the data in the <code>tmle3_Task</code> automatically.</p>
 </div>
-<div id="define-submodel-and-loss-function-modeled-using-a-sl3-learner" class="section level3">
-<h3 class="hasAnchor">
-<a href="#define-submodel-and-loss-function-modeled-using-a-sl3-learner" class="anchor"></a>Define submodel and loss function (modeled using a <code>sl3</code> Learner)</h3>
-<p>The submodel and loss function together define an optimization problem that we define using a <code>sl3</code> learner. Here are two example definitions:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># optimize using glm (logistic submodel, logistic log likelihood loss)</span>
-lrnr_submodel &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_glm_fast, <span class="dt">intercept =</span> <span class="ot">FALSE</span>, <span class="dt">transform_offset =</span> <span class="ot">TRUE</span>)
-
-<span class="co"># same submodel and loss function, but directly using numerical optimization</span>
-<span class="kw">print</span>(submodel_logit)</code></pre></div>
-<pre><code>## function (eps, X, offset) 
-## {
-##     preds &lt;- stats::plogis(stats::qlogis(offset) + X %*% eps)
-##     return(preds)
-## }
-## &lt;environment: namespace:tmle3&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(sl3<span class="op">:::</span>loss_loglik_binomial)</code></pre></div>
-<pre><code>## function (pred, truth) 
-## {
-##     out &lt;- -1 * ifelse(truth == 1, log(pred), log(1 - pred))
-##     return(out)
-## }
-## &lt;environment: namespace:sl3&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lrnr_submodel2 &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_optim, submodel_logit, sl3<span class="op">:::</span>loss_loglik_binomial,
-                             <span class="dt">init_0 =</span> <span class="ot">TRUE</span>)</code></pre></div>
 </div>
-<div id="fit-submodel-and-update-likelihood" class="section level3">
-<h3 class="hasAnchor">
-<a href="#fit-submodel-and-update-likelihood" class="anchor"></a>Fit submodel and update likelihood</h3>
-<p>Finally, we can use all the components we defined above to fit the submodel to the relevant data and obtain a updated likelihood estimate, targeted to the parameter of interest:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmle_likelihood &lt;-<span class="st"> </span><span class="kw"><a href="../reference/fit_tmle_likelihood.html">fit_tmle_likelihood</a></span>(likelihood, task, tsm, lrnr_submodel)</code></pre></div>
+<div id="example-1" class="section level2">
+<h2 class="hasAnchor">
+<a href="#example-1" class="anchor"></a>Example</h2>
 </div>
-<div id="obtain-parameter-estimates" class="section level3">
+<div id="counterfactual-likelihoods" class="section level2">
+<h2 class="hasAnchor">
+<a href="#counterfactual-likelihoods" class="anchor"></a>Counterfactual Likelihoods</h2>
+<p>In <code>tmle3</code>, interventions are modeled as likelihoods where one or more likelihood factors is replaced with a counterfactual version representing some intervention.</p>
+<p><code>tmle3</code> defines the <code>CF_Likelihood</code> class, which inherits from <code>Likelihood</code>, and takes an <code>observed_likelihood</code> and an <code>intervention_list</code>.</p>
+<p>Below, we describe some examples of additional likelihood factors intended to be used to describe interventions. We expect this list to grow as <code>tmle3</code> is extended to additional use cases.</p>
+<div id="lf_static" class="section level3">
 <h3 class="hasAnchor">
-<a href="#obtain-parameter-estimates" class="anchor"></a>Obtain parameter estimates</h3>
-<p>We can now get estimates of our parameter from both the initial and targeted likelihood estimates:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">init_ests &lt;-<span class="st"> </span>tsm<span class="op">$</span><span class="kw">estimates</span>(likelihood, task)
-tmle_ests &lt;-<span class="st"> </span>tsm<span class="op">$</span><span class="kw">estimates</span>(tmle_likelihood, task)
-
-<span class="co"># get initial and tmle estimates</span>
-<span class="kw">print</span>(init_ests<span class="op">$</span>psi)</code></pre></div>
-<pre><code>## [1] 0.55517</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(tmle_ests<span class="op">$</span>psi)</code></pre></div>
-<pre><code>## [1] 0.5268014</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">mean</span>(init_ests<span class="op">$</span>IC))</code></pre></div>
-<pre><code>## [1] -0.02705455</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">mean</span>(tmle_ests<span class="op">$</span>IC))</code></pre></div>
-<pre><code>## [1] 1.832796e-12</code></pre>
+<a href="#lf_static" class="anchor"></a><code>LF_static</code>
+</h3>
+<p>Likelihood factor for a static intervention, where all observations are set do a single intervention value: <span class="math inline">\(a'\)</span>. These factors are indicator functions (f(a’|pa(A)) ### <code>LF_rule</code></p>
+</div>
+<div id="lf_shift" class="section level3">
+<h3 class="hasAnchor">
+<a href="#lf_shift" class="anchor"></a><code>LF_shift</code>
+</h3>
+</div>
+<div id="still-to-come" class="section level3">
+<h3 class="hasAnchor">
+<a href="#still-to-come" class="anchor"></a>Still to come</h3>
+</div>
+</div>
+</div>
+<div id="target-parameter" class="section level1">
+<h1 class="hasAnchor">
+<a href="#target-parameter" class="anchor"></a>Target Parameter</h1>
+<p>Psi(Pn)</p>
+<p>Definition of a target parameter requires specification of a mapping Ψ ap- plied to P0. Ψ maps any P ∈ M into a vector of numbers Ψ(P). We write the mapping as Ψ : M → Rd for a d-dimensional parameter. • ψ0 is the evaluation of Ψ(P0), i.e., the true value of our parameter. The statistical estimation problem is to map the observed data O1, . . . , On into an estimator of Ψ(P0) that incorporates the knowledge that P0 ∈ M, accompanied by an assessment of the uncertainty in the estimator.</p>
+<div id="efficient-influence-function-eif" class="section level2">
+<h2 class="hasAnchor">
+<a href="#efficient-influence-function-eif" class="anchor"></a>Efficient Influence Function (EIF)</h2>
+</div>
+</div>
+<div id="update-procedure" class="section level1">
+<h1 class="hasAnchor">
+<a href="#update-procedure" class="anchor"></a>Update Procedure</h1>
+<div id="submodel" class="section level2">
+<h2 class="hasAnchor">
+<a href="#submodel" class="anchor"></a>Submodel</h2>
+</div>
+<div id="loss" class="section level2">
+<h2 class="hasAnchor">
+<a href="#loss" class="anchor"></a>Loss</h2>
+</div>
+<div id="solver" class="section level2">
+<h2 class="hasAnchor">
+<a href="#solver" class="anchor"></a>Solver</h2>
+</div>
+</div>
+<div id="putting-it-all-together" class="section level1">
+<h1 class="hasAnchor">
+<a href="#putting-it-all-together" class="anchor"></a>Putting it all together</h1>
+<div id="tmle3_fit-object" class="section level2">
+<h2 class="hasAnchor">
+<a href="#tmle3_fit-object" class="anchor"></a>tmle3_Fit object</h2>
+</div>
+<div id="tmle-specification" class="section level2">
+<h2 class="hasAnchor">
+<a href="#tmle-specification" class="anchor"></a>TMLE Specification</h2>
+<p>This object defines a particular TMLE estimation procedure, with options</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1 class="hasAnchor">
+<a href="#conclusion" class="anchor"></a>Conclusion</h1>
+<!-- ### Define Likelihood (`Likelihood` object) -->
+<!-- Next, we define a `Likelihood` object corresponding to a the relevant factors of the factorized likelihood, and specify `sl3` learners as estimators for the likelihood factors: -->
+<!-- ```{r likelihood} -->
+<!-- # set up sl3 learners for tmle3 fit -->
+<!-- lrnr_glm_fast <- make_learner(Lrnr_glm_fast) -->
+<!-- lrnr_mean <- make_learner(Lrnr_mean) -->
+<!-- # define and fit likelihood -->
+<!-- factor_list <- list( -->
+<!--   define_lf(LF_static, "W", NA), -->
+<!--   define_lf(LF_fit, "A", lrnr_glm_fast), -->
+<!--   define_lf(LF_fit, "Y", lrnr_mean) -->
+<!-- ) -->
+<!-- ``` -->
+<!-- The `Likelihood` class is actually an extension of the `sl3` `Lrnr_base` base class, and so has methods for fitting and generating predictions from a likelihood specification and a dataset. Above, we see two types of likelihood factors `LF_fit`, specifies a factor that will be estimated from data using `sl3`, and `LF_static`, specifies a degenerate likelihood factor that takes a single value with probability one. Here, we use this for `W`, even though we are of course estimating the marginal density of `W` using the empirical likelihood. This is an implementation quirk that needs to be fixed. Additional likelihood factors types will be defined for things like known stochastic and rule based variables. -->
+<!-- We then fit those likelihood estimators to the `tmle3_Task` defined above, obtaining a fit likelihood estimate: -->
+<!-- ```{r likelihood fit} -->
+<!-- likelihood_def <- Likelihood$new(factor_list) -->
+<!-- likelihood <- likelihood_def$train(task) -->
+<!-- print(likelihood) -->
+<!-- ``` -->
+<!-- ### Define Counterfactual (`Counterfactual` object) -->
+<!-- Next, we define a counterfactual object comprised of alternative likelihood factors to replace those specified above: -->
+<!-- ```{r counterfactual} -->
+<!-- intervention <- define_cf(define_lf(LF_static, "A", value = 1)) -->
+<!-- ``` -->
+<!-- This allows us to model a counterfactual likelihood as a likelihood where certain factors are replaced with their intervention counterparts: -->
+<!-- ```{r counterfactual_likelihood} -->
+<!-- cf_likelihood <- intervention$cf_likelihood(likelihood) -->
+<!-- print(cf_likelihood) -->
+<!-- ``` -->
+<!-- ### Define Parameter (`Param_base` object and its children) -->
+<!-- Next we define the parameter of interest, here a `Param_TSM` treatment specific mean parameter, which we can now define for arbitrary interventions. -->
+<!-- ```{r parameter} -->
+<!-- tsm <- Param_TSM$new(intervention) -->
+<!-- ``` -->
+<!-- ```{r cache=FALSE, echo=FALSE} -->
+<!-- chunkfile <- "../R/Param_TSM.R" -->
+<!-- if (!file.exists(chunkfile)) { -->
+<!--   #because pkgdown -->
+<!--   chunkfile <- "../../R/Param_TSM.R" -->
+<!-- } -->
+<!-- read_chunk(chunkfile, label="param_TSM") -->
+<!-- ``` -->
+<!-- Let's take a look at how parameters are defined: -->
+<!-- ```{r param_TSM, eval=FALSE} -->
+<!-- ``` -->
+<!-- There's two key methods here. First, `Param_TSM$HA`, which defines the clever covariate to fluctuate the factor of the likelihood corresponding to the conditional mean of $Y$ on $A$ and $W$. Currently, this limits `tmle3` to TMLEs that only fluctuate that factor. Of course, this needs to be expanded to support fluctuating any factor. This can be done by simply modifying the parameter definition to support multiple clever covariates. -->
+<!-- Second, `Param_TSM$estimates` defines the mapping from the data to estimates of the parameter and EIF. -->
+<!-- ### Define submodel and loss function (modeled using a `sl3` Learner) -->
+<!-- The submodel and loss function together define an optimization problem that we define using a `sl3` learner. Here are two example definitions: -->
+<!-- ``` {r submodels} -->
+<!-- # optimize using glm (logistic submodel, logistic log likelihood loss) -->
+<!-- lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE) -->
+<!-- # same submodel and loss function, but directly using numerical optimization -->
+<!-- print(submodel_logit) -->
+<!-- print(sl3:::loss_loglik_binomial) -->
+<!-- lrnr_submodel2 <- make_learner(Lrnr_optim, submodel_logit, sl3:::loss_loglik_binomial, -->
+<!--                              init_0 = TRUE) -->
+<!-- ``` -->
+<!-- ### Fit submodel and update likelihood -->
+<!-- Finally, we can use all the components we defined above to fit the submodel to the relevant data and obtain a updated likelihood estimate, targeted to the parameter of interest: -->
+<!-- ```{r tmle_likelihood} -->
+<!-- tmle_likelihood <- fit_tmle_likelihood(likelihood, task, tsm, lrnr_submodel) -->
+<!-- ``` -->
+<!-- ### Obtain parameter estimates -->
+<!-- We can now get estimates of our parameter from both the initial and targeted likelihood estimates: -->
+<!-- ``` {r estimates} -->
+<!-- init_ests <- tsm$estimates(likelihood, task) -->
+<!-- tmle_ests <- tsm$estimates(tmle_likelihood, task) -->
+<!-- # get initial and tmle estimates -->
+<!-- print(init_ests$psi) -->
+<!-- print(tmle_ests$psi) -->
+<!-- print(mean(init_ests$IC)) -->
+<!-- print(mean(tmle_ests$IC)) -->
+<!-- ``` -->
+<div id="bundling-a-tmle-definition-for-the-end-user" class="section level3">
+<h3 class="hasAnchor">
+<a href="#bundling-a-tmle-definition-for-the-end-user" class="anchor"></a>Bundling a TMLE definition for the end user</h3>
+<p><code>tmle_spec</code></p>
+<ul>
+<li>How to document these</li>
+</ul>
+</div>
+<div id="the-delta-method" class="section level3">
+<h3 class="hasAnchor">
+<a href="#the-delta-method" class="anchor"></a>The Delta method</h3>
 </div>
 </div>
 <div id="future-work" class="section level1">
@@ -308,8 +355,43 @@ tmle_ests &lt;-<span class="st"> </span>tsm<span class="op">$</span><span class=
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#introduction">Introduction</a></li>
-      <li><a href="#tmle-workflow">TMLE Workflow</a></li>
+<li>
+<a href="#introduction">Introduction</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#motivating-example">Motivating Example</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#npsem">NPSEM</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#example">Example</a></li>
+      <li><a href="#tmle3_task"><code>tmle3_Task</code></a></li>
+      </ul>
+</li>
+      <li>
+<a href="#likelihood">Likelihood</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#likelihood-factor-objects">Likelihood Factor Objects</a></li>
+      <li><a href="#example-1">Example</a></li>
+      <li><a href="#counterfactual-likelihoods">Counterfactual Likelihoods</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#target-parameter">Target Parameter</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#efficient-influence-function-eif">Efficient Influence Function (EIF)</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#update-procedure">Update Procedure</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#submodel">Submodel</a></li>
+      <li><a href="#loss">Loss</a></li>
+      <li><a href="#solver">Solver</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#putting-it-all-together">Putting it all together</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#tmle3_fit-object">tmle3_Fit object</a></li>
+      <li><a href="#tmle-specification">TMLE Specification</a></li>
+      </ul>
+</li>
+      <li><a href="#conclusion">Conclusion</a></li>
       <li><a href="#future-work">Future Work</a></li>
       </ul>
 </div>

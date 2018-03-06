@@ -1,19 +1,50 @@
-#' Base Class for Defining Likelihoods
+#' Base Class for Defining Likelihood Factors
+#'
+#' A Likelihood factor models a conditional density function.
+#' The conditioning set is defined as all parent nodes (defined in \code{\link{tmle3_Task}}). In the case of a continuous
+#' outcome variable, where a full density isn't needed, this can also model a conditional mean. This is the base class, which
+#' is intended to be abstract. See below for a list of possible likelihood factor classes.
 #'
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Likelihood objects
+#' @keywords data
+#'
+#' @return \code{LF_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @template LF_base_extra
 #'
 #' @export
-#
 LF_base <- R6Class(
   classname = "LF_base",
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, ...) {
+    initialize = function(name, type = "density", ...) {
       private$.name <- name
+      private$.type <- type
     },
-    get_likelihood = function(task, only_observed = FALSE) {
+    delayed_train = function(tmle_task) {
+      return(list())
+    },
+    train = function(tmle_task, ...) {
+      # get possible values from task if discrete
+      tmle_node <- tmle_task$npsem[[self$name]]
+      private$.variable_type <- tmle_node$variable_type
+
+      # subclasses may do more, like fit sl3 models
+    },
+    get_density = function(tmle_task) {
       stop("this is a base class")
+    },
+    get_mean = function(tmle_task) {
+      stop("this is a base class")
+    },
+    cf_values = function(tmle_task) {
+      stop(sprintf("%s is not a valid intervention type", class(self)[1])      )
     },
     print = function() {
       cat(sprintf("%s: %s\n", self$name, class(self)[1]))
@@ -23,21 +54,33 @@ LF_base <- R6Class(
     name = function() {
       return(private$.name)
     },
-    is_degenerate = function() {
-      return(private$.is_degenerate)
+    variable_type = function() {
+      return(private$.variable_type)
+    },
+    type = function() {
+      return(private$.type)
+    },
+    values = function() {
+      variable_type <- self$variable_type
+      if (!is.null(variable_type)) {
+        return(variable_type$levels)
+      } else {
+        return(NULL)
+      }
     }
   ),
   private = list(
     .name = NULL,
-    .is_degenerate = FALSE
+    .variable_type = c(),
+    .type = NULL
   )
 )
 
-#' Defining Likelihood Functionals
+#' Define a Likelihood Factor
 #'
-#' @param LF_class the class of likelihood
-#' @param ... arguments that define the likelihood functional
-#'
+#' @param LF_class the class of likelihood factor. Should inherit from \code{\link{LF_base}}
+#' @param ... arguments that define the likelihood factor. See the constructor for the specified \code{LF_class}.
+#' @family Likelihood objects
 #' @export
 #
 define_lf <- function(LF_class, ...) {

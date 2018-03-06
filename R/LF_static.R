@@ -1,49 +1,62 @@
-#' Define Likelihoods for Static Interventions
+#' Static Likelihood Factor
+#'
+#' Likelihood factor for a variable that only has one value with probability 1. This is used for static interventions.
+#' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
 #'
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Likelihood objects
+#' @keywords data
+#'
+#' @return \code{LF_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @section Constructor:
+#'   \code{define_lf(LF_static, name, type, value, ...)}
+#'
+#'   \describe{
+#'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
+#'     }
+#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
+#'     }
+#'     \item{\code{value}}{the static value
+#'     }
+#'     \item{\code{...}}{Not currently used.
+#'     }
+#'     }
+#'
+#' @section Fields:
+#' \describe{
+#'     \item{\code{value}}{the static value.}
+#'     }
+
 #'
 #' @export
-#
 LF_static <- R6Class(
   classname = "LF_static",
   portable = TRUE,
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, value, ...) {
-      private$.name <- name
+    initialize = function(name, type = "density", value, ...) {
+      super$initialize(name, type)
       private$.value <- value
+      private$.variable_type <- variable_type("constant", value)
     },
-    get_values = function(task) {
-      values <- rep(self$value, task$nrow)
-      return(values)
+    get_mean = function(tmle_task) {
+      return(rep(self$value, tmle_task$nrow))
     },
-    get_likelihood = function(task, only_observed = FALSE) {
-      node_task <- task$get_regression_task(self$name)
-      values <- self$get_values(task)
-      outcome_type <- node_task$outcome_type
+    get_likelihood = function(tmle_task) {
+      observed <- tmle_task$get_tmle_node(self$name)
+      likelihood <- as.numeric(self$value == observed)
 
-      if (only_observed) {
-        observed <- outcome_type$format(node_task$Y)
-        likelihood <- as.numeric(values == observed)
-      } else {
-        if (outcome_type$type == "binomial") {
-          levels <- outcome_type$levels
-          level_mat <- matrix(
-            levels, nrow = length(values),
-            ncol = length(levels), byrow = TRUE
-          )
-          likelihood <- apply(
-            level_mat, MARGIN = 2,
-            function(level_vec) {
-              as.numeric(level_vec == values)
-            }
-          )
-        } else {
-          stop("currently, only binomial likelihoods are supported")
-        }
-      }
       return(likelihood)
+    },
+    cf_values = function(tmle_task) {
+      cf_values <- rep(self$value, tmle_task$nrow)
+      return(cf_values)
     }
   ),
   active = list(

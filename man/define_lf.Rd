@@ -2,15 +2,21 @@
 % Please edit documentation in R/LF_base.R
 \name{define_lf}
 \alias{define_lf}
-\title{Defining Likelihood Functionals}
+\title{Define a Likelihood Factor}
 \usage{
 define_lf(LF_class, ...)
 }
 \arguments{
-\item{LF_class}{the class of likelihood}
+\item{LF_class}{the class of likelihood factor. Should inherit from \code{\link{LF_base}}}
 
-\item{...}{arguments that define the likelihood functional}
+\item{...}{arguments that define the likelihood factor. See the constructor for the specified \code{LF_class}.}
 }
 \description{
-Defining Likelihood Functionals
+Define a Likelihood Factor
+}
+\seealso{
+Other Likelihood objects: \code{\link{CF_Likelihood}},
+  \code{\link{LF_base}}, \code{\link{LF_fit}},
+  \code{\link{LF_np}}, \code{\link{LF_shift}},
+  \code{\link{LF_static}}, \code{\link{Likelihood}}
 }

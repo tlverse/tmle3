@@ -3,12 +3,68 @@
 \docType{data}
 \name{tmle3_Node}
 \alias{tmle3_Node}
-\title{Class for Nonparametric Structural Equation Models}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\alias{define_node}
+\title{A Node (set of variables) in an NPSEM}
+\format{\code{\link{R6Class}} object.}
 \usage{
 tmle3_Node
+
+define_node(...)
+}
+\arguments{
+\item{...}{Passes all arguments to the constructor. See documentation for the
+Constructor below.}
+}
+\value{
+\code{tmle3_Node} object
 }
 \description{
-Class for Nonparametric Structural Equation Models
+This class defines a node in an NPSEM
 }
-\keyword{datasets}
+\section{Constructor}{
+
+  \code{make_tmle3_task(name, variables, parents = c(), variable_type = NULL)}
+
+  \describe{
+    \item{\code{name}}{character, the name of node
+    }
+    \item{\code{variables}}{character vector, the names of the variables that comprise the node
+    }
+    \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+    }
+    \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.
+    If missing, variable_type will be guessed later from the data.
+    }
+    }
+}
+
+\section{Methods}{
+
+
+\describe{
+\item{\code{guess_variable_type(variable_data)}}{
+  Guesses the \code{\link[sl3]{variable_type}} from the provided data.
+  This will be called by the \code{\link{tmle3_Task}} constructor if no variable_type was provided.
+
+  \itemize{
+    \item{\code{variable_data}: the observed variable data.
+    }
+  }
+  }
+}
+}
+
+\section{Fields}{
+
+\describe{
+    \item{\code{name}}{character, the name of node
+    }
+    \item{\code{variables}}{character vector, the names of the variables that comprise the node
+    }
+    \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+    }
+    \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.}
+}
+}
+
+\keyword{data}

@@ -1,42 +1,106 @@
-#' Class for Estimation of TSM Parameter
+#' Treatment Specific Mean
 #'
+#' Parameter definition for the Treatment Specific Mean (TSM). Currently supports multiple static intervention nodes.
+#' Does yet not support dynamic rule or stochastic interventions.
+#'
+#' @section Current Issues:
+#' \itemize{
+#'   \item clever covariates doesn't support updates; always uses initial (necessary for iterative TMLE, e.g. stochastic intervention)
+#'   \item doesn't integrate over possible counterfactuals (necessary for stochastic intervention)
+#'   \item clever covariate gets recalculated all the time (inefficient)
+#' }
 #' @importFrom R6 R6Class
+#' @importFrom uuid UUIDgenerate
+#' @importFrom methods is
+#' @family Parameters
+#' @keywords data
 #'
+#' @return \code{Param_base} object
+#'
+#' @format \code{\link{R6Class}} object.
+#'
+#' @section Constructor:
+#'   \code{define_param(Param_TSM, observed_likelihood, outcome_node, intervention_list, ...)}
+#'
+#'   \describe{
+#'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
+#'     }
+#'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
+#'     }
+#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
+#'     }
+#'     \item{\code{...}}{Not currently used.
+#'     }
+#'     }
+#'
+
+#' @section Fields:
+#' \describe{
+#'     \item{\code{cf_likelihood}}{the counterfactual likelihood for this treatment
+#'     }
+#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention
+#'     }
+#' }
 #' @export
-#
 Param_TSM <- R6Class(
   classname = "Param_TSM",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(counterfactual, outcome_node = "Y") {
-      private$.counterfactual <- counterfactual
-      private$.outcome_node <- outcome_node
+    initialize = function(observed_likelihood, outcome_node = "Y", intervention_list) {
+      super$initialize(observed_likelihood, outcome_node)
+      private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
     },
-    HA = function(likelihood, task) {
-      intervention_nodes <- self$counterfactual$intervention_nodes
-      cf_likelihood <- self$counterfactual$cf_likelihood(likelihood)
+    clever_covariates = function(tmle_task = NULL) {
+      if (is.null(tmle_task)) {
+        tmle_task <- self$observed_likelihood$training_task
+      }
+      intervention_nodes <- names(self$intervention_list)
+      # todo: make sure we support updating these params
+      pA <- self$observed_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
+      cf_pA <- self$cf_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
 
-      pA <- likelihood$get_likelihoods(task, intervention_nodes)
-      cf_pA <- cf_likelihood$get_likelihoods(task, intervention_nodes)
       HA <- cf_pA / pA
 
       # collapse across multiple intervention nodes
       if (!is.null(ncol(HA)) && ncol(HA) > 1) {
         HA <- apply(HA, 1, prod)
       }
-      return(HA)
+      return(list(Y = unlist(HA, use.names = FALSE)))
     },
-    estimates = function(likelihood, task) {
-      cf_task <- self$counterfactual$cf_task(task)
+    estimates = function(tmle_task = NULL) {
+      if (is.null(tmle_task)) {
+        tmle_task <- self$observed_likelihood$training_task
+      }
 
-      Y <- task$get_regression_task(self$outcome_node)$Y
-      HA <- self$HA(likelihood, task)
+      # todo: extend for stochastic
+      cf_task <- self$cf_likelihood$cf_tasks[[1]]
 
-      EY <- likelihood$get_predictions(task, self$outcome_node)
-      EY1 <- likelihood$get_predictions(cf_task, self$outcome_node)
 
+      Y <- tmle_task$get_tmle_node(self$outcome_node)
+
+
+      # clever_covariates happen here (for this param) only, but this is repeated computation
+      HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
+
+      # clever_covariates happen here (for all fit params), and this is repeated computation
+      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
+
+      # clever_covariates happen here (for all fit params), and this is repeated computation
+      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
+
+      # todo: integrate unbounding logic into likelihood class, or at least put it in a function
+      variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
+      if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
+        bounds <- variable_type$bounds
+        scale <- bounds[2] - bounds[1]
+        shift <- bounds[1]
+        EY <- EY * scale + shift
+        EY1 <- EY1 * scale + shift
+      }
+
+      # todo: separate out psi
       psi <- mean(EY1)
       IC <- HA * (Y - EY) + EY1 - psi
 
@@ -45,11 +109,21 @@ Param_TSM <- R6Class(
     }
   ),
   active = list(
-    counterfactual = function() {
-      return(private$.counterfactual)
+    name = function() {
+      param_form <- sprintf("E[%s_{%s}]", self$outcome_node, self$cf_likelihood$name)
+      return(param_form)
+    },
+    cf_likelihood = function() {
+      return(private$.cf_likelihood)
+    },
+    intervention_list = function() {
+      return(self$cf_likelihood$intervention_list)
+    },
+    update_nodes = function() {
+      return(self$outcome_node)
     }
   ),
   private = list(
-    .counterfactual = NULL
+    .cf_likelihood = NULL
   )
 )

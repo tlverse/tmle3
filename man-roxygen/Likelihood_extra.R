@@ -1,0 +1,61 @@
+#' @section Constructor:
+#'   \code{make_Likelihood(factor_list, ...)}
+#'                      
+#'   \describe{
+#'     \item{\code{factor_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the individual relevant factors.
+#'     }
+#'     \item{\code{...}}{Not currently used.
+#'     }
+#'     }
+#'     
+#' @section Methods:
+#'
+#' \describe{
+#' \item{\code{validate_task(tmle_task)}}{
+#'   Ensure that this likelihood is compatible with a particular \code{\link{tmle3_Task}}, in that the factor names must match the \code{tmle_task$npsem} names.
+#'
+#'   \itemize{
+#'     \item{\code{tmle_task}: the \code{\link{tmle3_Task}} to validate.
+#'     }
+#'   }
+#'   }
+#'   
+#'\item{\code{get_initial_likelihoods(tmle_task, nodes=NULL)}}{
+#'   Gets initial (i.e. before any TMLE updates) likelihood values for the specified \code{nodes} (or all nodes if none are specified) 
+#'   for the observations in \code{tmle_task}.
+#'
+#'   \itemize{
+#'     \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
+#'     }
+#'     \item{\code{nodes}: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.
+#'     }
+#'   }
+#'   }
+#'\item{\code{get_likelihoods(tmle_task, nodes=NULL)}}{
+#'   Gets updated (i.e. after all TMLE updates) likelihood values for the specified \code{nodes} (or all nodes if none are specified) 
+#'   for the observations in \code{tmle_task}.
+#'
+#'   \itemize{
+#'     \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
+#'     }
+#'     \item{\code{nodes}: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.
+#'     }
+#'   }
+#'   }
+#'\item{\code{get_possible_counterfactuals(nodes)}}{
+#'   Gets all possible combination of counterfactual values for a set of nodes. This is useful for marginalizing over a node. Returns a \code{data.frame}
+#'   with one row per possibility.
+#'
+#'   \itemize{
+#'     \item{\code{nodes}: character vectors, the list of nodes to get counterfactual values for. If missing, values will be provided for all nodes.
+#'     }
+#'   }
+#'   }
+#'}
+#'
+#' @section Fields:
+#' \describe{
+#'   \item{\code{factor_list}}{The list of \code{\link{LF_base}} objects specifying the relevant likelihood factors}
+#'   \item{\code{observed_values}}{The likelihood values for the observed data. These are cached, as they are used in many places in TMLE}
+#'   \item{\code{update_list}}{A list of tmle_updates that have been calculated for this likelihood}
+#' }

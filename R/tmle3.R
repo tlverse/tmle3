@@ -1,31 +1,31 @@
-# default_lrnr_submodel <- make_learner(Lrnr_glm_fast, intercept = FALSE, transform_offset = TRUE)
-
-#' Fit Targeted Maximum Likelihood Estimator
+#' TMLE from a tmle3_Spec object
 #'
-#' @param likelihood ...
-#' @param task ...
-#' @param param ...
-#' @param lrnr_submodel ...
+#' Using a tmle3_Spec object, fit a TMLE
+#'
+#' @param tmle_spec \code{\link{tmle3_Spec}}, defines the TMLE
+#' @param data \code{data.frame}, the raw data
+#' @param node_list \code{list}, defines which variables are which nodes
+#' @param learner_list \code{list}, defines which learners are used to fit which likelihood factors
+#' @return A \code{\link{tmle3_Fit}} object
 #'
 #' @export
-#' @import sl3
-#' @import data.table
-fit_tmle_likelihood <- function(likelihood, task, param, lrnr_submodel) {
+tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
+  start_time <- proc.time()
 
-  # prepare learner and task for tmle update
-  lrnr_tmle_update <- make_learner(Lrnr_tmle_update, param, lrnr_submodel)
-  fit_for_submodel <- sl3::customize_chain(likelihood, lrnr_tmle_update$prepare_task)
-  submodel_task <- fit_for_submodel$chain()
+  tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+  task_time <- proc.time()
 
-  # fit update
-  update_fit <- lrnr_tmle_update$train(submodel_task)
+  likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+  likelihood_time <- proc.time()
 
-  # updated fit is a pipeline with the intial fit and then the updated fit
-  tmle_pipe <- sl3::Pipeline$new(fit_for_submodel, update_fit)
+  tmle_params <- tmle_spec$make_params(tmle_task, likelihood)
+  params_time <- proc.time()
 
-  # modify likelihood with fluctuation
-  lf_y_updated <- LF_fit$new("Y", tmle_pipe, expects_tmle_task = TRUE)
-  tmle_likelihood <- likelihood$modify_factors(list(lf_y_updated))
+  updater <- tmle_spec$make_updater(likelihood, tmle_params)
+  fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater)
+  fit_time <- proc.time()
 
-  return(tmle_likelihood)
+  fit$set_timings(start_time, task_time, likelihood_time, params_time, fit_time)
+
+  return(fit)
 }

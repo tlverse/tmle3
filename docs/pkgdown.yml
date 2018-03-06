@@ -1,6 +1,6 @@
 urls:
-  reference: https://tmle3.tlverse.org/reference
-  article: https://tmle3.tlverse.org/articles
+  reference: http://tmle3.tlverse.org/reference
+  article: http://tmle3.tlverse.org/articles
 articles:
   framework: framework.html
 

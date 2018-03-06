@@ -5,7 +5,7 @@ R/`tmle3`
 
 [![Travis-CI Build Status](https://travis-ci.org/jeremyrcoyle/tmle3.svg?branch=master)](https://travis-ci.org/jeremyrcoyle/tmle3) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jeremyrcoyle/tmle3?branch=master&svg=true)](https://ci.appveyor.com/project/jeremyrcoyle/tmle3) [![Coverage Status](https://img.shields.io/codecov/c/github/jeremyrcoyle/tmle3/master.svg)](https://codecov.io/github/jeremyrcoyle/tmle3?branch=master) [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
-> *Fast* and *scalable* estimation procedure for the Highly Adaptive LASSO
+> *Extensible* TMLE framework
 
 **Author:** [Jeremy Coyle](https://github.com/jeremyrcoyle)
 
@@ -14,22 +14,13 @@ R/`tmle3`
 What's `tmle3`?
 ---------------
 
-`tmle3` is an R package providing...
+`tmle3` is a general framework that supports the implementation of a range of TMLE parameters with a unified interface. The goal is that the `tmle3` framework be as general as the mathematical framework upon which it's based.
 
 ------------------------------------------------------------------------
 
 Installation
 ------------
 
-<!--
-For standard use, we recommend installing the package from
-[CRAN](https://cran.r-project.org/) via
-
-
-```r
-install.packages("tmle3")
-```
--->
 You can install the development version of `tmle3` from GitHub via [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with
 
 ``` r
@@ -37,6 +28,13 @@ devtools::install_github("jeremyrcoyle/tmle3")
 ```
 
 ------------------------------------------------------------------------
+
+Getting Started
+---------------
+
+The best place to get started is the Framework Overview, which describes the individual components of the `tmle3` framework. You can find it here: <https://tmle3.tlverse.org/articles/framework.html>.
+
+--
 
 Issues
 ------

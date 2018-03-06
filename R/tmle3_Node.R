@@ -106,13 +106,13 @@ define_node <- tmle3_Node$new
 #' \code{time_ordering} attempts to find a time_ordering for the variables.
 #'
 #' @param node_name the node to search for ancestors of
-#' @param tmle_nodes the NPSEM, defined by a list of \code{\link{tmle3_Node}} objects.
+#' @param npsem the NPSEM, defined by a list of \code{\link{tmle3_Node}} objects.
 #' @rdname npsem_helpers
 #' @export
-all_ancestors <- function(node_name, tmle_nodes) {
-  this_node <- tmle_nodes[[node_name]]
+all_ancestors <- function(node_name, npsem) {
+  this_node <- npsem[[node_name]]
   if (length(this_node$parents) > 0) {
-    ancestors <- unlist(lapply(this_node$parents, all_ancestors, tmle_nodes))
+    ancestors <- unlist(lapply(this_node$parents, all_ancestors, npsem))
     ancestors <- unique(c(this_node$parents, ancestors))
     return(ancestors)
   } else {
@@ -124,10 +124,10 @@ all_ancestors <- function(node_name, tmle_nodes) {
 #'
 #' @rdname npsem_helpers
 #' @export
-time_ordering <- function(tmle_nodes) {
-  node_names <- lapply(tmle_nodes, `[[`, "name")
-  node_parents <- lapply(tmle_nodes, `[[`, "parents")
-  n_nodes <- length(tmle_nodes)
+time_ordering <- function(npsem) {
+  node_names <- lapply(npsem, `[[`, "name")
+  node_parents <- lapply(npsem, `[[`, "parents")
+  n_nodes <- length(npsem)
   ordered_nodes <- c()
   while (length(ordered_nodes) < n_nodes) {
     parents_ordered <- sapply(node_parents, function(parents) all(parents %in% ordered_nodes))

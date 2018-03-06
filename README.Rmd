@@ -35,15 +35,6 @@ __Author:__ [Jeremy Coyle](https://github.com/jeremyrcoyle)
 
 ## Installation
 
-<!--
-For standard use, we recommend installing the package from
-[CRAN](https://cran.r-project.org/) via
-
-```{r cran-installation, eval = FALSE}
-install.packages("tmle3")
-```
--->
-
 You can install the development version of `tmle3` from GitHub via
 [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with
 
@@ -52,6 +43,12 @@ devtools::install_github("jeremyrcoyle/tmle3")
 ```
 
 ---
+
+## Getting Started
+
+The best place to get started is the Framework Overview, which describes the individual components of the `tmle3` framework. You can find it here: https://tmle3.tlverse.org/articles/framework.html.
+
+-- 
 
 ## Issues
 

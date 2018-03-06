@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Define a Likelihood Factor — define_lf • tmle</title>
+<title>Helper functions for the NPSEM — all_ancestors • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -95,34 +95,31 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Define a Likelihood Factor</h1>
+    <h1>Helper functions for the NPSEM</h1>
     </div>
 
     
-    <p>Define a Likelihood Factor</p>
+    <p><code>all_ancestors</code> returns a list of all_ancestors of the specified node.
+<code>time_ordering</code> attempts to find a time_ordering for the variables.</p>
+<p>Get time ordering of nodes</p>
     
 
-    <pre class="usage"><span class='fu'>define_lf</span>(<span class='no'>LF_class</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>all_ancestors</span>(<span class='no'>node_name</span>, <span class='no'>npsem</span>)
+
+<span class='fu'>time_ordering</span>(<span class='no'>npsem</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>LF_class</th>
-      <td><p>the class of likelihood factor. Should inherit from <code><a href='LF_base.html'>LF_base</a></code></p></td>
+      <th>node_name</th>
+      <td><p>the node to search for ancestors of</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>arguments that define the likelihood factor. See the constructor for the specified <code>LF_class</code>.</p></td>
+      <th>npsem</th>
+      <td><p>the NPSEM, defined by a list of <code><a href='tmle3_Node.html'>tmle3_Node</a></code> objects.</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_np.html'>LF_np</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code></p>
     
 
   </div>
@@ -130,9 +127,7 @@
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#see-also">See also</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>

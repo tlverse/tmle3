@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Define a Likelihood Factor — define_lf • tmle</title>
+<title>Define a Parameter — define_param • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -95,34 +95,33 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Define a Likelihood Factor</h1>
+    <h1>Define a Parameter</h1>
     </div>
 
     
-    <p>Define a Likelihood Factor</p>
+    <p>Define a Parameter</p>
     
 
-    <pre class="usage"><span class='fu'>define_lf</span>(<span class='no'>LF_class</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>define_param</span>(<span class='no'>Param_class</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>LF_class</th>
-      <td><p>the class of likelihood factor. Should inherit from <code><a href='LF_base.html'>LF_base</a></code></p></td>
+      <th>Param_class</th>
+      <td><p>the class of the Parameter. Should inherit from <code><a href='Param_base.html'>Param_base</a></code></p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>arguments that define the likelihood factor. See the constructor for the specified <code>LF_class</code>.</p></td>
+      <td><p>arguments that define the parameter See the constructor for the specified <code>Parameter</code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_np.html'>LF_np</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code></p>
+    <p>Other Parameters: <code><a href='Param_ATT.html'>Param_ATT</a></code>,
+  <code><a href='Param_TSM.html'>Param_TSM</a></code>, <code><a href='Param_base.html'>Param_base</a></code>,
+  <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p>
     
 
   </div>

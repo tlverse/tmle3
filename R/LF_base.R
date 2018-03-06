@@ -32,7 +32,7 @@ LF_base <- R6Class(
     },
     train = function(tmle_task, ...) {
       # get possible values from task if discrete
-      tmle_node <- tmle_task$tmle_nodes[[self$name]]
+      tmle_node <- tmle_task$npsem[[self$name]]
       private$.variable_type <- tmle_node$variable_type
 
       # subclasses may do more, like fit sl3 models

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Define a Likelihood Factor — define_lf • tmle</title>
+<title>Linear Contrast Function — f_contrast • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -95,34 +95,31 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Define a Likelihood Factor</h1>
+    <h1>Linear Contrast Function</h1>
     </div>
 
     
-    <p>Define a Likelihood Factor</p>
+    <p>\(X_2-X_1\)</p>
     
 
-    <pre class="usage"><span class='fu'>define_lf</span>(<span class='no'>LF_class</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>f_contrast</span>(<span class='no'>x</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>LF_class</th>
-      <td><p>the class of likelihood factor. Should inherit from <code><a href='LF_base.html'>LF_base</a></code></p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>arguments that define the likelihood factor. See the constructor for the specified <code>LF_class</code>.</p></td>
+      <th>x</th>
+      <td><p>numeric vector, containing two parameter estimates</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_np.html'>LF_np</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code></p>
+    <p><code>x[[2]] - x[[1]]</code></p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>For use with <code><a href='delta_method.html'>delta_method</a></code></p>
     
 
   </div>
@@ -131,7 +128,9 @@
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#see-also">See also</a></li>
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

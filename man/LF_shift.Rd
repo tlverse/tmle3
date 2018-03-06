@@ -21,13 +21,15 @@ but for shifted value \eqn{A'=}\code{shift_function}\eqn{(A,W)}
   \code{define_lf(LF_shift, name, type = "density", original_lf, shift_function, ...)}
 
   \describe{
-    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }
     \item{\code{original_lf}}{\code{\link{LF_base}} object, the likelihood factor to shift
     }
-    \item{\code{shift_function}}{\code{function}, defines the shifted data
+    \item{\code{shift_function}}{\code{function}, defines the shift
+    }
+    \item{\code{shift_inverse}}{\code{function}, the inverse of shift_function
     }
     \item{\code{...}}{Not currently used.
     }
@@ -39,7 +41,9 @@ but for shifted value \eqn{A'=}\code{shift_function}\eqn{(A,W)}
 \describe{
     \item{\code{original_lf}}{\code{\link{LF_base}} object, the likelihood factor to shift
     }
-    \item{\code{shift_function}}{\code{function}, defines the shifted data
+    \item{\code{shift_function}}{\code{function}, defines the shift
+    }
+    \item{\code{shift_inverse}}{\code{function}, the inverse of shift_function
     }
     }
 }

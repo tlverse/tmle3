@@ -22,7 +22,7 @@ is intended to be abstract. See below for a list of possible likelihood factor c
   \code{define_lf(LF_base, name, type = "density", ...)}
                      
   \describe{
-    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }
@@ -35,14 +35,11 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 
 
 \describe{
-\item{\code{get_density(tmle_task, only_observed = FALSE)}}{
+\item{\code{get_density(tmle_task)}}{
   Get conditional density values for for the observations in \code{tmle_task}.
 
   \itemize{
     \item{\code{tmle_task}: \code{\link{tmle3_Task}} to get likelihood values for
-    }
-    \item{\code{only_observed}: logical, if TRUE, only the likelihood values for the observed values in \code{tmle_task} will be provided. Otherwise,
-    likelihood values will be provided for all possible observed_values. 
     }
   }
   }
@@ -59,7 +56,7 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 \section{Fields}{
 
 \describe{
-    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }

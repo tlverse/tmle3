@@ -12,7 +12,7 @@
 #'
 #' \describe{
 #' \item{\code{validate_task(tmle_task)}}{
-#'   Ensure that this likelihood is compatible with a particular \code{\link{tmle3_Task}}, in that the factor names must match the \code{tmle_task$tmle_nodes} names.
+#'   Ensure that this likelihood is compatible with a particular \code{\link{tmle3_Task}}, in that the factor names must match the \code{tmle_task$npsem} names.
 #'
 #'   \itemize{
 #'     \item{\code{tmle_task}: the \code{\link{tmle3_Task}} to validate.

@@ -91,7 +91,7 @@ Param_TSM <- R6Class(
       EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
 
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function
-      variable_type <- tmle_task$tmle_nodes[[self$outcome_node]]$variable_type
+      variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
       if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
         bounds <- variable_type$bounds
         scale <- bounds[2] - bounds[1]

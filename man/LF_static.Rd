@@ -20,7 +20,7 @@ Inherits from \code{\link{LF_base}}; see that page for documentation on likeliho
   \code{define_lf(LF_static, name, type, value, ...)}
 
   \describe{
-    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+    \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }

@@ -61,9 +61,8 @@ result <- tsm$cf_likelihood$enumerate_cf_tasks(tmle_task)
 updater <- tmle_spec$make_updater(likelihood, list(tsm))
 
 # fit tmle update
-timing <- system.time({
 tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
-})
+
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se

@@ -19,7 +19,7 @@
 #'   \code{define_lf(LF_np, name, ...)}
 #'
 #'   \describe{
-#'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$tmle_nodes}
+#'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
 #'     }
 #'     \item{\code{...}}{Not currently used.
 #'     }

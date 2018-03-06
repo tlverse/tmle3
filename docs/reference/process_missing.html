@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Define a Likelihood Factor — define_lf • tmle</title>
+<title>Preprocess Data to Handle Missing Variables — process_missing • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -95,34 +95,51 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Define a Likelihood Factor</h1>
+    <h1>Preprocess Data to Handle Missing Variables</h1>
     </div>
 
     
-    <p>Define a Likelihood Factor</p>
+    <p>Process data to account for missingness in preparation for TMLE</p>
     
 
-    <pre class="usage"><span class='fu'>define_lf</span>(<span class='no'>LF_class</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>process_missing</span>(<span class='no'>data</span>, <span class='no'>node_list</span>, <span class='kw'>max_p_missing</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>LF_class</th>
-      <td><p>the class of likelihood factor. Should inherit from <code><a href='LF_base.html'>LF_base</a></code></p></td>
+      <th>data, </th>
+      <td><p><code>data.table</code>, containing the missing variables</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>arguments that define the likelihood factor. See the constructor for the specified <code>LF_class</code>.</p></td>
+      <th>node_list, </th>
+      <td><p><code>list</code>, what nodes serve what purpose</p></td>
+    </tr>
+    <tr>
+      <th>max_p_missing, </th>
+      <td><p><code>numeric</code>, what proportion of missing is tolerable? Beyond that, the variable will be dropped from the analysis</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_np.html'>LF_np</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code></p>
+    <p><code>list</code> containing the following elements:</p><ul>
+<li><p><code>data</code>, the updated dataset</p></li>
+<li><p><code>node_list</code>, the updated list of nodes</p></li>
+<li><p><code>n_dropped</code>, the number of observations dropped</p></li>
+<li><p><code>dropped_cols</code>, the variables dropped due to excessive missingness</p></li>
+</ul>
+
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Because IPCW-TMLE is not yet implemented, currently all rows with
+missing outcomes (Y) or treatments (A) will be dropped from the analysis.</p>
+<p>Then covariates will be processed as follows:</p><ol>
+<li><p>any covariate with more than <code>max_p_missing</code> missingness will be dropped</p></li>
+<li><p>indicators of missingness will be generated</p></li>
+<li><p>missing values will be median-imputed</p></li>
+</ol>
     
 
   </div>
@@ -131,7 +148,9 @@
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#see-also">See also</a></li>
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

@@ -6,13 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • tmle3</title>
+<title>Function reference • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
+<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
@@ -34,6 +34,18 @@
 <![endif]-->
 
 
+<!-- Google analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-115145808-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
   </head>
 
   <body>
@@ -47,36 +59,27 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">tmle3</a>
+      <a class="navbar-brand" href="../index.html"></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
-     
-  </a>
+  <a href="https://tlverse.org">tlverse</a>
+</li>
+<li>
+  <a href="../index.html">tmle3</a>
+</li>
+<li>
+  <a href="../articles/framework.html">Overview</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="../articles/tmle3_design.html">tmle3 Design</a>
-    </li>
-  </ul>
 </li>
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jeremyrcoyle/tmle3">
+  <a href="https://github.com/tlverse/tmle3">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -109,94 +112,262 @@
       <tbody>
         <tr>
           <th colspan="2">
-            <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
+            <h2 id="section-defining-a-task" class="hasAnchor"><a href="#section-defining-a-task" class="anchor"></a>Defining A Task</h2>
             <p class="section-desc"></p>
           </th>
         </tr>
         <tr>
           <!--  -->
           <td>
-            <p><code><a href="Counterfactual.html">Counterfactual</a></code> </p>
+            <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task</a></code> </p>
           </td>
-          <td><p>Class for Defining Counterfactuals</p></td>
+          <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-npsem" class="hasAnchor"><a href="#section-npsem" class="anchor"></a>NPSEM</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node</a></code> </p>
+          </td>
+          <td><p>A Node (set of variables) in an NPSEM</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="define_cf.html">define_cf</a></code> </p>
+            <p><code><a href="npsem_helpers.html">all_ancestors</a></code> <code><a href="npsem_helpers.html">time_ordering</a></code> </p>
           </td>
-          <td><p>Defining Counterfactuals</p></td>
+          <td><p>Helper functions for the NPSEM</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-likelihood" class="hasAnchor"><a href="#section-likelihood" class="anchor"></a>Likelihood</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood</a></code> </p>
+          </td>
+          <td><p>Class for Likelihood</p></td>
         </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood</a></code> </p>
+          </td>
+          <td><p>Counterfactual Likelihood</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-likelhood-factors" class="hasAnchor"><a href="#section-likelhood-factors" class="anchor"></a>Likelhood Factors</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
           <!--  -->
           <td>
             <p><code><a href="define_lf.html">define_lf</a></code> </p>
           </td>
-          <td><p>Defining Likelihood Functionals</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="define_node.html">define_node</a></code> </p>
-          </td>
-          <td><p>Define a Node (set of variables) in an NPSEM</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="fit_tmle_likelihood.html">fit_tmle_likelihood</a></code> </p>
-          </td>
-          <td><p>Fit Targeted Maximum Likelihood Estimator</p></td>
+          <td><p>Define a Likelihood Factor</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="LF_base.html">LF_base</a></code> </p>
           </td>
-          <td><p>Base Class for Defining Likelihoods</p></td>
+          <td><p>Base Class for Defining Likelihood Factors</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
           </td>
-          <td><p>Fitting Likelihoods</p></td>
+          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_np.html">LF_np</a></code> </p>
+          </td>
+          <td><p>Likelihood Factor Estimated from Data using NP-MLE</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
+          </td>
+          <td><p>Shifted Likelihood Factor</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="LF_static.html">LF_static</a></code> </p>
           </td>
-          <td><p>Define Likelihoods for Static Interventions</p></td>
+          <td><p>Static Likelihood Factor</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-parameters" class="hasAnchor"><a href="#section-parameters" class="anchor"></a>Parameters</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="define_param.html">define_param</a></code> </p>
+          </td>
+          <td><p>Define a Parameter</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="Likelihood.html">Likelihood</a></code> </p>
+            <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
           </td>
-          <td><p>Class for Likelihood Computations</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Lrnr_tmle_update.html">Lrnr_tmle_update</a></code> </p>
-          </td>
-          <td><p>Fitting submodel</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="make_blip_chain_function.html">make_blip_chain_function</a></code> </p>
-          </td>
-          <td><p>Learner Class for Blip Regressions</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_ATE.html">Param_ATE</a></code> </p>
-          </td>
-          <td><p>Class for Estimation of ATE Parameter</p></td>
+          <td><p>Additive Effect of Treatment Among the Treated</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="Param_base.html">Param_base</a></code> </p>
           </td>
-          <td><p>Base Class for Parameter Estimation</p></td>
+          <td><p>Base Class for Defining Parameters</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
           </td>
-          <td><p>Class for Estimation of TSM Parameter</p></td>
+          <td><p>Treatment Specific Mean</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-propensity-scores" class="hasAnchor"><a href="#section-propensity-scores" class="anchor"></a>Propensity Scores</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="propensity_scores.html">density_formula</a></code> <code><a href="propensity_scores.html">get_propensity_scores</a></code> <code><a href="propensity_scores.html">propensity_score_plot</a></code> <code><a href="propensity_scores.html">propensity_score_table</a></code> </p>
+          </td>
+          <td><p>Get and Plot Propensity Scores</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-index" class="hasAnchor"><a href="#section-index" class="anchor"></a>Index</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood</a></code> </p>
+          </td>
+          <td><p>Counterfactual Likelihood</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="define_lf.html">define_lf</a></code> </p>
+          </td>
+          <td><p>Define a Likelihood Factor</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="define_param.html">define_param</a></code> </p>
+          </td>
+          <td><p>Define a Parameter</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="delta_method.html">delta_method</a></code> </p>
+          </td>
+          <td><p>Get Inference for Differentiable Functions of Parameters</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="discretize_variable.html">discretize_variable</a></code> </p>
+          </td>
+          <td><p>Discretize Continuous Variable</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="f_contrast.html">f_contrast</a></code> </p>
+          </td>
+          <td><p>Linear Contrast Function</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_base.html">LF_base</a></code> </p>
+          </td>
+          <td><p>Base Class for Defining Likelihood Factors</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
+          </td>
+          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_np.html">LF_np</a></code> </p>
+          </td>
+          <td><p>Likelihood Factor Estimated from Data using NP-MLE</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
+          </td>
+          <td><p>Shifted Likelihood Factor</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="LF_static.html">LF_static</a></code> </p>
+          </td>
+          <td><p>Static Likelihood Factor</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood</a></code> </p>
+          </td>
+          <td><p>Class for Likelihood</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="npsem_helpers.html">all_ancestors</a></code> <code><a href="npsem_helpers.html">time_ordering</a></code> </p>
+          </td>
+          <td><p>Helper functions for the NPSEM</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
+          </td>
+          <td><p>Additive Effect of Treatment Among the Treated</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Param_base.html">Param_base</a></code> </p>
+          </td>
+          <td><p>Base Class for Defining Parameters</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
+          </td>
+          <td><p>Treatment Specific Mean</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="process_missing.html">process_missing</a></code> </p>
+          </td>
+          <td><p>Preprocess Data to Handle Missing Variables</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="propensity_scores.html">density_formula</a></code> <code><a href="propensity_scores.html">get_propensity_scores</a></code> <code><a href="propensity_scores.html">propensity_score_plot</a></code> <code><a href="propensity_scores.html">propensity_score_table</a></code> </p>
+          </td>
+          <td><p>Get and Plot Propensity Scores</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -206,15 +377,51 @@
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="tmle_Task.html">tmle_Task</a></code> </p>
+            <p><code><a href="summary_from_estimate.html">summary_from_estimate</a></code> </p>
           </td>
-          <td><p>Class for Storing and Computing TMLEs as Tasks</p></td>
+          <td><p>Summarize Estimate</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> </p>
+            <p><code><a href="tmle_tsm_all.html">tmle_tsm_all</a></code> </p>
           </td>
-          <td><p>Class for Nonparametric Structural Equation Models</p></td>
+          <td><p>All Treatment Specific Means</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Fit.html">tmle3_Fit</a></code> <code><a href="tmle3_Fit.html">fit_tmle3</a></code> </p>
+          </td>
+          <td><p>TMLE fit object</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node</a></code> </p>
+          </td>
+          <td><p>A Node (set of variables) in an NPSEM</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Spec.html">tmle3_Spec</a></code> </p>
+          </td>
+          <td><p>Defines a tmle (minus the data)</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task</a></code> </p>
+          </td>
+          <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Update.html">tmle3_Update</a></code> </p>
+          </td>
+          <td><p>Defines an update (submodel+loss function)</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3.html">tmle3</a></code> </p>
+          </td>
+          <td><p>TMLE from a tmle3_Spec object</p></td>
         </tr>
       </tbody>
       </table>
@@ -224,7 +431,13 @@
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-all-functions">All functions</a></li>
+      <li><a href="#section-defining-a-task">Defining A Task</a></li>
+      <li><a href="#section-npsem">NPSEM</a></li>
+      <li><a href="#section-likelihood">Likelihood</a></li>
+      <li><a href="#section-likelhood-factors">Likelhood Factors</a></li>
+      <li><a href="#section-parameters">Parameters</a></li>
+      <li><a href="#section-propensity-scores">Propensity Scores</a></li>
+      <li><a href="#section-index">Index</a></li>
     </ul>
   </div>
 </div>

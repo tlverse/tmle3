@@ -33,13 +33,13 @@ tmle3_Spec <- R6Class(
       }
 
       # make tmle_task
-      tmle_nodes <- list(
+      npsem <- list(
         define_node("W", node_list$W),
         define_node("A", node_list$A, c("W")),
         define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
 
-      tmle_task <- tmle3_Task$new(data, tmle_nodes = tmle_nodes)
+      tmle_task <- tmle3_Task$new(data, npsem = npsem)
       return(tmle_task)
     },
     make_likelihood = function(tmle_task, learner_list = NULL) {

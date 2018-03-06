@@ -5,14 +5,14 @@
 \alias{time_ordering}
 \title{Helper functions for the NPSEM}
 \usage{
-all_ancestors(node_name, tmle_nodes)
+all_ancestors(node_name, npsem)
 
-time_ordering(tmle_nodes)
+time_ordering(npsem)
 }
 \arguments{
 \item{node_name}{the node to search for ancestors of}
 
-\item{tmle_nodes}{the NPSEM, defined by a list of \code{\link{tmle3_Node}} objects.}
+\item{npsem}{the NPSEM, defined by a list of \code{\link{tmle3_Node}} objects.}
 }
 \description{
 \code{all_ancestors} returns a list of all_ancestors of the specified node.

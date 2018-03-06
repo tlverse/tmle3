@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Define a Likelihood Factor — define_lf • tmle</title>
+<title>Likelihood Factor Estimated from Data using NP-MLE — LF_np • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -95,42 +95,54 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Define a Likelihood Factor</h1>
+    <h1>Likelihood Factor Estimated from Data using NP-MLE</h1>
     </div>
 
     
-    <p>Define a Likelihood Factor</p>
+    <p>Uses NP-MLE (puts mass \(1/n\) on each of the observations, or uses weights if specified) to estimate a marginal density.
+Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.
+Only compatible with marginal likelihoods (no parent nodes). Only compatible with densities (no conditional means).
+The <code>type</code> argument will be ignored if specified.</p>
     
 
-    <pre class="usage"><span class='fu'>define_lf</span>(<span class='no'>LF_class</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='no'>LF_np</span></pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+
+    <p><code>R6Class</code> object.</p>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>LF_class</th>
-      <td><p>the class of likelihood factor. Should inherit from <code><a href='LF_base.html'>LF_base</a></code></p></td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td><p>arguments that define the likelihood factor. See the constructor for the specified <code>LF_class</code>.</p></td>
-    </tr>
-    </table>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>LF_base</code> object</p>
+    
+    <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
+
+    
+    <p><code><a href='define_lf.html'>define_lf(LF_np, name, ...)</a></code></p>
+<p></p><dl class='dl-horizontal'>
+    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
+    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+    </dl>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
   <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_np.html'>LF_np</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code></p>
+  <code><a href='LF_shift.html'>LF_shift</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
+  <code><a href='Likelihood.html'>Likelihood</a></code>, <code><a href='define_lf.html'>define_lf</a></code></p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
       
+      <li><a href="#format">Format</a></li>
+
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#constructor">Constructor</a></li>
+
       <li><a href="#see-also">See also</a></li>
           </ul>
 

@@ -26,25 +26,25 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, tmle_nodes, ...) {
+    initialize = function(data, npsem, ...) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
 
-      node_names <- sapply(tmle_nodes, `[[`, "name")
-      names(tmle_nodes) <- node_names
+      node_names <- sapply(npsem, `[[`, "name")
+      names(npsem) <- node_names
       for (node_name in node_names) {
-        variables <- tmle_nodes[[node_name]]$variables
+        variables <- npsem[[node_name]]$variables
         variable_data <- super$get_data(, variables)
         if (ncol(variable_data) == 1) {
           variable_data <- unlist(variable_data, use.names = FALSE)
         }
-        if (is.null(tmle_nodes[[node_name]]$variable_type)) {
-          tmle_nodes[[node_name]]$guess_variable_type(variable_data)
+        if (is.null(npsem[[node_name]]$variable_type)) {
+          npsem[[node_name]]$guess_variable_type(variable_data)
         }
       }
-      private$.tmle_nodes <- tmle_nodes
+      private$.npsem <- npsem
     },
     get_tmle_node = function(node_name, bound = FALSE) {
-      tmle_node <- self$tmle_nodes[[node_name]]
+      tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
 
       data <- self$get_data(, node_var)
@@ -66,10 +66,10 @@ tmle3_Task <- R6Class(
       }
     },
     get_regression_task = function(target_node) {
-      tmle_nodes <- self$tmle_nodes
-      target_node <- tmle_nodes[[target_node]]
+      npsem <- self$npsem
+      target_node <- npsem[[target_node]]
       parent_names <- target_node$parents
-      parent_nodes <- tmle_nodes[parent_names]
+      parent_nodes <- npsem[parent_names]
       outcome <- target_node$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
 
@@ -102,36 +102,36 @@ tmle3_Task <- R6Class(
     generate_counterfactual_task = function(uuid, new_data) {
       # for current_factor, generate counterfactual values
       node_names <- names(new_data)
-      node_variables <- sapply(node_names, function(node_name) self$tmle_nodes[[node_name]]$variables)
+      node_variables <- sapply(node_names, function(node_name) self$npsem[[node_name]]$variables)
       setnames(new_data, node_names, node_variables)
 
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(uuid, new_data)
       new_task$initialize(
-        self$raw_data, self$tmle_nodes,
+        self$raw_data, self$npsem,
         column_names = new_column_names
       )
       return(new_task)
     },
     next_in_chain = function(...) {
-      return(super$next_in_chain(tmle_nodes = self$tmle_nodes, ...))
+      return(super$next_in_chain(npsem = self$npsem, ...))
     },
     print = function() {
       cat(sprintf("A sl3 Task with %d obs and these nodes:\n", self$nrow))
-      print(self$tmle_nodes)
+      print(self$npsem)
     }
   ),
   active = list(
-    tmle_nodes = function() {
-      return(private$.tmle_nodes)
+    npsem = function() {
+      return(private$.npsem)
     },
     data = function() {
-      all_variables <- unlist(lapply(self$tmle_nodes, `[[`, "variables"))
+      all_variables <- unlist(lapply(self$npsem, `[[`, "variables"))
       self$get_data(columns = all_variables)
     }
   ),
   private = list(
-    .tmle_nodes = NULL
+    .npsem = NULL
   )
 )
 

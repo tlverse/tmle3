@@ -1,0 +1,51 @@
+title: tmle
+url: https://tmle3.tlverse.org
+template:
+  params:
+    bootswatch: flatly
+    ganalytics: UA-115145808-1
+navbar: 
+  title: ""
+  left:
+    - text: "tlverse"
+      href: https://tlverse.org
+    - text: "tmle3"
+      href: "index.html"
+    - text: "Overview"
+      href: articles/framework.html
+    - text: "Reference"
+      href: "reference/index.html"
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/tlverse/tmle3
+
+
+reference:
+  - title: "Defining A Task"
+    contents:
+      - tmle3_Task
+  - title: "NPSEM"
+    contents:
+      - tmle3_Node
+      - all_ancestors
+      - time_ordering
+  - title: "Likelihood"
+    contents:
+      - Likelihood
+      - CF_Likelihood
+  - title: "Likelhood Factors"
+    contents:
+      - define_lf
+      - starts_with("LF_")
+  - title: "Parameters"
+    contents:
+      - define_param
+      - starts_with("Param_")
+  - title: "Propensity Scores"
+    contents:
+      - get_propensity_scores
+      - propensity_score_plot
+      - propensity_score_table
+  - title: "Index"
+    contents:
+      - starts_with("")

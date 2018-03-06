@@ -59,17 +59,6 @@ tmle_spec <- tmle_tsm_all()
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
-# # LF_fit$undebug("get_likelihood")
-# # estimate likelihood
-# factor_list <- list(
-#   define_lf(LF_np, "W", NA),
-#   define_lf(LF_fit, "A", type = "density", learner = learner_list[["A"]]),
-#   define_lf(LF_fit, "Y", type = "mean", learner = learner_list[["Y"]])
-# )
-# 
-# likelihood_def <- Likelihood$new(factor_list)
-# likelihood <- likelihood_def$train(tmle_task)
-
 
 # define shift
 # todo: put this somewhere sensible
@@ -90,7 +79,7 @@ tsm <- define_param(Param_TSM, likelihood, "Y", intervention)
 # define update method (submodel + loss function)
 updater <- tmle_spec$make_updater(likelihood, list(tsm))
 
-# fit tmle updaate
+# fit tmle update
 # debugonce(intervention$get_likelihood)
 tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
 

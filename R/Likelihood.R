@@ -47,9 +47,9 @@ Likelihood <- R6Class(
 
       factor_list <- self$factor_list
       factor_names <- names(factor_list)
-      task_nodes <- names(tmle_task$tmle_nodes)
-      if (!setequal(task_nodes, factor_names)) {
-        stop("factor_list and task$tmle_nodes must have matching names")
+      task_nodes <- names(tmle_task$npsem)
+      if (!all(factor_names%in%task_nodes)) {
+        stop("factor_list and task$npsem must have matching names")
       }
     },
     get_initial_likelihoods = function(tmle_task, nodes = NULL) {
@@ -122,7 +122,7 @@ Likelihood <- R6Class(
     # },
     # EY = function(tmle_task, mean_node_name="Y") {
     #   # identify set of all ancestors
-    #   nodes <- tmle_task$tmle_nodes
+    #   nodes <- tmle_task$npsem
     #   mean_node <- nodes[[mean_node_name]]
     #   ancestor_nodes <- all_ancestors(mean_node_name, nodes)
     #   mean_factor <- self$factor_list[[mean_node_name]]

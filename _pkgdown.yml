@@ -1,5 +1,5 @@
 title: tmle
-url: https://tmle3.tlverse.org
+url: http://tmle3.tlverse.org
 template:
   params:
     bootswatch: flatly
@@ -8,7 +8,7 @@ navbar:
   title: ""
   left:
     - text: "tlverse"
-      href: https://tlverse.org
+      href: http://tlverse.org
     - text: "tmle3"
       href: "index.html"
     - text: "Overview"

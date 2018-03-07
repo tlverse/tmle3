@@ -125,13 +125,13 @@ Does yet not support dynamic rule or stochastic interventions.</p>
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code><a href='define_param.html'>define_param(Param_ATT, observed_likelihood, outcome_node, intervention_list, ...)</a></code></p>
+    <p><code><a href='define_param.html'>define_param(Param_ATT, observed_likelihood, intervention_list, ..., outcome_node)</a></code></p>
 <p></p><dl class='dl-horizontal'>
     <dt><code>observed_likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> corresponding to the observed likelihood</p></dd>
-    <dt><code>outcome_node</code></dt><dd><p>character, the name of the node that should be treated as the outcome</p></dd>
     <dt><code>intervention_list_treatment</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the treatment intervention.</p></dd>
     <dt><code>intervention_list_control</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the control intervention.</p></dd>
     <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+    <dt><code>outcome_node</code></dt><dd><p>character, the name of the node that should be treated as the outcome</p></dd>
     </dl>
     
     <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
@@ -147,8 +147,8 @@ Does yet not support dynamic rule or stochastic interventions.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <p>Other Parameters: <code><a href='Param_TSM.html'>Param_TSM</a></code>,
-  <code><a href='Param_base.html'>Param_base</a></code>, <code><a href='define_param.html'>define_param</a></code>,
-  <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p>
+  <code><a href='Param_base.html'>Param_base</a></code>, <code><a href='Param_mean.html'>Param_mean</a></code>,
+  <code><a href='define_param.html'>define_param</a></code>, <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p>
     
 
   </div>

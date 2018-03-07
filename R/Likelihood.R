@@ -49,7 +49,7 @@ Likelihood <- R6Class(
       factor_list <- self$factor_list
       factor_names <- names(factor_list)
       task_nodes <- names(tmle_task$npsem)
-      if (!all(factor_names%in%task_nodes)) {
+      if (!all(factor_names %in% task_nodes)) {
         stop("factor_list and task$npsem must have matching names")
       }
     },

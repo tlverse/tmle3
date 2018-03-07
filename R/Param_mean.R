@@ -1,6 +1,6 @@
 #' Mean of Outcome Node
 #'
-#' Parameter for marginal mean of Y: $\Psi=E[Y]$. No TMLE update needed, but can be used in delta method calculations.
+#' Parameter for marginal mean of Y: \eqn{\Psi=E[Y]}. No TMLE update needed, but can be used in delta method calculations.
 #' Useful for example, in calculating attributable risks.
 #'
 #' @importFrom R6 R6Class
@@ -41,13 +41,12 @@ Param_mean <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, ..., outcome_node = "Y") {
-      super$initialize(observed_likelihood, ..., outcome_node=outcome_node)
+      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
     clever_covariates = function(tmle_task = NULL) {
       return(list())
     },
     estimates = function(tmle_task = NULL) {
-      
       Y <- tmle_task$get_tmle_node(self$outcome_node)
 
       # todo: separate out psi
@@ -71,6 +70,5 @@ Param_mean <- R6Class(
       return(NULL)
     }
   ),
-  private = list(
-  )
+  private = list()
 )

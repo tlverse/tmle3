@@ -49,7 +49,7 @@ Param_TSM <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list, ..., outcome_node = "Y") {
-      super$initialize(observed_likelihood, ..., outcome_node=outcome_node)
+      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
     },
     clever_covariates = function(tmle_task = NULL) {

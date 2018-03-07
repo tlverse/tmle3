@@ -12,7 +12,7 @@ Param_mean
 \code{Param_base} object
 }
 \description{
-Parameter for marginal mean of Y: $\Psi=E[Y]$. No TMLE update needed, but can be used in delta method calculations.
+Parameter for marginal mean of Y: \eqn{\Psi=E[Y]}. No TMLE update needed, but can be used in delta method calculations.
 Useful for example, in calculating attributable risks.
 }
 \section{Constructor}{

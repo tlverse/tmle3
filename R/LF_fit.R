@@ -91,7 +91,7 @@ LF_fit <- R6Class(
         unpacked <- sl3::unpack_predictions(preds)
         index_mat <- cbind(seq_along(observed), observed)
         likelihood <- unpacked[index_mat]
-      } else if (outcome_type$type == "continuous"){
+      } else if (outcome_type$type == "continuous") {
         likelihood <- unlist(preds)
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))

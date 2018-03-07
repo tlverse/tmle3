@@ -12,7 +12,7 @@ LF_shift
 \code{LF_base} object
 }
 \description{
-Shifts a likelihood factor according to a \code{shift_function}. 
+Shifts a likelihood factor according to a \code{shift_function}.
 In effect, \code{get_likelihood(tmle_task)} will instead the likelihood from the \code{original_lf},
 but for shifted value \eqn{A'=}\code{shift_function}\eqn{(A,W)}
 }

@@ -33,7 +33,7 @@ LF_emp <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, ...) {
-      super$initialize(name, ..., type="density")
+      super$initialize(name, ..., type = "density")
       private$.name <- name
     },
     get_mean = function(tmle_task) {

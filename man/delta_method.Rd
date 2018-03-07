@@ -4,14 +4,14 @@
 \alias{delta_method}
 \title{Get Inference for Differentiable Functions of Parameters}
 \usage{
-delta_method(estimates, f, df)
+delta_method(delta_param, estimates, param_names = NULL)
 }
 \arguments{
+\item{delta_param}{\code{list} of functions, defines the parameter}
+
 \item{estimates}{\code{list}, TMLE estimates of parameter and ICs from \code{\link{tmle3_Fit}$estimates}}
 
-\item{f}{\code{function}, the function of parameter values}
-
-\item{df}{\code{function}, the derivative of the function wrt the parameter values}
+\item{param_names}{\code{character} vector, the names of the parameters}
 }
 \value{
 \code{list}, delta method estimates of parameter and ICS

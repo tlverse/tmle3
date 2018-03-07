@@ -4,7 +4,10 @@
 \alias{tmle_PAR}
 \title{PAR and PAF}
 \usage{
-tmle_PAR()
+tmle_PAR(baseline_level)
+}
+\arguments{
+\item{baseline_level, }{the baseline risk group}
 }
 \description{
 O=(W,A,Y)

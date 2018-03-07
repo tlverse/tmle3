@@ -39,12 +39,12 @@ CF_Likelihood <- R6Class(
     },
     enumerate_cf_tasks = function(tmle_task) {
       intervention_list <- self$intervention_list
-      
+
       # hack for no intervention
-      if(length(intervention_list)==0){
+      if (length(intervention_list) == 0) {
         return(list(tmle_task))
       }
-      
+
       # todo: extend for stochastic interventions
       # currently assumes each intervention node returns one cf_value vector
       # get factors for nodes
@@ -53,7 +53,7 @@ CF_Likelihood <- R6Class(
       all_values <- lapply(intervention_list, function(likelihood_factor) {
         likelihood_factor$cf_values(tmle_task)
       })
-    
+
       cf_data <- as.data.table(all_values)
       cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       cf_tasks <- list(cf_task)
@@ -81,7 +81,7 @@ CF_Likelihood <- R6Class(
     update_list = function() {
       self$observed_likelihood$update_list
     },
-    cf_tasks = function(){
+    cf_tasks = function() {
       return(private$.cf_tasks)
     }
   ),

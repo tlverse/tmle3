@@ -44,7 +44,7 @@ LF_base <- R6Class(
       stop("this is a base class")
     },
     cf_values = function(tmle_task) {
-      stop(sprintf("%s is not a valid intervention type", class(self)[1])      )
+      stop(sprintf("%s is not a valid intervention type", class(self)[1]))
     },
     print = function() {
       cat(sprintf("%s: %s\n", self$name, class(self)[1]))

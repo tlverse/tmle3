@@ -11,16 +11,15 @@ tmle3_Spec_TSM_all <- R6Class(
   classname = "tmle3_Spec_TSM_all",
   portable = TRUE,
   class = TRUE,
-  inherit=tmle3_Spec,
+  inherit = tmle3_Spec,
   public = list(
     initialize = function(...) {
-      
       super$initialize(...)
     },
     make_params = function(tmle_task, likelihood) {
       # todo: export and use sl3:::get_levels
       A_vals <- tmle_task$get_tmle_node("A")
-      if(is.factor(A_vals)){
+      if (is.factor(A_vals)) {
         A_levels <- levels(A_vals)
         A_levels <- factor(A_levels, A_levels)
       } else {
@@ -35,10 +34,8 @@ tmle3_Spec_TSM_all <- R6Class(
       return(tmle_params)
     }
   ),
-  active = list(
-  ),
-  private = list(
-  )
+  active = list(),
+  private = list()
 )
 
 #' All Treatment Specific Means

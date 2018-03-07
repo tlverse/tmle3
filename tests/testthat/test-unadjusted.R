@@ -55,10 +55,6 @@ tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 
-# expect E[Y|A=1], E[Y|A=0]
-tmle_data <- data.table(A=tmle_task$get_tmle_node("A"), Y=tmle_task$get_tmle_node("Y"))
-tmle_data[, mean(Y), by=list(A)]
-EY1=tmle_task$d
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -77,10 +73,12 @@ Q <- cbind(EY0, EY1)
 # get G
 pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
+
+W = 0*Q # just need something here so tmle doesn't break, but it shouldn't be used
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,
-  W = tmle_task$get_tmle_node("W"),
+  W = W,
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
   pDelta1 = pDelta1

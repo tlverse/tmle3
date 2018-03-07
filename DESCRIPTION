@@ -31,7 +31,9 @@ Suggests:
     knitr,
     gentmle2,
     speedglm,
-    rmarkdown
+    rmarkdown,
+    nnls,
+    condensier
 Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,

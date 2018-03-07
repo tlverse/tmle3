@@ -21,7 +21,7 @@ insert_fun = function(name) {
 
 # Introduction
 
-The `tmle3` package differs from previous tmle software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE _framework_ itself. 
+The `tmle3` package differs from previous TMLE software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE _framework_ itself. 
 
 Therefore, we explicitly define objects to model the NPSEM, the factorized likelihood, counterfactual interventions, parameters, and TMLE update procedures. The hope is that, in so doing, it will be possible to support a substantial subset of the vast array of TML estimators currently present in the literature, as well as those that have yet to be developed. In this vignette, we describe these mathematical objects, their software analogs in `tmle3`, and illustrate with a motivating example, described below. At the end, we describe how these objects can be bundled into a complete specification of a TML estimation procedure that can be easily applied by an end user.
 
@@ -41,7 +41,7 @@ cpp$haz01 <- as.numeric(cpp$haz > 0)
 
 # NPSEM
 
-TMLE requires the specification of a Nonparametric Structual Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.
+TMLE requires the specification of a Nonparametric Structural Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.
 
 We start with a set of endogenous variables, $X=(X_1,\ldots,X_J)$, that we want to model the relationship between. Each $X_j$ is at least partially observed in the dataset. The NPSEM defines each variable ($X_j$) by a deterministic function ($f_{X_j}$) of its parent nodes ($Pa(X_j)$) and an exogenous random variable ($U_{X_j}$):
 
@@ -51,7 +51,7 @@ The exact functional form of the functions $f_{X_j}$ is left unspecified at this
 
 ### Causal Considerations
 
-The collection of exogenous random variables defined by the NPSEM is $U=(U_{X_1}, \ldots,U_{X_J})$. Typically, non-testable assumptions about the joint distribution of $U$ are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the `tmle3` framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal intepretation of estimates.
+The collection of exogenous random variables defined by the NPSEM is $U=(U_{X_1}, \ldots,U_{X_J})$. Typically, non-testable assumptions about the joint distribution of $U$ are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the `tmle3` framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal interpretation of estimates.
 
 ### Example
 
@@ -110,9 +110,9 @@ TMLE depends on estimates (or _a priori_ knowledge) of the functional form of th
 
 ### Likelihood Factor Objects
 
-`tmle3` models this likelihood as a list of likelihood factor objects, where each likeliood factor object describes either _a priori_ knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the `LF_base` base class, and there are different types depending on which of a range of estimation strategies or _a priori_ knowledge is appropriate.
+`tmle3` models this likelihood as a list of likelihood factor objects, where each likelihood factor object describes either _a priori_ knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the `LF_base` base class, and there are different types depending on which of a range of estimation strategies or _a priori_ knowledge is appropriate.
 
-In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that's required. Although conditional means are not truely likelihood factors, conditional means are also modelled using using likelihood factor objects.
+In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that's required. Although conditional means are not truly likelihood factors, conditional means are also modeled using using likelihood factor objects.
 
 ### `LF_emp`
 
@@ -126,7 +126,7 @@ Going forward, weights will be used if specified, although this is not yet suppo
 
 ### Specifying _a priori_ knowledge.
 
-The above to likelihood factor types, `LF_fit`, and `LF_emp`, are both likelihood factors where the factor is estimated from data. In some cases, users may have _a priori_ knowledge of a likelihood factor. For instance, in an RCT, there might be an unconditional probability of treatment of $p=0.5$. Additional likelihood factor types need to be create to accomodate this type of knowledge.
+The above to likelihood factor types, `LF_fit`, and `LF_emp`, are both likelihood factors where the factor is estimated from data. In some cases, users may have _a priori_ knowledge of a likelihood factor. For instance, in an RCT, there might be an unconditional probability of treatment of $p=0.5$. Additional likelihood factor types need to be create to accommodate this type of knowledge.
 
 ### Example
 
@@ -175,11 +175,11 @@ Below, we describe some examples of additional likelihood factors intended to be
 ### `LF_static`
 
 Likelihood factor for a static intervention, where all observations are set do a single intervention value $x'$: 
-$$f_{X_j | Pa(X_j)}(x_j | Pa(x_j))=\mathbb{I}(x_j = x')$$
+$$f_{X_j | Pa(X_j)}(x_j | Pa(x_j))=\mathbf{I}(x_j = x')$$
 
 ### Other intervention likelihood factor types
 
-Additional likelihood factor types need to be defined for other types of interventions, such as dynamic rules, and stochastic interventions. Currently, a prototype version of a stochastic shift intevention exists in `LF_shift`.
+Additional likelihood factor types need to be defined for other types of interventions, such as dynamic rules, and stochastic interventions. Currently, a prototype version of a stochastic shift intervention exists in `LF_shift`.
 
 ### Example
 
@@ -226,21 +226,21 @@ In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from 
 In `tmle3`, we define parameter objects as objects inheriting from the `Param_base` class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the "clever covariates" needed to calculate a TMLE update to the likelihood.
 
 
-Here, we define a treatment specific mean (TSM) parameter based on the intervetion we defined previously:
+Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:
 
 ```{r param}
 tsm <- define_param(Param_TSM, likelihood, intervention)
 ```
 
-todo: provide details about parameter defintion
+todo: provide details about parameter definition
 
 # Update Procedure
 
 The update procedure component of `tmle3` is currently in flux. The current structure is as follows:
 
-We have an object, `tmle3_Update`, which calculates the individual update steps using `tmle3_Update$update_step`. This adds to a `Likelihood$update_list`, so that future calls to `Likelihood$get_likelihoods` will return updated likelihood values. However, likelihood values are generally recomputed at each step, which requires applying all past updated. This is ridiculously inefficient. 
+We have an object, `tmle3_Update`, which calculates the individual update steps using `tmle3_Update$update_step`. This adds to a `Likelihood$update_list`, so that future calls to `Likelihood$get_likelihoods` will return updated likelihood values. However, likelihood values are generally recomputed at each step, which requires applying all past updates. This is ridiculously inefficient. 
 
-Instead, we need to do what previous tmle implementations have done, which is enumerate a list of required likelihood values, and update those values as we go (as opposed to updating the function and recalculating the value each time they are needed). This requires the ability to have the parameters enumerate which likelihood values they will need for defining the clever covariate, as well as parameter mapping and the EIF. This has not yet been implemented.
+Instead, we need to do what previous TMLE implementations have done, which is enumerate a list of required likelihood values, and update those values as we go (as opposed to updating the function and recalculating the value each time they are needed). This requires the ability to have the parameters enumerate which likelihood values they will need for defining the clever covariate, as well as parameter mapping and the EIF. This has not yet been implemented.
 
 Therefore, the update procedure, as well as the structure of the `Param_base` parameter objects are subject to substantial changes in the near future.
 
@@ -288,6 +288,7 @@ Currently, this is effectively a hard-coded list of those details: the structure
 # Conclusion
 
 Obviously, there's a lot more to do:
+
 * Cache and update likelihood values instead of recalculating 
 * Generalize `tmle3_Update`
 * Generalize `tmpe3_Spec`

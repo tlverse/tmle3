@@ -23,7 +23,7 @@ LF_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, type = "density", ...) {
+    initialize = function(name, ..., type = "density") {
       private$.name <- name
       private$.type <- type
     },

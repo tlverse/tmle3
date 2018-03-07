@@ -40,7 +40,7 @@ NULL
     message <- paste0(
       "Please note the package is in early stages of ",
       "development.", "\nCheck often for updates and report",
-      "bugs at http://github.com/jeremyrcoyle/tmle3.", "\n"
+      "bugs at http://github.com/tlverse/tmle3.", "\n"
     )
     packageStartupMessage("tmle3 ", v)
     packageStartupMessage(message)

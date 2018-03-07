@@ -26,18 +26,18 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \section{Constructor}{
 
-  \code{define_param(Param_ATT, observed_likelihood, outcome_node, intervention_list, ...)}
+  \code{define_param(Param_ATT, observed_likelihood, intervention_list, ..., outcome_node)}
 
   \describe{
     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
-    }
-    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
     }
     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
     }
     \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.
     }
     \item{\code{...}}{Not currently used.
+    }
+    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
     }
     }
 }
@@ -58,7 +58,7 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \seealso{
 Other Parameters: \code{\link{Param_TSM}},
-  \code{\link{Param_base}}, \code{\link{define_param}},
-  \code{\link{tmle3_Fit}}
+  \code{\link{Param_base}}, \code{\link{Param_mean}},
+  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \keyword{data}

@@ -54,10 +54,12 @@ Q_learner <- lrn1
 g_learner <- lrn1_dens
 learner_list <- list(Y=Q_learner, A=g_learner)
 
-tmle_spec <- tmle_tsm_all()
+tmle_spec <- tmle_TSM_all()
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+
+# define likelihood
 likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
 
 # define shift
@@ -73,8 +75,8 @@ shift_inverse <- function(tmle_task){
 }
 
 # define parameter
-intervention <- define_lf(LF_shift, "A", type="density", likelihood$factor_list[["A"]], shift_function, shift_inverse)
-tsm <- define_param(Param_TSM, likelihood, "Y", intervention)
+intervention <- define_lf(LF_shift, "A", likelihood$factor_list[["A"]], shift_function, shift_inverse)
+tsm <- define_param(Param_TSM, likelihood, intervention)
 
 # define update method (submodel + loss function)
 updater <- tmle_spec$make_updater(likelihood, list(tsm))

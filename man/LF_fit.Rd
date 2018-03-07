@@ -18,16 +18,16 @@ Currently, predictions are memoized to speed up multiple calls to \code{get_like
 }
 \section{Constructor}{
 
-  \code{define_lf(LF_fit, name, type = "density", learner, ...)}
+  \code{define_lf(LF_fit, name, learner, ..., type = "density")}
 
   \describe{
     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
-    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
-    }
     \item{\code{learner}}{An sl3 learner to be used to estimate the factor
     }
     \item{\code{...}}{Not currently used.
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }
     }
 }
@@ -41,7 +41,7 @@ Currently, predictions are memoized to speed up multiple calls to \code{get_like
 
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
-  \code{\link{LF_base}}, \code{\link{LF_np}},
+  \code{\link{LF_base}}, \code{\link{LF_emp}},
   \code{\link{LF_shift}}, \code{\link{LF_static}},
   \code{\link{Likelihood}}, \code{\link{define_lf}}
 }

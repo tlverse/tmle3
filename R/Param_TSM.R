@@ -1,6 +1,6 @@
 #' Treatment Specific Mean
 #'
-#' Parameter definition for the Treatment Specific Mean (TSM). Currently supports multiple static intervention nodes.
+#' Parameter definition for the Treatment Specific Mean (TSM): $E_W[E_{Y|A}(Y|A=a|W)|$. Currently supports multiple static intervention nodes.
 #' Does yet not support dynamic rule or stochastic interventions.
 #'
 #' @section Current Issues:
@@ -20,16 +20,16 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @section Constructor:
-#'   \code{define_param(Param_TSM, observed_likelihood, outcome_node, intervention_list, ...)}
+#'   \code{define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)}
 #'
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-#'     }
 #'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
 #'     }
 #'     \item{\code{...}}{Not currently used.
+#'     }
+#'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
 #'     }
 #'     }
 #'
@@ -48,8 +48,8 @@ Param_TSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, outcome_node = "Y", intervention_list) {
-      super$initialize(observed_likelihood, outcome_node)
+    initialize = function(observed_likelihood, intervention_list, ..., outcome_node = "Y") {
+      super$initialize(observed_likelihood, ..., outcome_node=outcome_node)
       private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
     },
     clever_covariates = function(tmle_task = NULL) {
@@ -85,7 +85,7 @@ Param_TSM <- R6Class(
       HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
-      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
+      EYA <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
       EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
@@ -96,13 +96,14 @@ Param_TSM <- R6Class(
         bounds <- variable_type$bounds
         scale <- bounds[2] - bounds[1]
         shift <- bounds[1]
-        EY <- EY * scale + shift
+        EYA <- EYA * scale + shift
         EY1 <- EY1 * scale + shift
       }
 
       # todo: separate out psi
+      # todo: make this a function of f(W)
       psi <- mean(EY1)
-      IC <- HA * (Y - EY) + EY1 - psi
+      IC <- HA * (Y - EYA) + EY1 - psi
 
       result <- list(psi = psi, IC = IC)
       return(result)

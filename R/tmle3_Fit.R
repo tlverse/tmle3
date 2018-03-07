@@ -19,6 +19,9 @@ tmle3_Fit <- R6Class(
   classname = "tmle3_Fit",
   public = list(
     initialize = function(tmle_task, likelihood, tmle_params, updater, max_it=100, ...) {
+      if(inherits(tmle_params, "Param_base")){
+        tmle_params <- list(tmle_params)
+      }
       private$.tmle_task <- tmle_task
       private$.likelihood <- likelihood
       private$.tmle_params <- tmle_params

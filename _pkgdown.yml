@@ -18,8 +18,6 @@ navbar:
   right:
     - icon: fa-github fa-lg
       href: https://github.com/tlverse/tmle3
-
-
 reference:
   - title: "Defining A Task"
     contents:
@@ -33,7 +31,7 @@ reference:
     contents:
       - Likelihood
       - CF_Likelihood
-  - title: "Likelhood Factors"
+  - title: "Likelihood Factors"
     contents:
       - define_lf
       - starts_with("LF_")

@@ -24,8 +24,6 @@
 #'   \describe{
 #'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
 #'     }
-#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
-#'     }
 #'     \item{\code{original_lf}}{\code{\link{LF_base}} object, the likelihood factor to shift
 #'     }
 #'     \item{\code{shift_function}}{\code{function}, defines the shift
@@ -52,8 +50,8 @@ LF_shift <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, type="density", original_lf, shift_function, shift_inverse, ...) {
-      super$initialize(name, type)
+    initialize = function(name, original_lf, shift_function, shift_inverse, ...) {
+      super$initialize(name, ..., type="density")
       private$.original_lf <- original_lf
       private$.shift_function <- shift_function
       private$.shift_inverse <- shift_inverse

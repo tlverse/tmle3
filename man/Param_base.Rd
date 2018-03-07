@@ -17,14 +17,14 @@ These objects also contain information about the efficient influence function (E
 }
 \section{Constructor}{
 
-  \code{define_param(Param_base, observed_likelihood, outcome_node, ...)}
+  \code{define_param(Param_base, observed_likelihood, ..., outcome_node)}
                      
   \describe{
     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
     }
-    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-    }
     \item{\code{...}}{Not currently used.
+    }
+    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
     }
     }
 }
@@ -66,7 +66,7 @@ These objects also contain information about the efficient influence function (E
 
 \seealso{
 Other Parameters: \code{\link{Param_ATT}},
-  \code{\link{Param_TSM}}, \code{\link{define_param}},
-  \code{\link{tmle3_Fit}}
+  \code{\link{Param_TSM}}, \code{\link{Param_mean}},
+  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \keyword{data}

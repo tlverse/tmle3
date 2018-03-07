@@ -29,6 +29,33 @@ f_contrast <- function(x) {
 }
 
 
+#' RR Function
+#'
+#'  \eqn{\frac{X_2}{X_1}}
+#'
+#' For use with \code{\link{delta_method}}
+#'
+#' @param x numeric vector, containing two parameter estimates
+#' @return \code{x[[2]]/x[[1]]}
+#' @export
+f_paf <- function(x) {
+  x[[2]]/x[[1]]
+}
+
+#' RR Gradient
+#'
+#'  \eqn{\frac{X_2}{X_1}}
+#'
+#' For use with \code{\link{delta_method}}
+#'
+#' @param x numeric vector, containing two parameter estimates
+#' @return \code{D(x[[2]])/x[[1]]}
+#' @export
+f_paf <- function(x) {
+  x[[2]]/x[[1]]
+}
+
+
 # todo: integrate with tmle_fit methods
 #' Summarize Estimate
 #'

@@ -166,9 +166,9 @@ task<span class="op">$</span><span class="kw">get_regression_task</span>(<span c
 <p>In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that’s required. Although conditional means are not truely likelihood factors, conditional means are also modelled using using likelihood factor objects.</p>
 <div id="lf_np" class="section level3">
 <h3 class="hasAnchor">
-<a href="#lf_np" class="anchor"></a><code>LF_np</code>
+<a href="#lf_np" class="anchor"></a><code>LF_emp</code>
 </h3>
-<p><code>LF_np</code> represents a likelihood factor to be estimated using NP-MLE. That is, probability mass <span class="math inline">\(1/n\)</span> is placed on each observation in the observed dataset. Going forward, weights will be used if specified, although this is not yet supported. <span class="math inline">\(LF_np\)</span> only supports marginal densities. That is the conditioning set <span class="math inline">\(Pa(X_j)=\{\emptyset\}\)</span> must be empty. Therefore, it is only appropriate for estimation of the marginal density of baseline covariates.</p>
+<p><code>LF_emp</code> represents a likelihood factor to be estimated using NP-MLE. That is, probability mass <span class="math inline">\(1/n\)</span> is placed on each observation in the observed dataset. Going forward, weights will be used if specified, although this is not yet supported. <span class="math inline">\(LF_emp\)</span> only supports marginal densities. That is the conditioning set <span class="math inline">\(Pa(X_j)=\{\emptyset\}\)</span> must be empty. Therefore, it is only appropriate for estimation of the marginal density of baseline covariates.</p>
 </div>
 <div id="lf_fit" class="section level3">
 <h3 class="hasAnchor">

@@ -19,14 +19,14 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 }
 \section{Constructor}{
 
-  \code{define_lf(LF_base, name, type = "density", ...)}
+  \code{define_lf(LF_base, name, ..., type = "density")}
                      
   \describe{
     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
     }
-    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
-    }
     \item{\code{...}}{Not currently used.
+    }
+    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }
     }
 }
@@ -69,7 +69,7 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
-  \code{\link{LF_fit}}, \code{\link{LF_np}},
+  \code{\link{LF_emp}}, \code{\link{LF_fit}},
   \code{\link{LF_shift}}, \code{\link{LF_static}},
   \code{\link{Likelihood}}, \code{\link{define_lf}}
 }

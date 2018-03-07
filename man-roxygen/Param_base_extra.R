@@ -1,12 +1,12 @@
 #' @section Constructor:
-#'   \code{define_param(Param_base, observed_likelihood, outcome_node, ...)}
+#'   \code{define_param(Param_base, observed_likelihood, ..., outcome_node)}
 #'                      
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-#'     }
 #'     \item{\code{...}}{Not currently used.
+#'     }
+#'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
 #'     }
 #'     }
 #'     

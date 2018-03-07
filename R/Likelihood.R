@@ -9,6 +9,7 @@
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 Lrnr_base
+#' @importFrom assertthat assert_that is.count is.flag
 #' @importFrom delayed bundle_delayed
 #' @import data.table
 #' @family Likelihood objects

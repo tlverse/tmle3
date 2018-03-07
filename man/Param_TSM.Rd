@@ -12,7 +12,7 @@ Param_TSM
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Treatment Specific Mean (TSM). Currently supports multiple static intervention nodes.
+Parameter definition for the Treatment Specific Mean (TSM): $E_W[E_{Y|A}(Y|A=a|W)|$. Currently supports multiple static intervention nodes.
 Does yet not support dynamic rule or stochastic interventions.
 }
 \section{Current Issues}{
@@ -26,16 +26,16 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \section{Constructor}{
 
-  \code{define_param(Param_TSM, observed_likelihood, outcome_node, intervention_list, ...)}
+  \code{define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)}
 
   \describe{
     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
     }
-    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-    }
     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
     }
     \item{\code{...}}{Not currently used.
+    }
+    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
     }
     }
 }
@@ -52,7 +52,7 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \seealso{
 Other Parameters: \code{\link{Param_ATT}},
-  \code{\link{Param_base}}, \code{\link{define_param}},
-  \code{\link{tmle3_Fit}}
+  \code{\link{Param_base}}, \code{\link{Param_mean}},
+  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \keyword{data}

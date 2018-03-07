@@ -15,16 +15,16 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @section Constructor:
-#'   \code{define_lf(LF_fit, name, type = "density", learner, ...)}
+#'   \code{define_lf(LF_fit, name, learner, ..., type = "density")}
 #'
 #'   \describe{
 #'     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
 #'     }
-#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
-#'     }
 #'     \item{\code{learner}}{An sl3 learner to be used to estimate the factor
 #'     }
 #'     \item{\code{...}}{Not currently used.
+#'     }
+#'     \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
 #'     }
 #'     }
 #'
@@ -40,8 +40,8 @@ LF_fit <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, type="density", learner, ...) {
-      super$initialize(name, type)
+    initialize = function(name, learner, ..., type="density") {
+      super$initialize(name, ..., type)
       private$.learner <- learner
     },
     delayed_train = function(tmle_task) {
@@ -91,7 +91,7 @@ LF_fit <- R6Class(
         unpacked <- sl3::unpack_predictions(preds)
         index_mat <- cbind(seq_along(observed), observed)
         likelihood <- unpacked[index_mat]
-      } else if (outcome_type$type == "continuous"){
+      } else if (outcome_type$type == "continuous") {
         likelihood <- unlist(preds)
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))

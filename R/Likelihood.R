@@ -9,6 +9,7 @@
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 Lrnr_base
+#' @importFrom assertthat assert_that is.count is.flag
 #' @importFrom delayed bundle_delayed
 #' @import data.table
 #' @family Likelihood objects
@@ -48,7 +49,7 @@ Likelihood <- R6Class(
       factor_list <- self$factor_list
       factor_names <- names(factor_list)
       task_nodes <- names(tmle_task$npsem)
-      if (!all(factor_names%in%task_nodes)) {
+      if (!all(factor_names %in% task_nodes)) {
         stop("factor_list and task$npsem must have matching names")
       }
     },

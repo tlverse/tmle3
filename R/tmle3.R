@@ -21,8 +21,9 @@ tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
   tmle_params <- tmle_spec$make_params(tmle_task, likelihood)
   params_time <- proc.time()
 
+  delta_params <- tmle_spec$make_delta_params()
   updater <- tmle_spec$make_updater(likelihood, tmle_params)
-  fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater)
+  fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater, delta_params)
   fit_time <- proc.time()
 
   fit$set_timings(start_time, task_time, likelihood_time, params_time, fit_time)

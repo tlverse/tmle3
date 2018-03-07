@@ -102,22 +102,22 @@
     <p>Using the functional delta method, get estimates and inference for a smooth function of parameters</p>
     
 
-    <pre class="usage"><span class='fu'>delta_method</span>(<span class='no'>estimates</span>, <span class='no'>f</span>, <span class='no'>df</span>)</pre>
+    <pre class="usage"><span class='fu'>delta_method</span>(<span class='no'>delta_param</span>, <span class='no'>estimates</span>, <span class='kw'>param_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>delta_param</th>
+      <td><p><code>list</code> of functions, defines the parameter</p></td>
+    </tr>
+    <tr>
       <th>estimates</th>
       <td><p><code>list</code>, TMLE estimates of parameter and ICs from <code><a href='tmle3_Fit.html'>tmle3_Fit</a>$estimates</code></p></td>
     </tr>
     <tr>
-      <th>f</th>
-      <td><p><code>function</code>, the function of parameter values</p></td>
-    </tr>
-    <tr>
-      <th>df</th>
-      <td><p><code>function</code>, the derivative of the function wrt the parameter values</p></td>
+      <th>param_names</th>
+      <td><p><code>character</code> vector, the names of the parameters</p></td>
     </tr>
     </table>
     

@@ -12,7 +12,7 @@ LF_shift
 \code{LF_base} object
 }
 \description{
-Shifts a likelihood factor according to a \code{shift_function}. 
+Shifts a likelihood factor according to a \code{shift_function}.
 In effect, \code{get_likelihood(tmle_task)} will instead the likelihood from the \code{original_lf},
 but for shifted value \eqn{A'=}\code{shift_function}\eqn{(A,W)}
 }
@@ -22,8 +22,6 @@ but for shifted value \eqn{A'=}\code{shift_function}\eqn{(A,W)}
 
   \describe{
     \item{\code{name}}{character, the name of the factor. Should match a node name in the nodes specified by \code{\link{tmle3_Task}$npsem}
-    }
-    \item{\code{type}}{character, either "density", for conditional density or, "mean" for conditional mean
     }
     \item{\code{original_lf}}{\code{\link{LF_base}} object, the likelihood factor to shift
     }
@@ -54,8 +52,8 @@ Muñoz, Iván Díaz, and Mark J van der Laan. 2012. “Population Intervention C
 }
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
-  \code{\link{LF_base}}, \code{\link{LF_fit}},
-  \code{\link{LF_np}}, \code{\link{LF_static}},
+  \code{\link{LF_base}}, \code{\link{LF_emp}},
+  \code{\link{LF_fit}}, \code{\link{LF_static}},
   \code{\link{Likelihood}}, \code{\link{define_lf}}
 }
 \keyword{data}

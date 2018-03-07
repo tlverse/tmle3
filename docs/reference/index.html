@@ -166,7 +166,7 @@
       </tbody><tbody>
         <tr>
           <th colspan="2">
-            <h2 id="section-likelhood-factors" class="hasAnchor"><a href="#section-likelhood-factors" class="anchor"></a>Likelhood Factors</h2>
+            <h2 id="section-likelihood-factors" class="hasAnchor"><a href="#section-likelihood-factors" class="anchor"></a>Likelihood Factors</h2>
             <p class="section-desc"></p>
           </th>
         </tr>
@@ -185,15 +185,15 @@
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
+            <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
           </td>
-          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+          <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="LF_np.html">LF_np</a></code> </p>
+            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
           </td>
-          <td><p>Likelihood Factor Estimated from Data using NP-MLE</p></td>
+          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -232,6 +232,12 @@
             <p><code><a href="Param_base.html">Param_base</a></code> </p>
           </td>
           <td><p>Base Class for Defining Parameters</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
+          </td>
+          <td><p>Mean of Outcome Node</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -287,15 +293,33 @@
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="discretize_variable.html">discretize_variable</a></code> </p>
+            <p><code><a href="delta_param_contrast.html">delta_param_contrast</a></code> </p>
           </td>
-          <td><p>Discretize Continuous Variable</p></td>
+          <td><p>PAR = Linear Contrast EY-EY0</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="f_contrast.html">f_contrast</a></code> </p>
+            <p><code><a href="delta_param_PAF.html">delta_param_PAF</a></code> </p>
           </td>
-          <td><p>Linear Contrast Function</p></td>
+          <td><p>PAF = 1 - (1/RR(EY/E0))</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="delta_param_PAR.html">delta_param_PAR</a></code> </p>
+          </td>
+          <td><p>PAR = Linear Contrast EY-EY0</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="delta_param_RR.html">delta_param_RR</a></code> </p>
+          </td>
+          <td><p>Risk Ratio EY1/EY0</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="discretize_variable.html">discretize_variable</a></code> </p>
+          </td>
+          <td><p>Discretize Continuous Variable</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -305,15 +329,15 @@
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
+            <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
           </td>
-          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+          <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="LF_np.html">LF_np</a></code> </p>
+            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
           </td>
-          <td><p>Likelihood Factor Estimated from Data using NP-MLE</p></td>
+          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -353,6 +377,12 @@
         </tr><tr>
           <!--  -->
           <td>
+            <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
+          </td>
+          <td><p>Mean of Outcome Node</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
             <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
           </td>
           <td><p>Treatment Specific Mean</p></td>
@@ -377,13 +407,19 @@
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="summary_from_estimate.html">summary_from_estimate</a></code> </p>
+            <p><code><a href="summary_from_estimates.html">summary_from_estimates</a></code> </p>
           </td>
-          <td><p>Summarize Estimate</p></td>
+          <td><p>Summarize Estimates</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="tmle_tsm_all.html">tmle_tsm_all</a></code> </p>
+            <p><code><a href="tmle_PAR.html">tmle_PAR</a></code> </p>
+          </td>
+          <td><p>PAR and PAF</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle_TSM_all.html">tmle_TSM_all</a></code> </p>
           </td>
           <td><p>All Treatment Specific Means</p></td>
         </tr><tr>
@@ -398,6 +434,18 @@
             <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node</a></code> </p>
           </td>
           <td><p>A Node (set of variables) in an NPSEM</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Spec_PAR.html">tmle3_Spec_PAR</a></code> </p>
+          </td>
+          <td><p>Defines a tmle (minus the data)</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="tmle3_Spec_TSM_all.html">tmle3_Spec_TSM_all</a></code> </p>
+          </td>
+          <td><p>Defines a tmle (minus the data)</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -434,7 +482,7 @@
       <li><a href="#section-defining-a-task">Defining A Task</a></li>
       <li><a href="#section-npsem">NPSEM</a></li>
       <li><a href="#section-likelihood">Likelihood</a></li>
-      <li><a href="#section-likelhood-factors">Likelhood Factors</a></li>
+      <li><a href="#section-likelihood-factors">Likelihood Factors</a></li>
       <li><a href="#section-parameters">Parameters</a></li>
       <li><a href="#section-propensity-scores">Propensity Scores</a></li>
       <li><a href="#section-index">Index</a></li>

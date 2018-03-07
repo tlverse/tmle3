@@ -20,7 +20,7 @@ Param_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(observed_likelihood, outcome_node) {
+    initialize = function(observed_likelihood, ..., outcome_node = "Y") {
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
     },

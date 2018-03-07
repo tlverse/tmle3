@@ -23,7 +23,7 @@ LF_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, type = "density", ...) {
+    initialize = function(name, ..., type = "density") {
       private$.name <- name
       private$.type <- type
     },
@@ -44,7 +44,7 @@ LF_base <- R6Class(
       stop("this is a base class")
     },
     cf_values = function(tmle_task) {
-      stop(sprintf("%s is not a valid intervention type", class(self)[1])      )
+      stop(sprintf("%s is not a valid intervention type", class(self)[1]))
     },
     print = function() {
       cat(sprintf("%s: %s\n", self$name, class(self)[1]))

@@ -17,5 +17,5 @@ Define a Parameter
 \seealso{
 Other Parameters: \code{\link{Param_ATT}},
   \code{\link{Param_TSM}}, \code{\link{Param_base}},
-  \code{\link{tmle3_Fit}}
+  \code{\link{Param_mean}}, \code{\link{tmle3_Fit}}
 }

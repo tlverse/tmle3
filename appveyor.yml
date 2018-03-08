@@ -47,7 +47,7 @@ notifications:
    to:
      - jeremyrcoyle@gmail.com
    subject: 'r-appveyor build {{status}}'
-   message: "https://ci.appveyor.com/project/jeremyrcoyle/tmle3"
+   message: "https://ci.appveyor.com/project/tlverse/tmle3"
    on_build_success: false
    on_build_failure: true
    on_build_status_changed: true

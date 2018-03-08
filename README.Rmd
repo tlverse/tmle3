@@ -15,9 +15,9 @@ knitr::opts_chunk$set(
 
 # R/`tmle3`
 
-[![Travis-CI Build Status](https://travis-ci.org/jeremyrcoyle/tmle3.svg?branch=master)](https://travis-ci.org/jeremyrcoyle/tmle3)
-[![AppVeyor Build  Status](https://ci.appveyor.com/api/projects/status/github/jeremyrcoyle/tmle3?branch=master&svg=true)](https://ci.appveyor.com/project/jeremyrcoyle/tmle3)
-[![Coverage Status](https://img.shields.io/codecov/c/github/jeremyrcoyle/tmle3/master.svg)](https://codecov.io/github/jeremyrcoyle/tmle3?branch=master)
+[![Travis-CI Build Status](https://travis-ci.org/tlverse/tmle3.svg?branch=master)](https://travis-ci.org/tlverse/tmle3)
+[![AppVeyor Build  Status](https://ci.appveyor.com/api/projects/status/github/tlverse/tmle3?branch=master&svg=true)](https://ci.appveyor.com/project/tlverse/tmle3)
+[![Coverage Status](https://img.shields.io/codecov/c/github/tlverse/tmle3/master.svg)](https://codecov.io/github/tlverse/tmle3?branch=master)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
@@ -53,7 +53,7 @@ The best place to get started is the Framework Overview, which describes the ind
 ## Issues
 
 If you encounter any bugs or have any specific feature requests, please [file an
-issue](https://github.com/jeremyrcoyle/tmle3/issues).
+issue](https://github.com/tlverse/tmle3/issues).
 
 ---
 

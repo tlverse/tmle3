@@ -12,7 +12,6 @@ r_packages:
   - drat
 
 r:
-  - oldrel
   - release
   - devel
 

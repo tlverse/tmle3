@@ -81,7 +81,7 @@
 <div id="introduction" class="section level1">
 <h1 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h1>
-<p>The <code>tmle3</code> package differs from previous tmle software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE <em>framework</em> itself.</p>
+<p>The <code>tmle3</code> package differs from previous TMLE software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE <em>framework</em> itself.</p>
 <p>Therefore, we explicitly define objects to model the NPSEM, the factorized likelihood, counterfactual interventions, parameters, and TMLE update procedures. The hope is that, in so doing, it will be possible to support a substantial subset of the vast array of TML estimators currently present in the literature, as well as those that have yet to be developed. In this vignette, we describe these mathematical objects, their software analogs in <code>tmle3</code>, and illustrate with a motivating example, described below. At the end, we describe how these objects can be bundled into a complete specification of a TML estimation procedure that can be easily applied by an end user.</p>
 <div id="motivating-example" class="section level3">
 <h3 class="hasAnchor">
@@ -99,14 +99,14 @@ cpp<span class="op">$</span>haz01 &lt;-<span class="st"> </span><span class="kw"
 <div id="npsem" class="section level1">
 <h1 class="hasAnchor">
 <a href="#npsem" class="anchor"></a>NPSEM</h1>
-<p>TMLE requires the specification of a Nonparametric Structual Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.</p>
+<p>TMLE requires the specification of a Nonparametric Structural Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.</p>
 <p>We start with a set of endogenous variables, <span class="math inline">\(X=(X_1,\ldots,X_J)\)</span>, that we want to model the relationship between. Each <span class="math inline">\(X_j\)</span> is at least partially observed in the dataset. The NPSEM defines each variable (<span class="math inline">\(X_j\)</span>) by a deterministic function (<span class="math inline">\(f_{X_j}\)</span>) of its parent nodes (<span class="math inline">\(Pa(X_j)\)</span>) and an exogenous random variable (<span class="math inline">\(U_{X_j}\)</span>):</p>
 <p><span class="math display">\[X_j=f_{X_j}(Pa(X_j), U_{X_j}),\;\; j\in \{1, \ldots, J\}\]</span></p>
 <p>The exact functional form of the functions <span class="math inline">\(f_{X_j}\)</span> is left unspecified at this step. If there is <em>a priori</em> knowledge for some of these functions, that can be specified during the likelihood step below.</p>
 <div id="causal-considerations" class="section level3">
 <h3 class="hasAnchor">
 <a href="#causal-considerations" class="anchor"></a>Causal Considerations</h3>
-<p>The collection of exogenous random variables defined by the NPSEM is <span class="math inline">\(U=(U_{X_1}, \ldots,U_{X_J})\)</span>. Typically, non-testable assumptions about the joint distribution of <span class="math inline">\(U\)</span> are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the <code>tmle3</code> framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal intepretation of estimates.</p>
+<p>The collection of exogenous random variables defined by the NPSEM is <span class="math inline">\(U=(U_{X_1}, \ldots,U_{X_J})\)</span>. Typically, non-testable assumptions about the joint distribution of <span class="math inline">\(U\)</span> are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the <code>tmle3</code> framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal interpretation of estimates.</p>
 </div>
 <div id="example" class="section level3">
 <h3 class="hasAnchor">
@@ -166,8 +166,8 @@ tmle_task<span class="op">$</span><span class="kw">get_regression_task</span>(<s
 <div id="likelihood-factor-objects" class="section level3">
 <h3 class="hasAnchor">
 <a href="#likelihood-factor-objects" class="anchor"></a>Likelihood Factor Objects</h3>
-<p><code>tmle3</code> models this likelihood as a list of likelihood factor objects, where each likeliood factor object describes either <em>a priori</em> knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the <code>LF_base</code> base class, and there are different types depending on which of a range of estimation strategies or <em>a priori</em> knowledge is appropriate.</p>
-<p>In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that’s required. Although conditional means are not truely likelihood factors, conditional means are also modelled using using likelihood factor objects.</p>
+<p><code>tmle3</code> models this likelihood as a list of likelihood factor objects, where each likelihood factor object describes either <em>a priori</em> knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the <code>LF_base</code> base class, and there are different types depending on which of a range of estimation strategies or <em>a priori</em> knowledge is appropriate.</p>
+<p>In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that’s required. Although conditional means are not truly likelihood factors, conditional means are also modeled using using likelihood factor objects.</p>
 </div>
 <div id="lf_emp" class="section level3">
 <h3 class="hasAnchor">
@@ -184,7 +184,7 @@ tmle_task<span class="op">$</span><span class="kw">get_regression_task</span>(<s
 <div id="specifying-a-priori-knowledge-" class="section level3">
 <h3 class="hasAnchor">
 <a href="#specifying-a-priori-knowledge-" class="anchor"></a>Specifying <em>a priori</em> knowledge.</h3>
-<p>The above to likelihood factor types, <code>LF_fit</code>, and <code>LF_emp</code>, are both likelihood factors where the factor is estimated from data. In some cases, users may have <em>a priori</em> knowledge of a likelihood factor. For instance, in an RCT, there might be an unconditional probability of treatment of <span class="math inline">\(p=0.5\)</span>. Additional likelihood factor types need to be create to accomodate this type of knowledge.</p>
+<p>The above to likelihood factor types, <code>LF_fit</code>, and <code>LF_emp</code>, are both likelihood factors where the factor is estimated from data. In some cases, users may have <em>a priori</em> knowledge of a likelihood factor. For instance, in an RCT, there might be an unconditional probability of treatment of <span class="math inline">\(p=0.5\)</span>. Additional likelihood factor types need to be create to accommodate this type of knowledge.</p>
 </div>
 <div id="example-1" class="section level3">
 <h3 class="hasAnchor">
@@ -229,12 +229,12 @@ likelihood &lt;-<span class="st"> </span>likelihood_def<span class="op">$</span>
 <h3 class="hasAnchor">
 <a href="#lf_static" class="anchor"></a><code>LF_static</code>
 </h3>
-<p>Likelihood factor for a static intervention, where all observations are set do a single intervention value <span class="math inline">\(x'\)</span>: <span class="math display">\[f_{X_j | Pa(X_j)}(x_j | Pa(x_j))=\mathbb{I}(x_j = x')\]</span></p>
+<p>Likelihood factor for a static intervention, where all observations are set do a single intervention value <span class="math inline">\(x'\)</span>: <span class="math display">\[f_{X_j | Pa(X_j)}(x_j | Pa(x_j))=\mathbf{I}(x_j = x')\]</span></p>
 </div>
 <div id="other-intervention-likelihood-factor-types" class="section level3">
 <h3 class="hasAnchor">
 <a href="#other-intervention-likelihood-factor-types" class="anchor"></a>Other intervention likelihood factor types</h3>
-<p>Additional likelihood factor types need to be defined for other types of interventions, such as dynamic rules, and stochastic interventions. Currently, a prototype version of a stochastic shift intevention exists in <code>LF_shift</code>.</p>
+<p>Additional likelihood factor types need to be defined for other types of interventions, such as dynamic rules, and stochastic interventions. Currently, a prototype version of a stochastic shift intervention exists in <code>LF_shift</code>.</p>
 </div>
 <div id="example-2" class="section level3">
 <h3 class="hasAnchor">
@@ -279,16 +279,16 @@ likelihood &lt;-<span class="st"> </span>likelihood_def<span class="op">$</span>
 <a href="#target-parameter" class="anchor"></a>Target Parameter</h1>
 <p>In the TMLE framework, we define a target parameter <span class="math inline">\(\Psi(P)\)</span> as a mapping from a probability distribution <span class="math inline">\(P \in \mathcal{M}\)</span> to a set of real numbers <span class="math inline">\(\mathbb{R}^d\)</span>. Here <span class="math inline">\(\mathcal{M}\)</span> is implied by the NPSEM we defined above.</p>
 <p>In <code>tmle3</code>, we define parameter objects as objects inheriting from the <code>Param_base</code> class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the “clever covariates” needed to calculate a TMLE update to the likelihood.</p>
-<p>Here, we define a treatment specific mean (TSM) parameter based on the intervetion we defined previously:</p>
+<p>Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tsm &lt;-<span class="st"> </span><span class="kw"><a href="../reference/define_param.html">define_param</a></span>(Param_TSM, likelihood, intervention)</code></pre></div>
-<p>todo: provide details about parameter defintion</p>
+<p>todo: provide details about parameter definition</p>
 </div>
 <div id="update-procedure" class="section level1">
 <h1 class="hasAnchor">
 <a href="#update-procedure" class="anchor"></a>Update Procedure</h1>
 <p>The update procedure component of <code>tmle3</code> is currently in flux. The current structure is as follows:</p>
-<p>We have an object, <code>tmle3_Update</code>, which calculates the individual update steps using <code>tmle3_Update$update_step</code>. This adds to a <code>Likelihood$update_list</code>, so that future calls to <code>Likelihood$get_likelihoods</code> will return updated likelihood values. However, likelihood values are generally recomputed at each step, which requires applying all past updated. This is ridiculously inefficient.</p>
-<p>Instead, we need to do what previous tmle implementations have done, which is enumerate a list of required likelihood values, and update those values as we go (as opposed to updating the function and recalculating the value each time they are needed). This requires the ability to have the parameters enumerate which likelihood values they will need for defining the clever covariate, as well as parameter mapping and the EIF. This has not yet been implemented.</p>
+<p>We have an object, <code>tmle3_Update</code>, which calculates the individual update steps using <code>tmle3_Update$update_step</code>. This adds to a <code>Likelihood$update_list</code>, so that future calls to <code>Likelihood$get_likelihoods</code> will return updated likelihood values. However, likelihood values are generally recomputed at each step, which requires applying all past updates. This is ridiculously inefficient.</p>
+<p>Instead, we need to do what previous TMLE implementations have done, which is enumerate a list of required likelihood values, and update those values as we go (as opposed to updating the function and recalculating the value each time they are needed). This requires the ability to have the parameters enumerate which likelihood values they will need for defining the clever covariate, as well as parameter mapping and the EIF. This has not yet been implemented.</p>
 <p>Therefore, the update procedure, as well as the structure of the <code>Param_base</code> parameter objects are subject to substantial changes in the near future.</p>
 <p>Currently, the <code>tmle3_Update</code> object also has a hard-coded submodel (logistic), loss function (loglikelihood), and solver (glm). These need to be generalized so updates can be done for a range of submodels, loss functions, and solvers.</p>
 <p>Current Usage:</p>
@@ -338,7 +338,21 @@ tmle_fit_from_spec &lt;-<span class="st"> </span><span class="kw"><a href="../re
 <div id="conclusion" class="section level1">
 <h1 class="hasAnchor">
 <a href="#conclusion" class="anchor"></a>Conclusion</h1>
-<p>Obviously, there’s a lot more to do: * Cache and update likelihood values instead of recalculating * Generalize <code>tmle3_Update</code> * Generalize <code>tmpe3_Spec</code> * Better handling of bounded continuous outcomes * Expand documentation of parameter defintions * Add support for dynamic rules and stochastic interventions * CV-TMLE * C-TMLE * IPCW-TMLE * Extension to longitudinal</p>
+<p>Obviously, there’s a lot more to do:</p>
+<ul>
+<li>Cache and update likelihood values instead of recalculating</li>
+<li>Generalize <code>tmle3_Update</code>
+</li>
+<li>Generalize <code>tmpe3_Spec</code>
+</li>
+<li>Better handling of bounded continuous outcomes</li>
+<li>Expand documentation of parameter defintions</li>
+<li>Add support for dynamic rules and stochastic interventions</li>
+<li>CV-TMLE</li>
+<li>C-TMLE</li>
+<li>IPCW-TMLE</li>
+<li>Extension to longitudinal</li>
+</ul>
 </div>
 </div>
   </div>

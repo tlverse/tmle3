@@ -41,7 +41,7 @@ LF_fit <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, learner, ..., type="density") {
-      super$initialize(name, ..., type)
+      super$initialize(name, ..., type=type)
       private$.learner <- learner
     },
     delayed_train = function(tmle_task) {

@@ -33,7 +33,8 @@ Suggests:
     speedglm,
     rmarkdown,
     nnls,
-    condensier
+    condensier,
+    tmle
 Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/delayed,

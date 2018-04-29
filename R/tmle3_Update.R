@@ -13,14 +13,10 @@ tmle3_Update <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(tmle_params) {
-      if (inherits(tmle_params, "Param_base")) {
-        tmle_params <- list(tmle_params)
-      }
-      private$.tmle_params <- tmle_params
-      private$.update_nodes <- unique(unlist(lapply(tmle_params, `[[`, "update_nodes")))
+    initialize = function(){
+      
     },
-    update_step = function(tmle_task, likelihood) {
+    update_step = function(likelihood, tmle_task) {
       update_node <- self$update_nodes[[1]]
       likelihood_values <- likelihood$get_likelihoods(tmle_task, update_node)
       submodel_data <- self$generate_submodel_data(tmle_task, likelihood_values, update_node)
@@ -78,7 +74,15 @@ tmle3_Update <- R6Class(
     epsilons = function() {
       return(private$.epsilons)
     },
-    tmle_params = function() {
+    tmle_params = function(new_params = NULL) {
+      if(!is.null(new_params)){
+        if (inherits(new_params, "Param_base")) {
+        new_params <- list(new_params)
+      }
+      private$.tmle_params <- new_params
+      private$.update_nodes <- unique(unlist(lapply(new_params, `[[`, "update_nodes")))
+
+      }
       return(private$.tmle_params)
     },
     update_nodes = function() {

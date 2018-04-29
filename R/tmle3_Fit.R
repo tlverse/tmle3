@@ -28,6 +28,7 @@ tmle3_Fit <- R6Class(
       private$.likelihood <- likelihood
       private$.tmle_params <- tmle_params
       private$.delta_params <- delta_params
+      updater$tmle_params <- tmle_params
       private$.updater <- updater
       initial_psi <- sapply(self$tmle_params, function(tmle_param) tmle_param$estimates(self$tmle_task)$psi)
       private$.initial_psi <- initial_psi
@@ -125,7 +126,7 @@ tmle3_Fit <- R6Class(
       ED_criterion <- 1 / self$tmle_task$nrow
 
       for (steps in 1:max_it) {
-        self$updater$update_step(self$tmle_task, self$likelihood)
+        self$updater$update_step(self$likelihood, self$tmle_task)
 
         estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(self$tmle_task))
         ICs <- sapply(estimates, `[[`, "IC")

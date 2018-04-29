@@ -58,48 +58,32 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_initial_likelihoods = function(tmle_task, node) {
-      likelihood_factor <- self$factor_list[[node]]
-      # # todo: make the likelihood_factors smart about this
-      # if (likelihood_factor$type == "mean") {
-      #   likes <- likelihood_factor$get_mean(tmle_task)
-      # } else {
-      #   likes <- likelihood_factor$get_likelihood(tmle_task)
-      # }
-      return(likelihood_factor$get_likelihood(tmle_task))
-    },
-    get_likelihoods = function(tmle_task, node) {
+    get_likelihood = function(tmle_task, node) {
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
-      value_step <- self$cache$get_update_step(likelihood_factor$uuid, tmle_task$uuid)
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task)
       
-      if(is.null(value_step)){
+      if(is.null(likelihood_values)){
         # if not, generate new ones 
         likelihood_values <- likelihood_factor$get_likelihood(tmle_task)
-        value_step <- 0
-      } else {
-        likelihood_values <- self$cache$get_values(likelihood_factor$uuid, tmle_task$uuid)
+        self$cache$set_values(likelihood_factor, tmle_task, 0, likelihood_values)
       }
-      
-      # apply updates if necessary
-      # todo: maybe let updater handle this logic
-      # think about what happens if we actually need an *older* likelihood value
-      if(!is.null(self$updater)&&(node==self$updater$update_nodes)&&(value_step<self$updater$step_number)){
-        updates <- seq(from=value_step+1, to=self$updater$step_number)
-        epsilons <- self$updater$epsilons[updates]
-        likelihood_values <- self$updater$apply_updates(tmle_task, self, likelihood_values, epsilons)
-        value_step <- self$updater$step_number
-      }
-      
-      # todo: this sets values even if we haven't changed anything
-      self$cache$set_values(likelihood_factor$uuid, tmle_task$uuid, value_step, likelihood_values)
-      
       
       return(likelihood_values)
     },
-    update = function(update_node, updated_likelihood){
-      likelihood_factor <- self$factor_list[[update_node]]
-      self$cache$set_values(likelihood_factor$uuid, self$training_task$uuid, self$updater$step_number, updated_likelihood)
+    get_likelihoods = function(tmle_task, nodes=NULL){
+      if(is.null(nodes)){
+        nodes <- names(self$factor_list)
+      }      
+      
+      if(length(nodes)>1){
+        all_likelihoods <- lapply(nodes, function(node){self$get_likelihood(tmle_task, node)})
+        likelihood_dt <- as.data.table(all_likelihoods)
+        setnames(likelihood_dt, nodes)
+        return(likelihood_dt)
+      } else {
+        return(self$get_likelihood(tmle_task, nodes[[1]]))
+      }
     },
     get_possible_counterfactuals = function(nodes=NULL) {
 

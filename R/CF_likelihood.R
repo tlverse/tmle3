@@ -58,6 +58,20 @@ CF_Likelihood <- R6Class(
       cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       cf_tasks <- list(cf_task)
       return(cf_tasks)
+    },
+    
+    get_likelihood = function(tmle_task, node){
+      # todo: this will not handle the case where the cf_likelihood is based on
+      # an updated likelihood factor (e.g. old tx shift)
+      if(node %in% self$intervention_nodes){
+        likelihood_values <- super$get_likelihood(tmle_task, node)
+      } else {
+        # dispatch to observed likelihood if not an intervention node
+        # that way, we get updates to those nodes
+        likelihood_values <- self$observed_likelihood$get_likelihood(tmle_task, node)
+      }
+      
+      return(likelihood_values)
     }
   ),
   active = list(

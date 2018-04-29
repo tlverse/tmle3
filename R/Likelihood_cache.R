@@ -19,33 +19,22 @@ Likelihood_cache <- R6Class(
         values = list()
       )
     },
-    column_name = function(lf_uuid, task_uuid) {
-      return(sprintf("%s_%s", lf_uuid, task_uuid))
-    },
-    find_match = function(search_lf_uuid, search_task_uuid){
-      matching_index <- private$.cache[,which(lf_uuid == search_lf_uuid &
-                                                task_uuid == search_task_uuid)] 
+    find_match = function(likelihood_factor, tmle_task){
+      matching_index <- private$.cache[,which(lf_uuid == likelihood_factor$uuid &
+                                                task_uuid == tmle_task$uuid)] 
       return(matching_index)
     },
-    get_update_step = function(lf_uuid, task_uuid) {
-      matching_index <- self$find_match(lf_uuid,task_uuid)
+    get_update_step = function(likelihood_factor, tmle_task) {
+      matching_index <- self$find_match(likelihood_factor, tmle_task)
       if (length(matching_index) == 0) {
         return(NULL)
       } else {
         return(private$.cache$update_step[[matching_index]])  
       }
     },
-    get_values = function(lf_uuid, task_uuid, update_step = 0) {
-      # 	lf_uuid <- likelihood_factor$uuid
-      # task_uuid <- tmle_task$uuid
-      # column_name <- self$column_name(lf_uuid, task_uuid)
-      # if(column_name%in%names(self$cache)){
-      # 	return(private$.value_cache[[column_name]])
-      # } else {
-      # 	return(NULL)
-      # }
+    get_values = function(likelihood_factor, tmle_task, update_step = 0) {
 
-      matching_index <- self$find_match(lf_uuid, task_uuid)
+      matching_index <- self$find_match(likelihood_factor, tmle_task)
       
       if (length(matching_index) == 0) {
         return(NULL)
@@ -54,15 +43,15 @@ Likelihood_cache <- R6Class(
       }
       
     },
-    set_values = function(lf_uuid, task_uuid, update_step = 0, values) {
+    set_values = function(likelihood_factor, tmle_task, update_step = 0, values) {
       new_data <- list(
-        lf_uuid = lf_uuid,
-        task_uuid = task_uuid,
+        lf_uuid = likelihood_factor$uuid,
+        task_uuid = tmle_task$uuid,
         update_step = update_step,
         values = list(values)
       )
       
-      matching_index <- self$find_match(lf_uuid, task_uuid)
+      matching_index <- self$find_match(likelihood_factor, tmle_task)
       
       if (length(matching_index) == 0) {
         private$.cache <- rbindlist(list(private$.cache, new_data))

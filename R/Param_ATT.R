@@ -75,31 +75,19 @@ Param_ATT <- R6Class(
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
 
-      # todo: rethink variable names
-
-      # todo: extend for stochastic interventions
-      cfs <- self$cf_likelihood_treatment$get_possible_counterfacutals()
-      cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
-
-
-      Y <- tmle_task$get_tmle_node(self$outcome_node)
-
-
-      # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
-
-      # clever_covariates happen here (for all fit params), but this is repeated computation
-      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
-
-      # clever_covariates happen here (for all fit params)
-      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
-
-      EY1 <-
-        # collapse across multiple intervention nodes
-        if (!is.null(ncol(HA)) && ncol(HA) > 1) {
-          HA <- apply(HA, 1, prod)
-        }
-      return(list(Y = unlist(HA, use.names = FALSE)))
+      pA_overall=mean(pA)
+      
+      # todo: extend for stochastic
+      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
+      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
+      
+      EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node)
+      EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node)
+      
+      psi <- mean((EY1-EY0) * (pA/pA_overall))
+      CY <- (EY1-EY0) - psi
+      
+      return(list(Y = HA, A = CY))
     },
     estimates = function(tmle_task = NULL) {
       if (is.null(tmle_task)) {
@@ -159,7 +147,7 @@ Param_ATT <- R6Class(
       return(self$cf_likelihood_control$intervention_list)
     },
     update_nodes = function() {
-      return(self$outcome_node)
+      return(c(self$outcome_node, self$intervention_list_treatment))
     }
   ),
   private = list(

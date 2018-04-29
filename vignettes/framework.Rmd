@@ -232,9 +232,11 @@ Here, we define a treatment specific mean (TSM) parameter based on the intervent
 tsm <- define_param(Param_TSM, likelihood, intervention)
 ```
 
-todo: provide details about parameter definition
+**todo: provide details about parameter definition**
 
 # Update Procedure
+
+**todo: update with details about Targeted_Likelihood and caching**
 
 The update procedure component of `tmle3` is currently in flux. The current structure is as follows:
 
@@ -289,7 +291,6 @@ Currently, this is effectively a hard-coded list of those details: the structure
 
 Obviously, there's a lot more to do:
 
-* Cache and update likelihood values instead of recalculating 
 * Generalize `tmle3_Update`
 * Generalize `tmpe3_Spec`
 * Better handling of bounded continuous outcomes

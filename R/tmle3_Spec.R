@@ -38,7 +38,7 @@ tmle3_Spec <- R6Class(
       tmle_task <- tmle3_Task$new(data, npsem = npsem)
       return(tmle_task)
     },
-    make_likelihood = function(tmle_task, learner_list = NULL) {
+    make_initial_likelihood = function(tmle_task, learner_list = NULL) {
       # todo: generalize
       factor_list <- list(
         define_lf(LF_emp, "W"),
@@ -52,14 +52,15 @@ tmle3_Spec <- R6Class(
       likelihood <- likelihood_def$train(tmle_task)
       return(likelihood)
     },
-    make_params = function(tmle_task, likelihood) {
-      stop("this is a base class, try tsm_Spec_TSM_all")
+    make_updater = function() {
+      updater <- tmle3_Update$new()
     },
-    make_updater = function(likelihood, tmle_params) {
-      # todo: generalize
-      updater <- tmle3_Update$new(tmle_params)
-      likelihood$updater <- updater
-      return(updater)
+    make_targeted_likelihood = function(likelihood, updater){
+     targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
+     return(targeted_likelihood) 
+    },
+    make_params = function(tmle_task, targeted_likelihood) {
+      stop("this is a base class, try tsm_Spec_TSM_all")
     },
     make_delta_params = function() {
       return(NULL)

@@ -42,48 +42,31 @@ tmle_spec <- tmle_TSM_all()
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # define likelihood
-likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
-# likelihood_cache <- likelihood$cache
-
-# debugonce(likelihood$get_likelihoods)
-
-
-
-
-# # debugonce(likelihood_cache$set_values)
-# likelihood_cache$set_values(lf$uuid, tmle_task$uuid, 1, obs_A)
-# likelihood_cache$get_update_step(lf, tmle_task)
+initial_likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
 
 # define parameter
 intervention <- define_lf(LF_static, "A", value = 1)
 # cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
-
-tsm <- define_param(Param_TSM, likelihood, intervention)
-
-
 # define update method (submodel + loss function)
-updater <- tmle_spec$make_updater(likelihood, list(tsm))
+# updater <- tmle_spec$make_updater(likelihood, list(tsm))
+updater <- tmle3_Update$new()
+
+targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 
-# fit tmle update
-# debug(likelihood$get_likelihoods)
-# debug(updater$update_step)
-# debug(updater$generate_submodel_data)
-# debugonce(likelihood$factor_list[["Y"]]$get_likelihood)
-# likelihood$get_likelihoods(tmle_task,"Y")
-# debugonce(likelihood$get_likelihoods)
-mean(likelihood$get_likelihoods(tmle_task,"Y"))
-# tsm$estimates(tmle_task)
-# likelihood$cache$cache
+#todo: make params not store likelihood info internally!
+tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 
-# debug(likelihood$factor_list[["Y"]]$update_likelihood)
-# debug(updater$generate_submodel_data)
-# debug(likelihood$update)
-# debug(likelihood$get_likelihoods)
-# debug(likelihood$update)
-tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
-mean(likelihood$get_likelihoods(tmle_task,"Y"))
+
+updater$tmle_params <- tsm
+
+
+mean(targeted_likelihood$get_likelihoods(tmle_task,"Y"))
+
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
+
+mean(targeted_likelihood$get_likelihoods(tmle_task,"Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -101,7 +84,7 @@ cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
 EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
-EY1_final <- likelihood$get_likelihoods(cf_task, "Y")
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 

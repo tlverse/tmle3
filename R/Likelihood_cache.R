@@ -1,4 +1,4 @@
-# Cache Likelihood values, update those values
+#' Cache Likelihood values, update those values
 #' @docType class
 #'
 #' @importFrom R6 R6Class
@@ -93,20 +93,3 @@ Likelihood_cache <- R6Class(
     .cache = NULL
   )
 )
-
-
-# update_likelihood = function(updater, epsilon, tmle_task){
-#               values <- self$likelihood_cache$get_values(self$uuid, tmle_task$uuid)
-#   if(is.null(values)){
-#   }
-#     self$likelihood_cache$set_values(self$uuid, tmle_task$uuid, values)
-
-
-#   #task_uuids <- names(private$.memoized_values)
-#   #todo: do this for all stored tasks
-#   task_uuid <- tmle_task$uuid
-#   likelihood_values <- self$likelihood_cache$get_values(self$uuid, tmle_task$uuid)
-#   submodel_data <- updater$generate_submodel_data(tmle_task, likelihood_values, self$name)
-#   updated_likelihood <- updater$apply_submodel(submodel_data, epsilon)
-#   self$likelihood_cache$set_values(self$uuid, tmle_task$uuid, updated_likelihood)
-# },    

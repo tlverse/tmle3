@@ -58,7 +58,7 @@ tmle3_Spec <- R6Class(
     make_updater = function(likelihood, tmle_params) {
       # todo: generalize
       updater <- tmle3_Update$new(tmle_params)
-      likelihood$update_list <- updater
+      likelihood$updater <- updater
       return(updater)
     },
     make_delta_params = function() {

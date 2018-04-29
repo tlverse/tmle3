@@ -14,7 +14,6 @@ LF_fit
 \description{
 Uses an \code{sl3} learner to estimate a likelihood factor from data.
 Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
-Currently, predictions are memoized to speed up multiple calls to \code{get_likelihood} and \code{get_mean} for the same data.
 }
 \section{Constructor}{
 

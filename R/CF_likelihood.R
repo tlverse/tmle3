@@ -35,7 +35,7 @@ CF_Likelihood <- R6Class(
       private$.intervention_nodes <- intervention_nodes
       private$.cf_tasks <- self$enumerate_cf_tasks(observed_likelihood$training_task)
       params <- args_to_list()
-      super$initialize(params)
+      super$initialize(params, cache=observed_likelihood$cache)
     },
     enumerate_cf_tasks = function(tmle_task) {
       intervention_list <- self$intervention_list
@@ -81,8 +81,8 @@ CF_Likelihood <- R6Class(
       fl[self$intervention_nodes] <- self$intervention_list[self$intervention_nodes]
       return(fl)
     },
-    update_list = function() {
-      self$observed_likelihood$update_list
+    updater = function() {
+      self$observed_likelihood$updater
     },
     cf_tasks = function() {
       return(private$.cf_tasks)

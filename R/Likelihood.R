@@ -30,13 +30,17 @@ Likelihood <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(factor_list, ...) {
+    initialize = function(factor_list, cache = NULL, ...) {
       params <- args_to_list()
 
       factor_names <- sapply(factor_list, `[[`, "name")
       names(factor_list) <- factor_names
       params$factor_list <- factor_list
-
+      if(is.null(cache)){
+        cache <- Likelihood_cache$new()
+      }
+      private$.cache <- cache
+      
       super$initialize(params)
       
     },
@@ -65,25 +69,37 @@ Likelihood <- R6Class(
       return(likelihood_factor$get_likelihood(tmle_task))
     },
     get_likelihoods = function(tmle_task, node) {
-      return(self$get_initial_likelihoods(tmle_task,node))
-      # task_uuid <- tmle_task$uuid
+      likelihood_factor <- self$factor_list[[node]]
+      # first check for cached values for this task
+      value_step <- self$cache$get_update_step(likelihood_factor$uuid, tmle_task$uuid)
       
-      # # first check for cached values for this task
-      # likelihood_values <- private$.likelihood_values[[task_uuid]]
+      if(is.null(value_step)){
+        # if not, generate new ones 
+        likelihood_values <- likelihood_factor$get_likelihood(tmle_task)
+        value_step <- 0
+      } else {
+        likelihood_values <- self$cache$get_values(likelihood_factor$uuid, tmle_task$uuid)
+      }
       
-      # # if not, generate new ones 
-      # if(is.null(likelihood_values)){
-      #   likelihood_values <- self$get_initial_likelihoods(tmle_task)
+      # apply updates if necessary
+      # todo: maybe let updater handle this logic
+      # think about what happens if we actually need an *older* likelihood value
+      if(!is.null(self$updater)&&(node==self$updater$update_nodes)&&(value_step<self$updater$step_number)){
+        updates <- seq(from=value_step+1, to=self$updater$step_number)
+        epsilons <- self$updater$epsilons[updates]
+        likelihood_values <- self$updater$apply_updates(tmle_task, self, likelihood_values, epsilons)
+        value_step <- self$updater$step_number
+      }
       
-        
-      #   # and then apply updates
-      #   if(!is.null(self$update_list)) {
-      #     likelihood_values <- updater$apply_updates(tmle_task, self, likelihood_values)
-      #   }
-      #   private$.likelihood_values[[task_uuid]] <- likelihood_values
-      # }
+      # todo: this sets values even if we haven't changed anything
+      self$cache$set_values(likelihood_factor$uuid, tmle_task$uuid, value_step, likelihood_values)
       
-      # return(likelihood_values[, nodes, with=FALSE])
+      
+      return(likelihood_values)
+    },
+    update = function(update_node, updated_likelihood){
+      likelihood_factor <- self$factor_list[[update_node]]
+      self$cache$set_values(likelihood_factor$uuid, self$training_task$uuid, self$updater$step_number, updated_likelihood)
     },
     get_possible_counterfactuals = function(nodes=NULL) {
 
@@ -165,11 +181,14 @@ Likelihood <- R6Class(
     factor_list = function() {
       return(self$params$factor_list)
     },
-    update_list = function(new_update_list = NULL) {
-      if (!is.null(new_update_list)) {
-        private$.update_list <- new_update_list
+    updater = function(new_updater = NULL) {
+      if (!is.null(new_updater)) {
+        private$.updater <- new_updater
       }
-      return(private$.update_list)
+      return(private$.updater)
+    },
+    cache = function(){
+      return(private$.cache)
     }
   ),
   private = list(
@@ -191,7 +210,8 @@ Likelihood <- R6Class(
     .predict = function(tmle_task) {
       stop("predict method doesn't work for Likelihood. See Likelihood$get_likelihoods for analogous method")
     },
-    .update_list = NULL
+    .updater = NULL,
+    .cache = NULL
   )
 )
 

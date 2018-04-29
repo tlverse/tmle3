@@ -25,8 +25,8 @@ tmle3_Update <- R6Class(
       likelihood_values <- likelihood$get_likelihoods(tmle_task, update_node)
       submodel_data <- self$generate_submodel_data(tmle_task, likelihood_values, update_node)
       new_epsilon <- self$fit_submodel(submodel_data)
-      likelihood$factor_list[[update_node]]$update_likelihood(self, new_epsilon, tmle_task)
-      # likelihood$update_observed(update_node, updated_likelihood)
+      updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
+      likelihood$update(update_node, updated_likelihood)
     },
     generate_submodel_data = function(tmle_task, likelihood_values, update_node) {
       #todo: support not getting observed for case where we're applying updates instead of fitting them
@@ -63,15 +63,15 @@ tmle3_Update <- R6Class(
       updated_likelihood <- self$submodel(epsilon, submodel_data$initial, submodel_data$H)
       return(updated_likelihood)
     },
-    apply_updates = function(tmle_task, likelihood, initial_likelihood) {
+    apply_updates = function(tmle_task, likelihood, initial_likelihood, epsilons) {
       update_node <- self$update_nodes[[1]]
-      for (epsilon in self$epsilons) {
-        submodel_data <- self$generate_submodel_data(tmle_task, initial_likelihood, update_node)
+      updated_likelihood <- initial_likelihood
+      for (epsilon in epsilons) {
+        submodel_data <- self$generate_submodel_data(tmle_task, updated_likelihood, update_node)
         updated_likelihood <- self$apply_submodel(submodel_data, epsilon)
-        set(initial_likelihood, , update_node, updated_likelihood)
       }
 
-      return(initial_likelihood)
+      return(updated_likelihood)
     }
   ),
   active = list(
@@ -83,6 +83,9 @@ tmle3_Update <- R6Class(
     },
     update_nodes = function() {
       return(private$.update_nodes)
+    },
+    step_number = function(){
+      return(length(self$epsilons))
     }
   ),
   private = list(

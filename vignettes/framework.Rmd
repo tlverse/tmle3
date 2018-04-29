@@ -159,7 +159,7 @@ A `tmle3` `Likelihood` is actually a special type of `sl3` learner, so the synta
 Having fit the likelihood, we can now get likelihood values for any `tmle3_task`:
 
 ```{r likelihood values}
-likelihood_values <- likelihood$get_likelihoods(tmle_task)
+likelihood_values <- likelihood$get_likelihoods(tmle_task,"Y")
 head(likelihood_values)
 ```
 
@@ -200,7 +200,7 @@ A `cf_likelihood` is a likelihood object, and so has the same behavior as the ob
 In particular, we can get likelihood values under the counterfactual likelihood:
 
 ```{r cf_likelihood values}
-cf_likelihood_values <- cf_likelihood$get_likelihoods(tmle_task)
+cf_likelihood_values <- cf_likelihood$get_likelihoods(tmle_task, "A")
 head(cf_likelihood_values)
 ```
 
@@ -249,7 +249,7 @@ Currently, the `tmle3_Update` object also has a hard-coded submodel (logistic), 
 Current Usage:
 ```{r update}
 updater <- tmle3_Update$new(tsm)
-likelihood$update_list <- updater
+likelihood$updater <- updater
 ```
 }
 

@@ -58,8 +58,8 @@ Param_TSM <- R6Class(
       }
       intervention_nodes <- names(self$intervention_list)
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
-      cf_pA <- self$cf_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes)
 
       HA <- cf_pA / pA
 

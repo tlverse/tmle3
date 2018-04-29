@@ -6,7 +6,6 @@ library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
-
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)
@@ -44,16 +43,34 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # define likelihood
 likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+lf <- likelihood$factor_list[["A"]]
+obs_A <- lf$get_density(tmle_task)
+likelihood_cache <- lf$likelihood_cache
+# debugonce(likelihood_cache$set_values)
+likelihood_cache$set_values(lf$uuid, tmle_task$uuid, 1, obs_A)
+likelihood_cache$get_update_step(lf, tmle_task)
 
 # define parameter
 intervention <- define_lf(LF_static, "A", value = 1)
 tsm <- define_param(Param_TSM, likelihood, intervention)
 
+
 # define update method (submodel + loss function)
 updater <- tmle_spec$make_updater(likelihood, list(tsm))
 
+
 # fit tmle update
+# debug(likelihood$get_likelihoods)
+# debug(updater$update_step)
+# debug(updater$generate_submodel_data)
+# debugonce(likelihood$factor_list[["Y"]]$get_likelihood)
+# likelihood$get_likelihoods(tmle_task,"Y")
+mean(likelihood$get_likelihoods(tmle_task,"Y"))
+
+# debug(likelihood$factor_list[["Y"]]$update_likelihood)
+# debug(updater$generate_submodel_data)
 tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
+mean(likelihood$get_likelihoods(tmle_task,"Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est

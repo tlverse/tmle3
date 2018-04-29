@@ -31,8 +31,8 @@ CF_Likelihood <- R6Class(
 
       intervention_nodes <- sapply(intervention_list, `[[`, "name")
       names(intervention_list) <- intervention_nodes
-
       private$.intervention_list <- intervention_list
+      private$.intervention_nodes <- intervention_nodes
       private$.cf_tasks <- self$enumerate_cf_tasks(observed_likelihood$training_task)
       params <- args_to_list()
       super$initialize(params)
@@ -73,9 +73,12 @@ CF_Likelihood <- R6Class(
     intervention_list = function() {
       return(private$.intervention_list)
     },
+    intervention_nodes = function(){
+      return(private$.intervention_nodes)
+    },
     factor_list = function() {
       fl <- self$observed_likelihood$factor_list
-      fl[names(self$intervention_list)] <- self$intervention_list[names(self$intervention_list)]
+      fl[self$intervention_nodes] <- self$intervention_list[self$intervention_nodes]
       return(fl)
     },
     update_list = function() {
@@ -88,6 +91,7 @@ CF_Likelihood <- R6Class(
   private = list(
     .observed_likelihood = NULL,
     .intervention_list = NULL,
+    .intervention_nodes = NULL,
     .cf_tasks = NULL
   )
 )

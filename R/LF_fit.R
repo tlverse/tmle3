@@ -2,7 +2,6 @@
 #'
 #' Uses an \code{sl3} learner to estimate a likelihood factor from data.
 #' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
-#' Currently, predictions are memoized to speed up multiple calls to \code{get_likelihood} and \code{get_mean} for the same data.
 #'
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
@@ -63,24 +62,14 @@ LF_fit <- R6Class(
       super$train(tmle_task)
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task) {
-      if (self$memoize_predictions) {
-        uuid <- tmle_task$uuid
-        preds <- private$.memoized[[uuid]]
-        if (is.null(preds)) {
-          learner_task <- tmle_task$get_regression_task(self$name)
-          learner <- self$learner
-          preds <- learner$predict(learner_task)
-          private$.memoized[[uuid]] <- preds
-        }
-      } else {
-        learner_task <- tmle_task$get_regression_task(self$name)
-        learner <- self$learner
-        preds <- learner$predict(learner_task)
-      }
+    get_mean = function(tmle_task) {      
+      learner_task <- tmle_task$get_regression_task(self$name)
+      learner <- self$learner
+      preds <- learner$predict(learner_task)
+      
       return(preds)
     },
-    get_likelihood = function(tmle_task) {
+    get_density = function(tmle_task) {
       learner_task <- tmle_task$get_regression_task(self$name)
       preds <- self$learner$predict(learner_task)
       outcome_type <- self$learner$training_task$outcome_type
@@ -102,15 +91,10 @@ LF_fit <- R6Class(
   active = list(
     learner = function() {
       return(private$.learner)
-    },
-    memoize_predictions = function() {
-      return(private$.memoize_predictions)
     }
   ),
   private = list(
     .name = NULL,
-    .learner = NULL,
-    .memoize_predictions = TRUE,
-    .memoized = list()
+    .learner = NULL
   )
 )

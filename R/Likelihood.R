@@ -38,6 +38,7 @@ Likelihood <- R6Class(
       params$factor_list <- factor_list
 
       super$initialize(params)
+      
     },
     print = function() {
       lapply(self$factor_list, print)
@@ -53,42 +54,36 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_initial_likelihoods = function(tmle_task, nodes = NULL) {
-      self$validate_task(tmle_task)
-      factor_list <- self$factor_list
-      if (!is.null(nodes)) {
-        factor_list <- factor_list[nodes]
-      }
-      likelist <- list()
-      for (likelihood_factor in factor_list) {
-        factor_name <- likelihood_factor$name
-        # todo: make the likelihood_factors smart about this
-        if (likelihood_factor$type == "mean") {
-          likes <- likelihood_factor$get_mean(tmle_task)
-        } else {
-          likes <- likelihood_factor$get_likelihood(tmle_task)
-        }
-        likelist[[factor_name]] <- likes
-      }
-      # if (length(likelist) > 1) {
-      return(as.data.table(likelist))
+    get_initial_likelihoods = function(tmle_task, node) {
+      likelihood_factor <- self$factor_list[[node]]
+      # # todo: make the likelihood_factors smart about this
+      # if (likelihood_factor$type == "mean") {
+      #   likes <- likelihood_factor$get_mean(tmle_task)
       # } else {
-      # return(likelist[[1]])
+      #   likes <- likelihood_factor$get_likelihood(tmle_task)
       # }
+      return(likelihood_factor$get_likelihood(tmle_task))
     },
-    get_likelihoods = function(tmle_task, nodes = NULL) {
-      # todo: maybe get all likelihoods here, then subset before returning
-      initial_likelihoods <- self$get_initial_likelihoods(tmle_task, nodes = nodes)
-
-      # apply updates
-      if (is.null(self$update_list)) {
-        return(initial_likelihoods)
-      } else {
-        updater <- self$update_list
-        updater$epsilons
-        updated_likeilhoods <- updater$apply_updates(tmle_task, self, initial_likelihoods)
-        return(updated_likeilhoods)
-      }
+    get_likelihoods = function(tmle_task, node) {
+      return(self$get_initial_likelihoods(tmle_task,node))
+      # task_uuid <- tmle_task$uuid
+      
+      # # first check for cached values for this task
+      # likelihood_values <- private$.likelihood_values[[task_uuid]]
+      
+      # # if not, generate new ones 
+      # if(is.null(likelihood_values)){
+      #   likelihood_values <- self$get_initial_likelihoods(tmle_task)
+      
+        
+      #   # and then apply updates
+      #   if(!is.null(self$update_list)) {
+      #     likelihood_values <- updater$apply_updates(tmle_task, self, likelihood_values)
+      #   }
+      #   private$.likelihood_values[[task_uuid]] <- likelihood_values
+      # }
+      
+      # return(likelihood_values[, nodes, with=FALSE])
     },
     get_possible_counterfactuals = function(nodes=NULL) {
 
@@ -170,12 +165,6 @@ Likelihood <- R6Class(
     factor_list = function() {
       return(self$params$factor_list)
     },
-    observed_values = function() {
-      if (is.null(private$.observed_values)) {
-        private$.observed_values <- self$get_likelihoods(self$training_task)
-      }
-      return(private$.observed_values)
-    },
     update_list = function(new_update_list = NULL) {
       if (!is.null(new_update_list)) {
         private$.update_list <- new_update_list
@@ -196,12 +185,12 @@ Likelihood <- R6Class(
       }
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
+      
       return("trained")
     },
     .predict = function(tmle_task) {
       stop("predict method doesn't work for Likelihood. See Likelihood$get_likelihoods for analogous method")
     },
-    .observed_values = NULL,
     .update_list = NULL
   )
 )

@@ -26,6 +26,8 @@ LF_base <- R6Class(
     initialize = function(name, ..., type = "density") {
       private$.name <- name
       private$.type <- type
+      private$.uuid <- UUIDgenerate(use.time = TRUE)
+      private$.likelihood_cache <- Likelihood_cache$new()
     },
     delayed_train = function(tmle_task) {
       return(list())
@@ -38,10 +40,33 @@ LF_base <- R6Class(
       # subclasses may do more, like fit sl3 models
     },
     get_density = function(tmle_task) {
-      stop("this is a base class")
+      stop("density not supported")
     },
     get_mean = function(tmle_task) {
-      stop("this is a base class")
+      stop("mean not supported")
+    },
+    get_likelihood = function(tmle_task, update_step=NULL){
+      values <- self$likelihood_cache$get_values(self$uuid, tmle_task$uuid)
+      if(is.null(values)){
+        if (self$type == "mean") {
+          values <- self$get_mean(tmle_task)
+        } else {
+          values <- self$get_density(tmle_task)
+        }
+        self$likelihood_cache$set_values(self$uuid, tmle_task$uuid, values)
+      }
+      
+      return(values)
+
+    },
+    update_likelihood = function(updater, epsilon, tmle_task){
+      #task_uuids <- names(private$.memoized_values)
+      #todo: do this for all stored tasks
+      task_uuid <- tmle_task$uuid
+      likelihood_values <- self$likelihood_cache$get_values(self$uuid, tmle_task$uuid)
+      submodel_data <- updater$generate_submodel_data(tmle_task, likelihood_values, self$name)
+      updated_likelihood <- updater$apply_submodel(submodel_data, epsilon)
+      self$likelihood_cache$set_values(self$uuid, tmle_task$uuid, updated_likelihood)
     },
     cf_values = function(tmle_task) {
       stop(sprintf("%s is not a valid intervention type", class(self)[1]))
@@ -67,12 +92,26 @@ LF_base <- R6Class(
       } else {
         return(NULL)
       }
+    },
+    likelihood_cache = function(new_cache=NULL){
+      if(!is.null(new_cache)){
+        private$.likelihood_cache <- new_cache
+      }
+      
+      return(private$.likelihood_cache)
+    },
+    uuid = function(){
+      return(private$.uuid)
     }
+
   ),
   private = list(
     .name = NULL,
     .variable_type = c(),
-    .type = NULL
+    .memoized_values = list(),
+    .type = NULL,
+    .uuid = NULL,
+    .likelihood_cache = NULL
   )
 )
 

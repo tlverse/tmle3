@@ -22,20 +22,21 @@ tmle3_Update <- R6Class(
     },
     update_step = function(tmle_task, likelihood) {
       update_node <- self$update_nodes[[1]]
-      submodel_data <- self$generate_submodel_data(tmle_task, likelihood$observed_values, update_node)
+      likelihood_values <- likelihood$get_likelihoods(tmle_task, update_node)
+      submodel_data <- self$generate_submodel_data(tmle_task, likelihood_values, update_node)
       new_epsilon <- self$fit_submodel(submodel_data)
-      updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
-      set(likelihood$observed_values, , update_node, updated_likelihood)
+      likelihood$factor_list[[update_node]]$update_likelihood(self, new_epsilon, tmle_task)
       # likelihood$update_observed(update_node, updated_likelihood)
     },
-    generate_submodel_data = function(tmle_task, likelihood_observed, update_node) {
+    generate_submodel_data = function(tmle_task, likelihood_values, update_node) {
+      #todo: support not getting observed for case where we're applying updates instead of fitting them
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) unlist(tmle_param$clever_covariates(tmle_task)))
       dt <- do.call(cbind, clever_covariates)
       # clever_covariates <- tmle_param$clever_covariates(tmle_task)
       submodel_data <- list(
         observed = tmle_task$get_tmle_node(update_node, bound = TRUE),
         H = dt,
-        initial = unlist(likelihood_observed[, update_node, with = FALSE])
+        initial = unlist(likelihood_values)
       )
       return(submodel_data)
     },

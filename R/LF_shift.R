@@ -59,7 +59,7 @@ LF_shift <- R6Class(
     get_mean = function(tmle_task) {
       stop("get_mean not supported for LF_shift")
     },
-    get_likelihood = function(tmle_task) {
+    get_density = function(tmle_task) {
       # get shifted data
       shifted_values <- self$shift_inverse(tmle_task)
 

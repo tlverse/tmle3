@@ -61,9 +61,6 @@ tmle3_Spec <- R6Class(
     },
     make_params = function(tmle_task, targeted_likelihood) {
       stop("this is a base class, try tsm_Spec_TSM_all")
-    },
-    make_delta_params = function() {
-      return(NULL)
     }
   ),
   active = list(

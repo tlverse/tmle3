@@ -124,6 +124,7 @@ Param_TSM <- R6Class(
     }
   ),
   private = list(
+    .type = "TSM",
     .cf_likelihood = NULL
   )
 )

@@ -70,5 +70,7 @@ Param_mean <- R6Class(
       return(NULL)
     }
   ),
-  private = list()
+  private = list(
+    .type = "E(Y)"
+  )
 )

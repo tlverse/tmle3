@@ -32,6 +32,9 @@ Param_base <- R6Class(
     }
   ),
   active = list(
+    type = function(){
+      return(private$.type)
+    },
     observed_likelihood = function() {
       return(private$.observed_likelihood)
     },
@@ -40,6 +43,7 @@ Param_base <- R6Class(
     }
   ),
   private = list(
+    .type = "undefined",
     .observed_likelihood = NULL,
     .outcome_node = NULL
   )

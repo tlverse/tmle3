@@ -4,14 +4,17 @@
 \alias{summary_from_estimates}
 \title{Summarize Estimates}
 \usage{
-summary_from_estimates(estimates, param_names = NULL, init_psi = NULL)
+summary_from_estimates(estimates, param_types = NULL, param_names = NULL,
+  init_psi = NULL)
 }
 \arguments{
 \item{estimates}{\code{list}, TMLE estimates of parameter and ICs from \code{\link{tmle3_Fit}$estimates}}
 
+\item{param_types}{the types of the parameters we are estimating}
+
 \item{param_names}{the names of the parameters we are estimating}
 
-\item{init_psi}{the names of the parameters we are estimating}
+\item{init_psi}{the initial estimates}
 }
 \value{
 \code{data.table} summarizing results

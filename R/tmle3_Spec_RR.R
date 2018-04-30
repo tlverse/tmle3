@@ -28,12 +28,10 @@ tmle3_Spec_RR <- R6Class(
 
       tsm_base <- Param_TSM$new(likelihood, intervention_base)
       tsm_cont <- Param_TSM$new(likelihood, intervention_cont)
-
-      tmle_params <- list(tsm_base,tsm_cont)
+      rr <- Param_delta$new(likelihood, delta_param_RR, list(tsm_base, tsm_cont))
+      tmle_params <- list(tsm_base,tsm_cont, rr)
+      
       return(tmle_params)
-    },
-    make_delta_params = function() {
-      delta_params <- list(delta_param_RR)
     }
   ),
   active = list(),

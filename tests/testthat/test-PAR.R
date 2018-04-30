@@ -56,17 +56,14 @@ targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <-tmle_params
 
-# define delta_params
-delta_params <- tmle_spec$make_delta_params()
-
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater, delta_params)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
 
 # extract results
-summary <- tmle_fit$delta_summary
+summary <- tmle_fit$summary
 
 data2 <- data.table::copy(data) # for data.table weirdness
 tmle_fit_from_spec <- tmle3(tmle_PAR(baseline_level = 1), data2, node_list, learner_list)
-spec_summary <- tmle_fit_from_spec$delta_summary
+spec_summary <- tmle_fit_from_spec$summary
 
 test_that("PAR manually and from Spec return the same results", expect_equal(summary, spec_summary, tol = 1e-3))

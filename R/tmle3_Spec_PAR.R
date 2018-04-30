@@ -23,11 +23,12 @@ tmle3_Spec_PAR <- R6Class(
       intervention <- define_lf(LF_static, "A", value = baseline_level)
       tsm <- Param_TSM$new(likelihood, intervention)
       mean_param <- Param_mean$new(likelihood)
-      tmle_params <- list(tsm, mean_param)
+      par <- Param_delta$new(likelihood, delta_param_PAR, list(tsm, mean_param))
+      paf <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
+      rr <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
+      tmle_params <- list(tsm, mean_param, par, paf, rr)
+      
       return(tmle_params)
-    },
-    make_delta_params = function() {
-      delta_params <- list(delta_param_PAR, delta_param_PAF, delta_param_RR)
     }
   ),
   active = list(),

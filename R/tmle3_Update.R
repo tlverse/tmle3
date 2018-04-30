@@ -58,6 +58,8 @@ tmle3_Update <- R6Class(
       })
       epsilon <- coef(submodel_fit)
       
+      #this protects against collinear covariates (which we don't care about, we just want an update)
+      epsilon[is.na(epsilon)] <- 0
       return(epsilon)
     },
     fit_submodels = function(all_submodels){

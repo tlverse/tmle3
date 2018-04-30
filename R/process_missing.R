@@ -2,8 +2,9 @@
 #'
 #' Process data to account for missingness in preparation for TMLE
 #'
-#' Because IPCW-TMLE is not yet implemented, currently all rows with
-#' missing outcomes (Y) or treatments (A) will be dropped from the analysis.
+#' Rows where there is missingness in any of the \code{complete_nodes} will be
+#' dropped. Then, missingness will be median-imputed for the variables in the \code{impute_nodes}.
+#' Indicator variables of missingness will be generated for these nodes.
 #'
 #' Then covariates will be processed as follows:
 #' \enumerate{
@@ -13,7 +14,9 @@
 #' }
 #'
 #' @param data, \code{data.table}, containing the missing variables
-#' @param node_list, \code{list}, what nodes serve what purpose
+#' @param node_list, \code{list}, what variables comprise each node
+#' @param complete_nodes, \code{character vector}, nodes we must observe
+#' @param impute_nodes, \code{character vector}, nodes we will impute
 #' @param max_p_missing, \code{numeric}, what proportion of missing is tolerable? Beyond that, the variable will be dropped from the analysis
 #' @return \code{list} containing the following elements:
 #'  \itemize{
@@ -25,31 +28,47 @@
 #'  }
 #' @importFrom stats median
 #' @export
-process_missing <- function(data, node_list, max_p_missing = 0.5) {
-  # todo - do IPCW instead of dropping these
-  drop_vars <- c(node_list$A, node_list$Y)
+process_missing <- function(data, node_list, complete_nodes = c("A","Y"), impute_nodes = NULL, max_p_missing = 0.5) {
+  if(is.null(impute_nodes)){
+    impute_nodes <- setdiff(names(node_list), complete_nodes)
+  }
+  
+  # drop rows where there is missingness for nodes that we are required to observe
+  drop_vars <- unlist(node_list[complete_nodes])
   drop_rows <- data[, apply(is.na(.SD), 1, any), .SDcols = drop_vars]
   filtered <- data[!drop_rows]
   n_dropped <- sum(drop_rows)
 
-  impute_vars <- node_list$W
+  # median impute the other nodes and build indicators
+  impute_vars <- unlist(node_list[impute_nodes])
   p_missing <- sapply(filtered[, impute_vars, with = FALSE], function(x) mean(is.na(x)))
-  to_drop <- names(p_missing[(max_p_missing < p_missing)])
-  to_impute <- names(p_missing[(0 < p_missing) & (p_missing < max_p_missing)])
+  
+  
+  # nodes that are already complete
   no_missing <- names(p_missing[p_missing == 0])
   no_missing <- c(no_missing, drop_vars)
-  missing_indicators <- filtered[, lapply(.SD, is.na), .SDcols = to_impute]
-  missing_names <- sprintf("delta_%s", to_impute)
-  setnames(missing_indicators, missing_names)
-  impute_median <- function(x) {
-    value <- median(as.numeric(x[!is.na(x)]))
-    x[is.na(x)] <- value
-    x
+  processed <- filtered[, no_missing, with = FALSE]
+  
+  # nodes to impute
+  to_impute <- names(p_missing[(0 < p_missing) & (p_missing < max_p_missing)])
+  if(length(to_impute)>0){
+    missing_indicators <- filtered[, lapply(.SD, is.na), .SDcols = to_impute]
+    missing_names <- sprintf("delta_%s", to_impute)
+    setnames(missing_indicators, missing_names)
+    impute_median <- function(x) {
+      value <- median(as.numeric(x[!is.na(x)]))
+      x[is.na(x)] <- value
+      x
+    }
+    imputed <- filtered[, lapply(.SD, impute_median), .SDcols = to_impute]
+    processed <- cbind(processed, imputed, missing_indicators)
+  } else {
+    missing_names <- c()
   }
-  imputed <- filtered[, lapply(.SD, impute_median), .SDcols = to_impute]
-  all_observed <- filtered[, no_missing, with = FALSE]
 
-  processed <- cbind(all_observed, imputed, missing_indicators)
+  # nodes with too much missingness
+  to_drop <- names(p_missing[(max_p_missing < p_missing)])
+  
   updated_nodes <- lapply(node_list, function(node) {
     node_no_missing <- intersect(no_missing, node)
     node_imputed <- c(to_impute, missing_names)[to_impute %in% node]

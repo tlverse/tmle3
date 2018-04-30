@@ -4,12 +4,17 @@
 \alias{process_missing}
 \title{Preprocess Data to Handle Missing Variables}
 \usage{
-process_missing(data, node_list, max_p_missing = 0.5)
+process_missing(data, node_list, complete_nodes = c("A", "Y"),
+  impute_nodes = NULL, max_p_missing = 0.5)
 }
 \arguments{
 \item{data, }{\code{data.table}, containing the missing variables}
 
-\item{node_list, }{\code{list}, what nodes serve what purpose}
+\item{node_list, }{\code{list}, what variables comprise each node}
+
+\item{complete_nodes, }{\code{character vector}, nodes we must observe}
+
+\item{impute_nodes, }{\code{character vector}, nodes we will impute}
 
 \item{max_p_missing, }{\code{numeric}, what proportion of missing is tolerable? Beyond that, the variable will be dropped from the analysis}
 }
@@ -27,8 +32,9 @@ process_missing(data, node_list, max_p_missing = 0.5)
 Process data to account for missingness in preparation for TMLE
 }
 \details{
-Because IPCW-TMLE is not yet implemented, currently all rows with
-missing outcomes (Y) or treatments (A) will be dropped from the analysis.
+Rows where there is missingness in any of the \code{complete_nodes} will be
+dropped. Then, missingness will be median-imputed for the variables in the \code{impute_nodes}.
+Indicator variables of missingness will be generated for these nodes.
 
 Then covariates will be processed as follows:
 \enumerate{

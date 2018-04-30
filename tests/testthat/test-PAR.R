@@ -43,19 +43,24 @@ tmle_spec <- tmle_PAR(baseline_level = 1)
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # define likelihood
-likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
-
-# define param
-tmle_params <- tmle_spec$make_params(tmle_task, likelihood)
+likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-updater <- tmle_spec$make_updater(likelihood, tmle_params)
+updater <- tmle_spec$make_updater()
+
+# define targeted_likelihood
+targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
+
+
+# define param
+tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+updater$tmle_params <-tmle_params
 
 # define delta_params
 delta_params <- tmle_spec$make_delta_params()
 
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater, delta_params)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater, delta_params)
 
 # extract results
 summary <- tmle_fit$delta_summary

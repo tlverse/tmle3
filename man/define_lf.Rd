@@ -18,5 +18,6 @@ Define a Likelihood Factor
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_base}}, \code{\link{LF_emp}},
   \code{\link{LF_fit}}, \code{\link{LF_shift}},
-  \code{\link{LF_static}}, \code{\link{Likelihood}}
+  \code{\link{LF_static}}, \code{\link{Likelihood}},
+  \code{\link{Targeted_Likelihood}}
 }

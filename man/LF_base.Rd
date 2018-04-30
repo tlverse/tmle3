@@ -71,6 +71,8 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_emp}}, \code{\link{LF_fit}},
   \code{\link{LF_shift}}, \code{\link{LF_static}},
-  \code{\link{Likelihood}}, \code{\link{define_lf}}
+  \code{\link{Likelihood}},
+  \code{\link{Targeted_Likelihood}},
+  \code{\link{define_lf}}
 }
 \keyword{data}

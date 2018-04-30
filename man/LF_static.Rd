@@ -42,6 +42,8 @@ Inherits from \code{\link{LF_base}}; see that page for documentation on likeliho
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_base}}, \code{\link{LF_emp}},
   \code{\link{LF_fit}}, \code{\link{LF_shift}},
-  \code{\link{Likelihood}}, \code{\link{define_lf}}
+  \code{\link{Likelihood}},
+  \code{\link{Targeted_Likelihood}},
+  \code{\link{define_lf}}
 }
 \keyword{data}

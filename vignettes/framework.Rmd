@@ -219,21 +219,6 @@ head(cf_likelihood_tasks[[1]]$data)
 
 In this case, you can see that `parity01` has been set to 1 for all observations, consistent with a static intervention on this node.
 
-# Target Parameter
-
-In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from a probability distribution $P \in \mathcal{M}$ to a set of real numbers $\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above. 
-
-In `tmle3`, we define parameter objects as objects inheriting from the `Param_base` class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the "clever covariates" needed to calculate a TMLE update to the likelihood.
-
-
-Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:
-
-```{r param}
-tsm <- define_param(Param_TSM, likelihood, intervention)
-```
-
-**todo: provide details about parameter definition**
-
 # Update Procedure
 
 **todo: update with details about Targeted_Likelihood and caching**
@@ -250,17 +235,35 @@ Currently, the `tmle3_Update` object also has a hard-coded submodel (logistic), 
 
 Current Usage:
 ```{r update}
-updater <- tmle3_Update$new(tsm)
-likelihood$updater <- updater
+updater <- tmle3_Update$new()
+targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 ```
 }
+
+# Target Parameter
+
+In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from a probability distribution $P \in \mathcal{M}$ to a set of real numbers $\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above. 
+
+In `tmle3`, we define parameter objects as objects inheriting from the `Param_base` class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the "clever covariates" needed to calculate a TMLE update to the likelihood.
+
+
+Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:
+
+```{r param}
+tsm <- define_param(Param_TSM, likelihood, intervention)
+updater$tmle_params <- tsm
+```
+
+**todo: provide details about parameter definition**
+
+
 
 # `tmle3_Fit` - Putting it all together
 
 Now that we have specified all the components required for the TMLE procedure, we can generate an object that manages all the components and finally calculate apply TMLE.
 
 ```{r fit_tmle}
-tmle_fit <- fit_tmle3(tmle_task, likelihood, tsm, updater)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tsm, updater)
 print(tmle_fit)
 ```
 

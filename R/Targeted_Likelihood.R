@@ -13,7 +13,7 @@
 #'
 #' @format \code{\link{R6Class}} object.
 #'
-#' @template CF_Likelihood_extra
+#' @template Likelihood_extra
 #'
 #' @export
 Targeted_Likelihood <- R6Class(
@@ -29,14 +29,22 @@ Targeted_Likelihood <- R6Class(
       private$.updater <- updater
       super$initialize(params)
     },
-    update = function(update_node, updated_likelihood){
-      likelihood_factor <- self$factor_list[[update_node]]
-      self$cache$set_values(likelihood_factor, self$initial_likelihood$training_task, self$updater$step_number, updated_likelihood)
+    update = function(new_epsilons, step_number){
+      tasks_at_step <- self$cache$tasks_at_step(step_number)
+      
+      for(task in tasks_at_step){
+        all_submodels <- self$updater$generate_submodel_data(self, task)
+        updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
+        for(node in names(updated_values)){
+          likelihood_factor <- self$factor_list[[node]]
+          self$cache$set_values(likelihood_factor, task, step_number+1, updated_values[[node]])
+        }
+      }
     },
     get_likelihood = function(tmle_task, node) {
       
       if(node%in%self$updater$update_nodes){
-        
+        # self$updater$get_updated_likelihood(self, tmle_task, node)
         likelihood_factor <- self$factor_list[[node]]
         # first check for cached values for this task
         value_step <- self$cache$get_update_step(likelihood_factor, tmle_task)
@@ -48,24 +56,18 @@ Targeted_Likelihood <- R6Class(
           # if not, generate new ones 
           likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node)
           value_step <- 0
+          self$cache$set_values(likelihood_factor, tmle_task, value_step, likelihood_values)
         }
         
-        # apply updates if necessary
-        # todo: maybe let updater handle this logic
-        # think about what happens if we actually need an *older* likelihood value
-        if(value_step<self$updater$step_number){
-          updates <- seq(from=value_step+1, to=self$updater$step_number)
-          epsilons <- self$updater$epsilons[updates]
-          likelihood_values <- self$updater$apply_updates(tmle_task, self, likelihood_values, epsilons)
-          value_step <- self$updater$step_number
+        if(value_step!=self$updater$step_number){
+          stop("cached likelihood value is out of sync with updates\n", 
+            "cached_step: ", value_step,"\n",
+            "update_step: ", self$updater$step_number, "\n")
         }
-        
-        # todo: this sets values even if we haven't changed anything
-        self$cache$set_values(likelihood_factor, tmle_task, value_step, likelihood_values)
-
+        #todo: maybe update here, or error if not already updated
         
       } else {
-        # not a node that updates, so we can just use initials
+        # not a node that updates, so we can just use initial likelihood
         likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node)
         
       }
@@ -99,12 +101,3 @@ Targeted_Likelihood <- R6Class(
     .updater = NULL
   )
 )
-
-#' @param ... Passes all arguments to the constructor. See documentation for the
-#'  Constructor below.
-#'
-#' @rdname CF_Likelihood
-#'
-#' @export
-#
-make_CF_Likelihood <- CF_Likelihood$new

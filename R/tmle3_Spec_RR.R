@@ -48,6 +48,7 @@ tmle3_Spec_RR <- R6Class(
 #' Y=Outcome (binary or bounded continuous)
 #' @importFrom sl3 make_learner Lrnr_mean
 #' @param baseline_level, the baseline risk group
+#' @param contrast_level, the contrast risk group
 #' @export
 tmle_RR <- function(baseline_level, contrast_level) {
   # todo: unclear why this has to be in a factory function

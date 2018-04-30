@@ -50,6 +50,8 @@ Inherits from \code{\link{Likelihood}}. Other factors (including their updates) 
 Other Likelihood objects: \code{\link{LF_base}},
   \code{\link{LF_emp}}, \code{\link{LF_fit}},
   \code{\link{LF_shift}}, \code{\link{LF_static}},
-  \code{\link{Likelihood}}, \code{\link{define_lf}}
+  \code{\link{Likelihood}},
+  \code{\link{Targeted_Likelihood}},
+  \code{\link{define_lf}}
 }
 \keyword{data}

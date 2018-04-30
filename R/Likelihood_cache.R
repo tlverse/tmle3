@@ -20,9 +20,15 @@ Likelihood_cache <- R6Class(
       )
     },
     find_match = function(likelihood_factor, tmle_task){
+      self$cache_task(tmle_task)
       matching_index <- private$.cache[,which(lf_uuid == likelihood_factor$uuid &
                                                 task_uuid == tmle_task$uuid)] 
       return(matching_index)
+    },
+    tasks_at_step = function(current_step){
+      matching_index <- private$.cache[,which(update_step == current_step)] 
+      task_uuids <- unique(private$.cache$task_uuid[matching_index])
+      self$tasks[task_uuids]
     },
     get_update_step = function(likelihood_factor, tmle_task) {
       matching_index <- self$find_match(likelihood_factor, tmle_task)
@@ -68,12 +74,17 @@ Likelihood_cache <- R6Class(
       private$.lfs[likelihood_factor$uuid] <- likelihood_factor
     },
     cache_task = function(task) {
-      private$.tasks[task$uuid] <- task
+      if(!(task$uuid%in%names(private$.tasks))){
+        private$.tasks[[task$uuid]] <- task  
+      }    
     }
   ),
   active = list(
     cache = function() {
       return(private$.cache)
+    },
+    tasks = function(){
+      return(private$.tasks)
     }
   ),
   private = list(

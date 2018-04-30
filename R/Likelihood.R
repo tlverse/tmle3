@@ -32,7 +32,10 @@ Likelihood <- R6Class(
   public = list(
     initialize = function(factor_list, cache = NULL, ...) {
       params <- args_to_list()
-
+      if (inherits(factor_list, "LF_base")) {
+        factor_list <- list(factor_list)
+      }
+      
       factor_names <- sapply(factor_list, `[[`, "name")
       names(factor_list) <- factor_names
       params$factor_list <- factor_list
@@ -73,7 +76,7 @@ Likelihood <- R6Class(
     },
     get_likelihoods = function(tmle_task, nodes=NULL){
       if(is.null(nodes)){
-        nodes <- names(self$factor_list)
+        nodes <- self$nodes
       }      
       
       if(length(nodes)>1){
@@ -100,76 +103,20 @@ Likelihood <- R6Class(
       level_grid <- expand.grid(all_levels)
       return(level_grid)
     },
-    # E_f_x = function(tmle_task, f_x) {
-    #   cf_grid <- self$get_possible_counterfacutals()
-    #   # todo: rewrite this so it does't recalculate likelihoods (ie recursively)
-    #   # should start with base node and go forward
-    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, ]))
-    #     likelihoods <- self$joint_likelihoods(cf_task)
-    #     f_vals <- f_x(cf_task)
-    #     return(f_vals * likelihoods)
-    #   })
-    #
-    #   prodmat <- do.call(cbind, prods)
-    #   result <- sum(prodmat)
-    #
-    #   return(result)
-    # },
-    # EY = function(tmle_task, mean_node_name="Y") {
-    #   # identify set of all ancestors
-    #   nodes <- tmle_task$npsem
-    #   mean_node <- nodes[[mean_node_name]]
-    #   ancestor_nodes <- all_ancestors(mean_node_name, nodes)
-    #   mean_factor <- self$factor_list[[mean_node_name]]
-    #   # get cf possibilities only for these ancestors
-    #   cf_grid <- self$get_possible_counterfacutals(ancestor_nodes)
-    #
-    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, , drop = FALSE]))
-    #     ey <- mean_factor$get_prediction(cf_task)
-    #     likelihoods <- self$joint_likelihoods(cf_task, ancestor_nodes)
-    #     return(ey * likelihoods)
-    #   })
-    #
-    #   prodmat <- do.call(cbind, prods)
-    #   result <- sum(prodmat)
-    #
-    #   return(result)
-    # },
     base_train = function(task, pretrain) {
       self$validate_task(task)
       fit_object <- private$.train(task, pretrain)
       new_object <- self$clone() # copy parameters, and whatever else
       new_object$set_train(fit_object, task)
       return(new_object)
-    },
-    base_predict = function(task = NULL) {
-      if (is.null(task)) {
-        task <- private$.training_task
-      }
-      self$validate_task(task)
-      predictions <- private$.predict(task)
-      return(predictions)
-    },
-    base_chain = function(task = NULL) {
-      if (is.null(task)) {
-        task <- private$.training_task
-      }
-      self$validate_task(task)
-      predictions <- private$.chain(task)
-      return(predictions)
     }
   ),
   active = list(
     factor_list = function() {
       return(self$params$factor_list)
     },
-    updater = function(new_updater = NULL) {
-      if (!is.null(new_updater)) {
-        private$.updater <- new_updater
-      }
-      return(private$.updater)
+    nodes = function(){
+      return(names(self$factor_list))
     },
     cache = function(){
       return(private$.cache)
@@ -194,7 +141,9 @@ Likelihood <- R6Class(
     .predict = function(tmle_task) {
       stop("predict method doesn't work for Likelihood. See Likelihood$get_likelihoods for analogous method")
     },
-    .updater = NULL,
+    .chain = function(tmle_task) {
+      stop("chain method doesn't work for Likelihood. Currently, no analogous functionality")
+    },
     .cache = NULL
   )
 )

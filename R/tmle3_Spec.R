@@ -55,9 +55,9 @@ tmle3_Spec <- R6Class(
     make_updater = function() {
       updater <- tmle3_Update$new()
     },
-    make_targeted_likelihood = function(likelihood, updater){
-     targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
-     return(targeted_likelihood) 
+    make_targeted_likelihood = function(likelihood, updater) {
+      targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
+      return(targeted_likelihood)
     },
     make_params = function(tmle_task, targeted_likelihood) {
       stop("this is a base class, try tsm_Spec_TSM_all")

@@ -40,7 +40,7 @@ LF_fit <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, learner, ..., type="density") {
-      super$initialize(name, ..., type=type)
+      super$initialize(name, ..., type = type)
       private$.learner <- learner
     },
     delayed_train = function(tmle_task) {
@@ -62,11 +62,11 @@ LF_fit <- R6Class(
       super$train(tmle_task)
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task) {      
+    get_mean = function(tmle_task) {
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
       preds <- learner$predict(learner_task)
-      
+
       return(preds)
     },
     get_density = function(tmle_task) {

@@ -35,17 +35,16 @@ Likelihood <- R6Class(
       if (inherits(factor_list, "LF_base")) {
         factor_list <- list(factor_list)
       }
-      
+
       factor_names <- sapply(factor_list, `[[`, "name")
       names(factor_list) <- factor_names
       params$factor_list <- factor_list
-      if(is.null(cache)){
+      if (is.null(cache)) {
         cache <- Likelihood_cache$new()
       }
       private$.cache <- cache
-      
+
       super$initialize(params)
-      
     },
     print = function() {
       lapply(self$factor_list, print)
@@ -65,22 +64,24 @@ Likelihood <- R6Class(
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
       likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task)
-      
-      if(is.null(likelihood_values)){
-        # if not, generate new ones 
+
+      if (is.null(likelihood_values)) {
+        # if not, generate new ones
         likelihood_values <- likelihood_factor$get_likelihood(tmle_task)
         self$cache$set_values(likelihood_factor, tmle_task, 0, likelihood_values)
       }
-      
+
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes=NULL){
-      if(is.null(nodes)){
+    get_likelihoods = function(tmle_task, nodes=NULL) {
+      if (is.null(nodes)) {
         nodes <- self$nodes
-      }      
-      
-      if(length(nodes)>1){
-        all_likelihoods <- lapply(nodes, function(node){self$get_likelihood(tmle_task, node)})
+      }
+
+      if (length(nodes) > 1) {
+        all_likelihoods <- lapply(nodes, function(node) {
+          self$get_likelihood(tmle_task, node)
+        })
         likelihood_dt <- as.data.table(all_likelihoods)
         setnames(likelihood_dt, nodes)
         return(likelihood_dt)
@@ -115,10 +116,10 @@ Likelihood <- R6Class(
     factor_list = function() {
       return(self$params$factor_list)
     },
-    nodes = function(){
+    nodes = function() {
       return(names(self$factor_list))
     },
-    cache = function(){
+    cache = function() {
       return(private$.cache)
     }
   ),
@@ -135,7 +136,7 @@ Likelihood <- R6Class(
       }
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
-      
+
       return("trained")
     },
     .predict = function(tmle_task) {

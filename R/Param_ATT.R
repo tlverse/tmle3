@@ -75,55 +75,55 @@ Param_ATT <- R6Class(
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
 
-      pA_overall=mean(pA)
-      
+      pA_overall <- mean(pA)
+
       # todo: extend for stochastic
       cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
       cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
-      
+
       EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node)
       EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node)
-      
-      psi <- mean((EY1-EY0) * (pA/pA_overall))
-      CY <- (EY1-EY0) - psi
-      
+
+      psi <- mean((EY1 - EY0) * (pA / pA_overall))
+      CY <- (EY1 - EY0) - psi
+
       return(list(Y = HA, A = CY))
     },
     estimates = function(tmle_task = NULL) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
-      
+
       # todo: actually the union of the treatment and control nodes?
       intervention_nodes <- names(self$intervention_list_treatment)
-      
+
       # todo: make sure we support updating these params
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes)
       cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes)
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes)
-      
+
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
-      
-      pA_overall=mean(pA)
-      
+
+      pA_overall <- mean(pA)
+
       # todo: extend for stochastic
       cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
       cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
-      
+
       Y <- tmle_task$get_tmle_node(self$outcome_node)
-      
+
       # todo: fix hardcoding
       A <- tmle_task$get_tmle_node("A")
-      
+
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
       EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node)
       EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node)
-      
-      psi <- mean((EY1-EY0) * (pA/pA_overall))
-      CY <- (EY1-EY0) - psi
-      
-      IC = HA * (Y-EY) + (A/pA_overall) * CY
+
+      psi <- mean((EY1 - EY0) * (pA / pA_overall))
+      CY <- (EY1 - EY0) - psi
+
+      IC <- HA * (Y - EY) + (A / pA_overall) * CY
 
       result <- list(psi = psi, IC = IC)
       return(result)

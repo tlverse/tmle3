@@ -94,7 +94,8 @@ tmle3_Task <- R6Class(
 
       # todo: make sure folds transfer
       return(sl3_Task$new(
-        data, nodes = nodes,
+        data,
+        nodes = nodes,
         outcome_type = variable_type,
         column_names = column_names
       ))

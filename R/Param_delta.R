@@ -23,16 +23,16 @@ Param_delta <- R6Class(
       private$.parent_parameters <- parent_parameters
     },
     clever_covariates = function(tmle_task = NULL) {
-       return(list())
+      return(list())
     },
     estimates = function(tmle_task = NULL) {
       estimates <- lapply(self$parent_parameters, function(tmle_param) tmle_param$estimates(tmle_task))
-      
+
       psis <- lapply(estimates, `[[`, "psi")
       ICs <- lapply(estimates, `[[`, "IC")
       psi <- self$delta_param$f(psis)
       IC <- self$delta_param$df(psis, ICs)
-      
+
       list(psi = psi, IC = IC, name = self$name, transform = self$delta_param$transform)
     }
   ),
@@ -42,10 +42,10 @@ Param_delta <- R6Class(
       name <- self$delta_param$name(param_names)
       return(name)
     },
-    type = function(){
+    type = function() {
       return(self$delta_param$type)
     },
-    delta_param = function(){
+    delta_param = function() {
       return(private$.delta_param)
     },
     parent_parameters = function() {

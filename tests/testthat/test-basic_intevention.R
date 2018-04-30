@@ -52,9 +52,9 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-intervention <- define_lf(LF_static, "A", value=1)
+intervention <- define_lf(LF_static, "A", value = 1)
 
-#todo: make params not store likelihood info internally!
+# todo: make params not store likelihood info internally!
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
 
@@ -65,7 +65,7 @@ mean(tsm$estimates(tmle_task)$psi)
 # debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
-mean(targeted_likelihood$get_likelihoods(tmle_task,"Y"))
+mean(targeted_likelihood$get_likelihoods(tmle_task, "Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est

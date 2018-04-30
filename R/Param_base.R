@@ -32,7 +32,7 @@ Param_base <- R6Class(
     }
   ),
   active = list(
-    type = function(){
+    type = function() {
       return(private$.type)
     },
     observed_likelihood = function() {

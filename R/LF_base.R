@@ -44,14 +44,13 @@ LF_base <- R6Class(
     get_mean = function(tmle_task) {
       stop("mean not supported")
     },
-    get_likelihood = function(tmle_task, update_step=NULL){
+    get_likelihood = function(tmle_task, update_step=NULL) {
       if (self$type == "mean") {
         values <- self$get_mean(tmle_task)
       } else {
         values <- self$get_density(tmle_task)
-      }      
+      }
       return(values)
-
     },
 
     cf_values = function(tmle_task) {
@@ -79,10 +78,9 @@ LF_base <- R6Class(
         return(NULL)
       }
     },
-    uuid = function(){
+    uuid = function() {
       return(private$.uuid)
     }
-
   ),
   private = list(
     .name = NULL,

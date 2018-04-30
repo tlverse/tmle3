@@ -88,7 +88,7 @@ Param_TSM <- R6Class(
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
       EY1 <- unlist(self$cf_likelihood$get_likelihood(cf_task, self$outcome_node), use.names = FALSE)
-      
+
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function
       variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
       if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {

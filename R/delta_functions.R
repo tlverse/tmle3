@@ -58,4 +58,3 @@ delta_param_PAF <- list(
   df = df_log_rr,
   transform = paf_transform
 )
-

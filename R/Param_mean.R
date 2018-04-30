@@ -44,7 +44,7 @@ Param_mean <- R6Class(
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
     clever_covariates = function(tmle_task = NULL) {
-      return(list(Y=rep(1,tmle_task$nrow)))
+      return(list(Y = rep(1, tmle_task$nrow)))
     },
     estimates = function(tmle_task = NULL) {
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)

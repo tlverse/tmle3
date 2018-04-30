@@ -15,11 +15,11 @@ tmle3_Spec_PAR <- R6Class(
   public = list(
     initialize = function(baseline_level=1, ...) {
       # todo: use sl3 param grabbing code
-      params <- list(baseline_level = baseline_level)
-      do.call(super$initialize, params)
+      options <- list(baseline_level = baseline_level)
+      do.call(super$initialize, options)
     },
     make_params = function(tmle_task, likelihood) {
-      baseline_level <- self$params$baseline_level
+      baseline_level <- self$options$baseline_level
       intervention <- define_lf(LF_static, "A", value = baseline_level)
       tsm <- Param_TSM$new(likelihood, intervention)
       mean_param <- Param_mean$new(likelihood)

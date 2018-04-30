@@ -12,7 +12,7 @@ tmle3_Spec <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(...) {
-      private$.params <- list(...)
+      private$.options <- list(...)
     },
     make_tmle_task = function(data, node_list) {
       # bound Y if continuous
@@ -64,14 +64,11 @@ tmle3_Spec <- R6Class(
     }
   ),
   active = list(
-    params = function() {
-      # todo: params is a terrible name for this
-      # these are meant to be options/settings/things the user can specify
-      # NOT target parameters
-      return(private$.params)
+    options = function() {
+      return(private$.options)
     }
   ),
   private = list(
-    .params = NULL
+    .options = NULL
   )
 )

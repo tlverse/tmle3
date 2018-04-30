@@ -15,13 +15,13 @@ tmle3_Spec_RR <- R6Class(
   public = list(
     initialize = function(baseline_level=0, contrast=1,...) {
       # todo: use sl3 param grabbing code
-      params <- list(baseline_level = baseline_level, contrast_level=contrast)
-      do.call(super$initialize, params)
+      options <- list(baseline_level = baseline_level, contrast_level=contrast)
+      do.call(super$initialize, options)
     },
     make_params = function(tmle_task, likelihood) {
 
-      baseline_level <- self$params$baseline_level
-      contrast_level <- self$params$contrast_level
+      baseline_level <- self$options$baseline_level
+      contrast_level <- self$options$contrast_level
 
       intervention_base <- define_lf(LF_static, "A", value = baseline_level)
       intervention_cont <- define_lf(LF_static, "A", value = contrast_level)

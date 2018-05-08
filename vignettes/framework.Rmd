@@ -15,19 +15,36 @@ library(knitr)
 
 # Define insert_fun.
 insert_fun = function(name) {
-  read_chunk(lines = capture.output(dump(name, '')), labels = paste(name, 'source', sep = '-'))
+  read_chunk(lines = capture.output(dump(name, '')),
+             labels = paste(name, 'source', sep = '-'))
 }
 ```
 
 # Introduction
 
-The `tmle3` package differs from previous TMLE software efforts in that it attempts to directly model the key objects defined in the mathematical TMLE framework. That is, rather than focus on implementing a specific TML estimator, or a small set of related estimators, the focus is on model the TMLE _framework_ itself. 
+The `tmle3` package differs from previous TMLE software efforts in that it
+attempts to directly model the key objects defined in the mathematical and
+theoretical framework of Targeted Minimum Loss-Based Estimation (TMLE). That is,
+rather than focus on implementing a specific TML estimator, or a small set of
+related estimators, the focus is on modeling the TMLE _framework_ itself.
 
-Therefore, we explicitly define objects to model the NPSEM, the factorized likelihood, counterfactual interventions, parameters, and TMLE update procedures. The hope is that, in so doing, it will be possible to support a substantial subset of the vast array of TML estimators currently present in the literature, as well as those that have yet to be developed. In this vignette, we describe these mathematical objects, their software analogs in `tmle3`, and illustrate with a motivating example, described below. At the end, we describe how these objects can be bundled into a complete specification of a TML estimation procedure that can be easily applied by an end user.
+Therefore, we explicitly define objects to model the NPSEM, the factorized
+likelihood, counterfactual interventions, parameters, and TMLE update
+procedures. The hope is that, in so doing, it will be possible to support a
+substantial subset of the vast array of TML estimators currently present in the
+literature, as well as those that have yet to be developed. In this vignette, we
+describe these mathematical objects, their software analogs in `tmle3`, and
+illustrate with a motivating example, described below. At the end, we describe
+how these objects can be bundled into a complete specification of a TML
+estimation procedure that can be easily applied by an end user.
 
 ### Motivating Example
 
-We use data from the Collaborative Perinatal Project (CPP), available in the `sl3` package. To simplify this example, we define a binary intervention variable, `parity01` -- an indicator of having one or more children before the current child and a binary outcome, `haz01` -- an indicator of having an above average height for age.
+We use data from the Collaborative Perinatal Project (CPP), available in the
+`sl3` package. To simplify this example, we define a binary intervention
+variable, `parity01` -- an indicator of having one or more children before the
+current child and a binary outcome, `haz01` -- an indicator of having an above
+average height for age.
 
 ```{r prelims}
 library(tmle3)
@@ -41,27 +58,46 @@ cpp$haz01 <- as.numeric(cpp$haz > 0)
 
 # NPSEM
 
-TMLE requires the specification of a Nonparametric Structural Equation Model (NPSEM), which specifies our knowledge of relationships between the variables.
+TMLE requires the specification of a Nonparametric Structural Equation Model
+(NPSEM), which specifies our knowledge of relationships between the variables.
 
-We start with a set of endogenous variables, $X=(X_1,\ldots,X_J)$, that we want to model the relationship between. Each $X_j$ is at least partially observed in the dataset. The NPSEM defines each variable ($X_j$) by a deterministic function ($f_{X_j}$) of its parent nodes ($Pa(X_j)$) and an exogenous random variable ($U_{X_j}$):
+We start with a set of endogenous variables, $X=(X_1,\ldots,X_J)$, that we want
+to model the relationship between. Each $X_j$ is at least partially observed in
+the dataset. The NPSEM defines each variable ($X_j$) by a deterministic function
+($f_{X_j}$) of its parent nodes ($Pa(X_j)$) and an exogenous random variable
+($U_{X_j}$):
 
-$$X_j=f_{X_j}(Pa(X_j), U_{X_j}),\;\; j\in \{1, \ldots, J\}$$
+$$X_j = f_{X_j}(Pa(X_j), U_{X_j}),\;\; j\in \{1, \ldots, J\}$$
 
-The exact functional form of the functions $f_{X_j}$ is left unspecified at this step. If there is _a priori_ knowledge for some of these functions, that can be specified during the likelihood step below.
+The exact functional form of the functions $f_{X_j}$ is left unspecified at this
+step. If there is _a priori_ knowledge for some of these functions, that can be
+specified during the likelihood step below.
 
 ### Causal Considerations
 
-The collection of exogenous random variables defined by the NPSEM is $U=(U_{X_1}, \ldots,U_{X_J})$. Typically, non-testable assumptions about the joint distribution of $U$ are necessary for identifiability of causal parameters with statistical parameters of the observed data. These assumptions are not managed in the `tmle3` framework, which instead focus on the statistical estimation problem. Therefore, those developing tools for end users need to be clear about the additional causal assumptions necessary for causal interpretation of estimates.
+The collection of exogenous random variables defined by the NPSEM is
+$U = (U_{X_1}, \ldots, U_{X_J})$. Typically, non-testable assumptions about the
+joint distribution of $U$ are necessary for identifiability of causal parameters
+with statistical parameters of the observed data. These assumptions are not
+managed in the `tmle3` framework, which instead focus on the statistical
+estimation problem. Therefore, those developing tools for end users need to be
+clear about the additional causal assumptions necessary for causal
+interpretation of estimates.
 
 ### Example
 
-In the case of our CPP example, we use the classic point treatment NPSEM which defines three nodes: $X=(W,A,Y)$, where $W$ is a set of baseline covariates, $A$ is our exposure of interest (parity01), and $Y$ is our outcome of interest (haz01). We define the following SCM:
+In the case of our CPP example, we use the classic point treatment NPSEM which
+defines three nodes: $X = (W, A, Y)$, where $W$ is a set of baseline covariates,
+$A$ is our exposure of interest (`parity01`), and $Y$ is our outcome of interest
+(`haz01`). We define the following SCM:
 
-$$W=f_W(U_W)$$
-$$A=f_A(W,U_A)$$
-$$Y=f_Y(W,U_Y)$$
+$$W = f_W(U_W)$$
+$$A = f_A(W, U_A)$$
+$$Y = f_Y(W, U_Y)$$
 
-In `tmle3`, this is done using the `define_node` function for each node. `define_node` allows a user to specify the node_name, which columns in the data comprise the node, and a list of parent nodes. 
+In `tmle3`, this is done using the `define_node` function for each node.
+`define_node` allows a user to specify the node_name, which columns in the data
+comprise the node, and a list of parent nodes.
 
 ``` {r define_npsem}
 npsem <- list(
@@ -74,66 +110,112 @@ npsem <- list(
 )
 ```
 
-Nodes also track information about the data types of the variables (continuous, categorical, binomial, etc). Here, that information is being estimated automatically from the data. In the future, each node will also contain information about censoring indicators, where applicable, but this is not yet implemented.
+Nodes also track information about the data types of the variables (continuous,
+categorical, binomial, etc). Here, that information is being estimated
+automatically from the data. In the future, each node will also contain
+information about censoring indicators, where applicable, but this is not yet
+implemented.
 
 ### `tmle3_Task`
 
-A `tmle3_Task` is an object comprised of observed data, and the NPSEM defined above:
+A `tmle3_Task` is an object comprised of observed data, and the NPSEM defined
+above:
 
 ```{r define_task}
 tmle_task <- tmle3_Task$new(cpp, npsem = npsem)
 ```
 
-This task object contains methods to help subset the data as needed for various steps in the tmle process:
+This task object contains methods to help subset the data as needed for various
+steps in the TMLE process:
 
 ```{r subset_task}
-#get the outcome node data
+# get the outcome node data
 head(tmle_task$get_tmle_node("Y"))
 
-#get the sl3 task corresponding to an outcome regression
+# get the sl3 task corresponding to an outcome regression
 tmle_task$get_regression_task("Y")
 ```
 
-A `tmle3_Task` is a special kind of `sl3` task that can be used to estimate factors of a likelihood from data. The process of defining and estimating a likelihood is described next.
+A `tmle3_Task` is a special kind of `sl3_Task` that can be used to estimate
+factors of a likelihood from data. The process of defining and estimating a
+likelihood is described next.
 
 # Likelihood
 
-Having defined the NPSEM, we can now define a joint likelihood (probability density function) over the observed variables $X$:
-$$P(X_1, \ldots,X_J\in D)=\int_D f_{X_1, \ldots,X_J}(x_1,\ldots,x_J) dx_1,\ldots,dx_J$$
-This can then be factorized into a series of conditional densities according to the NPSEM:
-$$f_{X_1, \ldots,X_J}=\prod_j^J f_{X_j|Pa(X_j)}(x|Pa(x_j))$$
+Having defined the NPSEM, we can now define a joint likelihood (probability
+density function) over the observed variables $X$:
 
-Where each $f_{X_j|Pa(X_j)}$ is a conditional pdf (or probability mass function for discrete $X_j$), where the conditioning set is all parent nodes as defined in the NPSEM. We refer to these objects as _likelihood factors_. 
+$$P(X_1, \ldots, X_J \in D) = \int_D f_{X_1, \ldots, X_J}(x_1, \ldots, x_J)
+dx_1, \ldots, dx_J$$
 
-TMLE depends on estimates (or _a priori_ knowledge) of the functional form of these likelihood factors. However, not all factors of the likelihood are always necessary for estimation, and only those necessary will be estimated.
+This can then be factorized into a series of conditional densities according to
+the NPSEM:
+$$f_{X_1, \ldots, X_J} = \prod_j^J f_{X_j \mid Pa(X_j)}(x \mid Pa(x_j))$$
 
+Where each $f_{X_j \mid Pa(X_j)}$ is a conditional pdf (or probability mass
+function for discrete $X_j$), where the conditioning set is all parent nodes as
+defined in the NPSEM. We refer to these objects as _likelihood factors_.
+
+TMLE depends on estimates (or _a priori_ knowledge) of the functional form of
+these likelihood factors. However, not all factors of the likelihood are always
+necessary for estimation, and only those necessary will be estimated.
 
 ### Likelihood Factor Objects
 
-`tmle3` models this likelihood as a list of likelihood factor objects, where each likelihood factor object describes either _a priori_ knowledge or an estimation strategy for the corresponding likelihood factor. These objects all inherit from the `LF_base` base class, and there are different types depending on which of a range of estimation strategies or _a priori_ knowledge is appropriate.
+`tmle3` models this likelihood as a list of likelihood factor objects, where
+each likelihood factor object describes either _a priori_ knowledge or an
+estimation strategy for the corresponding likelihood factor. These objects all
+inherit from the `LF_base` base class, and there are different types depending
+on which of a range of estimation strategies or _a priori_ knowledge is
+appropriate.
 
-In some cases, a full conditional density for a particular factor is not necessary. Instead, a conditional mean (a much easier quantity to estimate), is all that's required. Although conditional means are not truly likelihood factors, conditional means are also modeled using using likelihood factor objects.
+In some cases, a full conditional density for a particular factor is not
+necessary. Instead, a conditional mean -- a much easier quantity to estimate --
+is all that's required. Although conditional means are not truly likelihood
+factors, conditional means are also modeled using using likelihood factor
+objects.
 
 ### `LF_emp`
 
-`LF_emp` represents a likelihood factor to be estimated using NP-MLE. That is, probability mass $1/n$ is placed on each observation in the observed dataset:
-$$f_{X_j}(x_j)=\frac{1}{n}\mathbb{I}(x_j \in X_{n,j})$$
-Going forward, weights will be used if specified, although this is not yet supported. `LF_emp` only supports marginal densities. That is, the conditioning set, $Pa(X_j)$ must be empty. Therefore, it is only appropriate for estimation of the marginal density of baseline covariates.
+`LF_emp` represents a likelihood factor to be estimated using nonparametric
+maximum likelihood estimation (NP-MLE). That is, probability mass $\frac{1}{n}$
+is placed on each observation in the observed dataset:
+
+$$f_{X_j}(x_j) = \frac{1}{n}\mathbb{I}(x_j \in X_{n,j})$$
+
+Going forward, weights will be used if specified, although this is not yet
+supported. `LF_emp` only supports marginal densities. That is, the conditioning
+set, $Pa(X_j)$ must be empty. Therefore, it is only appropriate for estimation
+of the marginal density of baseline covariates.
 
 ### `LF_fit`
 
-`LF_fit` represents a likelihood factor to be estimated using the `sl3` framework. Based on the learner type used, this can fit a pmf (for binomial or categorical data, see `sl3_list_learners("binomial")` and `sl3_list_learners("categorical")` for lists), a conditional mean (most learners), or a conditional density (using `condensier` via `Lrnr_condensier`). `LF_fit` takes a `sl3` learner object as an argument, which is fit to the data in the `tmle3_Task` automatically. Details for specifying different kinds of learners in `sl3` can be found here: http://sl3.tlverse.org/articles/intro_sl3.html
+`LF_fit` represents a likelihood factor to be estimated using the `sl3`
+framework. Based on the learner type used, this can fit a pmf (for binomial or
+categorical data, see `sl3_list_learners("binomial")` and
+`sl3_list_learners("categorical")` for lists), a conditional mean (most
+learners), or a conditional density (using `condensier` via `Lrnr_condensier`).
+`LF_fit` takes a `sl3` learner object as an argument, which is fit to the data
+in the `tmle3_Task` automatically. Details for specifying different kinds of
+learners in `sl3` may be found at http://sl3.tlverse.org/articles/intro_sl3.html
 
 ### Specifying _a priori_ knowledge.
 
-The above to likelihood factor types, `LF_fit`, and `LF_emp`, are both likelihood factors where the factor is estimated from data. In some cases, users may have _a priori_ knowledge of a likelihood factor. For instance, in an RCT, there might be an unconditional probability of treatment of $p=0.5$. Additional likelihood factor types need to be create to accommodate this type of knowledge.
+The above to likelihood factor types, `LF_fit`, and `LF_emp`, are both
+likelihood factors where the factor is estimated from data. In some cases, users
+may have _a priori_ knowledge of a likelihood factor. For instance, in an RCT,
+there might be an unconditional probability of treatment of $p = 0.5$.
+Additional likelihood factor types need to be create to accommodate this type of
+knowledge.
 
 ### Example
 
-Going back to our CPP example, we will estimate the marginal likelihood of $W$, using NP-MLE, the conditional density of $A$ given $W$ using a GLM fit via `sl3` and the conditional mean of $Y$ given $A$ and $W$ using another GLM fit via `sl3`:
+Going back to our CPP data example, we will estimate the marginal likelihood of
+$W$, using NP-MLE, the conditional density of $A$ given $W$ using a GLM fit via
+`sl3` and the conditional mean of $Y$ given $A$ and $W$ using another GLM fit
+via `sl3`:
 
 ```{r likelihood}
-
 # set up sl3 learners for tmle3 fit
 lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
 lrnr_mean <- make_learner(Lrnr_mean)
@@ -146,7 +228,10 @@ factor_list <- list(
 )
 ```
 
-The particular likelihood factors and estimation strategies to use will of course depend on the parameter of interest. Once this list of likelihood factors is defined, we can construct a `Likelihood` object and train it on the data contained in `tmle_task`:
+The particular likelihood factors and estimation strategies to use will of
+course depend on the parameter of interest. Once this list of likelihood factors
+is defined, we can construct a `Likelihood` object and train it on the data
+contained in `tmle_task`:
 
 ```{r likelihood fit}
 likelihood_def <- Likelihood$new(factor_list)
@@ -154,9 +239,11 @@ likelihood <- likelihood_def$train(tmle_task)
 print(likelihood)
 ```
 
-A `tmle3` `Likelihood` is actually a special type of `sl3` learner, so the syntax to train it on data is analogous.
+A `tmle3` `Likelihood` is actually a special type of `sl3` learner, so the
+syntax to train it on data is analogous.
 
-Having fit the likelihood, we can now get likelihood values for any `tmle3_task`:
+Having fit the likelihood, we can now get likelihood values for any
+`tmle3_Task`:
 
 ```{r likelihood values}
 likelihood_values <- likelihood$get_likelihoods(tmle_task)
@@ -165,25 +252,34 @@ head(likelihood_values)
 
 ## Counterfactual Likelihoods
 
-In `tmle3`, interventions are modeled by likelihoods where one or more likelihood factors is replaced with a counterfactual version representing some intervention. 
+In `tmle3`, interventions are modeled by likelihoods where one or more
+likelihood factors is replaced with a counterfactual version representing some
+intervention.
 
-`tmle3` defines the `CF_Likelihood` class, which inherits from `Likelihood`, and takes an `observed_likelihood` and an `intervention_list`. 
+`tmle3` defines the `CF_Likelihood` class, which inherits from `Likelihood`, and
+takes an `observed_likelihood` and an `intervention_list`.
 
-
-Below, we describe some examples of additional likelihood factors intended to be used to describe interventions. We expect this list to grow as `tmle3` is extended to additional use cases.
+Below, we describe some examples of additional likelihood factors intended to be
+used to describe interventions. We expect this list to grow as `tmle3` is
+extended to additional use-cases.
 
 ### `LF_static`
 
-Likelihood factor for a static intervention, where all observations are set do a single intervention value $x'$: 
-$$f_{X_j | Pa(X_j)}(x_j | Pa(x_j))=\mathbf{I}(x_j = x')$$
+Likelihood factor for a static intervention, where all observations are set do a
+single intervention value $x'$:
+
+$$f_{X_j \mid Pa(X_j)}(x_j \mid Pa(x_j)) = \mathbf{I}(x_j = x')$$
 
 ### Other intervention likelihood factor types
 
-Additional likelihood factor types need to be defined for other types of interventions, such as dynamic rules, and stochastic interventions. Currently, a prototype version of a stochastic shift intervention exists in `LF_shift`.
+Additional likelihood factor types need to be defined for other types of
+interventions, such as dynamic rules and stochastic interventions. Currently, a
+prototype version of a stochastic shift intervention exists in `LF_shift`.
 
 ### Example
 
-For our CPP example, we'll define a simple intervention where we set all treatment $A=1$:
+For our CPP example, we'll define a simple intervention where we set all
+treatment $A = 1$:
 
 ```{r intervention}
 intervention <- define_lf(LF_static, "A", value = 1)
@@ -195,7 +291,9 @@ We can then use this to construct a counterfactual likelihood:
 cf_likelihood <- make_CF_Likelihood(likelihood, intervention)
 ```
 
-A `cf_likelihood` is a likelihood object, and so has the same behavior as the observed likelihood object defined above, but with the observed likelihood factors being replaced by the defined intervention likelihood factors.
+A `cf_likelihood` is a likelihood object, and so has the same behavior as the
+observed likelihood object defined above, but with the observed likelihood
+factors being replaced by the defined intervention likelihood factors.
 
 In particular, we can get likelihood values under the counterfactual likelihood:
 
@@ -204,11 +302,18 @@ cf_likelihood_values <- cf_likelihood$get_likelihoods(tmle_task)
 head(cf_likelihood_values)
 ```
 
-We see that the likelihood values for the $A$ node are all either 0 or 1, as would be expected from an indicator likelihood function. In addition, the likelihood values for the non-intervention nodes have not changed.
+We see that the likelihood values for the $A$ node are all either 0 or 1, as
+would be expected from an indicator likelihood function. In addition, the
+likelihood values for the non-intervention nodes have not changed.
 
 ### Counterfactual Tasks
 
-Each `CF_Likelihood` can generate one or more counterfactual tasks. These are `tmle3_Task`s where observed values are replaced with counterfactual values according to the intervention distribution. For deterministic interventions, only one task will be generated. However, stochastic interventions, when implemented, will generate several such tasks, one for each combination of possible values of the intervention node(s). 
+Each `CF_Likelihood` can generate one or more counterfactual tasks. These are
+`tmle3_Task`s in which observed values are replaced with counterfactual values
+according to the specified intervention distribution. For deterministic
+interventions, only one task will be generated. However, stochastic
+interventions, when implemented, will generate several such tasks, one for each
+combination of possible values of the intervention node(s).
 
 To enumerate these tasks, use `enumerate_cf_tasks`:
 
@@ -217,34 +322,54 @@ cf_likelihood_tasks <- cf_likelihood$enumerate_cf_tasks(tmle_task)
 head(cf_likelihood_tasks[[1]]$data)
 ```
 
-In this case, you can see that `parity01` has been set to 1 for all observations, consistent with a static intervention on this node.
+In this case, you can see that `parity01` has been set to 1 for all
+observations, consistent with a static intervention on this node.
 
 # Target Parameter
 
-In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from a probability distribution $P \in \mathcal{M}$ to a set of real numbers $\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above. 
+In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from
+a probability distribution $P \in \mathcal{M}$ to a set of real numbers
+$\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above.
 
-In `tmle3`, we define parameter objects as objects inheriting from the `Param_base` class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the "clever covariates" needed to calculate a TMLE update to the likelihood.
+In `tmle3`, we define parameter objects as objects inheriting from the
+`Param_base` class, which keep track of not only the mapping from a probability
+distribution to a parameter value, but also the corresponding EIF of the
+parameter, and the "clever covariates" needed to calculate a TMLE update to the
+likelihood.
 
-
-Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:
+Here, we define a treatment-specific mean (TSM) parameter based on the
+intervention we defined previously:
 
 ```{r param}
 tsm <- define_param(Param_TSM, likelihood, intervention)
 ```
 
-todo: provide details about parameter definition
+TODO: provide details about parameter definition
 
 # Update Procedure
 
-The update procedure component of `tmle3` is currently in flux. The current structure is as follows:
+The update procedure component of `tmle3` is currently in flux. The current
+structure is as follows:
 
-We have an object, `tmle3_Update`, which calculates the individual update steps using `tmle3_Update$update_step`. This adds to a `Likelihood$update_list`, so that future calls to `Likelihood$get_likelihoods` will return updated likelihood values. However, likelihood values are generally recomputed at each step, which requires applying all past updates. This is ridiculously inefficient. 
+We have an object, `tmle3_Update`, which calculates the individual update steps
+using `tmle3_Update$update_step`. This adds to a `Likelihood$update_list`, so
+that future calls to `Likelihood$get_likelihoods` will return updated likelihood
+values. However, likelihood values are generally recomputed at each step, which
+requires applying all past updates. This is ridiculously inefficient.
 
-Instead, we need to do what previous TMLE implementations have done, which is enumerate a list of required likelihood values, and update those values as we go (as opposed to updating the function and recalculating the value each time they are needed). This requires the ability to have the parameters enumerate which likelihood values they will need for defining the clever covariate, as well as parameter mapping and the EIF. This has not yet been implemented.
+Instead, we need to do what previous TMLE implementations have done, which is
+enumerate a list of required likelihood values, and update those values as we go
+(as opposed to updating the function and recalculating the value each time they
+are needed). This requires the ability to have the parameters enumerate which
+likelihood values they will need for defining the clever covariate, as well as
+parameter mapping and the EIF. This has not yet been implemented.
 
-Therefore, the update procedure, as well as the structure of the `Param_base` parameter objects are subject to substantial changes in the near future.
+Therefore, the update procedure, as well as the structure of the `Param_base`
+parameter objects are subject to substantial changes in the near future.
 
-Currently, the `tmle3_Update` object also has a hard-coded submodel (logistic), loss function (loglikelihood), and solver (glm). These need to be generalized so updates can be done for a range of submodels, loss functions, and solvers.
+Currently, the `tmle3_Update` object also has a hard-coded submodel (logistic),
+loss function (log-likelihood), and solver (GLM). These need to be generalized
+so updates can be done for a range of submodels, loss functions, and solvers.
 
 Current Usage:
 ```{r update}
@@ -255,7 +380,9 @@ likelihood$update_list <- updater
 
 # `tmle3_Fit` - Putting it all together
 
-Now that we have specified all the components required for the TMLE procedure, we can generate an object that manages all the components and finally calculate apply TMLE.
+Now that we have specified all the components required for the TMLE procedure,
+we can generate an object that manages all the components and finally calculate
+apply TMLE.
 
 ```{r fit_tmle}
 tmle_fit <- fit_tmle3(tmle_task, likelihood, tsm, updater)
@@ -264,32 +391,42 @@ print(tmle_fit)
 
 # TMLE Specification
 
-The `tmle3` framework described above is very general, and allows most components of the TMLE procedure to be specified in a modular way. However, most end users will not be interested in manually specifying all of these components. Therefore, `tmle3` implements a `tmle3_Spec` object that bundles a set of components into a _specification_ that, with minimal additional detail, can be run by an end user:
+The `tmle3` framework described above is completely general, and allows most
+components of the TMLE procedure to be specified in a modular way. However, most
+end users will not be interested in manually specifying all of these components.
+Therefore, `tmle3` implements a `tmle3_Spec` object that bundles a set of
+components into a _specification_ that, with minimal additional detail, can be
+run by an end-user:
 
 ```{r tmle_spec}
-nodes <- list(W=c("apgar1", "apgar5", "gagebrth", "mage",
-                  "meducyrs", "sexn"),
-              A="parity01",
-              Y="haz01")
+nodes <- list(W = c("apgar1", "apgar5", "gagebrth", "mage", "meducyrs",
+                    "sexn"),
+              A = "parity01",
+              Y = "haz01")
 
 lrnr_glm_fast <- make_learner(Lrnr_glm_fast)
 lrnr_mean <- make_learner(Lrnr_mean)
-learner_list <- list(Y=lrnr_mean, A=lrnr_glm_fast)
+learner_list <- list(Y = lrnr_mean, A = lrnr_glm_fast)
 
-
-cpp2 <- data.table::copy(cpp) # make a new copy to deal with data.table weirdness
+# make a new copy to deal with data.table weirdness
+cpp2 <- data.table::copy(cpp)
 
 tmle_fit_from_spec <- tmle3(tmle_TSM_all(), cpp2, nodes, learner_list)
 print(tmle_fit_from_spec)
 ```
 
-Currently, this is effectively a hard-coded list of those details: the structure of the NPSEM, the parameters, and the update procedure are coded into the specification. Only the data, the roles of the variables, and the  `sl3` learners to use for likelihood estimation. Ideally, instead a `tmle3_Spec` would respresent a set of reasonable defaults for a particular TMLE, that experienced users could override where appropriate.
+Currently, this is effectively a hard-coded list of those details: the structure
+of the NPSEM, the parameters, and the update procedure are coded into the
+specification. Only the data, the roles of the variables, and the  `sl3`
+learners to use for likelihood estimation. Ideally, instead a `tmle3_Spec` would
+respresent a set of reasonable defaults for a particular TMLE, that experienced
+users could override where appropriate.
 
 # Conclusion
 
 Obviously, there's a lot more to do:
 
-* Cache and update likelihood values instead of recalculating 
+* Cache and update likelihood values instead of recalculating
 * Generalize `tmle3_Update`
 * Generalize `tmpe3_Spec`
 * Better handling of bounded continuous outcomes
@@ -298,4 +435,5 @@ Obviously, there's a lot more to do:
 * CV-TMLE
 * C-TMLE
 * IPCW-TMLE
-* Extension to longitudinal
+* Extension to longitudinal data settings
+

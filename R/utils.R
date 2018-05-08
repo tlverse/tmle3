@@ -1,5 +1,5 @@
 #' @importFrom stats qnorm
-wald_ci <- function(est, se, alpha=0.95) {
+wald_ci <- function(est, se, alpha = 0.95) {
   z <- qnorm((1 + alpha) / 2)
   lower <- est - z * se
   upper <- est + z * se
@@ -11,12 +11,15 @@ wald_ci <- function(est, se, alpha=0.95) {
 #'
 #' Generates a \code{data.table} summarizing results with inference
 #' @importFrom stats var
-#' @param estimates \code{list}, TMLE estimates of parameter and ICs from \code{\link{tmle3_Fit}$estimates}
-#' @param param_names the names of the parameters we are estimating
-#' @param init_psi the names of the parameters we are estimating
+#' @param estimates \code{list}, TMLE estimates of parameter and ICs from
+#'  \code{\link{tmle3_Fit}$estimates}
+#' @param param_names the names of the parameters being estimated
+#' @param init_psi the names of the parameters being estimated
 #' @return \code{data.table} summarizing results
 #' @export
-summary_from_estimates <- function(estimates, param_names = NULL, init_psi = NULL) {
+#
+summary_from_estimates <- function(estimates, param_names = NULL,
+                                   init_psi = NULL) {
   psi <- sapply(estimates, `[[`, "psi")
   IC <- sapply(estimates, `[[`, "IC")
   var_D <- apply(IC, 2, var)

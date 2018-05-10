@@ -22,6 +22,13 @@ node_list <- list(
   Y = "haz01"
 )
 
+# define NPSEM
+#npsem <- list(
+  #define_node("W", node_list$W),
+  #define_node("A", node_list$A, c("W")),
+  #define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
+#)
+
 qlib <- make_learner_stack(
   "Lrnr_mean",
   "Lrnr_glm_fast"
@@ -39,8 +46,7 @@ learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_TSM_all()
 
 # define data
-tmle_task <- tmle_spec$make_tmle_task(data = data, npsem = node_list,
-                                      id = "subjid")
+tmle_task <- tmle_spec$make_tmle_task(data, node_list, id = "subjid")
 
 # define likelihood
 likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
@@ -66,7 +72,8 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
+cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),
+                                                  data.table(A = 1))
 
 # get Q
 EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
@@ -91,8 +98,12 @@ classic_psi <- tmle_classic_fit$estimates$EY1$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 
 # only approximately equal (although it's O(1/n))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+})
 
 # only approximately equal (although it's O(1/n))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = 1e-3)
+})
 

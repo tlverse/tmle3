@@ -16,7 +16,7 @@ wald_ci <- function(est, se, alpha = 0.95) {
 #' @importFrom stats var
 #'
 #' @param task \code{tmle3_Task} containing the observed data of interest; the
-3'  same as that passed to ..
+#'  same as that passed to ..
 #' @param estimates \code{list}, TMLE estimates of parameter and ICs from
 #'  \code{\link{tmle3_Fit}$estimates}
 #' @param param_names the names of the parameters being estimated

@@ -20,3 +20,4 @@ Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_fit}}, \code{\link{LF_shift}},
   \code{\link{LF_static}}, \code{\link{Likelihood}}
 }
+\concept{Likelihood objects}

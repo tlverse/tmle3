@@ -41,7 +41,7 @@ LF_static <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, type = "density", value, ...) {
-      super$initialize(name, ..., type=type)
+      super$initialize(name, ..., type = type)
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },

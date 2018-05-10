@@ -1,7 +1,7 @@
-#' Defines a tmle (minus the data)
+#' Defines a TML Estimator (except for the data)
 #'
-#' Current limitations:
-#' pretty much tailored to Param_TSM
+#' Current limitations: pretty much tailored to \code{Param_TSM}
+#'
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -14,7 +14,7 @@ tmle3_Spec <- R6Class(
     initialize = function(...) {
       private$.params <- list(...)
     },
-    make_tmle_task = function(data, node_list) {
+    make_tmle_task = function(data, node_list, ...) {
       # bound Y if continuous
       Y_node <- node_list$Y
       Y_vals <- unlist(data[, Y_node, with = FALSE])
@@ -25,7 +25,10 @@ tmle3_Spec <- R6Class(
         range <- max_Y - min_Y
         lower <- min_Y # - 0.1 * range
         upper <- max_Y # + 0.1 * range
-        Y_variable_type <- variable_type(type = "continuous", bounds = c(lower, upper))
+        Y_variable_type <- variable_type(
+          type = "continuous",
+          bounds = c(lower, upper)
+        )
       }
 
       # make tmle_task
@@ -35,7 +38,7 @@ tmle3_Spec <- R6Class(
         define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
 
-      tmle_task <- tmle3_Task$new(data, npsem = npsem)
+      tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
       return(tmle_task)
     },
     make_likelihood = function(tmle_task, learner_list = NULL) {

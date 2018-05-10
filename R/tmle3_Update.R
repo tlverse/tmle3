@@ -43,7 +43,7 @@ tmle3_Update <- R6Class(
       # fit submodel
       # submodel function might be predict here, but generally _is_ a function we're trying to fit
       suppressWarnings({
-        submodel_fit <- glm(observed~H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
+        submodel_fit <- glm(observed ~ H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
       })
       epsilon <- coef(submodel_fit)
       private$.epsilons <- c(private$.epsilons, list(epsilon))

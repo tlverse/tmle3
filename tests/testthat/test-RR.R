@@ -37,7 +37,7 @@ metalearner <- make_learner(Lrnr_nnls)
 Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
-tmle_spec <- tmle_RR(baseline=0, contrast=1)
+tmle_spec <- tmle_RR(baseline = 0, contrast = 1)
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)

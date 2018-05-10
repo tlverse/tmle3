@@ -1,7 +1,6 @@
-context("Basic interventions: TSM for single static intervention.")
+context("Repeated measures: Check variance is computed from subject-level ICs")
 
 library(sl3)
-# library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
@@ -15,10 +14,20 @@ data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
 node_list <- list(
-  W = c(),
+  W = c(
+    "apgar1", "apgar5", "gagebrth", "mage",
+    "meducyrs", "sexn"
+  ),
   A = "parity01",
   Y = "haz01"
 )
+
+# define NPSEM
+# npsem <- list(
+# define_node("W", node_list$W),
+# define_node("A", node_list$A, c("W")),
+# define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
+# )
 
 qlib <- make_learner_stack(
   "Lrnr_mean",
@@ -30,13 +39,14 @@ glib <- make_learner_stack(
   "Lrnr_glm_fast"
 )
 
-Q_learner <- make_learner(Lrnr_glm)
-g_learner <- make_learner(Lrnr_mean)
+metalearner <- make_learner(Lrnr_nnls)
+Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_TSM_all()
 
 # define data
-tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+tmle_task <- tmle_spec$make_tmle_task(data, node_list, id = "subjid")
 
 # define likelihood
 likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
@@ -62,7 +72,10 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
+cf_task <- tmle_task$generate_counterfactual_task(
+  UUIDgenerate(),
+  data.table(A = 1)
+)
 
 # get Q
 EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
@@ -73,12 +86,10 @@ Q <- cbind(EY0, EY1)
 # get G
 pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
-
-W <- 0 * Q # just need something here so tmle doesn't break, but it shouldn't be used
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,
-  W = W,
+  W = tmle_task$get_tmle_node("W"),
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
   pDelta1 = pDelta1
@@ -89,7 +100,11 @@ classic_psi <- tmle_classic_fit$estimates$EY1$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 
 # only approximately equal (although it's O(1/n))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+})
 
 # only approximately equal (although it's O(1/n))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = 1e-3)
+})

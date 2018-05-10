@@ -344,7 +344,7 @@ intervention we defined previously:
 tsm <- define_param(Param_TSM, likelihood, intervention)
 ```
 
-TODO: provide details about parameter definition
+**TODO**: provide details about parameter definition
 
 # Update Procedure
 
@@ -376,13 +376,12 @@ Current Usage:
 updater <- tmle3_Update$new(tsm)
 likelihood$update_list <- updater
 ```
-}
 
 # `tmle3_Fit` - Putting it all together
 
 Now that we have specified all the components required for the TMLE procedure,
 we can generate an object that manages all the components and finally calculate
-apply TMLE.
+an appropriate TML estimator.
 
 ```{r fit_tmle}
 tmle_fit <- fit_tmle3(tmle_task, likelihood, tsm, updater)

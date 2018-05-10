@@ -7,7 +7,9 @@
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
+#'
 #' @family Parameters
+#'
 #' @keywords data
 #'
 #' @return \code{Param_base} object
@@ -15,6 +17,7 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @template tmle3_Fit_extra
+#'
 #' @export
 #
 tmle3_Fit <- R6Class(

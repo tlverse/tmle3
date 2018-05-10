@@ -1,4 +1,7 @@
+#' Wald-Style Confidence Intervals
+#'
 #' @importFrom stats qnorm
+#
 wald_ci <- function(est, se, alpha = 0.95) {
   z <- qnorm((1 + alpha) / 2)
   lower <- est - z * se
@@ -11,17 +14,26 @@ wald_ci <- function(est, se, alpha = 0.95) {
 #'
 #' Generates a \code{data.table} summarizing results with inference
 #' @importFrom stats var
+#'
+#' @param task \code{tmle3_Task} containing the observed data of interest; the
+3'  same as that passed to ..
 #' @param estimates \code{list}, TMLE estimates of parameter and ICs from
 #'  \code{\link{tmle3_Fit}$estimates}
 #' @param param_names the names of the parameters being estimated
 #' @param init_psi the names of the parameters being estimated
+#'
 #' @return \code{data.table} summarizing results
+#'
 #' @export
 #
-summary_from_estimates <- function(estimates, param_names = NULL,
+summary_from_estimates <- function(task, estimates, param_names = NULL,
                                    init_psi = NULL) {
   psi <- sapply(estimates, `[[`, "psi")
   IC <- sapply(estimates, `[[`, "IC")
+  # for repeated measures, average IC values to get subject-level IC values
+  if (length(unique(task$id)) < length(task$id)) {
+    IC <- as.matrix(by(as.vector(IC), task$id, mean))
+  }
   var_D <- apply(IC, 2, var)
   n <- length(estimates[[1]]$IC)
   se <- sqrt(var_D / n)
@@ -47,7 +59,10 @@ summary_from_estimates <- function(estimates, param_names = NULL,
   psi_transformed <- mapply(apply_transform, psi, transforms)
   ci_transformed <- mapply(apply_transform, ci, transforms)
   ci_transformed <- matrix(ci_transformed, nrow = nrow(ci), ncol = ncol(ci))
-  summary_dt <- as.data.table(list(param_names, init_psi, psi, se, ci, psi_transformed, ci_transformed))
-  setnames(summary_dt, c("param", "init_est", "tmle_est", "se", "lower", "upper", "psi_transformed", "lower_transformed", "upper_transformed"))
+  summary_dt <- as.data.table(list(param_names, init_psi, psi, se, ci,
+                                   psi_transformed, ci_transformed))
+  setnames(summary_dt, c("param", "init_est", "tmle_est", "se", "lower",
+                         "upper", "psi_transformed", "lower_transformed",
+                         "upper_transformed"))
   return(summary_dt)
 }

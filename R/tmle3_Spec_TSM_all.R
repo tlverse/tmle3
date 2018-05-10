@@ -1,8 +1,8 @@
-#' Defines a tmle (minus the data)
+#' Defines a TML Estimator (except for the data)
 #'
-#' Current limitations:
-#' pretty much tailored to Param_TSM
-#' see todos for places generalization can be added
+#' Current limitations: pretty much tailored to \code{Param_TSM}
+#' See TODOs for places generalization can be added
+#'
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -47,6 +47,6 @@ tmle3_Spec_TSM_all <- R6Class(
 #' @importFrom sl3 make_learner Lrnr_mean
 #' @export
 tmle_TSM_all <- function() {
-  # todo: unclear why this has to be in a factory function
+  # TODO: unclear why this has to be in a factory function
   tmle3_Spec_TSM_all$new()
 }

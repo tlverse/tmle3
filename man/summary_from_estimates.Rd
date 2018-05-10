@@ -8,7 +8,8 @@ summary_from_estimates(estimates, param_types = NULL, param_names = NULL,
   init_psi = NULL)
 }
 \arguments{
-\item{estimates}{\code{list}, TMLE estimates of parameter and ICs from \code{\link{tmle3_Fit}$estimates}}
+\item{task}{\code{tmle3_Task} containing the observed data of interest; the
+same as that passed to ..}
 
 \item{param_types}{the types of the parameters we are estimating}
 

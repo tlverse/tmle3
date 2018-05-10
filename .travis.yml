@@ -1,21 +1,25 @@
 language: r
 sudo: required
 cache: packages
+
 warnings_are_errors: true
+r_build_args: ''
+r_check_args: '--no-build-vignettes'
+
+r:
+  - oldrel
+  - release
+  - devel
 
 before_install:
-  Rscript -e 'update.packages(ask = FALSE)'
+  - Rscript -e 'update.packages(ask = FALSE)'
 
 r_packages:
   - devtools
   - covr
-  - drat
-
-r:
-  - release
-  - devel
 
 r_github_packages:
+  - r-lib/devtools
   - jimhester/covr
 
 after_success:

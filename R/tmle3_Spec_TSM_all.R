@@ -30,7 +30,6 @@ tmle3_Spec_TSM_all <- R6Class(
         tsm <- Param_TSM$new(likelihood, intervention)
         return(tsm)
       })
-
       return(tmle_params)
     }
   ),

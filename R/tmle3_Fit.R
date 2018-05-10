@@ -102,8 +102,8 @@ tmle3_Fit <- R6Class(
     },
     summary = function() {
       return(summary_from_estimates(
-        self$estimates, self$tmle_param_names,
-        self$initial_psi
+        task = self$tmle_task, estimates = self$estimates,
+        param_names = self$tmle_param_names, init_psi = self$initial_psi
       ))
     },
     timings = function() {
@@ -122,10 +122,10 @@ tmle3_Fit <- R6Class(
     .initial_psi = NULL,
     .estimates = NULL,
     .timings = NULL,
-    .tmle_fit = function(max_it=100) {
+    .tmle_fit = function(max_it = 100) {
       ED_criterion <- 1 / self$tmle_task$nrow
 
-      for (steps in 1:max_it) {
+      for (steps in seq_len(max_it)) {
         self$updater$update_step(self$likelihood, self$tmle_task)
 
         estimates <- lapply(

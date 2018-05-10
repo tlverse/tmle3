@@ -102,4 +102,5 @@ Other Parameters: \code{\link{Param_ATT}},
   \code{\link{Param_delta}}, \code{\link{Param_mean}},
   \code{\link{define_param}}
 }
+\concept{Parameters}
 \keyword{data}

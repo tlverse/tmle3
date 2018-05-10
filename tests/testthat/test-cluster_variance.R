@@ -22,26 +22,19 @@ node_list <- list(
   Y = "haz01"
 )
 
-# define NPSEM
-# npsem <- list(
-# define_node("W", node_list$W),
-# define_node("A", node_list$A, c("W")),
-# define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
-# )
-
-qlib <- make_learner_stack(
+Q_lib <- make_learner_stack(
   "Lrnr_mean",
   "Lrnr_glm_fast"
 )
 
-glib <- make_learner_stack(
+g_lib <- make_learner_stack(
   "Lrnr_mean",
   "Lrnr_glm_fast"
 )
 
 metalearner <- make_learner(Lrnr_nnls)
-Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
-g_learner <- make_learner(Lrnr_sl, glib, metalearner)
+Q_learner <- make_learner(Lrnr_sl, Q_lib, metalearner)
+g_learner <- make_learner(Lrnr_sl, g_lib, metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_TSM_all()
 
@@ -49,17 +42,30 @@ tmle_spec <- tmle_TSM_all()
 tmle_task <- tmle_spec$make_tmle_task(data, node_list, id = "subjid")
 
 # define likelihood
-likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define parameter
-intervention <- define_lf(LF_static, "A", value = 1)
-tsm <- define_param(Param_TSM, likelihood, intervention)
+# cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
 # define update method (submodel + loss function)
-updater <- tmle_spec$make_updater(likelihood, list(tsm))
+# updater <- tmle_spec$make_updater(likelihood, list(tsm))
+updater <- tmle3_Update$new()
 
-# fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
+targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
+intervention <- define_lf(LF_static, "A", value = 1)
+
+# todo: make params not store likelihood info internally!
+tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
+updater$tmle_params <- tsm
+
+
+targeted_likelihood$cache$cache
+# debug(targeted_likelihood$get_likelihood)
+mean(tsm$estimates(tmle_task)$psi)
+# debugonce(targeted_likelihood$update)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
+
+mean(targeted_likelihood$get_likelihoods(tmle_task, "Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -72,19 +78,17 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-cf_task <- tmle_task$generate_counterfactual_task(
-  UUIDgenerate(),
-  data.table(A = 1)
-)
+# cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
+cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
-EY1_final <- likelihood$get_likelihoods(cf_task, "Y")
+EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y")
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
 # get G
-pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
+pA1 <- initial_likelihood$get_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
@@ -108,3 +112,4 @@ test_that("psi matches result from classic package", {
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se, tol = 1e-3)
 })
+

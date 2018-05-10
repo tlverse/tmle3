@@ -1,6 +1,8 @@
 #' Wald-Style Confidence Intervals
 #'
 #' @importFrom stats qnorm
+#'
+#' @keywords internal
 #
 wald_ci <- function(est, se, alpha = 0.95) {
   z <- qnorm((1 + alpha) / 2)

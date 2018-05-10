@@ -9,3 +9,4 @@ wald_ci(est, se, alpha = 0.95)
 \description{
 Wald-Style Confidence Intervals
 }
+\keyword{internal}

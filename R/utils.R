@@ -21,6 +21,7 @@ wald_ci <- function(est, se, alpha = 0.95) {
 #'  same as that passed to ..
 #' @param estimates \code{list}, TMLE estimates of parameter and ICs from
 #'  \code{\link{tmle3_Fit}$estimates}
+#' @param param_types the types of the parameters being estimated
 #' @param param_names the names of the parameters being estimated
 #' @param init_psi the names of the parameters being estimated
 #'
@@ -28,15 +29,15 @@ wald_ci <- function(est, se, alpha = 0.95) {
 #'
 #' @export
 #
-summary_from_estimates <- function(task, estimates, param_names = NULL,
-                                   init_psi = NULL) {
-  psi <- sapply(estimates, `[[`, "psi")
-  IC <- sapply(estimates, `[[`, "IC")
+summary_from_estimates <- function(task, estimates, param_types = NULL,
+                                   param_names = NULL, init_psi = NULL) {
+  psi <- unlist(lapply(estimates, `[[`, "psi"))
+  IC <- lapply(estimates, `[[`, "IC")
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
-    IC <- as.matrix(by(as.vector(IC), task$id, mean))
+    IC <- list(as.matrix(by(unlist(IC), task$id, mean)))
   }
-  var_D <- apply(IC, 2, var)
+  var_D <- apply(IC[[1]], 2, var)
   n <- length(estimates[[1]]$IC)
   se <- sqrt(var_D / n)
   ci <- wald_ci(psi, se)

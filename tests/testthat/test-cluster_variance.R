@@ -45,19 +45,18 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list, id = "subjid")
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define parameter
-# cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
+#cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
 # define update method (submodel + loss function)
-# updater <- tmle_spec$make_updater(likelihood, list(tsm))
+#updater <- tmle_spec$make_updater(likelihood, list(tsm))
 updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
 
-# todo: make params not store likelihood info internally!
+# TODO: make params not store likelihood info internally!
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
-
 
 targeted_likelihood$cache$cache
 # debug(targeted_likelihood$get_likelihood)
@@ -78,7 +77,8 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-# cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
+#cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),
+                                                  #data.table(A = 1))
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
@@ -96,7 +96,8 @@ tmle_classic_fit <- tmle(
   W = tmle_task$get_tmle_node("W"),
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
-  pDelta1 = pDelta1
+  pDelta1 = pDelta1,
+  id = tmle_task$id
 )
 
 # extract estimates

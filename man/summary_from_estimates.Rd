@@ -4,7 +4,8 @@
 \alias{summary_from_estimates}
 \title{Summarize Estimates}
 \usage{
-summary_from_estimates(task, estimates, param_names = NULL, init_psi = NULL)
+summary_from_estimates(task, estimates, param_types = NULL,
+  param_names = NULL, init_psi = NULL)
 }
 \arguments{
 \item{task}{\code{tmle3_Task} containing the observed data of interest; the
@@ -12,6 +13,8 @@ same as that passed to ..}
 
 \item{estimates}{\code{list}, TMLE estimates of parameter and ICs from
 \code{\link{tmle3_Fit}$estimates}}
+
+\item{param_types}{the types of the parameters being estimated}
 
 \item{param_names}{the names of the parameters being estimated}
 

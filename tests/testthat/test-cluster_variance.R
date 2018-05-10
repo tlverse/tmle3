@@ -45,10 +45,10 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list, id = "subjid")
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define parameter
-#cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
+# cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
 # define update method (submodel + loss function)
-#updater <- tmle_spec$make_updater(likelihood, list(tsm))
+# updater <- tmle_spec$make_updater(likelihood, list(tsm))
 updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
@@ -77,8 +77,8 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-#cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),
-                                                  #data.table(A = 1))
+# cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),
+# data.table(A = 1))
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
@@ -113,4 +113,3 @@ test_that("psi matches result from classic package", {
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se, tol = 1e-3)
 })
-

@@ -5,11 +5,9 @@
 #' @keywords internal
 #
 wald_ci <- function(est, se, alpha = 0.95) {
-  z <- qnorm((1 + alpha) / 2)
-  lower <- est - z * se
-  upper <- est + z * se
-  ci <- cbind(lower, upper)
-  return(ci)
+  z <- c(-1, 1) * abs(stats::qnorm(p = (1 - alpha) / 2))
+  ci <- est + z * se
+  return(t(as.matrix(ci)))
 }
 
 #' Summarize Estimates
@@ -35,10 +33,12 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   IC <- lapply(estimates, `[[`, "IC")
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
-    IC <- list(as.matrix(by(unlist(IC), task$id, mean)))
+    IC <- lapply(IC, function(x) {
+      as.matrix(by(as.numeric(unlist(x)), task$id, mean))
+    })
   }
   var_D <- apply(IC[[1]], 2, var)
-  n <- length(estimates[[1]]$IC)
+  n <- sapply(IC, length)
   se <- sqrt(var_D / n)
   ci <- wald_ci(psi, se)
 

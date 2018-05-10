@@ -23,11 +23,11 @@ node_list <- list(
 )
 
 # define NPSEM
-#npsem <- list(
-  #define_node("W", node_list$W),
-  #define_node("A", node_list$A, c("W")),
-  #define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
-#)
+# npsem <- list(
+# define_node("W", node_list$W),
+# define_node("A", node_list$A, c("W")),
+# define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
+# )
 
 qlib <- make_learner_stack(
   "Lrnr_mean",
@@ -72,8 +72,10 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),
-                                                  data.table(A = 1))
+cf_task <- tmle_task$generate_counterfactual_task(
+  UUIDgenerate(),
+  data.table(A = 1)
+)
 
 # get Q
 EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
@@ -106,4 +108,3 @@ test_that("psi matches result from classic package", {
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se, tol = 1e-3)
 })
-

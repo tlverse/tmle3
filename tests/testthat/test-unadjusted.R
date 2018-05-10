@@ -74,7 +74,7 @@ Q <- cbind(EY0, EY1)
 pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
 
-W = 0*Q # just need something here so tmle doesn't break, but it shouldn't be used
+W <- 0 * Q # just need something here so tmle doesn't break, but it shouldn't be used
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,

@@ -24,7 +24,7 @@ tmle3_Fit <- R6Class(
   classname = "tmle3_Fit",
   public = list(
     initialize = function(tmle_task, likelihood, tmle_params, updater,
-                          delta_params = NULL, max_it = 100, ...) {
+                              delta_params = NULL, max_it = 100, ...) {
       if (inherits(tmle_params, "Param_base")) {
         tmle_params <- list(tmle_params)
       }
@@ -33,10 +33,12 @@ tmle3_Fit <- R6Class(
       private$.tmle_params <- tmle_params
       private$.delta_params <- delta_params
       private$.updater <- updater
-      initial_psi <- sapply(self$tmle_params,
-                            function(tmle_param) {
-                              tmle_param$estimates(self$tmle_task)$psi
-                            })
+      initial_psi <- sapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(self$tmle_task)$psi
+        }
+      )
       private$.initial_psi <- initial_psi
       private$.tmle_fit(max_it)
       private$.estimate_delta_params()
@@ -50,7 +52,7 @@ tmle3_Fit <- R6Class(
       }
     },
     set_timings = function(start_time, task_time, likelihood_time, params_time,
-                           fit_time) {
+                               fit_time) {
       timings <- list(
         make_tmle_task = task_time - start_time,
         fit_likelihood = likelihood_time - task_time,
@@ -98,8 +100,10 @@ tmle3_Fit <- R6Class(
       return(estimates)
     },
     summary = function() {
-      return(summary_from_estimates(self$estimates, self$tmle_param_names,
-                                    self$initial_psi))
+      return(summary_from_estimates(
+        self$estimates, self$tmle_param_names,
+        self$initial_psi
+      ))
     },
     delta_params = function() {
       return(private$.delta_params)
@@ -111,8 +115,10 @@ tmle3_Fit <- R6Class(
       return(sapply(self$delta_estimates, `[[`, "name"))
     },
     delta_summary = function() {
-      return(summary_from_estimates(self$delta_estimates,
-                                    self$delta_param_names))
+      return(summary_from_estimates(
+        self$delta_estimates,
+        self$delta_param_names
+      ))
     },
     timings = function() {
       return(private$.timings)
@@ -137,10 +143,12 @@ tmle3_Fit <- R6Class(
       for (steps in 1:max_it) {
         self$updater$update_step(self$tmle_task, self$likelihood)
 
-        estimates <- lapply(self$tmle_params,
-                            function(tmle_param) {
-                              tmle_param$estimates(self$tmle_task)
-                            })
+        estimates <- lapply(
+          self$tmle_params,
+          function(tmle_param) {
+            tmle_param$estimates(self$tmle_task)
+          }
+        )
         ICs <- sapply(estimates, `[[`, "IC")
         ED <- colMeans(ICs)
         if (max(abs(ED)) < ED_criterion) {
@@ -152,8 +160,10 @@ tmle3_Fit <- R6Class(
       private$.estimates <- estimates
     },
     .estimate_delta_params = function() {
-      private$.delta_estimates <- lapply(self$delta_params, delta_method,
-                                         self$estimates, self$tmle_param_names)
+      private$.delta_estimates <- lapply(
+        self$delta_params, delta_method,
+        self$estimates, self$tmle_param_names
+      )
     }
   )
 )

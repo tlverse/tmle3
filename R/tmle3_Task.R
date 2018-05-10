@@ -80,7 +80,7 @@ tmle3_Task <- R6Class(
       variable_type <- target_node$variable_type
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
-          (!is.null(variable_type$bounds))) {
+        (!is.null(variable_type$bounds))) {
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
@@ -96,7 +96,8 @@ tmle3_Task <- R6Class(
 
       # todo: make sure folds transfer
       return(sl3_Task$new(
-        data, nodes = nodes,
+        data,
+        nodes = nodes,
         outcome_type = variable_type,
         column_names = column_names
       ))
@@ -104,10 +105,12 @@ tmle3_Task <- R6Class(
     generate_counterfactual_task = function(uuid, new_data) {
       # for current_factor, generate counterfactual values
       node_names <- names(new_data)
-      node_variables <- sapply(node_names,
-                               function(node_name) {
-                                 self$npsem[[node_name]]$variables
-                              })
+      node_variables <- sapply(
+        node_names,
+        function(node_name) {
+          self$npsem[[node_name]]$variables
+        }
+      )
       setnames(new_data, node_names, node_variables)
 
       new_task <- self$clone()

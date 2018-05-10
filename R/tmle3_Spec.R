@@ -25,8 +25,10 @@ tmle3_Spec <- R6Class(
         range <- max_Y - min_Y
         lower <- min_Y # - 0.1 * range
         upper <- max_Y # + 0.1 * range
-        Y_variable_type <- variable_type(type = "continuous",
-                                         bounds = c(lower, upper))
+        Y_variable_type <- variable_type(
+          type = "continuous",
+          bounds = c(lower, upper)
+        )
       }
 
       # make tmle_task

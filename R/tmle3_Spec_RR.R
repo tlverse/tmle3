@@ -13,13 +13,12 @@ tmle3_Spec_RR <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(baseline_level=0, contrast=1,...) {
+    initialize = function(baseline_level=0, contrast=1, ...) {
       # todo: use sl3 param grabbing code
-      params <- list(baseline_level = baseline_level, contrast_level=contrast)
+      params <- list(baseline_level = baseline_level, contrast_level = contrast)
       do.call(super$initialize, params)
     },
     make_params = function(tmle_task, likelihood) {
-
       baseline_level <- self$params$baseline_level
       contrast_level <- self$params$contrast_level
 
@@ -29,7 +28,7 @@ tmle3_Spec_RR <- R6Class(
       tsm_base <- Param_TSM$new(likelihood, intervention_base)
       tsm_cont <- Param_TSM$new(likelihood, intervention_cont)
 
-      tmle_params <- list(tsm_base,tsm_cont)
+      tmle_params <- list(tsm_base, tsm_cont)
       return(tmle_params)
     },
     make_delta_params = function() {

@@ -5,14 +5,16 @@
 #' @keywords internal
 #
 wald_ci <- function(est, se, alpha = 0.95) {
-  z <- c(-1, 1) * abs(stats::qnorm(p = (1 - alpha) / 2))
-  ci <- est + z * se
-  return(t(as.matrix(ci)))
+  z <- abs(stats::qnorm(p = (1 - alpha) / 2))
+  ci_low <- est - z * se
+  ci_high <- est + z * se
+  return(cbind(ci_low, ci_high))
 }
 
 #' Summarize Estimates
 #'
 #' Generates a \code{data.table} summarizing results with inference
+#'
 #' @importFrom stats var
 #'
 #' @param task \code{tmle3_Task} containing the observed data of interest; the
@@ -37,7 +39,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
       as.matrix(by(as.numeric(unlist(x)), task$id, mean))
     })
   }
-  var_D <- apply(IC[[1]], 2, var)
+  var_D <- unlist(lapply(IC, var))
   n <- sapply(IC, length)
   se <- sqrt(var_D / n)
   ci <- wald_ci(psi, se)

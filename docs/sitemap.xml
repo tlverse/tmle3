@@ -4,6 +4,9 @@
     <loc>http://tmle3.tlverse.org/index.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/CF_Likelihood.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/LF_base.html</loc>
   </url>
   <url>
@@ -22,6 +25,9 @@
     <loc>http://tmle3.tlverse.org/reference/Likelihood.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/Likelihood_cache.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/Param_ATT.html</loc>
   </url>
   <url>
@@ -31,16 +37,19 @@
     <loc>http://tmle3.tlverse.org/reference/Param_base.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/Param_delta.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/Param_mean.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/Targeted_Likelihood.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/define_lf.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/define_param.html</loc>
-  </url>
-  <url>
-    <loc>http://tmle3.tlverse.org/reference/delta_method.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/delta_param_PAF.html</loc>
@@ -104,6 +113,9 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle_RR.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/tmle_TSM_all.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/wald_ci.html</loc>

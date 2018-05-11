@@ -10,7 +10,10 @@ Authors@R: c(
          comment = c(ORCID = "0000-0002-7127-2789"))
   )
 Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
-Description: Extensible TMLE framework. tmle3 is a general framework that supports the implementation of a range of TMLE parameters with a unified interface. The goal is that the `tmle3` framework be as general as the mathematical framework upon which it's based. 
+Description: Extensible TMLE framework. `tmle3` is a general framework that
+    supports the implementation of a range of TMLE parameters with a unified
+    interface. The goal is that the `tmle3` framework be as general as the
+    mathematical framework upon which it is based.
 Depends: R (>= 3.2.2),
          graphics
 License: GPL-3
@@ -36,10 +39,11 @@ Suggests:
     condensier,
     tmle
 Remotes:
+    github::tlverse/sl3,
+    github::tlverse/origami,
+    github::tlverse/delayed,
     github::osofr/condensier,
-    github::jeremyrcoyle/delayed,
-    github::jeremyrcoyle/gentmle2,
-    github::jeremyrcoyle/sl3
+    github::jeremyrcoyle/gentmle2
 URL: https://tmle3.tlverse.com/
 BugReports: https://github.com/tlverse/tmle3/issues
 Encoding: UTF-8

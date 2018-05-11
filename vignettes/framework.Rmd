@@ -233,7 +233,7 @@ course depend on the parameter of interest. Once this list of likelihood factors
 is defined, we can construct a `Likelihood` object and train it on the data
 contained in `tmle_task`:
 
-```{r likelihood fit}
+```{r likelihood_fit}
 likelihood_def <- Likelihood$new(factor_list)
 likelihood <- likelihood_def$train(tmle_task)
 print(likelihood)
@@ -245,7 +245,7 @@ syntax to train it on data is analogous.
 Having fit the likelihood, we can now get likelihood values for any
 `tmle3_Task`:
 
-```{r likelihood values}
+```{r likelihood_values}
 likelihood_values <- likelihood$get_likelihoods(tmle_task,"Y")
 head(likelihood_values)
 ```
@@ -297,7 +297,7 @@ factors being replaced by the defined intervention likelihood factors.
 
 In particular, we can get likelihood values under the counterfactual likelihood:
 
-```{r cf_likelihood values}
+```{r cf_likelihood_values}
 cf_likelihood_values <- cf_likelihood$get_likelihoods(tmle_task, "A")
 head(cf_likelihood_values)
 ```
@@ -317,7 +317,7 @@ combination of possible values of the intervention node(s).
 
 To enumerate these tasks, use `enumerate_cf_tasks`:
 
-```{r cf_likelihood tasks}
+```{r cf_likelihood_tasks}
 cf_likelihood_tasks <- cf_likelihood$enumerate_cf_tasks(tmle_task)
 head(cf_likelihood_tasks[[1]]$data)
 ```
@@ -340,7 +340,7 @@ likelihood.
 Here, we define a treatment-specific mean (TSM) parameter based on the
 intervention we defined previously:
 
-```{r param}
+```{r define_param}
 tsm <- define_param(Param_TSM, likelihood, intervention)
 ```
 
@@ -379,19 +379,25 @@ targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 
 # Target Parameter
 
-In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from a probability distribution $P \in \mathcal{M}$ to a set of real numbers $\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above. 
+In the TMLE framework, we define a target parameter $\Psi(P)$ as a mapping from
+a probability distribution $P \in \mathcal{M}$ to a set of real numbers
+$\mathbb{R}^d$. Here $\mathcal{M}$ is implied by the NPSEM we defined above.
 
-In `tmle3`, we define parameter objects as objects inheriting from the `Param_base` class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the "clever covariates" needed to calculate a TMLE update to the likelihood.
+In `tmle3`, we define parameter objects as objects inheriting from the
+`Param_base` class, which keep track of not only the mapping from a probability
+distribution to a parameter value, but also the corresponding EIF of the
+parameter, and the "clever covariates" needed to calculate a TMLE update to the
+likelihood.
 
+Here, we define a treatment specific mean (TSM) parameter based on the
+intervention we defined previously:
 
-Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:
-
-```{r param}
+```{r param_tsm}
 tsm <- define_param(Param_TSM, likelihood, intervention)
 updater$tmle_params <- tsm
 ```
 
-**todo: provide details about parameter definition**
+**TODO: provide details about parameter definition**
 
 
 
@@ -436,7 +442,7 @@ Currently, this is effectively a hard-coded list of those details: the structure
 of the NPSEM, the parameters, and the update procedure are coded into the
 specification. Only the data, the roles of the variables, and the  `sl3`
 learners to use for likelihood estimation. Ideally, instead a `tmle3_Spec` would
-respresent a set of reasonable defaults for a particular TMLE, that experienced
+represent a set of reasonable defaults for a particular TMLE, that experienced
 users could override where appropriate.
 
 # Conclusion

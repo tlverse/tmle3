@@ -62,11 +62,12 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
 summary <- tmle_fit$summary
 
 data2 <- data.table::copy(data) # for data.table weirdness
-tmle_fit_from_spec <- tmle3(tmle_PAR(baseline_level = 1), data2, node_list,
-                            learner_list)
+tmle_fit_from_spec <- tmle3(
+  tmle_PAR(baseline_level = 1), data2, node_list,
+  learner_list
+)
 spec_summary <- tmle_fit_from_spec$summary
 
 test_that("PAR manually and from Spec return the same results", {
   expect_equal(summary, spec_summary, tol = 1e-3)
 })
-

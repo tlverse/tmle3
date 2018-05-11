@@ -21,6 +21,9 @@ r_packages:
 r_github_packages:
   - r-lib/devtools
   - jimhester/covr
+  - tlverse/delayed
+  - tlverse/origami
+  - tlverse/sl3
 
 after_success:
   - Rscript -e 'covr::codecov()'

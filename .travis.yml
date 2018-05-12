@@ -1,3 +1,8 @@
+branches:
+  only:
+  - master
+  - devel
+
 language: r
 sudo: required
 cache: packages
@@ -6,16 +11,22 @@ warnings_are_errors: true
 before_install:
   Rscript -e 'update.packages(ask = FALSE)'
 
-r_packages:
-  - devtools
-  - covr
-  - drat
+# Install nlopt package to help nloptr install (for r-oldrel)
+addons:
+  apt:
+    packages:
+      - libnlopt-dev
 
 r:
   - release
   - devel
 
+r_packages:
+  - devtools
+  - covr
+
 r_github_packages:
+  - r-lib/devtools
   - jimhester/covr
 
 after_success:

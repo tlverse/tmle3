@@ -19,7 +19,8 @@ Constructor below.}
 \code{tmle3_Task} object
 }
 \description{
-This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the methods supported by \code{\link[sl3]{sl3_Task}}, it supports the following.
+This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the
+ methods supported by \code{\link[sl3]{sl3_Task}}, it supports the following.
 }
 \section{Constructor}{
 

@@ -1,6 +1,7 @@
 #' Class for Storing Data and NPSEM for TMLE
 #'
-#' This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the methods supported by \code{\link[sl3]{sl3_Task}}, it supports the following.
+#' This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the
+#'  methods supported by \code{\link[sl3]{sl3_Task}}, it supports the following.
 #'
 #' @docType class
 #'
@@ -19,7 +20,7 @@
 #' @template tmle3_Task_extra
 #'
 #' @export
-
+#
 tmle3_Task <- R6Class(
   classname = "tmle3_Task",
   portable = TRUE,
@@ -28,7 +29,6 @@ tmle3_Task <- R6Class(
   public = list(
     initialize = function(data, npsem, ...) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
-
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
       for (node_name in node_names) {
@@ -79,8 +79,10 @@ tmle3_Task <- R6Class(
       # bound continuous outcome if bounds are specified to variable_type
       variable_type <- target_node$variable_type
       column_names <- self$column_names
-      if ((variable_type$type == "continuous") && (!is.null(variable_type$bounds))) {
-        # todo: make quasibinomial, make more learners play nice with quasibinomial outcomes
+      if ((variable_type$type == "continuous") &&
+        (!is.null(variable_type$bounds))) {
+        # TODO: make quasibinomial, make more learners play nice with
+        #       quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
         col_name <- sprintf("__%s_bounded", target_node$name)
         set(data, , col_name, bounded_vals)
@@ -103,7 +105,12 @@ tmle3_Task <- R6Class(
     generate_counterfactual_task = function(uuid, new_data) {
       # for current_factor, generate counterfactual values
       node_names <- names(new_data)
-      node_variables <- sapply(node_names, function(node_name) self$npsem[[node_name]]$variables)
+      node_variables <- sapply(
+        node_names,
+        function(node_name) {
+          self$npsem[[node_name]]$variables
+        }
+      )
       setnames(new_data, node_names, node_variables)
 
       new_task <- self$clone()

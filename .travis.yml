@@ -6,20 +6,24 @@ branches:
 language: r
 sudo: required
 cache: packages
+
 warnings_are_errors: true
+r_build_args: ''
+r_check_args: '--no-build-vignettes'
+
+r:
+  - oldrel
+  - release
+  - devel
 
 before_install:
-  Rscript -e 'update.packages(ask = FALSE)'
+  - Rscript -e 'update.packages(ask = FALSE)'
 
 # Install nlopt package to help nloptr install (for r-oldrel)
 addons:
   apt:
     packages:
       - libnlopt-dev
-
-r:
-  - release
-  - devel
 
 r_packages:
   - devtools
@@ -28,6 +32,9 @@ r_packages:
 r_github_packages:
   - r-lib/devtools
   - jimhester/covr
+  - tlverse/delayed
+  - tlverse/origami
+  - tlverse/sl3
 
 after_success:
   - Rscript -e 'covr::codecov()'

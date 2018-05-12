@@ -21,3 +21,4 @@ Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_static}}, \code{\link{Likelihood}},
   \code{\link{Targeted_Likelihood}}
 }
+\concept{Likelihood objects}

@@ -1,12 +1,12 @@
 context("Risk Ratios")
 
 library(sl3)
-# library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
 set.seed(1234)
+
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)

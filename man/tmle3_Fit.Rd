@@ -13,14 +13,15 @@ fit_tmle3(...)
 }
 \arguments{
 \item{...}{Passes all arguments to the constructor. See documentation for the
-Constructor below.}
+Constructor.}
 }
 \value{
 \code{Param_base} object
 }
 \description{
-A tmle_fit object, containing initial and updated estimates, as well as data about the fitting procedure.
-TMLE updates are calculated when the object is constructed.
+A tmle_fit object, containing initial and updated estimates, as well as data
+about the fitting procedure. TMLE updates are calculated when the object is
+constructed.
 }
 \section{Constructor}{
 
@@ -101,4 +102,5 @@ Other Parameters: \code{\link{Param_ATT}},
   \code{\link{Param_delta}}, \code{\link{Param_mean}},
   \code{\link{define_param}}
 }
+\concept{Parameters}
 \keyword{data}

@@ -44,15 +44,15 @@ Param_mean <- R6Class(
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
     clever_covariates = function(tmle_task = NULL) {
-      return(list())
+      return(list(Y = rep(1, tmle_task$nrow)))
     },
     estimates = function(tmle_task = NULL) {
-      Y <- tmle_task$get_tmle_node(self$outcome_node)
+      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
 
       # todo: separate out psi
       # todo: make this a function of f(W)
-      psi <- mean(Y)
-      IC <- Y - psi
+      psi <- mean(EY)
+      IC <- EY - psi
 
       result <- list(psi = psi, IC = IC)
       return(result)
@@ -70,5 +70,7 @@ Param_mean <- R6Class(
       return(NULL)
     }
   ),
-  private = list()
+  private = list(
+    .type = "E(Y)"
+  )
 )

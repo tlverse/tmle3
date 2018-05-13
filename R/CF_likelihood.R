@@ -31,8 +31,8 @@ CF_Likelihood <- R6Class(
 
       intervention_nodes <- sapply(intervention_list, `[[`, "name")
       names(intervention_list) <- intervention_nodes
-
       private$.intervention_list <- intervention_list
+      private$.intervention_nodes <- intervention_nodes
       private$.cf_tasks <- self$enumerate_cf_tasks(observed_likelihood$training_task)
       params <- args_to_list()
       super$initialize(params)
@@ -58,6 +58,20 @@ CF_Likelihood <- R6Class(
       cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       cf_tasks <- list(cf_task)
       return(cf_tasks)
+    },
+
+    get_likelihood = function(tmle_task, node) {
+      # todo: this will not handle the case where the cf_likelihood is based on
+      # an updated likelihood factor (e.g. old tx shift)
+      if (node %in% self$intervention_nodes) {
+        likelihood_values <- super$get_likelihood(tmle_task, node)
+      } else {
+        # dispatch to observed likelihood if not an intervention node
+        # that way, we get updates to those nodes
+        likelihood_values <- self$observed_likelihood$get_likelihood(tmle_task, node)
+      }
+
+      return(likelihood_values)
     }
   ),
   active = list(
@@ -73,13 +87,16 @@ CF_Likelihood <- R6Class(
     intervention_list = function() {
       return(private$.intervention_list)
     },
+    intervention_nodes = function() {
+      return(private$.intervention_nodes)
+    },
     factor_list = function() {
       fl <- self$observed_likelihood$factor_list
-      fl[names(self$intervention_list)] <- self$intervention_list[names(self$intervention_list)]
+      fl[self$intervention_nodes] <- self$intervention_list[self$intervention_nodes]
       return(fl)
     },
-    update_list = function() {
-      self$observed_likelihood$update_list
+    updater = function() {
+      self$observed_likelihood$updater
     },
     cf_tasks = function() {
       return(private$.cf_tasks)
@@ -88,6 +105,7 @@ CF_Likelihood <- R6Class(
   private = list(
     .observed_likelihood = NULL,
     .intervention_list = NULL,
+    .intervention_nodes = NULL,
     .cf_tasks = NULL
   )
 )

@@ -41,14 +41,14 @@ LF_static <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, type = "density", value, ...) {
-      super$initialize(name, ..., type=type)
+      super$initialize(name, ..., type = type)
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },
     get_mean = function(tmle_task) {
       return(rep(self$value, tmle_task$nrow))
     },
-    get_likelihood = function(tmle_task) {
+    get_density = function(tmle_task) {
       observed <- tmle_task$get_tmle_node(self$name)
       likelihood <- as.numeric(self$value == observed)
 

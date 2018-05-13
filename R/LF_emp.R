@@ -27,7 +27,7 @@
 #'
 #' @export
 LF_emp <- R6Class(
-  classname = "Lf_np",
+  classname = "Lf_emp",
   portable = TRUE,
   class = TRUE,
   inherit = LF_base,
@@ -39,7 +39,7 @@ LF_emp <- R6Class(
     get_mean = function(tmle_task) {
       stop("nothing to predict")
     },
-    get_likelihood = function(tmle_task) {
+    get_density = function(tmle_task) {
       weights <- tmle_task$weights
       return(weights / sum(weights))
     }

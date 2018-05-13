@@ -3,14 +3,13 @@
 \docType{data}
 \name{tmle3_Spec_TSM_all}
 \alias{tmle3_Spec_TSM_all}
-\title{Defines a tmle (minus the data)}
+\title{Defines a TML Estimator (except for the data)}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 tmle3_Spec_TSM_all
 }
 \description{
-Current limitations:
-pretty much tailored to Param_TSM
-see todos for places generalization can be added
+Current limitations: pretty much tailored to \code{Param_TSM}
+See TODOs for places generalization can be added
 }
 \keyword{datasets}

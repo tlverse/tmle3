@@ -1,14 +1,15 @@
-
-
 #' TMLE fit object
 #'
-#' A tmle_fit object, containing initial and updated estimates, as well as data about the fitting procedure.
-#' TMLE updates are calculated when the object is constructed.
+#' A tmle_fit object, containing initial and updated estimates, as well as data
+#' about the fitting procedure. TMLE updates are calculated when the object is
+#' constructed.
 #'
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
+#'
 #' @family Parameters
+#'
 #' @keywords data
 #'
 #' @return \code{Param_base} object
@@ -16,33 +17,37 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @template tmle3_Fit_extra
+#'
 #' @export
+#
 tmle3_Fit <- R6Class(
   classname = "tmle3_Fit",
   public = list(
-    initialize = function(tmle_task, likelihood, tmle_params, updater, delta_params=NULL, max_it=100, ...) {
+    initialize = function(tmle_task, likelihood, tmle_params, updater,
+                              delta_params = NULL, max_it = 100, ...) {
       if (inherits(tmle_params, "Param_base")) {
         tmle_params <- list(tmle_params)
       }
       private$.tmle_task <- tmle_task
       private$.likelihood <- likelihood
       private$.tmle_params <- tmle_params
-      private$.delta_params <- delta_params
+      updater$tmle_params <- tmle_params
       private$.updater <- updater
-      initial_psi <- sapply(self$tmle_params, function(tmle_param) tmle_param$estimates(self$tmle_task)$psi)
+      initial_psi <- sapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(self$tmle_task)$psi
+        }
+      )
       private$.initial_psi <- initial_psi
       private$.tmle_fit(max_it)
-      private$.estimate_delta_params()
     },
     print = function() {
       cat(sprintf("A tmle3_Fit that took %s step(s)\n", self$steps))
       print(self$summary)
-      if (!is.null(self$delta_params)) {
-        cat("\n with the following parameters estimated via delta method\n")
-        print(self$delta_summary)
-      }
     },
-    set_timings = function(start_time, task_time, likelihood_time, params_time, fit_time) {
+    set_timings = function(start_time, task_time, likelihood_time, params_time,
+                               fit_time) {
       timings <- list(
         make_tmle_task = task_time - start_time,
         fit_likelihood = likelihood_time - task_time,
@@ -68,6 +73,12 @@ tmle3_Fit <- R6Class(
       }
       return(private$.tmle_param_names)
     },
+    tmle_param_types = function() {
+      if (is.null(private$.tmle_param_types)) {
+        private$.tmle_param_types <- sapply(self$tmle_params, `[[`, "type")
+      }
+      return(private$.tmle_param_types)
+    },
     updater = function() {
       return(private$.updater)
     },
@@ -90,19 +101,10 @@ tmle3_Fit <- R6Class(
       return(estimates)
     },
     summary = function() {
-      return(summary_from_estimates(self$estimates, self$tmle_param_names, self$initial_psi))
-    },
-    delta_params = function() {
-      return(private$.delta_params)
-    },
-    delta_estimates = function() {
-      return(private$.delta_estimates)
-    },
-    delta_param_names = function() {
-      return(sapply(self$delta_estimates, `[[`, "name"))
-    },
-    delta_summary = function() {
-      return(summary_from_estimates(self$delta_estimates, self$delta_param_names))
+      return(summary_from_estimates(
+        task = self$tmle_task, estimates = self$estimates,
+        param_names = self$tmle_param_names, init_psi = self$initial_psi
+      ))
     },
     timings = function() {
       return(private$.timings)
@@ -113,40 +115,41 @@ tmle3_Fit <- R6Class(
     .likelihood = NULL,
     .tmle_params = NULL,
     .tmle_param_names = NULL,
+    .tmle_param_types = NULL,
     .updater = NULL,
     .steps = NULL,
-    .delta_params = NULL,
-    .delta_estimates = NULL,
     .ED = NULL,
     .initial_psi = NULL,
     .estimates = NULL,
     .timings = NULL,
-    .tmle_fit = function(max_it=100) {
+    .tmle_fit = function(max_it = 100) {
       ED_criterion <- 1 / self$tmle_task$nrow
 
-      for (steps in 1:max_it) {
-        self$updater$update_step(self$tmle_task, self$likelihood)
+      for (steps in seq_len(max_it)) {
+        self$updater$update_step(self$likelihood, self$tmle_task)
 
-        estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(self$tmle_task))
+        estimates <- lapply(
+          self$tmle_params,
+          function(tmle_param) {
+            tmle_param$estimates(self$tmle_task)
+          }
+        )
         ICs <- sapply(estimates, `[[`, "IC")
         ED <- colMeans(ICs)
         if (max(abs(ED)) < ED_criterion) {
           break
         }
       }
-
       private$.ED <- ED
       private$.steps <- steps
       private$.estimates <- estimates
-    },
-    .estimate_delta_params = function() {
-      private$.delta_estimates <- lapply(self$delta_params, delta_method, self$estimates, self$tmle_param_names)
     }
   )
 )
 
 #' @param ... Passes all arguments to the constructor. See documentation for the
-#'  Constructor below.
+#'  Constructor.
 #' @rdname tmle3_Fit
 #' @export
+#
 fit_tmle3 <- tmle3_Fit$new

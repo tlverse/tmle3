@@ -20,16 +20,6 @@ node_list <- list(
   Y = "haz01"
 )
 
-qlib <- make_learner_stack(
-  "Lrnr_mean",
-  "Lrnr_glm_fast"
-)
-
-glib <- make_learner_stack(
-  "Lrnr_mean",
-  "Lrnr_glm_fast"
-)
-
 Q_learner <- make_learner(Lrnr_glm)
 g_learner <- make_learner(Lrnr_mean)
 learner_list <- list(Y = Q_learner, A = g_learner)
@@ -39,17 +29,19 @@ tmle_spec <- tmle_TSM_all()
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # define likelihood
-likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
+updater <- tmle_spec$make_updater()
+targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 
 # define parameter
 intervention <- define_lf(LF_static, "A", value = 1)
-tsm <- define_param(Param_TSM, likelihood, intervention)
-
+tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
+updater$tmle_params <- tsm
 # define update method (submodel + loss function)
-updater <- tmle_spec$make_updater(likelihood, list(tsm))
+
 
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, likelihood, list(tsm), updater)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -62,19 +54,19 @@ library(tmle)
 # construct likelihood estimates
 
 # task for A=1
-cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
+cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- likelihood$get_initial_likelihoods(cf_task, "Y")
-EY1_final <- likelihood$get_likelihoods(cf_task, "Y")
+EY1 <- likelihood$get_likelihoods(cf_task, "Y")
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
 # get G
-pA1 <- likelihood$get_initial_likelihoods(cf_task, "A")
+pA1 <- likelihood$get_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
 
-W = 0*Q # just need something here so tmle doesn't break, but it shouldn't be used
+W <- 0 * Q # just need something here so tmle doesn't break, but it shouldn't be used
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,

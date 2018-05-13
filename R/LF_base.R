@@ -26,6 +26,7 @@ LF_base <- R6Class(
     initialize = function(name, ..., type = "density") {
       private$.name <- name
       private$.type <- type
+      private$.uuid <- UUIDgenerate(use.time = TRUE)
     },
     delayed_train = function(tmle_task) {
       return(list())
@@ -38,11 +39,20 @@ LF_base <- R6Class(
       # subclasses may do more, like fit sl3 models
     },
     get_density = function(tmle_task) {
-      stop("this is a base class")
+      stop("density not supported")
     },
     get_mean = function(tmle_task) {
-      stop("this is a base class")
+      stop("mean not supported")
     },
+    get_likelihood = function(tmle_task, update_step=NULL) {
+      if (self$type == "mean") {
+        values <- self$get_mean(tmle_task)
+      } else {
+        values <- self$get_density(tmle_task)
+      }
+      return(values)
+    },
+
     cf_values = function(tmle_task) {
       stop(sprintf("%s is not a valid intervention type", class(self)[1]))
     },
@@ -67,12 +77,17 @@ LF_base <- R6Class(
       } else {
         return(NULL)
       }
+    },
+    uuid = function() {
+      return(private$.uuid)
     }
   ),
   private = list(
     .name = NULL,
     .variable_type = c(),
-    .type = NULL
+    .memoized_values = list(),
+    .type = NULL,
+    .uuid = NULL
   )
 )
 

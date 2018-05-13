@@ -33,6 +33,9 @@ The \code{type} argument will be ignored if specified.
 Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_base}}, \code{\link{LF_fit}},
   \code{\link{LF_shift}}, \code{\link{LF_static}},
-  \code{\link{Likelihood}}, \code{\link{define_lf}}
+  \code{\link{Likelihood}},
+  \code{\link{Targeted_Likelihood}},
+  \code{\link{define_lf}}
 }
+\concept{Likelihood objects}
 \keyword{data}

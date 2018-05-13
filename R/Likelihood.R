@@ -30,12 +30,19 @@ Likelihood <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(factor_list, ...) {
+    initialize = function(factor_list, cache = NULL, ...) {
       params <- args_to_list()
+      if (inherits(factor_list, "LF_base")) {
+        factor_list <- list(factor_list)
+      }
 
       factor_names <- sapply(factor_list, `[[`, "name")
       names(factor_list) <- factor_names
       params$factor_list <- factor_list
+      if (is.null(cache)) {
+        cache <- Likelihood_cache$new()
+      }
+      private$.cache <- cache
 
       super$initialize(params)
     },
@@ -53,41 +60,33 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_initial_likelihoods = function(tmle_task, nodes = NULL) {
-      self$validate_task(tmle_task)
-      factor_list <- self$factor_list
-      if (!is.null(nodes)) {
-        factor_list <- factor_list[nodes]
-      }
-      likelist <- list()
-      for (likelihood_factor in factor_list) {
-        factor_name <- likelihood_factor$name
-        # todo: make the likelihood_factors smart about this
-        if (likelihood_factor$type == "mean") {
-          likes <- likelihood_factor$get_mean(tmle_task)
-        } else {
-          likes <- likelihood_factor$get_likelihood(tmle_task)
-        }
-        likelist[[factor_name]] <- likes
-      }
-      # if (length(likelist) > 1) {
-      return(as.data.table(likelist))
-      # } else {
-      # return(likelist[[1]])
-      # }
-    },
-    get_likelihoods = function(tmle_task, nodes = NULL) {
-      # todo: maybe get all likelihoods here, then subset before returning
-      initial_likelihoods <- self$get_initial_likelihoods(tmle_task, nodes = nodes)
+    get_likelihood = function(tmle_task, node) {
+      likelihood_factor <- self$factor_list[[node]]
+      # first check for cached values for this task
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task)
 
-      # apply updates
-      if (is.null(self$update_list)) {
-        return(initial_likelihoods)
+      if (is.null(likelihood_values)) {
+        # if not, generate new ones
+        likelihood_values <- likelihood_factor$get_likelihood(tmle_task)
+        self$cache$set_values(likelihood_factor, tmle_task, 0, likelihood_values)
+      }
+
+      return(likelihood_values)
+    },
+    get_likelihoods = function(tmle_task, nodes=NULL) {
+      if (is.null(nodes)) {
+        nodes <- self$nodes
+      }
+
+      if (length(nodes) > 1) {
+        all_likelihoods <- lapply(nodes, function(node) {
+          self$get_likelihood(tmle_task, node)
+        })
+        likelihood_dt <- as.data.table(all_likelihoods)
+        setnames(likelihood_dt, nodes)
+        return(likelihood_dt)
       } else {
-        updater <- self$update_list
-        updater$epsilons
-        updated_likeilhoods <- updater$apply_updates(tmle_task, self, initial_likelihoods)
-        return(updated_likeilhoods)
+        return(self$get_likelihood(tmle_task, nodes[[1]]))
       }
     },
     get_possible_counterfactuals = function(nodes=NULL) {
@@ -105,82 +104,23 @@ Likelihood <- R6Class(
       level_grid <- expand.grid(all_levels)
       return(level_grid)
     },
-    # E_f_x = function(tmle_task, f_x) {
-    #   cf_grid <- self$get_possible_counterfacutals()
-    #   # todo: rewrite this so it does't recalculate likelihoods (ie recursively)
-    #   # should start with base node and go forward
-    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, ]))
-    #     likelihoods <- self$joint_likelihoods(cf_task)
-    #     f_vals <- f_x(cf_task)
-    #     return(f_vals * likelihoods)
-    #   })
-    #
-    #   prodmat <- do.call(cbind, prods)
-    #   result <- sum(prodmat)
-    #
-    #   return(result)
-    # },
-    # EY = function(tmle_task, mean_node_name="Y") {
-    #   # identify set of all ancestors
-    #   nodes <- tmle_task$npsem
-    #   mean_node <- nodes[[mean_node_name]]
-    #   ancestor_nodes <- all_ancestors(mean_node_name, nodes)
-    #   mean_factor <- self$factor_list[[mean_node_name]]
-    #   # get cf possibilities only for these ancestors
-    #   cf_grid <- self$get_possible_counterfacutals(ancestor_nodes)
-    #
-    #   prods <- lapply(seq_len(nrow(cf_grid)), function(cf_row) {
-    #     cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), as.data.table(cf_grid[cf_row, , drop = FALSE]))
-    #     ey <- mean_factor$get_prediction(cf_task)
-    #     likelihoods <- self$joint_likelihoods(cf_task, ancestor_nodes)
-    #     return(ey * likelihoods)
-    #   })
-    #
-    #   prodmat <- do.call(cbind, prods)
-    #   result <- sum(prodmat)
-    #
-    #   return(result)
-    # },
     base_train = function(task, pretrain) {
       self$validate_task(task)
       fit_object <- private$.train(task, pretrain)
       new_object <- self$clone() # copy parameters, and whatever else
       new_object$set_train(fit_object, task)
       return(new_object)
-    },
-    base_predict = function(task = NULL) {
-      if (is.null(task)) {
-        task <- private$.training_task
-      }
-      self$validate_task(task)
-      predictions <- private$.predict(task)
-      return(predictions)
-    },
-    base_chain = function(task = NULL) {
-      if (is.null(task)) {
-        task <- private$.training_task
-      }
-      self$validate_task(task)
-      predictions <- private$.chain(task)
-      return(predictions)
     }
   ),
   active = list(
     factor_list = function() {
       return(self$params$factor_list)
     },
-    observed_values = function() {
-      if (is.null(private$.observed_values)) {
-        private$.observed_values <- self$get_likelihoods(self$training_task)
-      }
-      return(private$.observed_values)
+    nodes = function() {
+      return(names(self$factor_list))
     },
-    update_list = function(new_update_list = NULL) {
-      if (!is.null(new_update_list)) {
-        private$.update_list <- new_update_list
-      }
-      return(private$.update_list)
+    cache = function() {
+      return(private$.cache)
     }
   ),
   private = list(
@@ -196,13 +136,16 @@ Likelihood <- R6Class(
       }
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
+
       return("trained")
     },
     .predict = function(tmle_task) {
       stop("predict method doesn't work for Likelihood. See Likelihood$get_likelihoods for analogous method")
     },
-    .observed_values = NULL,
-    .update_list = NULL
+    .chain = function(tmle_task) {
+      stop("chain method doesn't work for Likelihood. Currently, no analogous functionality")
+    },
+    .cache = NULL
   )
 )
 

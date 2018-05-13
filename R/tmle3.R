@@ -15,15 +15,17 @@ tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
   tmle_task <- tmle_spec$make_tmle_task(data, node_list)
   task_time <- proc.time()
 
-  likelihood <- tmle_spec$make_likelihood(tmle_task, learner_list)
+  initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
   likelihood_time <- proc.time()
 
-  tmle_params <- tmle_spec$make_params(tmle_task, likelihood)
+  updater <- tmle_spec$make_updater()
+  targeted_likelihood <- tmle_spec$make_targeted_likelihood(initial_likelihood, updater)
+
+  tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+  updater$tmle_params <- tmle_params
   params_time <- proc.time()
 
-  delta_params <- tmle_spec$make_delta_params()
-  updater <- tmle_spec$make_updater(likelihood, tmle_params)
-  fit <- fit_tmle3(tmle_task, likelihood, tmle_params, updater, delta_params)
+  fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
   fit_time <- proc.time()
 
   fit$set_timings(start_time, task_time, likelihood_time, params_time, fit_time)

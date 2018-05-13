@@ -55,7 +55,7 @@ Param_ATT <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, ..., outcome_node)
+      super$initialize(observed_likelihood, list(), outcome_node)
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
@@ -68,74 +68,62 @@ Param_ATT <- R6Class(
       intervention_nodes <- names(self$intervention_list_treatment)
 
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_initial_likelihoods(tmle_task, intervention_nodes)
-      cf_pA_control <- self$cf_likelihood_control$get_initial_likelihoods(tmle_task, intervention_nodes)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes)
 
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
 
-      # todo: rethink variable names
+      pA_overall <- mean(pA)
 
-      # todo: extend for stochastic interventions
-      cfs <- self$cf_likelihood_treatment$get_possible_counterfacutals()
-      cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
+      # todo: extend for stochastic
+      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
+      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
 
+      EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node)
+      EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node)
 
-      Y <- tmle_task$get_tmle_node(self$outcome_node)
+      psi <- mean((EY1 - EY0) * (pA / pA_overall))
+      CY <- (EY1 - EY0) - psi
 
-
-      # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
-
-      # clever_covariates happen here (for all fit params), but this is repeated computation
-      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
-
-      # clever_covariates happen here (for all fit params)
-      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
-
-      EY1 <-
-        # collapse across multiple intervention nodes
-        if (!is.null(ncol(HA)) && ncol(HA) > 1) {
-          HA <- apply(HA, 1, prod)
-        }
-      return(list(Y = unlist(HA, use.names = FALSE)))
+      return(list(Y = HA, A = CY))
     },
     estimates = function(tmle_task = NULL) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
 
-      # todo: extend for stochastic interventions
-      cfs <- self$cf_likelihood$get_possible_counterfacutals()
-      cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cfs)
+      # todo: actually the union of the treatment and control nodes?
+      intervention_nodes <- names(self$intervention_list_treatment)
 
+      # todo: make sure we support updating these params
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes)
+
+      # todo: rethink that last term
+      HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
+
+      pA_overall <- mean(pA)
+
+      # todo: extend for stochastic
+      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
+      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
 
       Y <- tmle_task$get_tmle_node(self$outcome_node)
 
+      # todo: fix hardcoding
+      A <- tmle_task$get_tmle_node("A")
 
-      # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
+      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
+      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node)
+      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node)
 
-      # clever_covariates happen here (for all fit params), but this is repeated computation
-      EY <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
+      psi <- mean((EY1 - EY0) * (pA / pA_overall))
+      CY <- (EY1 - EY0) - psi
 
-      # clever_covariates happen here (for all fit params)
-      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
-
-      # todo: integrate unbounding logic into likelihood class, or at least put it in a function
-      variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
-      if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
-        bounds <- variable_type$bounds
-        scale <- bounds[2] - bounds[1]
-        shift <- bounds[1]
-        EY <- EY * scale + shift
-        EY1 <- EY1 * scale + shift
-      }
-
-      # todo: separate out psi
-      psi <- mean(EY1)
-      IC <- HA * (Y - EY) + EY1 - psi
+      IC <- HA * (Y - EY) + (A / pA_overall) * CY
 
       result <- list(psi = psi, IC = IC)
       return(result)
@@ -159,10 +147,11 @@ Param_ATT <- R6Class(
       return(self$cf_likelihood_control$intervention_list)
     },
     update_nodes = function() {
-      return(self$outcome_node)
+      return(c(self$outcome_node, names(self$intervention_list_treatment)))
     }
   ),
   private = list(
+    .type = "ATT",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL
   )

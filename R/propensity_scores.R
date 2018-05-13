@@ -42,9 +42,9 @@ get_propensity_scores <- function(likelihood, tmle_task, node="A") {
 propensity_score_plot <- function(likelihood, tmle_task, node="A") {
   propensity_scores <- get_propensity_scores(likelihood, tmle_task, node)
   dens_form <- density_formula(tmle_task, node)
-  p <- ggplot(propensity_scores, aes_(x = ~likelihood, fill = ~value)) + geom_histogram(binwidth = 0.05) +
+  p <- ggplot(propensity_scores, aes_(x = ~ likelihood, fill = ~ value)) + geom_histogram(binwidth = 0.05) +
     xlab(dens_form) + ylab("Density") + scale_fill_discrete(name = node) +
-    facet_grid(value~.) + theme_bw() + theme(strip.text = element_blank())
+    facet_grid(value ~ .) + theme_bw() + theme(strip.text = element_blank())
 
   return(p)
 }

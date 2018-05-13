@@ -50,16 +50,15 @@ Param_TSM <- R6Class(
   public = list(
     initialize = function(observed_likelihood, intervention_list, ..., outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
-      private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
+      private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
     },
     clever_covariates = function(tmle_task = NULL) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
       intervention_nodes <- names(self$intervention_list)
-      # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
-      cf_pA <- self$cf_likelihood$get_initial_likelihoods(tmle_task, intervention_nodes)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes)
+      cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes)
 
       HA <- cf_pA / pA
 
@@ -85,10 +84,10 @@ Param_TSM <- R6Class(
       HA <- self$clever_covariates(tmle_task)[[self$outcome_node]]
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
-      EYA <- unlist(self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node), use.names = FALSE)
+      EYA <- unlist(self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node), use.names = FALSE)
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
-      EY1 <- unlist(self$cf_likelihood$get_likelihoods(cf_task, self$outcome_node), use.names = FALSE)
+      EY1 <- unlist(self$cf_likelihood$get_likelihood(cf_task, self$outcome_node), use.names = FALSE)
 
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function
       variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
@@ -125,6 +124,7 @@ Param_TSM <- R6Class(
     }
   ),
   private = list(
+    .type = "TSM",
     .cf_likelihood = NULL
   )
 )

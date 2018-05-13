@@ -1,7 +1,7 @@
-#' Defines a tmle (minus the data)
+#' Defines a TML Estimator (except for the data)
 #'
-#' Current limitations:
-#' pretty much tailored to Param_TSM
+#' Current limitations: pretty much tailored to \code{Param_TSM}
+#'
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -12,9 +12,9 @@ tmle3_Spec <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(...) {
-      private$.params <- list(...)
+      private$.options <- list(...)
     },
-    make_tmle_task = function(data, node_list) {
+    make_tmle_task = function(data, node_list, ...) {
       # bound Y if continuous
       Y_node <- node_list$Y
       Y_vals <- unlist(data[, Y_node, with = FALSE])
@@ -25,7 +25,10 @@ tmle3_Spec <- R6Class(
         range <- max_Y - min_Y
         lower <- min_Y # - 0.1 * range
         upper <- max_Y # + 0.1 * range
-        Y_variable_type <- variable_type(type = "continuous", bounds = c(lower, upper))
+        Y_variable_type <- variable_type(
+          type = "continuous",
+          bounds = c(lower, upper)
+        )
       }
 
       # make tmle_task
@@ -35,10 +38,10 @@ tmle3_Spec <- R6Class(
         define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
 
-      tmle_task <- tmle3_Task$new(data, npsem = npsem)
+      tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
       return(tmle_task)
     },
-    make_likelihood = function(tmle_task, learner_list = NULL) {
+    make_initial_likelihood = function(tmle_task, learner_list = NULL) {
       # todo: generalize
       factor_list <- list(
         define_lf(LF_emp, "W"),
@@ -52,28 +55,23 @@ tmle3_Spec <- R6Class(
       likelihood <- likelihood_def$train(tmle_task)
       return(likelihood)
     },
-    make_params = function(tmle_task, likelihood) {
+    make_updater = function() {
+      updater <- tmle3_Update$new()
+    },
+    make_targeted_likelihood = function(likelihood, updater) {
+      targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
+      return(targeted_likelihood)
+    },
+    make_params = function(tmle_task, targeted_likelihood) {
       stop("this is a base class, try tsm_Spec_TSM_all")
-    },
-    make_updater = function(likelihood, tmle_params) {
-      # todo: generalize
-      updater <- tmle3_Update$new(tmle_params)
-      likelihood$update_list <- updater
-      return(updater)
-    },
-    make_delta_params = function() {
-      return(NULL)
     }
   ),
   active = list(
-    params = function() {
-      # todo: params is a terrible name for this
-      # these are meant to be options/settings/things the user can specify
-      # NOT target parameters
-      return(private$.params)
+    options = function() {
+      return(private$.options)
     }
   ),
   private = list(
-    .params = NULL
+    .options = NULL
   )
 )

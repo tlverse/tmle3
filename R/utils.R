@@ -69,12 +69,12 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   psi_transformed <- mapply(apply_transform, psi, transforms)
   ci_transformed <- mapply(apply_transform, ci, transforms)
   ci_transformed <- matrix(ci_transformed, nrow = nrow(ci), ncol = ncol(ci))
-  summary_dt <- as.data.table(list(
+  summary_dt <- as.data.table(list(param_types,
     param_names, init_psi, psi, se, ci,
     psi_transformed, ci_transformed
   ))
   setnames(summary_dt, c(
-    "param", "init_est", "tmle_est", "se", "lower",
+    "type", "param", "init_est", "tmle_est", "se", "lower",
     "upper", "psi_transformed", "lower_transformed",
     "upper_transformed"
   ))

@@ -37,8 +37,13 @@ tmle3_Spec <- R6Class(
         define_node("A", node_list$A, c("W")),
         define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
-
-      tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+      
+      if(!is.null(node_list$id)){
+        tmle_task <- tmle3_Task$new(data, npsem = npsem, id=node_list$id, ...)  
+      } else {
+        tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+      }
+      
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {

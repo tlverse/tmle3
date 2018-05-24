@@ -39,6 +39,7 @@ g_learner <- make_learner(Lrnr_sl, g_lib, metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_PAR(baseline_level = 1)
 
+set.seed(1234)
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
@@ -61,11 +62,13 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
 # extract results
 summary <- tmle_fit$summary
 
+set.seed(1234)
 data2 <- data.table::copy(data) # for data.table weirdness
 tmle_fit_from_spec <- tmle3(
   tmle_PAR(baseline_level = 1), data2, node_list,
   learner_list
 )
+
 spec_summary <- tmle_fit_from_spec$summary
 
 test_that("PAR manually and from Spec return the same results", {

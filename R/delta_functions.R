@@ -24,9 +24,10 @@ delta_param_PAR <- list(
   f = f_contrast,
   df = df_contrast
 )
+
 # Risk Ratio EY1/EY0
 f_log_rr <- function(x) {
-  x[[2]] / x[[1]]
+  log(x[[2]]) - log(x[[1]])
 }
 
 df_log_rr <- function(x, dx) {

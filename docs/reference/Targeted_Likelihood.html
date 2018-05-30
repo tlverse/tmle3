@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Likelihood Factor Estimated using Empirical Distribution — LF_emp • tmle</title>
+<title>Targeted Likelihood — Targeted_Likelihood • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -28,12 +28,10 @@
 
 
 
-<meta property="og:title" content="Likelihood Factor Estimated using Empirical Distribution — LF_emp" />
+<meta property="og:title" content="Targeted Likelihood — Targeted_Likelihood" />
 
-<meta property="og:description" content="Uses the empirical probability distribution (puts mass \(1/n\) on each of the observations, or uses weights if specified) to estimate a marginal density.
-Inherits from LF_base; see that page for documentation on likelihood factors in general.
-Only compatible with marginal likelihoods (no parent nodes). Only compatible with densities (no conditional means).
-The type argument will be ignored if specified." />
+<meta property="og:description" content="Represents a likelihood where one or more likelihood factors has been updated
+to target a set of parameter(s)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -110,21 +108,19 @@ The type argument will be ignored if specified." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Likelihood Factor Estimated using Empirical Distribution</h1>
+    <h1>Targeted Likelihood</h1>
     
-    <div class="hidden name"><code>LF_emp.Rd</code></div>
+    <div class="hidden name"><code>Targeted_Likelihood.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Uses the empirical probability distribution (puts mass \(1/n\) on each of the observations, or uses weights if specified) to estimate a marginal density.
-Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.
-Only compatible with marginal likelihoods (no parent nodes). Only compatible with densities (no conditional means).
-The <code>type</code> argument will be ignored if specified.</p>
+    <p>Represents a likelihood where one or more likelihood factors has been updated
+to target a set of parameter(s)</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>LF_emp</span></pre>
+    <pre class="usage"><span class='no'>Targeted_Likelihood</span></pre>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
@@ -132,24 +128,59 @@ The <code>type</code> argument will be ignored if specified.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>LF_base</code> object</p>
+    <p><code>Likelihood</code> object</p>
     
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code><a href='define_lf.html'>define_lf(LF_emp, name, ...)</a></code></p>
+    <p><code><a href='Likelihood.html'>make_Likelihood(factor_list, ...)</a></code></p>                     
 <p></p><dl class='dl-horizontal'>
-    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
+    <dt><code>factor_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the individual relevant factors.</p></dd>
     <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
     </dl>
+    
+    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
+
+    
+    <dl class='dl-horizontal'>
+<dt><code>validate_task(tmle_task)</code></dt><dd><p>Ensure that this likelihood is compatible with a particular <code><a href='tmle3_Task.html'>tmle3_Task</a></code>, in that the factor names must match the <code>tmle_task$npsem</code> names.
+    <ul>
+<li><p><code>tmle_task</code>: the <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to validate.</p></li>
+</ul></p></dd>
+    <dt><code>get_initial_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets initial (i.e. before any TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified) 
+  for the observations in <code>tmle_task</code>.
+    <ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
+<li><p><code>nodes</code>: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.</p></li>
+</ul></p></dd>
+<dt><code>get_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets updated (i.e. after all TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified) 
+  for the observations in <code>tmle_task</code>.
+    <ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
+<li><p><code>nodes</code>: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.</p></li>
+</ul></p></dd>
+<dt><code>get_possible_counterfactuals(nodes)</code></dt><dd><p>Gets all possible combination of counterfactual values for a set of nodes. This is useful for marginalizing over a node. Returns a <code>data.frame</code>
+  with one row per possibility.
+    <ul>
+<li><p><code>nodes</code>: character vectors, the list of nodes to get counterfactual values for. If missing, values will be provided for all nodes.</p></li>
+</ul></p></dd>
+</dl>
+    
+    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
+
+    
+    <dl class='dl-horizontal'>
+  <dt><code>factor_list</code></dt><dd><p>The list of <code><a href='LF_base.html'>LF_base</a></code> objects specifying the relevant likelihood factors</p></dd>
+  <dt><code>observed_values</code></dt><dd><p>The likelihood values for the observed data. These are cached, as they are used in many places in TMLE</p></dd>
+  <dt><code>update_list</code></dt><dd><p>A list of tmle_updates that have been calculated for this likelihood</p></dd>
+</dl>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_shift.html'>LF_shift</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
-  <code><a href='Likelihood.html'>Likelihood</a></code>,
-  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_emp.html'>LF_emp</a></code>,
+  <code><a href='LF_fit.html'>LF_fit</a></code>, <code><a href='LF_shift.html'>LF_shift</a></code>,
+  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
   <code><a href='define_lf.html'>define_lf</a></code></p></div>
     
 
@@ -163,6 +194,10 @@ The <code>type</code> argument will be ignored if specified.</p>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#constructor">Constructor</a></li>
+
+      <li><a href="#methods">Methods</a></li>
+
+      <li><a href="#fields">Fields</a></li>
 
       <li><a href="#see-also">See also</a></li>
           </ul>

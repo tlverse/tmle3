@@ -18,13 +18,22 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Preprocess Data to Handle Missing Variables — process_missing" />
+
+<meta property="og:description" content="Process data to account for missingness in preparation for TMLE" />
+<meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -34,16 +43,14 @@
 <![endif]-->
 
 
-<!-- Google analytics -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115145808-1"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  ga('create', 'UA-115145808-1', 'auto');
-  ga('send', 'pageview');
-
+  gtag('config', 'UA-115145808-1');
 </script>
 
   </head>
@@ -59,8 +66,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html"></a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">tmle3</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -85,6 +96,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -92,19 +104,24 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Preprocess Data to Handle Missing Variables</h1>
+    
+    <div class="hidden name"><code>process_missing.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Process data to account for missingness in preparation for TMLE</p>
     
+    </div>
 
-    <pre class="usage"><span class='fu'>process_missing</span>(<span class='no'>data</span>, <span class='no'>node_list</span>, <span class='kw'>max_p_missing</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</pre>
+    <pre class="usage"><span class='fu'>process_missing</span>(<span class='no'>data</span>, <span class='no'>node_list</span>, <span class='kw'>complete_nodes</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"A"</span>, <span class='st'>"Y"</span>),
+  <span class='kw'>impute_nodes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_p_missing</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -113,7 +130,15 @@
     </tr>
     <tr>
       <th>node_list, </th>
-      <td><p><code>list</code>, what nodes serve what purpose</p></td>
+      <td><p><code>list</code>, what variables comprise each node</p></td>
+    </tr>
+    <tr>
+      <th>complete_nodes, </th>
+      <td><p><code>character vector</code>, nodes we must observe</p></td>
+    </tr>
+    <tr>
+      <th>impute_nodes, </th>
+      <td><p><code>character vector</code>, nodes we will impute</p></td>
     </tr>
     <tr>
       <th>max_p_missing, </th>
@@ -133,8 +158,9 @@
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Because IPCW-TMLE is not yet implemented, currently all rows with
-missing outcomes (Y) or treatments (A) will be dropped from the analysis.</p>
+    <p>Rows where there is missingness in any of the <code>complete_nodes</code> will be
+dropped. Then, missingness will be median-imputed for the variables in the <code>impute_nodes</code>.
+Indicator variables of missingness will be generated for these nodes.</p>
 <p>Then covariates will be processed as follows:</p><ol>
 <li><p>any covariate with more than <code>max_p_missing</code> missingness will be dropped</p></li>
 <li><p>indicators of missingness will be generated</p></li>
@@ -162,11 +188,14 @@ missing outcomes (Y) or treatments (A) will be dropped from the analysis.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

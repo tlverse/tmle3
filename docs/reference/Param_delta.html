@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Defines a tmle (minus the data) — tmle3_Spec_PAR • tmle</title>
+<title>Delta Method Parameters — Param_delta • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -28,11 +28,12 @@
 
 
 
-<meta property="og:title" content="Defines a tmle (minus the data) — tmle3_Spec_PAR" />
+<meta property="og:title" content="Delta Method Parameters — Param_delta" />
 
-<meta property="og:description" content="Current limitations:
-pretty much tailored to Param_TSM
-see todos for places generalization can be added" />
+<meta property="og:description" content="These parameters are smooth functionals of one or more other params
+They are not fit directly with tmle, but are estimated using the delta method
+todo: better docs
+They do not return have clever covariates" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -109,24 +110,32 @@ see todos for places generalization can be added" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Defines a tmle (minus the data)</h1>
+    <h1>Delta Method Parameters</h1>
     
-    <div class="hidden name"><code>tmle3_Spec_PAR.Rd</code></div>
+    <div class="hidden name"><code>Param_delta.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Current limitations:
-pretty much tailored to Param_TSM
-see todos for places generalization can be added</p>
+    <p>These parameters are smooth functionals of one or more other params
+They are not fit directly with tmle, but are estimated using the delta method
+todo: better docs
+They do not return have clever covariates</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>tmle3_Spec_PAR</span></pre>
+    <pre class="usage"><span class='no'>Param_delta</span></pre>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
     <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATT.html'>Param_ATT</a></code>,
+  <code><a href='Param_TSM.html'>Param_TSM</a></code>, <code><a href='Param_base.html'>Param_base</a></code>,
+  <code><a href='Param_mean.html'>Param_mean</a></code>, <code><a href='define_param.html'>define_param</a></code>,
+  <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p></div>
     
 
   </div>
@@ -135,6 +144,8 @@ see todos for places generalization can be added</p>
     <ul class="nav nav-pills nav-stacked">
       
       <li><a href="#format">Format</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

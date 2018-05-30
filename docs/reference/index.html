@@ -18,13 +18,19 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Function reference" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -34,16 +40,14 @@
 <![endif]-->
 
 
-<!-- Google analytics -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115145808-1"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  ga('create', 'UA-115145808-1', 'auto');
-  ga('send', 'pageview');
-
+  gtag('config', 'UA-115145808-1');
 </script>
 
   </head>
@@ -59,8 +63,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html"></a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">tmle3</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -85,6 +93,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -92,388 +101,413 @@
       
       </header>
 
-      <div class="row">
-  <div class="col-md-9">
+<div class="row">
+  <div class="contents col-md-9">
     <div class="page-header">
-      <h1>
-        Reference
-        <small>version&nbsp;0.0.0.9000</small>
-      </h1>
+      <h1>Reference</h1>
     </div>
 
-    <div class="contents">
-      <table class="ref-index">
+    <table class="ref-index">
 
-      <colgroup>
-        <col class="alias" />
-        <col class="title" />
-      </colgroup>
+    <colgroup>
+      <col class="alias" />
+      <col class="title" />
+    </colgroup>
 
-      <tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-defining-a-task" class="hasAnchor"><a href="#section-defining-a-task" class="anchor"></a>Defining A Task</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task</a></code> </p>
-          </td>
-          <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-npsem" class="hasAnchor"><a href="#section-npsem" class="anchor"></a>NPSEM</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node</a></code> </p>
-          </td>
-          <td><p>A Node (set of variables) in an NPSEM</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="npsem_helpers.html">all_ancestors</a></code> <code><a href="npsem_helpers.html">time_ordering</a></code> </p>
-          </td>
-          <td><p>Helper functions for the NPSEM</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-likelihood" class="hasAnchor"><a href="#section-likelihood" class="anchor"></a>Likelihood</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood</a></code> </p>
-          </td>
-          <td><p>Class for Likelihood</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood</a></code> </p>
-          </td>
-          <td><p>Counterfactual Likelihood</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-likelihood-factors" class="hasAnchor"><a href="#section-likelihood-factors" class="anchor"></a>Likelihood Factors</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="define_lf.html">define_lf</a></code> </p>
-          </td>
-          <td><p>Define a Likelihood Factor</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_base.html">LF_base</a></code> </p>
-          </td>
-          <td><p>Base Class for Defining Likelihood Factors</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
-          </td>
-          <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
-          </td>
-          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
-          </td>
-          <td><p>Shifted Likelihood Factor</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_static.html">LF_static</a></code> </p>
-          </td>
-          <td><p>Static Likelihood Factor</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-parameters" class="hasAnchor"><a href="#section-parameters" class="anchor"></a>Parameters</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="define_param.html">define_param</a></code> </p>
-          </td>
-          <td><p>Define a Parameter</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
-          </td>
-          <td><p>Additive Effect of Treatment Among the Treated</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_base.html">Param_base</a></code> </p>
-          </td>
-          <td><p>Base Class for Defining Parameters</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
-          </td>
-          <td><p>Mean of Outcome Node</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
-          </td>
-          <td><p>Treatment Specific Mean</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-propensity-scores" class="hasAnchor"><a href="#section-propensity-scores" class="anchor"></a>Propensity Scores</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="propensity_scores.html">density_formula</a></code> <code><a href="propensity_scores.html">get_propensity_scores</a></code> <code><a href="propensity_scores.html">propensity_score_plot</a></code> <code><a href="propensity_scores.html">propensity_score_table</a></code> </p>
-          </td>
-          <td><p>Get and Plot Propensity Scores</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-index" class="hasAnchor"><a href="#section-index" class="anchor"></a>Index</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood</a></code> </p>
-          </td>
-          <td><p>Counterfactual Likelihood</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="define_lf.html">define_lf</a></code> </p>
-          </td>
-          <td><p>Define a Likelihood Factor</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="define_param.html">define_param</a></code> </p>
-          </td>
-          <td><p>Define a Parameter</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="delta_method.html">delta_method</a></code> </p>
-          </td>
-          <td><p>Get Inference for Differentiable Functions of Parameters</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="delta_param_contrast.html">delta_param_contrast</a></code> </p>
-          </td>
-          <td><p>PAR = Linear Contrast EY-EY0</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="delta_param_PAF.html">delta_param_PAF</a></code> </p>
-          </td>
-          <td><p>PAF = 1 - (1/RR(EY/E0))</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="delta_param_PAR.html">delta_param_PAR</a></code> </p>
-          </td>
-          <td><p>PAR = Linear Contrast EY-EY0</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="delta_param_RR.html">delta_param_RR</a></code> </p>
-          </td>
-          <td><p>Risk Ratio EY1/EY0</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="discretize_variable.html">discretize_variable</a></code> </p>
-          </td>
-          <td><p>Discretize Continuous Variable</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_base.html">LF_base</a></code> </p>
-          </td>
-          <td><p>Base Class for Defining Likelihood Factors</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
-          </td>
-          <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
-          </td>
-          <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
-          </td>
-          <td><p>Shifted Likelihood Factor</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="LF_static.html">LF_static</a></code> </p>
-          </td>
-          <td><p>Static Likelihood Factor</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood</a></code> </p>
-          </td>
-          <td><p>Class for Likelihood</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="npsem_helpers.html">all_ancestors</a></code> <code><a href="npsem_helpers.html">time_ordering</a></code> </p>
-          </td>
-          <td><p>Helper functions for the NPSEM</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
-          </td>
-          <td><p>Additive Effect of Treatment Among the Treated</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_base.html">Param_base</a></code> </p>
-          </td>
-          <td><p>Base Class for Defining Parameters</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
-          </td>
-          <td><p>Mean of Outcome Node</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
-          </td>
-          <td><p>Treatment Specific Mean</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="process_missing.html">process_missing</a></code> </p>
-          </td>
-          <td><p>Preprocess Data to Handle Missing Variables</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="propensity_scores.html">density_formula</a></code> <code><a href="propensity_scores.html">get_propensity_scores</a></code> <code><a href="propensity_scores.html">propensity_score_plot</a></code> <code><a href="propensity_scores.html">propensity_score_table</a></code> </p>
-          </td>
-          <td><p>Get and Plot Propensity Scores</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="submodel_logit.html">submodel_logit</a></code> </p>
-          </td>
-          <td><p>Logistic Submodel Fluctuation</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="summary_from_estimates.html">summary_from_estimates</a></code> </p>
-          </td>
-          <td><p>Summarize Estimates</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle_PAR.html">tmle_PAR</a></code> </p>
-          </td>
-          <td><p>PAR and PAF</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle_TSM_all.html">tmle_TSM_all</a></code> </p>
-          </td>
-          <td><p>All Treatment Specific Means</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Fit.html">tmle3_Fit</a></code> <code><a href="tmle3_Fit.html">fit_tmle3</a></code> </p>
-          </td>
-          <td><p>TMLE fit object</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node</a></code> </p>
-          </td>
-          <td><p>A Node (set of variables) in an NPSEM</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Spec_PAR.html">tmle3_Spec_PAR</a></code> </p>
-          </td>
-          <td><p>Defines a tmle (minus the data)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Spec_TSM_all.html">tmle3_Spec_TSM_all</a></code> </p>
-          </td>
-          <td><p>Defines a tmle (minus the data)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Spec.html">tmle3_Spec</a></code> </p>
-          </td>
-          <td><p>Defines a tmle (minus the data)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task</a></code> </p>
-          </td>
-          <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3_Update.html">tmle3_Update</a></code> </p>
-          </td>
-          <td><p>Defines an update (submodel+loss function)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="tmle3.html">tmle3</a></code> </p>
-          </td>
-          <td><p>TMLE from a tmle3_Spec object</p></td>
-        </tr>
-      </tbody>
-      </table>
-    </div>
+    <tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-defining-a-task" class="hasAnchor"><a href="#section-defining-a-task" class="anchor"></a>Defining A Task</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task()</a></code> </p>
+        </td>
+        <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-npsem" class="hasAnchor"><a href="#section-npsem" class="anchor"></a>NPSEM</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node()</a></code> </p>
+        </td>
+        <td><p>A Node (set of variables) in an NPSEM</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="npsem_helpers.html">all_ancestors()</a></code> <code><a href="npsem_helpers.html">time_ordering()</a></code> </p>
+        </td>
+        <td><p>Helper functions for the NPSEM</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-likelihood" class="hasAnchor"><a href="#section-likelihood" class="anchor"></a>Likelihood</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood()</a></code> </p>
+        </td>
+        <td><p>Class for Likelihood</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood()</a></code> </p>
+        </td>
+        <td><p>Counterfactual Likelihood</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-likelihood-factors" class="hasAnchor"><a href="#section-likelihood-factors" class="anchor"></a>Likelihood Factors</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="define_lf.html">define_lf()</a></code> </p>
+        </td>
+        <td><p>Define a Likelihood Factor</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_base.html">LF_base</a></code> </p>
+        </td>
+        <td><p>Base Class for Defining Likelihood Factors</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
+        </td>
+        <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
+        </td>
+        <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
+        </td>
+        <td><p>Shifted Likelihood Factor</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_static.html">LF_static</a></code> </p>
+        </td>
+        <td><p>Static Likelihood Factor</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-parameters" class="hasAnchor"><a href="#section-parameters" class="anchor"></a>Parameters</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="define_param.html">define_param()</a></code> </p>
+        </td>
+        <td><p>Define a Parameter</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
+        </td>
+        <td><p>Additive Effect of Treatment Among the Treated</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
+        </td>
+        <td><p>Treatment Specific Mean</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_base.html">Param_base</a></code> </p>
+        </td>
+        <td><p>Base Class for Defining Parameters</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_delta.html">Param_delta</a></code> </p>
+        </td>
+        <td><p>Delta Method Parameters</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
+        </td>
+        <td><p>Mean of Outcome Node</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-propensity-scores" class="hasAnchor"><a href="#section-propensity-scores" class="anchor"></a>Propensity Scores</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="propensity_scores.html">density_formula()</a></code> <code><a href="propensity_scores.html">get_propensity_scores()</a></code> <code><a href="propensity_scores.html">propensity_score_plot()</a></code> <code><a href="propensity_scores.html">propensity_score_table()</a></code> </p>
+        </td>
+        <td><p>Get and Plot Propensity Scores</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-index" class="hasAnchor"><a href="#section-index" class="anchor"></a>Index</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        <!--  -->
+        <td>
+          <p><code><a href="CF_Likelihood.html">CF_Likelihood</a></code> <code><a href="CF_Likelihood.html">make_CF_Likelihood()</a></code> </p>
+        </td>
+        <td><p>Counterfactual Likelihood</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_base.html">LF_base</a></code> </p>
+        </td>
+        <td><p>Base Class for Defining Likelihood Factors</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_emp.html">LF_emp</a></code> </p>
+        </td>
+        <td><p>Likelihood Factor Estimated using Empirical Distribution</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_fit.html">LF_fit</a></code> </p>
+        </td>
+        <td><p>Likelihood Factor Estimated from Data using sl3.</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_shift.html">LF_shift</a></code> </p>
+        </td>
+        <td><p>Shifted Likelihood Factor</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="LF_static.html">LF_static</a></code> </p>
+        </td>
+        <td><p>Static Likelihood Factor</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Likelihood.html">Likelihood</a></code> <code><a href="Likelihood.html">make_Likelihood()</a></code> </p>
+        </td>
+        <td><p>Class for Likelihood</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Likelihood_cache.html">Likelihood_cache</a></code> </p>
+        </td>
+        <td><p>Cache Likelihood values, update those values</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_ATT.html">Param_ATT</a></code> </p>
+        </td>
+        <td><p>Additive Effect of Treatment Among the Treated</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_TSM.html">Param_TSM</a></code> </p>
+        </td>
+        <td><p>Treatment Specific Mean</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_base.html">Param_base</a></code> </p>
+        </td>
+        <td><p>Base Class for Defining Parameters</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_delta.html">Param_delta</a></code> </p>
+        </td>
+        <td><p>Delta Method Parameters</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Param_mean.html">Param_mean</a></code> </p>
+        </td>
+        <td><p>Mean of Outcome Node</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="Targeted_Likelihood.html">Targeted_Likelihood</a></code> </p>
+        </td>
+        <td><p>Targeted Likelihood</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="define_lf.html">define_lf()</a></code> </p>
+        </td>
+        <td><p>Define a Likelihood Factor</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="define_param.html">define_param()</a></code> </p>
+        </td>
+        <td><p>Define a Parameter</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="delta_param_PAF.html">delta_param_PAF</a></code> </p>
+        </td>
+        <td><p>PAF = 1 - (1/RR(EY/E0))</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="delta_param_PAR.html">delta_param_PAR</a></code> </p>
+        </td>
+        <td><p>PAR = Linear Contrast EY-EY0</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="delta_param_RR.html">delta_param_RR</a></code> </p>
+        </td>
+        <td><p>Risk Ratio EY1/EY0</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="delta_param_contrast.html">delta_param_contrast</a></code> </p>
+        </td>
+        <td><p>PAR = Linear Contrast EY-EY0</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="discretize_variable.html">discretize_variable()</a></code> </p>
+        </td>
+        <td><p>Discretize Continuous Variable</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="npsem_helpers.html">all_ancestors()</a></code> <code><a href="npsem_helpers.html">time_ordering()</a></code> </p>
+        </td>
+        <td><p>Helper functions for the NPSEM</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="process_missing.html">process_missing()</a></code> </p>
+        </td>
+        <td><p>Preprocess Data to Handle Missing Variables</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="propensity_scores.html">density_formula()</a></code> <code><a href="propensity_scores.html">get_propensity_scores()</a></code> <code><a href="propensity_scores.html">propensity_score_plot()</a></code> <code><a href="propensity_scores.html">propensity_score_table()</a></code> </p>
+        </td>
+        <td><p>Get and Plot Propensity Scores</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="submodel_logit.html">submodel_logit()</a></code> </p>
+        </td>
+        <td><p>Logistic Submodel Fluctuation</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="summary_from_estimates.html">summary_from_estimates()</a></code> </p>
+        </td>
+        <td><p>Summarize Estimates</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3.html">tmle3()</a></code> </p>
+        </td>
+        <td><p>TMLE from a tmle3_Spec object</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Fit.html">tmle3_Fit</a></code> <code><a href="tmle3_Fit.html">fit_tmle3()</a></code> </p>
+        </td>
+        <td><p>TMLE fit object</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Node.html">tmle3_Node</a></code> <code><a href="tmle3_Node.html">define_node()</a></code> </p>
+        </td>
+        <td><p>A Node (set of variables) in an NPSEM</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Spec.html">tmle3_Spec</a></code> </p>
+        </td>
+        <td><p>Defines a TML Estimator (except for the data)</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Spec_PAR.html">tmle3_Spec_PAR</a></code> </p>
+        </td>
+        <td><p>Defines a tmle (minus the data)</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Spec_RR.html">tmle3_Spec_RR</a></code> </p>
+        </td>
+        <td><p>Defines a tmle (minus the data)</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Spec_TSM_all.html">tmle3_Spec_TSM_all</a></code> </p>
+        </td>
+        <td><p>Defines a TML Estimator (except for the data)</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Task.html">tmle3_Task</a></code> <code><a href="tmle3_Task.html">make_tmle3_Task()</a></code> </p>
+        </td>
+        <td><p>Class for Storing Data and NPSEM for TMLE</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle3_Update.html">tmle3_Update</a></code> </p>
+        </td>
+        <td><p>Defines an update (submodel+loss function)</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle_PAR.html">tmle_PAR()</a></code> </p>
+        </td>
+        <td><p>PAR and PAF</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle_RR.html">tmle_RR()</a></code> </p>
+        </td>
+        <td><p>Risk ratio</p></td>
+      </tr><tr>
+        <!--  -->
+        <td>
+          <p><code><a href="tmle_TSM_all.html">tmle_TSM_all()</a></code> </p>
+        </td>
+        <td><p>All Treatment Specific Means</p></td>
+      </tr>
+    </tbody>
+    </table>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -496,11 +530,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

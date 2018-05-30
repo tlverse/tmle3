@@ -18,13 +18,23 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Class for Storing Data and NPSEM for TMLE — tmle3_Task" />
+
+<meta property="og:description" content="This class inherits from sl3_Task. In addition to all the
+ methods supported by sl3_Task, it supports the following." />
+<meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -34,16 +44,14 @@
 <![endif]-->
 
 
-<!-- Google analytics -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115145808-1"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  ga('create', 'UA-115145808-1', 'auto');
-  ga('send', 'pageview');
-
+  gtag('config', 'UA-115145808-1');
 </script>
 
   </head>
@@ -59,8 +67,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html"></a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">tmle3</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -85,6 +97,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -92,21 +105,26 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Class for Storing Data and NPSEM for TMLE</h1>
+    
+    <div class="hidden name"><code>tmle3_Task.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
-    <p>This class inherits from <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>. In addition to all the methods supported by <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>, it supports the following.</p>
+    <p>This class inherits from <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>. In addition to all the
+ methods supported by <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>, it supports the following.</p>
     
+    </div>
 
     <pre class="usage"><span class='no'>tmle3_Task</span>
 
 <span class='fu'>make_tmle3_Task</span>(<span class='no'>...</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -131,7 +149,7 @@ Constructor below.</p></td>
 <p></p><dl class='dl-horizontal'>
     <dt><code>data</code></dt><dd><p>A <code>data.frame</code> or <code>data.table</code> containing the underlying data</p></dd>
     <dt><code>npsem</code></dt><dd><p>A list of <code><a href='tmle3_Node.html'>tmle3_Node</a></code> objects, where each is created using <code><a href='tmle3_Node.html'>define_node</a></code>. These specify the NPSEM. See examples.</p></dd>
-    <dt><code>...</code></dt><dd><p>Other arguments passed to the constructor of <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>. <strong>NB:</strong> Support for these is currently limited.</p></dd>
+    <dt><code>...</code></dt><dd><p>Other arguments passed to the constructor of <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>. <strong>NB:</strong> Support for these is currently limited.</p></dd>
     </dl>
     
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
@@ -143,7 +161,7 @@ Constructor below.</p></td>
 <li><p><code>node_name</code>: character, the name of the node to get.</p></li>
 <li><p><code>bound</code>: logical, if true the data is transformed to be in (0,1) based on pre-specified bounds.</p></li>
 </ul></p></dd>
-    <dt><code>get_regression_task(target_node, bound = FALSE)</code></dt><dd><p>Gets a <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code> suitable for fitting the conditional likelihood factor with the <code>target_node</code>
+    <dt><code>get_regression_task(target_node, bound = FALSE)</code></dt><dd><p>Gets a <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code> suitable for fitting the conditional likelihood factor with the <code>target_node</code>
   as the outcome.
     <ul>
 <li><p><code>target_node</code>: character, the name of the node to get.</p></li>
@@ -189,11 +207,14 @@ Constructor below.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

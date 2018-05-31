@@ -74,3 +74,7 @@ issue](https://github.com/tlverse/tmle3/issues).
 The contents of this repository are distributed under the GPL-3 license. See
 file `LICENSE` for details.
 
+---
+
+## References
+

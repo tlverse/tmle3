@@ -3,7 +3,7 @@
 \docType{data}
 \name{tmle3_Spec_RR}
 \alias{tmle3_Spec_RR}
-\title{Defines a tmle (minus the data)}
+\title{Defines a TML Estimator for the Risk Ratio}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 tmle3_Spec_RR
@@ -11,6 +11,6 @@ tmle3_Spec_RR
 \description{
 Current limitations:
 pretty much tailored to Param_TSM
-see todos for places generalization can be added
+see TODOs for places generalization can be added
 }
 \keyword{datasets}

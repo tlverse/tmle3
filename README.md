@@ -69,6 +69,10 @@ If you encounter any bugs or have any specific feature requests, please
 The contents of this repository are distributed under the GPL-3 license.
 See file `LICENSE` for details.
 
+-----
+
+## References
+
 <div id="refs" class="references">
 
 <div id="ref-vdl2011targeted">

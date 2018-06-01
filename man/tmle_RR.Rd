@@ -2,18 +2,18 @@
 % Please edit documentation in R/tmle3_Spec_RR.R
 \name{tmle_RR}
 \alias{tmle_RR}
-\title{Risk ratio}
+\title{Risk Ratio}
 \usage{
 tmle_RR(baseline_level, contrast_level)
 }
 \arguments{
-\item{baseline_level, }{the baseline risk group}
+\item{baseline_level}{The baseline risk group.}
 
-\item{contrast_level, }{the contrast risk group}
+\item{contrast_level}{The contrast risk group.}
 }
 \description{
-O=(W,A,Y)
-W=Covariates
-A=Treatment (binary or categorical)
-Y=Outcome (binary or bounded continuous)
+O = (W, A, Y)
+W = Covariates
+A = Treatment (binary or categorical)
+Y = Outcome (binary or bounded continuous)
 }

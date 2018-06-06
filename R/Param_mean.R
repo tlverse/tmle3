@@ -48,7 +48,7 @@ Param_mean <- R6Class(
     },
     estimates = function(tmle_task = NULL) {
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
-      Y <- tmle_task$Y
+      Y <- tmle_task$get_tmle_node(self$outcome_node)
       # todo: separate out psi
       # todo: make this a function of f(W)
       psi <- mean(EY)

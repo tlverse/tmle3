@@ -36,7 +36,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
     IC <- lapply(IC, function(x) {
-      as.matrix(by(as.numeric(unlist(x)), task$id, mean))
+      as.matrix(by(as.numeric(unlist(x)), as.numeric(task$id), mean))
     })
   }
   var_D <- unlist(lapply(IC, var))

@@ -18,13 +18,25 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Likelihood Factor Estimated using Empirical Distribution — LF_emp" />
+
+<meta property="og:description" content="Uses the empirical probability distribution (puts mass \(1/n\) on each of the observations, or uses weights if specified) to estimate a marginal density.
+Inherits from LF_base; see that page for documentation on likelihood factors in general.
+Only compatible with marginal likelihoods (no parent nodes). Only compatible with densities (no conditional means).
+The type argument will be ignored if specified." />
+<meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -34,16 +46,14 @@
 <![endif]-->
 
 
-<!-- Google analytics -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115145808-1"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  ga('create', 'UA-115145808-1', 'auto');
-  ga('send', 'pageview');
-
+  gtag('config', 'UA-115145808-1');
 </script>
 
   </head>
@@ -59,8 +69,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html"></a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">tmle3</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.1.0</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -85,6 +99,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -92,18 +107,22 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Likelihood Factor Estimated using Empirical Distribution</h1>
+    
+    <div class="hidden name"><code>LF_emp.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>Uses the empirical probability distribution (puts mass \(1/n\) on each of the observations, or uses weights if specified) to estimate a marginal density.
 Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.
 Only compatible with marginal likelihoods (no parent nodes). Only compatible with densities (no conditional means).
 The <code>type</code> argument will be ignored if specified.</p>
     
+    </div>
 
     <pre class="usage"><span class='no'>LF_emp</span></pre>
         
@@ -126,10 +145,11 @@ The <code>type</code> argument will be ignored if specified.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
+    <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
   <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_shift.html'>LF_shift</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
-  <code><a href='Likelihood.html'>Likelihood</a></code>, <code><a href='define_lf.html'>define_lf</a></code></p>
+  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
+  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+  <code><a href='define_lf.html'>define_lf</a></code></p></div>
     
 
   </div>
@@ -155,11 +175,14 @@ The <code>type</code> argument will be ignored if specified.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

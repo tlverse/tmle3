@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>PAR and PAF — tmle_PAR • tmle</title>
+<title>Wald-Style Confidence Intervals — wald_ci • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -28,12 +28,9 @@
 
 
 
-<meta property="og:title" content="PAR and PAF — tmle_PAR" />
+<meta property="og:title" content="Wald-Style Confidence Intervals — wald_ci" />
 
-<meta property="og:description" content="O=(W,A,Y)
-W=Covariates
-A=Treatment (binary or categorical)
-Y=Outcome (binary or bounded continuous)" />
+<meta property="og:description" content="Wald-Style Confidence Intervals" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -110,37 +107,24 @@ Y=Outcome (binary or bounded continuous)" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>PAR and PAF</h1>
+    <h1>Wald-Style Confidence Intervals</h1>
     
-    <div class="hidden name"><code>tmle_PAR.Rd</code></div>
+    <div class="hidden name"><code>wald_ci.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>O=(W,A,Y)
-W=Covariates
-A=Treatment (binary or categorical)
-Y=Outcome (binary or bounded continuous)</p>
+    <p>Wald-Style Confidence Intervals</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>tmle_PAR</span>(<span class='no'>baseline_level</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>baseline_level, </th>
-      <td><p>the baseline risk group</p></td>
-    </tr>
-    </table>
-    
+    <pre class="usage"><span class='fu'>wald_ci</span>(<span class='no'>est</span>, <span class='no'>se</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.95</span>)</pre>
+        
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
                 </ul>
 
   </div>

@@ -1,8 +1,9 @@
-#' Defines a tmle (minus the data)
+#' Defines a TML Estimator for the Risk Ratio
 #'
 #' Current limitations:
 #' pretty much tailored to Param_TSM
-#' see todos for places generalization can be added
+#' see TODOs for places generalization can be added
+#'
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -13,9 +14,10 @@ tmle3_Spec_RR <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(baseline_level=0, contrast=1, ...) {
-      # todo: use sl3 param grabbing code
-      options <- list(baseline_level = baseline_level, contrast_level = contrast)
+    initialize = function(baseline_level = 0, contrast = 1, ...) {
+      # TODO: use sl3 param grabbing code
+      options <- list(baseline_level = baseline_level,
+                      contrast_level = contrast)
       do.call(super$initialize, options)
     },
     make_params = function(tmle_task, likelihood) {
@@ -27,7 +29,8 @@ tmle3_Spec_RR <- R6Class(
 
       tsm_base <- Param_TSM$new(likelihood, intervention_base)
       tsm_cont <- Param_TSM$new(likelihood, intervention_cont)
-      rr <- Param_delta$new(likelihood, delta_param_RR, list(tsm_base, tsm_cont))
+      rr <- Param_delta$new(likelihood, delta_param_RR,
+                            list(tsm_base, tsm_cont))
       tmle_params <- list(tsm_base, tsm_cont, rr)
 
       return(tmle_params)
@@ -37,17 +40,21 @@ tmle3_Spec_RR <- R6Class(
   private = list()
 )
 
-#' Risk ratio
+#' Risk Ratio
 #'
-#' O=(W,A,Y)
-#' W=Covariates
-#' A=Treatment (binary or categorical)
-#' Y=Outcome (binary or bounded continuous)
+#' O = (W, A, Y)
+#' W = Covariates
+#' A = Treatment (binary or categorical)
+#' Y = Outcome (binary or bounded continuous)
+#'
 #' @importFrom sl3 make_learner Lrnr_mean
-#' @param baseline_level, the baseline risk group
-#' @param contrast_level, the contrast risk group
+#'
+#' @param baseline_level The baseline risk group.
+#' @param contrast_level The contrast risk group.
+#'
 #' @export
+#
 tmle_RR <- function(baseline_level, contrast_level) {
-  # todo: unclear why this has to be in a factory function
+  # TODO: unclear why this has to be in a factory function
   tmle3_Spec_RR$new(baseline_level, contrast_level)
 }

@@ -48,11 +48,22 @@ Param_mean <- R6Class(
     },
     estimates = function(tmle_task = NULL) {
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
+      
+      # todo: integrate unbounding logic into likelihood class, or at least put it in a function
+      variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type
+      if ((variable_type$type == "continuous") && (!is.na(variable_type$bounds))) {
+        bounds <- variable_type$bounds
+        scale <- bounds[2] - bounds[1]
+        shift <- bounds[1]
+        EY <- EY * scale + shift
+      }
+
       Y <- tmle_task$get_tmle_node(self$outcome_node)
       # todo: separate out psi
       # todo: make this a function of f(W)
       psi <- mean(EY)
       IC <- Y - psi
+      
 
       result <- list(psi = psi, IC = IC)
       return(result)

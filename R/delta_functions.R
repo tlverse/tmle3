@@ -7,9 +7,9 @@ df_contrast <- function(x, dx) {
   dx[[2]] - dx[[1]]
 }
 
-#' PAR = Linear Contrast EY-EY0
+#' PAR = Linear Contrast EY1-EY0
 #' @export
-delta_param_contrast <- list(
+delta_param_ATE <- list(
   type = "ATE",
   name = function(names) sprintf("%s - %s", names[[2]], names[[1]]),
   f = f_contrast,

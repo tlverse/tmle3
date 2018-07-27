@@ -1,3 +1,24 @@
+impute_median <- function(x) {
+      value <- median(as.numeric(x[!is.na(x)]))
+      x[is.na(x)] <- value
+      x
+  }
+  
+impute_mode <- function(x){
+  count_df <- aggregate(count~x,data=data.frame(count=1,x=x),sum)
+  value <- count_df$x[which.max(count_df$count)]
+  x[is.na(x)] <- value
+}
+
+impute_by_type <- function(x){
+  if(is.factor(x)||is.character(x)){
+    return(impute_mode(x))
+  } else {
+    return(impute_median(x))
+  }
+}
+    
+    
 #' Preprocess Data to Handle Missing Variables
 #'
 #' Process data to account for missingness in preparation for TMLE
@@ -55,12 +76,8 @@ process_missing <- function(data, node_list, complete_nodes = c("A", "Y"), imput
     missing_indicators <- filtered[, lapply(.SD, is.na), .SDcols = to_impute]
     missing_names <- sprintf("delta_%s", to_impute)
     setnames(missing_indicators, missing_names)
-    impute_median <- function(x) {
-      value <- median(as.numeric(x[!is.na(x)]))
-      x[is.na(x)] <- value
-      x
-    }
-    imputed <- filtered[, lapply(.SD, impute_median), .SDcols = to_impute]
+    
+    imputed <- filtered[, lapply(.SD, impute_by_type), .SDcols = to_impute]
     processed <- cbind(processed, imputed, missing_indicators)
   } else {
     missing_names <- c()

@@ -73,7 +73,7 @@ process_missing <- function(data, node_list, complete_nodes = c("A", "Y"), imput
   # nodes to impute
   to_impute <- names(p_missing[(0 < p_missing) & (p_missing < max_p_missing)])
   if (length(to_impute) > 0) {
-    missing_indicators <- filtered[, lapply(.SD, is.na), .SDcols = to_impute]
+    missing_indicators <- filtered[, lapply(.SD, function(x)as.numeric(is.na(x))), .SDcols = to_impute]
     missing_names <- sprintf("delta_%s", to_impute)
     setnames(missing_indicators, missing_names)
     

@@ -39,7 +39,7 @@ Suggests:
     condensier,
     tmle
 Remotes:
-    github::tlverse/sl3@add-column-fix,
+    github::tlverse/sl3,
     github::tlverse/origami,
     github::tlverse/delayed,
     github::osofr/condensier,

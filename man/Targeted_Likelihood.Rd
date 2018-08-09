@@ -89,4 +89,5 @@ Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{LF_fit}}, \code{\link{LF_static}},
   \code{\link{Likelihood}}, \code{\link{define_lf}}
 }
+\concept{Likelihood objects}
 \keyword{data}

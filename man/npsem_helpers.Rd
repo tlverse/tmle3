@@ -17,6 +17,4 @@ time_ordering(npsem)
 \description{
 \code{all_ancestors} returns a list of all_ancestors of the specified node.
 \code{time_ordering} attempts to find a time_ordering for the variables.
-
-Get time ordering of nodes
 }

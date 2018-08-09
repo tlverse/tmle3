@@ -99,4 +99,5 @@ Other Likelihood objects: \code{\link{CF_Likelihood}},
   \code{\link{Targeted_Likelihood}},
   \code{\link{define_lf}}
 }
+\concept{Likelihood objects}
 \keyword{data}

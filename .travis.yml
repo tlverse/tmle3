@@ -3,10 +3,16 @@ branches:
   - master
   - devel
 
+env:
+  global:
+  - RGL_USE_NULL=TRUE
+  - PKG_CFLAGS="-O3 -Wall -pedantic"
+
 language: r
 sudo: required
 cache: packages
 
+cran: "http://cran.rstudio.com"
 warnings_are_errors: true
 r_build_args: ''
 r_check_args: '--no-build-vignettes'
@@ -16,10 +22,9 @@ r:
   - release
   - devel
 
-before_install:
-  - Rscript -e 'update.packages(ask = FALSE)'
+#before_install:
+  #- Rscript -e 'update.packages(ask = FALSE)'
 
-# Install nlopt package to help nloptr install (for r-oldrel)
 addons:
   apt:
     packages:
@@ -30,16 +35,15 @@ r_packages:
   - covr
 
 r_github_packages:
-  - r-lib/devtools
-  - jimhester/covr
   - tlverse/delayed
   - tlverse/origami
   - tlverse/sl3
 
 after_success:
-  - Rscript -e 'covr::codecov()'
+  - travis_wait 80 Rscript -e 'covr::codecov()'
 
 notifications:
   email:
     on_success: change
     on_failure: change
+

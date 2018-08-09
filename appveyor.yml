@@ -17,13 +17,14 @@ environment:
     USE_RTOOLS: true
 
 cache:
-  - C:\RLibrary -> appveyor.yml
+  - C:\RLibrary
 
 # Adapt as necessary starting from here
 build_script:
   - travis-tool.sh install_deps
-  - travis-tool.sh install_github r-lib/devtools
   - travis-tool.sh install_github jimhester/covr
+  - travis-tool.sh install_github r-lib/devtools
+  - travis-tool.sh install_github RDatatable/data.table
   - travis-tool.sh install_github tlverse/delayed
   - travis-tool.sh install_github tlverse/origami
   - travis-tool.sh install_github tlverse/sl3
@@ -63,3 +64,4 @@ notifications:
    on_build_success: false
    on_build_failure: true
    on_build_status_changed: true
+

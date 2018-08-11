@@ -74,7 +74,7 @@ tmle3_Task <- R6Class(
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
 
       # todo: consider if self$data isn't a better option here
-      data <- self$raw_data
+      data <- self$internal_data
 
       # bound continuous outcome if bounds are specified to variable_type
       variable_type <- target_node$variable_type
@@ -85,8 +85,9 @@ tmle3_Task <- R6Class(
         #       quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
         col_name <- sprintf("__%s_bounded", target_node$name)
-        set(data, , col_name, bounded_vals)
-        column_names[col_name] <- col_name
+        new_data <- data.table(bounded_vals)
+        setnames(new_data, col_name)
+        column_names <- self$add_columns(new_data, self$uuid)
         outcome <- col_name
       }
 
@@ -116,7 +117,7 @@ tmle3_Task <- R6Class(
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(uuid, new_data)
       new_task$initialize(
-        self$raw_data, self$npsem,
+        self$internal_data, self$npsem,
         column_names = new_column_names
       )
       return(new_task)

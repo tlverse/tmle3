@@ -60,33 +60,33 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_likelihood = function(tmle_task, node) {
+    get_likelihood = function(tmle_task, node, cv_fold = -1) {
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
-      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task)
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, cv_fold)
 
       if (is.null(likelihood_values)) {
         # if not, generate new ones
-        likelihood_values <- likelihood_factor$get_likelihood(tmle_task)
-        self$cache$set_values(likelihood_factor, tmle_task, 0, likelihood_values)
+        likelihood_values <- likelihood_factor$get_likelihood(tmle_task, cv_fold)
+        self$cache$set_values(likelihood_factor, tmle_task, 0, cv_fold, likelihood_values)
       }
 
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes=NULL) {
+    get_likelihoods = function(tmle_task, nodes=NULL, cv_fold = -1){
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
 
       if (length(nodes) > 1) {
         all_likelihoods <- lapply(nodes, function(node) {
-          self$get_likelihood(tmle_task, node)
+          self$get_likelihood(tmle_task, node, cv_fold)
         })
         likelihood_dt <- as.data.table(all_likelihoods)
         setnames(likelihood_dt, nodes)
         return(likelihood_dt)
       } else {
-        return(self$get_likelihood(tmle_task, nodes[[1]]))
+        return(self$get_likelihood(tmle_task, nodes[[1]], cv_fold))
       }
     },
     get_possible_counterfactuals = function(nodes=NULL) {

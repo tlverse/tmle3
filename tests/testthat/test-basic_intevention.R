@@ -44,6 +44,10 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # define likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
+full <- initial_likelihood$get_likelihood(tmle_task, "A")
+fold_1 <- initial_likelihood$get_likelihood(tmle_task, "A", cv_fold=1)
+validation <- initial_likelihood$get_likelihood(tmle_task, "A", cv_fold=0)
+
 # define parameter
 # cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
@@ -62,6 +66,7 @@ updater$tmle_params <- tsm
 targeted_likelihood$cache$cache
 # debug(targeted_likelihood$get_likelihood)
 mean(tsm$estimates(tmle_task)$psi)
+
 # debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 

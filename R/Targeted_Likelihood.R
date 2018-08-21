@@ -31,31 +31,31 @@ Targeted_Likelihood <- R6Class(
     },
     update = function(new_epsilons, step_number) {
       tasks_at_step <- self$cache$tasks_at_step(step_number)
-
+      # todo: update all fold values too
       for (task in tasks_at_step) {
         all_submodels <- self$updater$generate_submodel_data(self, task)
         updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
         for (node in names(updated_values)) {
           likelihood_factor <- self$factor_list[[node]]
-          self$cache$set_values(likelihood_factor, task, step_number + 1, updated_values[[node]])
+          self$cache$set_values(likelihood_factor, task, step_number + 1, -1, updated_values[[node]])
         }
       }
     },
-    get_likelihood = function(tmle_task, node) {
+    get_likelihood = function(tmle_task, node, cv_fold = -1) {
       if (node %in% self$updater$update_nodes) {
         # self$updater$get_updated_likelihood(self, tmle_task, node)
         likelihood_factor <- self$factor_list[[node]]
         # first check for cached values for this task
-        value_step <- self$cache$get_update_step(likelihood_factor, tmle_task)
+        value_step <- self$cache$get_update_step(likelihood_factor, tmle_task, cv_fold)
 
         if (!is.null(value_step)) {
           # if some are available, grab them
-          likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task)
+          likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, cv_fold)
         } else {
           # if not, generate new ones
-          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node)
+          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, cv_fold)
           value_step <- 0
-          self$cache$set_values(likelihood_factor, tmle_task, value_step, likelihood_values)
+          self$cache$set_values(likelihood_factor, tmle_task, value_step, cv_fold, likelihood_values)
         }
 
         if (value_step != self$updater$step_number) {

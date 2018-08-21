@@ -16,13 +16,14 @@ Likelihood_cache <- R6Class(
         lf_uuid = character(),
         task_uuid = character(),
         update_step = integer(),
+        cv_fold = integer(),
         values = list()
       )
     },
-    find_match = function(likelihood_factor, tmle_task) {
+    find_match = function(likelihood_factor, tmle_task, search_cv_fold) {
       self$cache_task(tmle_task)
       matching_index <- private$.cache[, which(lf_uuid == likelihood_factor$uuid &
-        task_uuid == tmle_task$uuid)]
+        task_uuid == tmle_task$uuid & cv_fold == search_cv_fold)]
       return(matching_index)
     },
     tasks_at_step = function(current_step) {
@@ -30,16 +31,16 @@ Likelihood_cache <- R6Class(
       task_uuids <- unique(private$.cache$task_uuid[matching_index])
       self$tasks[task_uuids]
     },
-    get_update_step = function(likelihood_factor, tmle_task) {
-      matching_index <- self$find_match(likelihood_factor, tmle_task)
+    get_update_step = function(likelihood_factor, tmle_task, cv_fold) {
+      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
       if (length(matching_index) == 0) {
         return(NULL)
       } else {
         return(private$.cache$update_step[[matching_index]])
       }
     },
-    get_values = function(likelihood_factor, tmle_task, update_step = 0) {
-      matching_index <- self$find_match(likelihood_factor, tmle_task)
+    get_values = function(likelihood_factor, tmle_task, cv_fold) {
+      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
 
       if (length(matching_index) == 0) {
         return(NULL)
@@ -47,15 +48,16 @@ Likelihood_cache <- R6Class(
         return(private$.cache$values[[matching_index]])
       }
     },
-    set_values = function(likelihood_factor, tmle_task, update_step = 0, values) {
+    set_values = function(likelihood_factor, tmle_task, update_step = 0, cv_fold, values) {
       new_data <- list(
         lf_uuid = likelihood_factor$uuid,
         task_uuid = tmle_task$uuid,
         update_step = update_step,
+        cv_fold = cv_fold,
         values = list(values)
       )
 
-      matching_index <- self$find_match(likelihood_factor, tmle_task)
+      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
 
       if (length(matching_index) == 0) {
         private$.cache <- rbindlist(list(private$.cache, new_data))

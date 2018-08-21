@@ -115,7 +115,7 @@ tmle3_Task <- R6Class(
       setnames(new_data, node_names, node_variables)
 
       new_task <- self$clone()
-      new_column_names <- new_task$add_columns(uuid, new_data)
+      new_column_names <- new_task$add_columns(new_data, uuid)
       new_task$initialize(
         self$internal_data, self$npsem,
         column_names = new_column_names

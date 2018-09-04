@@ -125,26 +125,23 @@ tmle3_Fit <- R6Class(
     .estimates = NULL,
     .timings = NULL,
     .tmle_fit = function(max_it = 100) {
-      ED_criterion <- 1 / self$tmle_task$nrow
-
-      for (steps in seq_len(max_it)) {
-        self$updater$update_step(self$likelihood, self$tmle_task)
-
-        estimates <- lapply(
-          self$tmle_params,
-          function(tmle_param) {
-            tmle_param$estimates(self$tmle_task)
-          }
-        )
-        ICs <- sapply(estimates, `[[`, "IC")
-        ED <- colMeans(ICs)
-        if (max(abs(ED)) < ED_criterion) {
-          break
+      self$updater$update(self$likelihood, self$tmle_task)
+      private$.steps <- self$updater$steps
+      
+      # todo: final estimates are always on cv_fold=-1 (refit/full fit), verify that this is what we want
+      estimates <- lapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(tmle_task)
         }
-      }
-      private$.ED <- ED
-      private$.steps <- steps
+      )
+      ICs <- sapply(estimates, `[[`, "IC")
+      ED <- colMeans(ICs)
+      
       private$.estimates <- estimates
+      private$.ED <- ED
+      
+      
     }
   )
 )

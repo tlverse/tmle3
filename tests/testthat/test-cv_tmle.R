@@ -1,4 +1,4 @@
-context("Basic interventions: TSM for single static intervention.")
+context("CV-TMLE: TSM for single static intervention.")
 
 library(sl3)
 # library(tmle3)
@@ -44,14 +44,20 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # define likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
+
+EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", 0)
+EY_direct <- initial_likelihood$factor_list[["Y"]]$get_likelihood(tmle_task, 0)
+all.equal(EY,EY_direct)
+
 # define parameter
 # cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
 
 # define update method (submodel + loss function)
 # updater <- tmle_spec$make_updater(likelihood, list(tsm))
-updater <- tmle3_Update$new()
+updater <- tmle3_cv_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
+
 intervention <- define_lf(LF_static, "A", value = 1)
 
 # todo: make params not store likelihood info internally!
@@ -59,18 +65,18 @@ tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
 
 
+
 # debug(targeted_likelihood$get_likelihood)
 mean(tsm$estimates(tmle_task)$psi)
+# debug(targeted_likelihood$update)
 
 # debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
-
 mean(targeted_likelihood$get_likelihoods(tmle_task, "Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
-tmle3_epsilon <- updater$epsilons[[1]]$Y
 
 #################################################
 # compare with the tmle package
@@ -83,13 +89,32 @@ library(tmle)
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y")
-EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
+EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y", 0)
+EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", 0)
+EY1_direct <- initial_likelihood$factor_list[["Y"]]$get_likelihood(cf_task, 0)
+EY_direct <- initial_likelihood$factor_list[["Y"]]$get_likelihood(tmle_task, 0)
+
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y", 0)
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
+submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, 0)
+z=submodel_data$Y$observed*submodel_data$Y$initial
+z2=tmle_task$get_tmle_node("Y")*EY1
+all.equal(z,z2)
+head(cbind(z,z2))
+
+EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", 0)
+
+all.equal(submodel_data$Y$observed, tmle_task$get_tmle_node("Y"))
+all.equal(submodel_data$Y$initial, EY)
+A1=which(tmle_task$get_tmle_node("A")==1)
+table(match=EY==EY1,A1=tmle_task$get_tmle_node("A")==1)
+initial_likelihood$cache$cache
+(EY==EY1)[Y1]
+length(EY1)
 # get G
-pA1 <- initial_likelihood$get_likelihoods(cf_task, "A")
+pA1 <- initial_likelihood$get_likelihoods(cf_task, "A", 0)
 pDelta1 <- cbind(pA1, pA1)
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
@@ -100,18 +125,5 @@ tmle_classic_fit <- tmle(
   pDelta1 = pDelta1
 )
 
-cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
-# debugonce(tsm$cf_likelihood$enumerate_cf_tasks)
-
-# extract estimates
-classic_psi <- tmle_classic_fit$estimates$EY1$psi
-classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
-classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
-
-# only approximately equal (although it's O(1/n))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
-
-# only approximately equal (although it's O(1/n))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
-
-test_that("epsilon matches resullt from classic package", expect_equivalent(tmle3_epsilon, classic_epsilon))
+tmle_classic_fit$epsilon
+updater$epsilons

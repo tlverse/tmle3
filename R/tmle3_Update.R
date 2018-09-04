@@ -13,8 +13,8 @@ tmle3_Update <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function() {
-
+    initialize = function(maxit=100) {
+      private$.maxit=maxit
     },
     update_step = function(likelihood, tmle_task) {
 
@@ -84,6 +84,29 @@ tmle3_Update <- R6Class(
       update_nodes <- self$update_nodes
       updated_likelihood <- mapply(self$apply_submodel, all_submodels, all_epsilon, SIMPLIFY = FALSE)
       return(updated_likelihood)
+    },
+    check_convergence = function(tmle_task){
+      ED_criterion <- 1 / tmle_task$nrow
+      estimates <- lapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(tmle_task)
+        }
+      )
+      ICs <- sapply(estimates, `[[`, "IC")
+      ED <- colMeans(ICs)
+      return(max(abs(ED)) < ED_criterion)
+    },
+    update = function(likelihood, tmle_task){
+      
+      maxit <- private$.maxit
+      for (steps in seq_len(maxit)) {
+        self$update_step(likelihood, tmle_task)
+        if(self$check_convergence(tmle_task)){
+          break
+        }
+      }
+      
     }
   ),
   active = list(
@@ -111,6 +134,7 @@ tmle3_Update <- R6Class(
     .epsilons = list(),
     .tmle_params = NULL,
     .update_nodes = NULL,
-    .step_number = 0
+    .step_number = 0,
+    .maxit = 100
   )
 )

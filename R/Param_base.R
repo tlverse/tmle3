@@ -24,10 +24,10 @@ Param_base <- R6Class(
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
     },
-    clever_covariates = function(tmle_task = NULL) {
+    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
       stop("Param_base is a base class")
     },
-    estimates = function(tmle_task = NULL) {
+    estimates = function(tmle_task = NULL, cv_fold = -1) {
       stop("Param_base is a base class")
     }
   ),

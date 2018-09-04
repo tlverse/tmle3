@@ -29,15 +29,17 @@ Targeted_Likelihood <- R6Class(
       private$.updater <- updater
       super$initialize(params)
     },
-    update = function(new_epsilons, step_number) {
-      tasks_at_step <- self$cache$tasks_at_step(step_number)
-      # todo: update all fold values too
+    update = function(new_epsilons, step_number, cv_fold=-1) {
+      # todo: rethink which tasks need updates here
+      # tasks_at_step <- self$cache$tasks_at_step(step_number)
+      tasks_at_step <- self$cache$tasks
+      
       for (task in tasks_at_step) {
-        all_submodels <- self$updater$generate_submodel_data(self, task)
+        all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
         updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
         for (node in names(updated_values)) {
           likelihood_factor <- self$factor_list[[node]]
-          self$cache$set_values(likelihood_factor, task, step_number + 1, -1, updated_values[[node]])
+          self$cache$set_values(likelihood_factor, task, step_number + 1, cv_fold, updated_values[[node]])
         }
       }
     },

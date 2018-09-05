@@ -7,7 +7,7 @@
 #' @param node_list \code{list}, defines which variables are which nodes
 #' @param learner_list \code{list}, defines which learners are used to fit which likelihood factors
 #' @return A \code{\link{tmle3_Fit}} object
-#'
+#' @import data.table
 #' @export
 tmle3 <- function(tmle_spec, data, node_list, learner_list = NULL) {
   start_time <- proc.time()

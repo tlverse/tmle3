@@ -32,9 +32,9 @@ glib <- make_learner_stack(
   "Lrnr_glm_fast"
 )
 
-metalearner <- make_learner(Lrnr_nnls)
-Q_learner <- make_learner(Lrnr_sl, qlib, metalearner)
-g_learner <- make_learner(Lrnr_sl, glib, metalearner)
+logit_metalearner <- make_learner(Lrnr_solnp, metalearner_logistic_binomial, loss_loglik_binomial)
+Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_TSM_all()
 
@@ -44,34 +44,23 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # define likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-# define parameter
-# cf_likelihood <- CF_Likelihood$new(likelihood, intervention)
-
 # define update method (submodel + loss function)
-# updater <- tmle_spec$make_updater(likelihood, list(tsm))
 updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
-
-# todo: make params not store likelihood info internally!
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
 
-
-# debug(targeted_likelihood$get_likelihood)
-mean(tsm$estimates(tmle_task)$psi)
-
 # debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
-
-mean(targeted_likelihood$get_likelihoods(tmle_task, "Y"))
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
+submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, -1)
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -107,11 +96,9 @@ cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 classic_psi <- tmle_classic_fit$estimates$EY1$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
+classic_Qstar <- tmle_classic_fit$Qstar[,2]
 
-# only approximately equal (although it's O(1/n))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
-
-# only approximately equal (although it's O(1/n))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
-
+test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
+test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
+test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))
 test_that("epsilon matches resullt from classic package", expect_equivalent(tmle3_epsilon, classic_epsilon))

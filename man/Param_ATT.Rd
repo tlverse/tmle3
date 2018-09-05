@@ -62,5 +62,4 @@ Other Parameters: \code{\link{Param_TSM}},
   \code{\link{Param_mean}}, \code{\link{define_param}},
   \code{\link{tmle3_Fit}}
 }
-\concept{Parameters}
 \keyword{data}

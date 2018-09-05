@@ -32,7 +32,6 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    gentmle2,
     speedglm,
     rmarkdown,
     nnls,

@@ -100,7 +100,8 @@ tmle3_Task <- R6Class(
         data,
         nodes = nodes,
         outcome_type = variable_type,
-        column_names = column_names
+        column_names = column_names,
+        folds = self$folds
       ))
     },
     generate_counterfactual_task = function(uuid, new_data) {
@@ -118,7 +119,8 @@ tmle3_Task <- R6Class(
       new_column_names <- new_task$add_columns(new_data, uuid)
       new_task$initialize(
         self$internal_data, self$npsem,
-        column_names = new_column_names
+        column_names = new_column_names,
+        folds = self$folds
       )
       return(new_task)
     },

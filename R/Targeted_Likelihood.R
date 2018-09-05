@@ -63,6 +63,9 @@ Targeted_Likelihood <- R6Class(
         if (value_step != self$updater$step_number) {
           stop(
             "cached likelihood value is out of sync with updates\n",
+            "lf_uuid: ", likelihood_factor$uuid, "\n",
+            "task_uuid: ", tmle_task$uuid, "\n",
+            "node: ", node, " cv_fold: ", cv_fold, "\n",
             "cached_step: ", value_step, "\n",
             "update_step: ", self$updater$step_number, "\n"
           )
@@ -70,7 +73,7 @@ Targeted_Likelihood <- R6Class(
         # todo: maybe update here, or error if not already updated
       } else {
         # not a node that updates, so we can just use initial likelihood
-        likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node)
+        likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, cv_fold)
       }
 
       return(likelihood_values)

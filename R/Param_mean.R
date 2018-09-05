@@ -43,11 +43,11 @@ Param_mean <- R6Class(
     initialize = function(observed_likelihood, ..., outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
-    clever_covariates = function(tmle_task = NULL) {
+    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
       return(list(Y = rep(1, tmle_task$nrow)))
     },
-    estimates = function(tmle_task = NULL) {
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node)
+    estimates = function(tmle_task = NULL, cv_fold = -1) {
+      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, cv_fold)
       
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function
       variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type

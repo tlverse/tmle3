@@ -15,6 +15,7 @@ tmle3_Spec <- R6Class(
       private$.options <- list(...)
     },
     make_tmle_task = function(data, node_list, ...) {
+      setDT(data)
       # bound Y if continuous
       Y_node <- node_list$Y
       Y_vals <- unlist(data[, Y_node, with = FALSE])

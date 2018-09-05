@@ -132,7 +132,7 @@ tmle3_Fit <- R6Class(
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {
-          tmle_param$estimates(tmle_task)
+          tmle_param$estimates(self$tmle_task)
         }
       )
       ICs <- sapply(estimates, `[[`, "IC")

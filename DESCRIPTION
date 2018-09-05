@@ -26,7 +26,8 @@ Imports:
     uuid,
     methods,
     ggplot2,
-    stats
+    stats,
+    Rsolnp
 Suggests:
     testthat,
     knitr,

@@ -22,16 +22,16 @@ Imports:
     delayed,
     data.table,
     assertthat,
-    origami,
     R6,
     uuid,
     methods,
-    tableone,
     ggplot2,
     stats
 Suggests:
     testthat,
     knitr,
+    origami,
+    tableone,
     speedglm,
     rmarkdown,
     nnls,

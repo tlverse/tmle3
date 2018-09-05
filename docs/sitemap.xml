@@ -49,6 +49,9 @@
     <loc>http://tmle3.tlverse.org/reference/define_param.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/delta_param_ATE.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/delta_param_PAF.html</loc>
   </url>
   <url>
@@ -56,9 +59,6 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/delta_param_RR.html</loc>
-  </url>
-  <url>
-    <loc>http://tmle3.tlverse.org/reference/delta_param_contrast.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/discretize_variable.html</loc>
@@ -104,6 +104,9 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle3_Update.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/tmle3_cv_Update.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle_PAR.html</loc>

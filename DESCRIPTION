@@ -38,10 +38,10 @@ Suggests:
     condensier,
     tmle
 Remotes:
-    github::tlverse/sl3@safe-set,
+    github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,
-    github::osofr/condensier,
+    github::tlverse/sl3,
     github::jeremyrcoyle/gentmle2
 URL: https://tmle3.tlverse.com/
 BugReports: https://github.com/tlverse/tmle3/issues

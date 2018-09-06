@@ -22,27 +22,27 @@ Imports:
     delayed,
     data.table,
     assertthat,
-    origami,
     R6,
     uuid,
     methods,
-    tableone,
     ggplot2,
-    stats
+    stats,
+    Rsolnp
 Suggests:
     testthat,
     knitr,
-    gentmle2,
+    origami,
+    tableone,
     speedglm,
     rmarkdown,
     nnls,
     condensier,
     tmle
 Remotes:
-    github::tlverse/sl3,
+    github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,
-    github::osofr/condensier,
+    github::tlverse/sl3,
     github::jeremyrcoyle/gentmle2
 URL: https://tmle3.tlverse.com/
 BugReports: https://github.com/tlverse/tmle3/issues

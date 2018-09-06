@@ -22,11 +22,11 @@ Param_delta <- R6Class(
       private$.delta_param <- delta_param
       private$.parent_parameters <- parent_parameters
     },
-    clever_covariates = function(tmle_task = NULL) {
+    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
       return(list())
     },
-    estimates = function(tmle_task = NULL) {
-      estimates <- lapply(self$parent_parameters, function(tmle_param) tmle_param$estimates(tmle_task))
+    estimates = function(tmle_task = NULL, cv_fold = -1) {
+      estimates <- lapply(self$parent_parameters, function(tmle_param) tmle_param$estimates(tmle_task, cv_fold))
 
       psis <- lapply(estimates, `[[`, "psi")
       ICs <- lapply(estimates, `[[`, "IC")

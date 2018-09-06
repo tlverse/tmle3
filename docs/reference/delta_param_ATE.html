@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mean of Outcome Node — Param_mean • tmle</title>
+<title>PAR = Linear Contrast EY1-EY0 — delta_param_ATE • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,10 +30,9 @@
 
 
 
-<meta property="og:title" content="Mean of Outcome Node — Param_mean" />
+<meta property="og:title" content="PAR = Linear Contrast EY1-EY0 — delta_param_ATE" />
 
-<meta property="og:description" content="Parameter for marginal mean of Y: \(\Psi=E[Y]\). No TMLE update needed, but can be used in delta method calculations.
-Useful for example, in calculating attributable risks." />
+<meta property="og:description" content="PAR = Linear Contrast EY1-EY0" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -111,52 +110,22 @@ Useful for example, in calculating attributable risks." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Mean of Outcome Node</h1>
+    <h1>PAR = Linear Contrast EY1-EY0</h1>
     
-    <div class="hidden name"><code>Param_mean.Rd</code></div>
+    <div class="hidden name"><code>delta_param_ATE.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Parameter for marginal mean of Y: \(\Psi=E[Y]\). No TMLE update needed, but can be used in delta method calculations.
-Useful for example, in calculating attributable risks.</p>
+    <p>PAR = Linear Contrast EY1-EY0</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>Param_mean</span></pre>
+    <pre class="usage"><span class='no'>delta_param_ATE</span></pre>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p><code>R6Class</code> object.</p>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p><code>Param_base</code> object</p>
-    
-    <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
-
-    
-    <p><code><a href='define_param.html'>define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)</a></code></p>
-<p></p><dl class='dl-horizontal'>
-    <dt><code>observed_likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> corresponding to the observed likelihood</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    <dt><code>outcome_node</code></dt><dd><p>character, the name of the node that should be treated as the outcome</p></dd>
-    </dl>
-    
-    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
-
-    
-    <dl class='dl-horizontal'>
-    <dt><code>cf_likelihood</code></dt><dd><p>the counterfactual likelihood for this treatment</p></dd>
-    <dt><code>intervention_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the intervention</p></dd>
-</dl>
-    
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATT.html'>Param_ATT</a></code>,
-  <code><a href='Param_TSM.html'>Param_TSM</a></code>, <code><a href='Param_base.html'>Param_base</a></code>,
-  <code><a href='Param_delta.html'>Param_delta</a></code>, <code><a href='define_param.html'>define_param</a></code>,
-  <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p></div>
+    <p>An object of class <code>list</code> of length 4.</p>
     
 
   </div>
@@ -165,14 +134,6 @@ Useful for example, in calculating attributable risks.</p>
     <ul class="nav nav-pills nav-stacked">
       
       <li><a href="#format">Format</a></li>
-
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#constructor">Constructor</a></li>
-
-      <li><a href="#fields">Fields</a></li>
-
-      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

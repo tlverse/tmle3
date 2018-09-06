@@ -1,11 +1,12 @@
-context("Basic interventions: TSM for single static intervention.")
-
+context("CV-TMLE: TSM for single static intervention.")
+set.seed(1234)
 library(sl3)
 # library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
+library(origami)
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)
@@ -45,14 +46,16 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-updater <- tmle3_Update$new()
+# updater <- tmle_spec$make_updater(likelihood, list(tsm))
+updater <- tmle3_cv_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
+
 intervention <- define_lf(LF_static, "A", value = 1)
+
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
 
-# debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
 # extract results
@@ -60,7 +63,7 @@ tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, -1)
+submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, 0)
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -72,14 +75,18 @@ library(tmle)
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y")
-EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
+EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y", 0)
+
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y", 0)
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
+EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", 0)
+
 # get G
-pA1 <- initial_likelihood$get_likelihoods(cf_task, "A")
+pA1 <- initial_likelihood$get_likelihoods(cf_task, "A", 0)
 pDelta1 <- cbind(pA1, pA1)
+
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,
@@ -89,8 +96,6 @@ tmle_classic_fit <- tmle(
   pDelta1 = pDelta1
 )
 
-cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
-# debugonce(tsm$cf_likelihood$enumerate_cf_tasks)
 
 # extract estimates
 classic_psi <- tmle_classic_fit$estimates$EY1$psi
@@ -99,6 +104,8 @@ classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
 classic_Qstar <- tmle_classic_fit$Qstar[,2]
 
 test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))
 test_that("epsilon matches resullt from classic package", expect_equivalent(tmle3_epsilon, classic_epsilon))
+
+# tmle3 uses full-fit likelihoods to get final parameter estimates and inference, so these won't match
+# test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
+# test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))

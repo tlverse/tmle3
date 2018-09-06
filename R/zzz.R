@@ -1,4 +1,5 @@
 #' @importFrom utils packageVersion
+#' @import data.table
 NULL
 
 .onLoad <- function(libname, pkgname) {

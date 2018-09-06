@@ -38,17 +38,17 @@ LF_base <- R6Class(
 
       # subclasses may do more, like fit sl3 models
     },
-    get_density = function(tmle_task) {
+    get_density = function(tmle_task, cv_fold) {
       stop("density not supported")
     },
-    get_mean = function(tmle_task) {
+    get_mean = function(tmle_task, cv_fold) {
       stop("mean not supported")
     },
-    get_likelihood = function(tmle_task, update_step=NULL) {
+    get_likelihood = function(tmle_task, cv_fold=-1) {
       if (self$type == "mean") {
-        values <- self$get_mean(tmle_task)
+        values <- self$get_mean(tmle_task, cv_fold)
       } else {
-        values <- self$get_density(tmle_task)
+        values <- self$get_density(tmle_task, cv_fold)
       }
       return(values)
     },

@@ -53,5 +53,4 @@ Other Likelihood objects: \code{\link{LF_base}},
   \code{\link{Targeted_Likelihood}},
   \code{\link{define_lf}}
 }
-\concept{Likelihood objects}
 \keyword{data}

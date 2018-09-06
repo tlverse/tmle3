@@ -25,8 +25,7 @@ tmle3_Spec_PAR <- R6Class(
       mean_param <- Param_mean$new(likelihood)
       par <- Param_delta$new(likelihood, delta_param_PAR, list(tsm, mean_param))
       paf <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
-      rr <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
-      tmle_params <- list(tsm, mean_param, par, paf, rr)
+      tmle_params <- list(tsm, mean_param, par, paf)
 
       return(tmle_params)
     }

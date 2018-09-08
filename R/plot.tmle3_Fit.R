@@ -12,6 +12,6 @@ plot.tmle3_Fit <- function(x, ...) {
   long$variable <- est_labels[match(long$variable, est_names)]
   long[variable == "Initial", lower := NA]
   long[variable == "Initial", upper := NA]
-  ggplot(long, aes_(y = ~ param, x = ~ value, xmin = ~ lower, xmax = ~ upper, color = ~ variable)) +
+  ggplot(long, aes_(y = ~param, x = ~value, xmin = ~lower, xmax = ~upper, color = ~variable)) +
     geom_point() + geom_errorbarh(data = long[!is.na(lower)]) + theme_bw() + xlab("Value") + ylab("Parameter") + scale_color_discrete("")
 }

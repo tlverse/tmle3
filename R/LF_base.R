@@ -44,7 +44,7 @@ LF_base <- R6Class(
     get_mean = function(tmle_task, cv_fold) {
       stop("mean not supported")
     },
-    get_likelihood = function(tmle_task, cv_fold=-1) {
+    get_likelihood = function(tmle_task, cv_fold = -1) {
       if (self$type == "mean") {
         values <- self$get_mean(tmle_task, cv_fold)
       } else {

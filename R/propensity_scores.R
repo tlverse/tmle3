@@ -20,7 +20,7 @@ density_formula <- function(tmle_task, node = "A") {
 
 #' @rdname propensity_scores
 #' @export
-get_propensity_scores <- function(likelihood, tmle_task, node="A") {
+get_propensity_scores <- function(likelihood, tmle_task, node = "A") {
   stop("this needs to be re-factored to consider different intervention types. Currently disabled")
   tmle_node <- tmle_task$npsem[[node]]
   # kludge for Rcmd::check with data.table:
@@ -39,10 +39,10 @@ get_propensity_scores <- function(likelihood, tmle_task, node="A") {
 #' @rdname propensity_scores
 #' @import ggplot2
 #' @export
-propensity_score_plot <- function(likelihood, tmle_task, node="A") {
+propensity_score_plot <- function(likelihood, tmle_task, node = "A") {
   propensity_scores <- get_propensity_scores(likelihood, tmle_task, node)
   dens_form <- density_formula(tmle_task, node)
-  p <- ggplot(propensity_scores, aes_(x = ~ likelihood, fill = ~ value)) + geom_histogram(binwidth = 0.05) +
+  p <- ggplot(propensity_scores, aes_(x = ~likelihood, fill = ~value)) + geom_histogram(binwidth = 0.05) +
     xlab(dens_form) + ylab("Density") + scale_fill_discrete(name = node) +
     facet_grid(value ~ .) + theme_bw() + theme(strip.text = element_blank())
 
@@ -51,7 +51,7 @@ propensity_score_plot <- function(likelihood, tmle_task, node="A") {
 
 #' @rdname propensity_scores
 #' @export
-propensity_score_table <- function(likelihood, tmle_task, node="A") {
+propensity_score_table <- function(likelihood, tmle_task, node = "A") {
   # kludge for Rcmd::check with data.table:
   # see https://github.com/Rdatatable/data.table/issues/850
   value <- NULL

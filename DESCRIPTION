@@ -27,7 +27,8 @@ Imports:
     methods,
     ggplot2,
     stats,
-    Rsolnp
+    Rsolnp,
+    foreach
 Suggests:
     testthat,
     knitr,

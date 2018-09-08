@@ -19,7 +19,7 @@ node_list <- list(
     "apgar1", "apgar5", "gagebrth", "mage",
     "meducyrs"
   ),
-  A = c("sexn","parity01", "mracen","smoked"),
+  A = c("sexn", "parity01", "mracen", "smoked"),
   Y = "haz01"
 )
 

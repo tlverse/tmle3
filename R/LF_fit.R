@@ -39,7 +39,7 @@ LF_fit <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, ..., type="density") {
+    initialize = function(name, learner, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.learner <- learner
     },
@@ -65,20 +65,20 @@ LF_fit <- R6Class(
     get_mean = function(tmle_task, cv_fold) {
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
-      if(cv_fold==-1){
+      if (cv_fold == -1) {
         preds <- learner$predict(learner_task)
       } else {
-        preds <- learner$predict_fold(learner_task,cv_fold)
+        preds <- learner$predict_fold(learner_task, cv_fold)
       }
       return(preds)
     },
     get_density = function(tmle_task, cv_fold) {
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
-      if(cv_fold==-1){
+      if (cv_fold == -1) {
         preds <- learner$predict(learner_task)
       } else {
-        preds <- learner$predict_fold(learner_task,cv_fold)
+        preds <- learner$predict_fold(learner_task, cv_fold)
       }
       outcome_type <- self$learner$training_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)

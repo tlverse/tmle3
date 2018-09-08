@@ -13,7 +13,7 @@ tmle3_Spec_PAR <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(baseline_level=1, ...) {
+    initialize = function(baseline_level = 1, ...) {
       # todo: use sl3 param grabbing code
       options <- list(baseline_level = baseline_level)
       do.call(super$initialize, options)

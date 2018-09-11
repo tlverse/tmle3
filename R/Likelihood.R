@@ -73,7 +73,7 @@ Likelihood <- R6Class(
 
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes=NULL, cv_fold = -1){
+    get_likelihoods = function(tmle_task, nodes = NULL, cv_fold = -1) {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
@@ -89,7 +89,7 @@ Likelihood <- R6Class(
         return(self$get_likelihood(tmle_task, nodes[[1]], cv_fold))
       }
     },
-    get_possible_counterfactuals = function(nodes=NULL) {
+    get_possible_counterfactuals = function(nodes = NULL) {
 
       # get factors for nodes
       factor_list <- self$factor_list

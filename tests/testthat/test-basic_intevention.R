@@ -96,7 +96,7 @@ cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 classic_psi <- tmle_classic_fit$estimates$EY1$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
-classic_Qstar <- tmle_classic_fit$Qstar[,2]
+classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
 test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
 test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))

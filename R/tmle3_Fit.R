@@ -103,7 +103,7 @@ tmle3_Fit <- R6Class(
     summary = function() {
       return(summary_from_estimates(
         task = self$tmle_task, estimates = self$estimates,
-        param_names = self$tmle_param_names, 
+        param_names = self$tmle_param_names,
         param_types = self$tmle_param_types,
         init_psi = self$initial_psi
       ))
@@ -127,7 +127,7 @@ tmle3_Fit <- R6Class(
     .tmle_fit = function(max_it = 100) {
       self$updater$update(self$likelihood, self$tmle_task)
       private$.steps <- self$updater$steps
-      
+
       # todo: final estimates are always on cv_fold=-1 (refit/full fit), verify that this is what we want
       estimates <- lapply(
         self$tmle_params,
@@ -137,11 +137,9 @@ tmle3_Fit <- R6Class(
       )
       ICs <- sapply(estimates, `[[`, "IC")
       ED <- colMeans(ICs)
-      
+
       private$.estimates <- estimates
       private$.ED <- ED
-      
-      
     }
   )
 )

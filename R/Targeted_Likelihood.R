@@ -29,11 +29,11 @@ Targeted_Likelihood <- R6Class(
       private$.updater <- updater
       super$initialize(params)
     },
-    update = function(new_epsilons, step_number, cv_fold=-1) {
+    update = function(new_epsilons, step_number, cv_fold = -1) {
       # todo: rethink which tasks need updates here
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks
-      
+
       for (task in tasks_at_step) {
         all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
         updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)

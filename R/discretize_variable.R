@@ -10,7 +10,7 @@
 #'
 #' @importFrom stats quantile
 #' @export
-discretize_variable <- function(data, variable, num_cats, breakpoints=NULL) {
+discretize_variable <- function(data, variable, num_cats, breakpoints = NULL) {
   vals <- unlist(data[, variable, with = FALSE])
   if (!is.factor(vals)) {
     if (is.null(breakpoints)) {

@@ -13,7 +13,7 @@ tmle3_Spec_PAR <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(baseline_level=1, ...) {
+    initialize = function(baseline_level = 1, ...) {
       # todo: use sl3 param grabbing code
       options <- list(baseline_level = baseline_level)
       do.call(super$initialize, options)
@@ -25,8 +25,7 @@ tmle3_Spec_PAR <- R6Class(
       mean_param <- Param_mean$new(likelihood)
       par <- Param_delta$new(likelihood, delta_param_PAR, list(tsm, mean_param))
       paf <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
-      rr <- Param_delta$new(likelihood, delta_param_PAF, list(tsm, mean_param))
-      tmle_params <- list(tsm, mean_param, par, paf, rr)
+      tmle_params <- list(tsm, mean_param, par, paf)
 
       return(tmle_params)
     }

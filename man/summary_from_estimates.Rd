@@ -5,7 +5,7 @@
 \title{Summarize Estimates}
 \usage{
 summary_from_estimates(task, estimates, param_types = NULL,
-  param_names = NULL, init_psi = NULL)
+  param_names = NULL, init_psi = NULL, simultaneous_ci = FALSE)
 }
 \arguments{
 \item{task}{\code{tmle3_Task} containing the observed data of interest; the
@@ -19,6 +19,8 @@ same as that passed to ..}
 \item{param_names}{the names of the parameters being estimated}
 
 \item{init_psi}{the names of the parameters being estimated}
+
+\item{simultaneous_ci}{if TRUE, calculate simulatenous confidence intervals}
 }
 \value{
 \code{data.table} summarizing results

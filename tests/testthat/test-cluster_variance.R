@@ -53,20 +53,17 @@ updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
+intervention_2 <- define_lf(LF_static, "A", value = 0)
 
-# TODO: make params not store likelihood info internally!
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
-updater$tmle_params <- tsm
+tsm_2 <- define_param(Param_TSM, targeted_likelihood, intervention_2)
 
-targeted_likelihood$cache$cache
-# debug(targeted_likelihood$get_likelihood)
-mean(tsm$estimates(tmle_task)$psi)
-# debugonce(targeted_likelihood$update)
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
+updater$tmle_params <- list(tsm)
 
-mean(targeted_likelihood$get_likelihoods(tmle_task, "Y"))
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, updater$tmle_params, updater)
 
 # extract results
+# debugonce(summary_from_estimates)
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 

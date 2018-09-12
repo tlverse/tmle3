@@ -39,7 +39,7 @@ tmle3_Fit <- R6Class(
           tmle_param$estimates(self$tmle_task)$psi
         }
       )
-      private$.initial_psi <- initial_psi
+      private$.initial_psi <- unlist(initial_psi)
       private$.tmle_fit(max_it)
     },
     print = function() {
@@ -69,7 +69,7 @@ tmle3_Fit <- R6Class(
     },
     tmle_param_names = function() {
       if (is.null(private$.tmle_param_names)) {
-        private$.tmle_param_names <- sapply(self$tmle_params, `[[`, "name")
+        private$.tmle_param_names <- unlist(sapply(self$tmle_params, `[[`, "name"))
       }
       return(private$.tmle_param_names)
     },
@@ -135,7 +135,7 @@ tmle3_Fit <- R6Class(
           tmle_param$estimates(self$tmle_task)
         }
       )
-      ICs <- sapply(estimates, `[[`, "IC")
+      ICs <- do.call(cbind,lapply(estimates, `[[`, "IC"))
       ED <- colMeans(ICs)
 
       private$.estimates <- estimates

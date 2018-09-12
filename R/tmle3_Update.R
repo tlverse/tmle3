@@ -94,7 +94,7 @@ tmle3_Update <- R6Class(
           tmle_param$estimates(tmle_task)
         }
       )
-      ICs <- sapply(estimates, `[[`, "IC")
+      ICs <- do.call(cbind, lapply(estimates, `[[`, "IC"))
       ED <- colMeans(ICs)
       return(max(abs(ED)) < ED_criterion)
     },

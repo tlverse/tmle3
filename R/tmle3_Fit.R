@@ -135,7 +135,7 @@ tmle3_Fit <- R6Class(
           tmle_param$estimates(self$tmle_task)
         }
       )
-      ICs <- do.call(cbind,lapply(estimates, `[[`, "IC"))
+      ICs <- do.call(cbind, lapply(estimates, `[[`, "IC"))
       ED <- colMeans(ICs)
 
       private$.estimates <- estimates

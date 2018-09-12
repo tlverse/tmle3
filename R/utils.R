@@ -4,11 +4,11 @@
 #'
 #' @keywords internal
 #
-wald_ci <- function(est, se, level = 0.95, q=NULL) {
-  if(is.null(q)){
+wald_ci <- function(est, se, level = 0.95, q = NULL) {
+  if (is.null(q)) {
     q <- abs(stats::qnorm(p = (1 - level) / 2))
   }
-  
+
   ci_low <- est - q * se
   ci_high <- est + q * se
   return(cbind(ci_low, ci_high))
@@ -38,30 +38,30 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
                                    param_names = NULL, init_psi = NULL,
                                    simultaneous_ci = FALSE) {
   psi <- unlist(lapply(estimates, `[[`, "psi"))
-  
+
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
-    combined <- (by(IC, as.numeric(task$id), colMeans, simplify=FALSE))
+    combined <- (by(IC, as.numeric(task$id), colMeans, simplify = FALSE))
     IC <- do.call(rbind, combined)
   }
-  
+
   var_D <- cov(IC)
   n <- nrow(IC)
   se <- sqrt(diag(var_D) / n)
-  level = 0.95
-  
-  if(simultaneous_ci && (ncol(IC) > 1)){
-    rho_D <- var_D/sqrt(tcrossprod(diag(var_D)))
-    q <- qmvnorm(level, tail="both", corr=rho_D)$quantile
+  level <- 0.95
+
+  if (simultaneous_ci && (ncol(IC) > 1)) {
+    rho_D <- var_D / sqrt(tcrossprod(diag(var_D)))
+    q <- qmvnorm(level, tail = "both", corr = rho_D)$quantile
   } else {
     q <- abs(stats::qnorm(p = (1 - level) / 2))
   }
-  
-  ci <- wald_ci(psi, se, q=q)
 
-  
+  ci <- wald_ci(psi, se, q = q)
+
+
   if (is.null(param_types)) {
     param_types <- rep(as.character(NA), length(estimates))
   }
@@ -84,9 +84,9 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
     transform(x)
   }
 
-  psi_lengths <- sapply(lapply(estimates, `[[`, "psi"),length)
+  psi_lengths <- sapply(lapply(estimates, `[[`, "psi"), length)
   index_vec <- rep(seq_along(psi_lengths), psi_lengths)
-  
+
   psi_transformed <- mapply(apply_transform, psi, transforms[index_vec])
   ci_transformed <- mapply(apply_transform, ci, transforms[index_vec])
   ci_transformed <- matrix(ci_transformed, nrow = nrow(ci), ncol = ncol(ci))
@@ -95,7 +95,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
     param_names, init_psi, psi, se, ci,
     psi_transformed, ci_transformed
   ))
-  
+
   setnames(summary_dt, c(
     "type", "param", "init_est", "tmle_est", "se", "lower",
     "upper", "psi_transformed", "lower_transformed",

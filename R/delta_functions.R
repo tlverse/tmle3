@@ -1,9 +1,9 @@
 # Linear Contrast EY1-EY0
-f_contrast <- function(x, ...) {
+f_contrast <- function(x, dx) {
   x[[2]] - x[[1]]
 }
 
-df_contrast <- function(x, dx, ...) {
+df_contrast <- function(x, dx) {
   dx[[2]] - dx[[1]]
 }
 
@@ -26,11 +26,11 @@ delta_param_PAR <- list(
 )
 
 # Risk Ratio EY1/EY0
-f_log_rr <- function(x, ...) {
+f_log_rr <- function(x, dx) {
   log(x[[2]]) - log(x[[1]])
 }
 
-df_log_rr <- function(x, dx, ...) {
+df_log_rr <- function(x, dx) {
   dx[[2]] / x[[2]] - dx[[1]] / x[[1]]
 }
 

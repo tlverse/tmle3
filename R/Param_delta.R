@@ -34,7 +34,7 @@ Param_delta <- R6Class(
 
       psis <- lapply(estimates, `[[`, "psi")
       ICs <- lapply(estimates, `[[`, "IC")
-      psi <- self$delta_param$f(x = psis, ICs)
+      psi <- self$delta_param$f(x = psis, dx = ICs)
       IC <- self$delta_param$df(x = psis, dx = ICs)
 
       list(psi = psi, IC = IC, name = self$name,

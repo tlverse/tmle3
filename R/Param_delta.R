@@ -17,7 +17,8 @@ Param_delta <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, delta_param, parent_parameters, ..., outcome_node = NA) {
+    initialize = function(observed_likelihood, delta_param, parent_parameters,
+                              ..., outcome_node = NA) {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.delta_param <- delta_param
       private$.parent_parameters <- parent_parameters
@@ -26,19 +27,30 @@ Param_delta <- R6Class(
       return(list())
     },
     estimates = function(tmle_task = NULL, cv_fold = -1) {
-      estimates <- lapply(self$parent_parameters, function(tmle_param) tmle_param$estimates(tmle_task, cv_fold))
+      estimates <- lapply(
+        self$parent_parameters,
+        function(tmle_param) {
+          tmle_param$estimates(tmle_task, cv_fold)
+        }
+      )
 
       psis <- lapply(estimates, `[[`, "psi")
       ICs <- lapply(estimates, `[[`, "IC")
-      psi <- self$delta_param$f(psis)
-      IC <- self$delta_param$df(psis, ICs)
+      psi <- self$delta_param$f(x = psis, dx = ICs)
+      IC <- self$delta_param$df(x = psis, dx = ICs)
 
-      list(psi = psi, IC = IC, name = self$name, transform = self$delta_param$transform)
+      list(
+        psi = psi, IC = IC, name = self$name,
+        transform = self$delta_param$transform
+      )
     }
   ),
   active = list(
     name = function() {
-      param_names <- sapply(self$parent_parameters, function(tmle_param) tmle_param$name)
+      param_names <- sapply(
+        self$parent_parameters,
+        function(tmle_param) tmle_param$name
+      )
       name <- self$delta_param$name(param_names)
       return(name)
     },

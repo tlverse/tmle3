@@ -20,7 +20,6 @@ utils::globalVariables(c(
 #
 tmle3_vim <- function(tmle_spec, data, node_list, learner_list = NULL,
                       adjust_for_other_A = TRUE) {
-
   A_nodes <- node_list$A
 
   vim_A <- A_nodes[[1]]

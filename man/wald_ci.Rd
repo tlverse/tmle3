@@ -4,7 +4,7 @@
 \alias{wald_ci}
 \title{Wald-Style Confidence Intervals}
 \usage{
-wald_ci(est, se, alpha = 0.95)
+wald_ci(est, se, level = 0.95, q = NULL)
 }
 \description{
 Wald-Style Confidence Intervals

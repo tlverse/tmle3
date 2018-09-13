@@ -28,7 +28,8 @@ Imports:
     ggplot2,
     stats,
     Rsolnp,
-    foreach
+    foreach,
+    mvtnorm
 Suggests:
     testthat,
     knitr,

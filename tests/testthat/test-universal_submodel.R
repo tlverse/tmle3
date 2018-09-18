@@ -45,25 +45,14 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-# updater <- tmle3_universal_Update$new(line_search=TRUE)
-updater <- tmle3_Update$new()
+updater <- tmle3_universal_Update$new(line_search=FALSE)
+# updater <- tmle3_Update$new()
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
 params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- params
 
-# estimates <- lapply(params,function(param)param$estimates(tmle_task))
-# debug(targeted_likelihood$cache$set_values)
-# debugonce(updater$update_step)
-# debugonce(targeted_likelihood$update)
-# debugonce(updater$apply_submodel)
-# Rprof(tmp <- tempfile())
-system.time({
-  tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, params, updater)
-})
-# Rprof()
-# summaryRprof(tmp)
-# unlink(tmp)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, params, updater)
 
 
 

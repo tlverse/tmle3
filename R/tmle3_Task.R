@@ -43,7 +43,6 @@ tmle3_Task <- R6Class(
       }
       private$.npsem <- npsem
       private$.node_cache <- new.env()
-      private$.regression_task_cache <- new.env()
     },
     get_tmle_node = function(node_name, bound = FALSE) {
       #todo: make sure caching and bounded outcomes play well together
@@ -75,11 +74,6 @@ tmle3_Task <- R6Class(
       return(data)
     },
     get_regression_task = function(target_node) {
-      cached_task <- get0(target_node, private$.regression_task_cache)
-      if(!is.null(cached_task)){
-        return(cached_task)
-      }
-      
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
@@ -117,8 +111,6 @@ tmle3_Task <- R6Class(
         column_names = column_names,
         folds = self$folds
       )
-      
-      assign(target_node, regression_task, private$.regression_task_cache)
       
       return(regression_task)
     },
@@ -161,8 +153,7 @@ tmle3_Task <- R6Class(
   ),
   private = list(
     .npsem = NULL,
-    .node_cache = NULL,
-    .regression_task_cache = NULL
+    .node_cache = NULL
   )
 )
 

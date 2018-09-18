@@ -12,65 +12,36 @@ Likelihood_cache <- R6Class(
   class = TRUE,
   public = list(
     initialize = function() {
-      private$.cache <- data.table(
-        lf_uuid = character(),
-        task_uuid = character(),
-        update_step = integer(),
-        cv_fold = integer(),
-        values = list()
-      )
-    },
-    find_match = function(likelihood_factor, tmle_task, search_cv_fold) {
-      self$cache_task(tmle_task)
-      matching_index <- private$.cache[, which(lf_uuid == likelihood_factor$uuid &
-        task_uuid == tmle_task$uuid & cv_fold == search_cv_fold)]
-      return(matching_index)
+      private$.cache <- new.env()
     },
     tasks_at_step = function(current_step) {
-      matching_index <- private$.cache[, which(update_step == current_step)]
-      task_uuids <- unique(private$.cache$task_uuid[matching_index])
       self$tasks[task_uuids]
     },
     get_update_step = function(likelihood_factor, tmle_task, cv_fold) {
-      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
-      if (length(matching_index) == 0) {
-        return(NULL)
-      } else {
-        return(private$.cache$update_step[[matching_index]])
-      }
+      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+      step_key <- sprintf("%s_%s", key, "step")
+      get0(step_key, self$cache)
     },
-    get_values = function(likelihood_factor, tmle_task, cv_fold) {
-      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
-
-      if (length(matching_index) == 0) {
-        return(NULL)
-      } else {
-        return(private$.cache$values[[matching_index]])
-      }
+    key = function(likelihood_factor, tmle_task, cv_fold){
+      key <- sprintf("%s_%s_%s",likelihood_factor$uuid, tmle_task$uuid, cv_fold)
+      return(key)
     },
     set_values = function(likelihood_factor, tmle_task, update_step = 0, cv_fold, values) {
-      new_data <- list(
-        lf_uuid = likelihood_factor$uuid,
-        task_uuid = tmle_task$uuid,
-        update_step = update_step,
-        cv_fold = cv_fold,
-        values = list(values)
-      )
+      self$cache_task(tmle_task)
+      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+      assign(key, values, self$cache)
+      
+      step_key <- sprintf("%s_%s", key, "step")
+      assign(step_key, update_step, self$cache)
 
-      matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
-
-      if (length(matching_index) == 0) {
-        private$.cache <- rbindlist(list(private$.cache, new_data))
-      } else {
-        set(
-          private$.cache,
-          matching_index,
-          names(private$.cache),
-          new_data
-        )
-      }
-
-      return(length(matching_index))
+      return(1)
+    },
+    get_values = function(likelihood_factor, tmle_task, cv_fold) {
+      # matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
+      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+      values <- get0(key, self$cache)
+      
+      return(values)
     },
     cache_lf = function(likelihood_factor) {
       private$.lfs[likelihood_factor$uuid] <- likelihood_factor

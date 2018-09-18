@@ -116,7 +116,6 @@ tmle3_universal_Update <- R6Class(
       )
       ICs <- do.call(cbind, lapply(estimates, `[[`, "IC"))
       ED <- colMeans(ICs)
-      print(max(abs(ED)))
       return(max(abs(ED)) < ED_criterion)
     },
     update = function(likelihood, tmle_task) {

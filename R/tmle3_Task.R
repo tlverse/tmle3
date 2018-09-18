@@ -42,8 +42,15 @@ tmle3_Task <- R6Class(
         }
       }
       private$.npsem <- npsem
+      private$.node_cache <- new.env()
+      private$.regression_task_cache <- new.env()
     },
     get_tmle_node = function(node_name, bound = FALSE) {
+      #todo: make sure caching and bounded outcomes play well together
+      cached_data <- get0(node_name, private$.node_cache)
+      if(!is.null(cached_data)){
+        return(cached_data)
+      }
       tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
 
@@ -60,31 +67,38 @@ tmle3_Task <- R6Class(
 
 
       if (ncol(data) == 1) {
-        return(unlist(data, use.names = FALSE))
-      } else {
-        return(data)
+        data <- unlist(data, use.names = FALSE)
       }
+      
+      assign(node_name, data, private$.node_cache)
+      
+      return(data)
     },
     get_regression_task = function(target_node) {
+      cached_task <- get0(target_node, private$.regression_task_cache)
+      if(!is.null(cached_task)){
+        return(cached_task)
+      }
+      
       npsem <- self$npsem
-      target_node <- npsem[[target_node]]
-      parent_names <- target_node$parents
+      target_node_object <- npsem[[target_node]]
+      parent_names <- target_node_object$parents
       parent_nodes <- npsem[parent_names]
-      outcome <- target_node$variables
+      outcome <- target_node_object$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
 
       # todo: consider if self$data isn't a better option here
       data <- self$internal_data
 
       # bound continuous outcome if bounds are specified to variable_type
-      variable_type <- target_node$variable_type
+      variable_type <- target_node_object$variable_type
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
         (!is.null(variable_type$bounds))) {
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes
-        bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)
-        col_name <- sprintf("__%s_bounded", target_node$name)
+        bounded_vals <- self$get_tmle_node(target_node, bound = TRUE)
+        col_name <- sprintf("__%s_bounded", target_node)
         new_data <- data.table(bounded_vals)
         setnames(new_data, col_name)
         column_names <- self$add_columns(new_data, self$uuid)
@@ -94,15 +108,19 @@ tmle3_Task <- R6Class(
       nodes <- self$nodes
       nodes$outcome <- outcome
       nodes$covariates <- covariates
-
-      # todo: make sure folds transfer
-      return(sl3_Task$new(
+      
+      
+      regression_task <- sl3_Task$new(
         data,
         nodes = nodes,
         outcome_type = variable_type,
         column_names = column_names,
         folds = self$folds
-      ))
+      )
+      
+      assign(target_node, regression_task, private$.regression_task_cache)
+      
+      return(regression_task)
     },
     generate_counterfactual_task = function(uuid, new_data) {
       # for current_factor, generate counterfactual values
@@ -142,7 +160,9 @@ tmle3_Task <- R6Class(
     }
   ),
   private = list(
-    .npsem = NULL
+    .npsem = NULL,
+    .node_cache = NULL,
+    .regression_task_cache = NULL
   )
 )
 

@@ -44,8 +44,7 @@ Remotes:
     github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,
-    github::tlverse/sl3,
-    github::jeremyrcoyle/gentmle2
+    github::tlverse/sl3
 URL: https://tmle3.tlverse.com/
 BugReports: https://github.com/tlverse/tmle3/issues
 Encoding: UTF-8

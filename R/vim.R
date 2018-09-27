@@ -38,7 +38,8 @@ tmle3_vim <- function(tmle_spec, data, node_list, learner_list = NULL,
 
     # pull off final estimate
     # TODO: allow estimate to be user-selectable
-    estimate <- vim_fit$summary[length(vim_fit$estimates)]
+    fit_summary <- vim_fit$summary
+    estimate <- fit_summary[nrow(fit_summary)]
     estimate$A <- vim_A
     estimate$W <- list(list(vim_node_list$W))
     estimate

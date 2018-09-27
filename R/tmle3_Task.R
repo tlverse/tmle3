@@ -46,7 +46,7 @@ tmle3_Task <- R6Class(
     },
     get_tmle_node = function(node_name, bound = FALSE) {
       #todo: make sure caching and bounded outcomes play well together
-      cached_data <- get0(node_name, private$.node_cache)
+      cached_data <- get0(node_name, private$.node_cache, inherits = FALSE)
       if(!is.null(cached_data)){
         return(cached_data)
       }

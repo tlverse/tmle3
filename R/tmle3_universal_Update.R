@@ -27,7 +27,7 @@ tmle3_universal_Update <- R6Class(
       if(self$line_search){
         new_epsilons <- self$fit_submodels(all_submodels)
       } else {
-        new_epsilons <- list(rep(self$delta_epsilon, length(all_submodels)))
+        new_epsilons <- as.list(rep(self$delta_epsilon, length(all_submodels)))
         names(new_epsilons) <- names(all_submodels)
                              
       }

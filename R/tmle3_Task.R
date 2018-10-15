@@ -65,7 +65,7 @@ tmle3_Task <- R6Class(
         return(data)
       }
     },
-    get_regression_task = function(target_node) {
+    get_regression_task = function(target_node, bound = TRUE) {
       npsem <- self$npsem
       target_node <- npsem[[target_node]]
       parent_names <- target_node$parents
@@ -80,7 +80,8 @@ tmle3_Task <- R6Class(
       variable_type <- target_node$variable_type
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
-        (!is.null(variable_type$bounds))) {
+        (!is.null(variable_type$bounds)) &&
+        bound) {
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes
         bounded_vals <- self$get_tmle_node(target_node$name, bound = TRUE)

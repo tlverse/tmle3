@@ -12,7 +12,7 @@ tmle3_Spec <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(likelihood_override = NULL, ...) {
-      private$.options <- list(likelihood_override, ...)
+      private$.options <- list(likelihood_override = likelihood_override, ...)
     },
     make_tmle_task = function(data, node_list, ...) {
       setDT(data)

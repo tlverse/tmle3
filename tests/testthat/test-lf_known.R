@@ -68,5 +68,5 @@ tmle_spec <- tmle_shift(shift_val = 0.5,
 tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
 
 psi <- tmle_fit$estimates[[1]]$psi
-var_eif <- var(tmle_fit$estimates[[1]]$IC)
+var_eif <- as.numeric(var(tmle_fit$estimates[[1]]$IC))
 

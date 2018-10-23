@@ -1,9 +1,9 @@
 
-stub_known <- function(task){
+stub_known <- function(task) {
   stop("mean or density function was not provided to LF_known and then values were requested")
 }
 
-#' Known True Likelihood Factor 
+#' Known True Likelihood Factor
 #'
 #' Incorporate existing knowledge about the likelihood
 #' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
@@ -41,7 +41,7 @@ LF_known <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, mean_fun=stub_known, density_fun=stub_known, ..., type = "density") {
+    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
@@ -49,9 +49,9 @@ LF_known <- R6Class(
     get_mean = function(tmle_task, cv_fold) {
       learner_task <- tmle_task$get_regression_task(self$name, bound = FALSE)
       preds <- self$mean_fun(learner_task)
-      
+
       outcome_type <- learner_task$outcome_type
-      
+
       bounds <- outcome_type$bounds
       if (!is.null(bounds)) {
         scale <- bounds[2] - bounds[1]
@@ -84,7 +84,7 @@ LF_known <- R6Class(
     mean_fun = function() {
       return(private$.mean_fun)
     },
-    
+
     density_fun = function() {
       return(private$.density_fun)
     }

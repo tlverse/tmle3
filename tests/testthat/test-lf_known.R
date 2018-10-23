@@ -27,7 +27,7 @@ sim_data <- function(n_obs = 1e3, n_w = 1, tx_mult = 2) {
   return(out)
 }
 
-tx_mult = 2
+tx_mult <- 2
 sim_obj <- sim_data(1e6, tx_mult = tx_mult)
 node_list <- sim_obj$nodes
 
@@ -56,17 +56,21 @@ factor_list <- list(
 likelihood_def <- Likelihood$new(factor_list)
 
 # create learner list (NOTE: unused since likelihood object passed in)
-learner_list <- list(Y = Lrnr_mean$new(),
-                     A = Lrnr_condensier$new(nbins = 5,
-                                             bin_estimator = Lrnr_mean$new(),
-                                             bin_method = "dhist")
-                    )
+learner_list <- list(
+  Y = Lrnr_mean$new(),
+  A = Lrnr_condensier$new(
+    nbins = 5,
+    bin_estimator = Lrnr_mean$new(),
+    bin_method = "dhist"
+  )
+)
 
 # pass defined likelihood into existing spec
-tmle_spec <- tmle_shift(shift_val = 0.5,
-                        likelihood_override = likelihood_def)
+tmle_spec <- tmle_shift(
+  shift_val = 0.5,
+  likelihood_override = likelihood_def
+)
 tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
 
 psi <- tmle_fit$estimates[[1]]$psi
 var_eif <- as.numeric(var(tmle_fit$estimates[[1]]$IC))
-

@@ -53,7 +53,6 @@ tmle3_Spec <- R6Class(
       if (!is.null(likelihood_def)) {
         likelihood <- likelihood_def$train(tmle_task)
       } else {
-
         factor_list <- list(
           define_lf(LF_emp, "W"),
           define_lf(LF_fit, "A", learner = learner_list[["A"]]),

@@ -16,6 +16,9 @@
     <loc>http://tmle3.tlverse.org/reference/LF_fit.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/LF_known.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/LF_static.html</loc>
   </url>
   <url>
@@ -67,6 +70,9 @@
     <loc>http://tmle3.tlverse.org/reference/npsem_helpers.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/plot_vim.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/process_missing.html</loc>
   </url>
   <url>
@@ -107,6 +113,9 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle3_cv_Update.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/tmle3_vim.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle_PAR.html</loc>

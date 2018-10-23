@@ -2,54 +2,42 @@ branches:
   only:
   - master
   - devel
-
 env:
   global:
   - RGL_USE_NULL=TRUE
   - PKG_CFLAGS="-O3 -Wall -pedantic"
-
+  - secure: sLwP2vPJN35zOHAQGTh+7H/HSqEoGtCX3szIVhxa5h03aAYpKSr34tNC1Z0ULHY1wZPkNWajIYzVaNx98Knfzju8aOEwGAjbNutpAr33RmNXf7vDQ7N02AKlQnF3rpsl9Np+r1qTCAxMPe/ZfD+XPZ/derGFkv0m7xenkQ+rZyg5x5YC8XbX4auoHOUJDpXk5q30uk+e/Vd+G9+O+t0rYPo+tSAwB3yQYrI0KYhw9PHC220CKjVfI+coyM5ry1PUM56oVFPDMuFWfm1ItFnB+jGYMpByRzi/9PHPueFyDysg6ZGPwZF4NuYvPxJv5TdQBde+1IJuIM/upL+VUemg54xpY3tSygBf5HG17axqK+r+F5I+Fm6EFvErlEN0U2dB+cLl395mgzP0HMEET8t7Sg8SNo0+Cq6u8TbheXVnPfyibaUMvFPA3AkQMFcniVWpDEXFynrp8JvtTc3sEzmt1O5OKCHfeAcLIBZgKqYyy4T/qYtp2Mlz9pFX/5XIBic1AtWOw+JwemYyQOnZcyqkx/DIQVRm1Fkprs7kw4pP5IHEheO6SKdNp4PnXw6d0GoY85ig7tIVMYOSkn+Sl04nMQ9VNrzsYNI3bPqOSbNh2cvXFWHRXPqEWGatq6QlP0uS7Ic6QJv2wNmJKDSTFVOEChcDpbhm+YwtZiE2Bg7Y7q4=
 language: r
 sudo: required
 cache: packages
-
-cran: "http://cran.rstudio.com"
+cran: http://cran.rstudio.com
 warnings_are_errors: true
 r_build_args: ''
-r_check_args: '--no-build-vignettes'
-
+r_check_args: "--no-build-vignettes"
 r:
-  - oldrel
-  - release
-  - devel
-
-#before_install:
-  #- Rscript -e 'update.packages(ask = FALSE)'
-
+- oldrel
+- release
+- devel
 addons:
   apt:
     packages:
-      - libnlopt-dev
-
+    - libnlopt-dev
 r_packages:
-  - devtools
-  - covr
-
+- devtools
+- covr
 r_github_packages:
-  - jimhester/covr
-  - r-lib/devtools@2d012d1
-  - r-lib/sessioninfo
-  - RDatatable/data.table
-  - osofr/simcausal
-  - osofr/condensier
-  - tlverse/delayed
-  - tlverse/origami
-  - tlverse/sl3
-
+- jimhester/covr
+- r-lib/devtools@2d012d1
+- r-lib/sessioninfo
+- RDatatable/data.table
+- osofr/simcausal
+- osofr/condensier
+- tlverse/delayed
+- tlverse/origami
+- tlverse/sl3
 after_success:
-  - travis_wait 80 Rscript -e 'covr::codecov()'
-
+- travis_wait 80 Rscript -e 'covr::codecov()'
 notifications:
   email:
     on_success: change
     on_failure: change
-

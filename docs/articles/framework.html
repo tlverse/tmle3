@@ -76,7 +76,7 @@
       <h1>tmle3 Framework Overview</h1>
                         <h4 class="author">Jeremy Coyle</h4>
             
-            <h4 class="date">2018-09-05</h4>
+            <h4 class="date">2018-10-23</h4>
       
       
       <div class="hidden name"><code>framework.Rmd</code></div>
@@ -191,7 +191,7 @@ dx_1, \ldots, dx_J\]</span></p>
 <h3 class="hasAnchor">
 <a href="#lf_fit" class="anchor"></a><code>LF_fit</code>
 </h3>
-<p><code>LF_fit</code> represents a likelihood factor to be estimated using the <code>sl3</code> framework. Based on the learner type used, this can fit a pmf (for binomial or categorical data, see <code><a href="http://sl3.tlverse.org/reference/list_learners.html">sl3_list_learners("binomial")</a></code> and <code><a href="http://sl3.tlverse.org/reference/list_learners.html">sl3_list_learners("categorical")</a></code> for lists), a conditional mean (most learners), or a conditional density (using <code>condensier</code> via <code>Lrnr_condensier</code>). <code>LF_fit</code> takes a <code>sl3</code> learner object as an argument, which is fit to the data in the <code>tmle3_Task</code> automatically. Details for specifying different kinds of learners in <code>sl3</code> may be found at <a href="http://sl3.tlverse.org/articles/intro_sl3.html" class="uri">http://sl3.tlverse.org/articles/intro_sl3.html</a></p>
+<p><code>LF_fit</code> represents a likelihood factor to be estimated using the <code>sl3</code> framework. Based on the learner type used, this can fit a pmf (for binomial or categorical data, see <code><a href="http://www.rdocumentation.org/packages/sl3/topics/list_learners">sl3_list_learners("binomial")</a></code> and <code><a href="http://www.rdocumentation.org/packages/sl3/topics/list_learners">sl3_list_learners("categorical")</a></code> for lists), a conditional mean (most learners), or a conditional density (using <code>condensier</code> via <code>Lrnr_condensier</code>). <code>LF_fit</code> takes a <code>sl3</code> learner object as an argument, which is fit to the data in the <code>tmle3_Task</code> automatically. Details for specifying different kinds of learners in <code>sl3</code> may be found at <a href="http://sl3.tlverse.org/articles/intro_sl3.html" class="uri">http://sl3.tlverse.org/articles/intro_sl3.html</a></p>
 </div>
 <div id="specifying-a-priori-knowledge-" class="section level3">
 <h3 class="hasAnchor">
@@ -203,8 +203,8 @@ dx_1, \ldots, dx_J\]</span></p>
 <a href="#example-1" class="anchor"></a>Example</h3>
 <p>Going back to our CPP data example, we will estimate the marginal likelihood of <span class="math inline">\(W\)</span>, using NP-MLE, the conditional density of <span class="math inline">\(A\)</span> given <span class="math inline">\(W\)</span> using a GLM fit via <code>sl3</code> and the conditional mean of <span class="math inline">\(Y\)</span> given <span class="math inline">\(A\)</span> and <span class="math inline">\(W\)</span> using another GLM fit via <code>sl3</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co"># set up sl3 learners for tmle3 fit</span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="http://sl3.tlverse.org/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_glm_fast)</a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="http://sl3.tlverse.org/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_mean)</a>
+<a class="sourceLine" id="cb8-2" data-line-number="2">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_glm_fast)</a>
+<a class="sourceLine" id="cb8-3" data-line-number="3">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_mean)</a>
 <a class="sourceLine" id="cb8-4" data-line-number="4"></a>
 <a class="sourceLine" id="cb8-5" data-line-number="5"><span class="co"># define and fit likelihood</span></a>
 <a class="sourceLine" id="cb8-6" data-line-number="6">factor_list &lt;-<span class="st"> </span><span class="kw">list</span>(</a>
@@ -312,8 +312,7 @@ dx_1, \ldots, dx_J\]</span></p>
 <p>Now that we have specified all the components required for the TMLE procedure, we can generate an object that manages all the components and finally calculate an appropriate TML estimator.</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1">tmle_fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tmle3_Fit.html">fit_tmle3</a></span>(tmle_task, targeted_likelihood, tsm, updater)</a>
 <a class="sourceLine" id="cb22-2" data-line-number="2"><span class="kw">print</span>(tmle_fit)</a></code></pre></div>
-<pre><code>## A tmle3_Fit that took 1 step(s)
-##    type      param  init_est  tmle_est         se     lower     upper
+<pre><code>##    type      param  init_est  tmle_est         se     lower     upper
 ## 1:  TSM E[Y_{A=1}] 0.5280522 0.5280522 0.01464371 0.4993511 0.5567533
 ##    psi_transformed lower_transformed upper_transformed
 ## 1:       0.5280522         0.4993511         0.5567533</code></pre>
@@ -327,8 +326,8 @@ dx_1, \ldots, dx_J\]</span></p>
 <a class="sourceLine" id="cb24-3" data-line-number="3">              <span class="dt">A =</span> <span class="st">"parity01"</span>,</a>
 <a class="sourceLine" id="cb24-4" data-line-number="4">              <span class="dt">Y =</span> <span class="st">"haz01"</span>)</a>
 <a class="sourceLine" id="cb24-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb24-6" data-line-number="6">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="http://sl3.tlverse.org/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_glm_fast)</a>
-<a class="sourceLine" id="cb24-7" data-line-number="7">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="http://sl3.tlverse.org/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_mean)</a>
+<a class="sourceLine" id="cb24-6" data-line-number="6">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_glm_fast)</a>
+<a class="sourceLine" id="cb24-7" data-line-number="7">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sl3/topics/Lrnr_base">make_learner</a></span>(Lrnr_mean)</a>
 <a class="sourceLine" id="cb24-8" data-line-number="8">learner_list &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">Y =</span> lrnr_mean, <span class="dt">A =</span> lrnr_glm_fast)</a>
 <a class="sourceLine" id="cb24-9" data-line-number="9"></a>
 <a class="sourceLine" id="cb24-10" data-line-number="10"><span class="co"># make a new copy to deal with data.table weirdness</span></a>
@@ -336,8 +335,7 @@ dx_1, \ldots, dx_J\]</span></p>
 <a class="sourceLine" id="cb24-12" data-line-number="12"></a>
 <a class="sourceLine" id="cb24-13" data-line-number="13">tmle_fit_from_spec &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tmle3.html">tmle3</a></span>(<span class="kw"><a href="../reference/tmle_TSM_all.html">tmle_TSM_all</a></span>(), cpp2, nodes, learner_list)</a>
 <a class="sourceLine" id="cb24-14" data-line-number="14"><span class="kw">print</span>(tmle_fit_from_spec)</a></code></pre></div>
-<pre><code>## A tmle3_Fit that took 1 step(s)
-##    type      param init_est  tmle_est         se     lower    upper
+<pre><code>##    type      param init_est  tmle_est         se     lower    upper
 ## 1:  TSM E[Y_{A=0}]  0.55517 0.5588472 0.23594604 0.0964015 1.021293
 ## 2:  TSM E[Y_{A=1}]  0.55517 0.5268014 0.01470823 0.4979738 0.555629
 ##    psi_transformed lower_transformed upper_transformed

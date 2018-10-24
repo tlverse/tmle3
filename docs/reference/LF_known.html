@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Likelihood Factor Estimated from Data using sl3. — LF_fit • tmle</title>
+<title>Known True Likelihood Factor — LF_known • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Likelihood Factor Estimated from Data using sl3. — LF_fit" />
+<meta property="og:title" content="Known True Likelihood Factor — LF_known" />
 
-<meta property="og:description" content="Uses an sl3 learner to estimate a likelihood factor from data.
+<meta property="og:description" content="Incorporate existing knowledge about the likelihood
 Inherits from LF_base; see that page for documentation on likelihood factors in general." />
 <meta name="twitter:card" content="summary" />
 
@@ -111,19 +111,19 @@ Inherits from LF_base; see that page for documentation on likelihood factors in 
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Likelihood Factor Estimated from Data using sl3.</h1>
+    <h1>Known True Likelihood Factor</h1>
     
-    <div class="hidden name"><code>LF_fit.Rd</code></div>
+    <div class="hidden name"><code>LF_known.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Uses an <code>sl3</code> learner to estimate a likelihood factor from data.
+    <p>Incorporate existing knowledge about the likelihood
 Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>LF_fit</span></pre>
+    <pre class="usage"><span class='no'>LF_known</span></pre>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
@@ -136,26 +136,20 @@ Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code><a href='define_lf.html'>define_lf(LF_fit, name, learner, ..., type = "density")</a></code></p>
+    <p><code><a href='define_lf.html'>define_lf(LF_fit, name, mean_fun, density_fun, ..., type = "density")</a></code></p>
 <p></p><dl class='dl-horizontal'>
     <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
-    <dt><code>learner</code></dt><dd><p>An sl3 learner to be used to estimate the factor</p></dd>
+    <dt><code>mean_fun</code></dt><dd><p>A function that takes a sl3 regression task and returns true conditional means</p></dd>
+    <dt><code>density_fun</code></dt><dd><p>A function that takes a sl3 regression task and returns true conditional densities</p></dd>
     <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
     <dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
-    </dl>
-    
-    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
-
-    
-    <dl class='dl-horizontal'>
-    <dt><code>learner</code></dt><dd><p>The learner or learner fit object</p></dd>
     </dl>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
   <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_emp.html'>LF_emp</a></code>,
-  <code><a href='LF_known.html'>LF_known</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
+  <code><a href='LF_fit.html'>LF_fit</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
   <code><a href='Likelihood.html'>Likelihood</a></code>,
   <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
   <code><a href='define_lf.html'>define_lf</a></code></p></div>
@@ -171,8 +165,6 @@ Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for
       <li><a href="#value">Value</a></li>
 
       <li><a href="#constructor">Constructor</a></li>
-
-      <li><a href="#fields">Fields</a></li>
 
       <li><a href="#see-also">See also</a></li>
           </ul>

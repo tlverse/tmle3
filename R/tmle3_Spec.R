@@ -11,8 +11,8 @@ tmle3_Spec <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(...) {
-      private$.options <- list(...)
+    initialize = function(likelihood_override = NULL, ...) {
+      private$.options <- list(likelihood_override = likelihood_override, ...)
     },
     make_tmle_task = function(data, node_list, ...) {
       setDT(data)
@@ -48,17 +48,22 @@ tmle3_Spec <- R6Class(
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {
-      # todo: generalize
-      factor_list <- list(
-        define_lf(LF_emp, "W"),
-        define_lf(LF_fit, "A", learner = learner_list[["A"]]),
-        define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
-      )
+      # produce trained likelihood when likelihood_def provided
+      likelihood_def <- self$options$likelihood_override
+      if (!is.null(likelihood_def)) {
+        likelihood <- likelihood_def$train(tmle_task)
+      } else {
+        factor_list <- list(
+          define_lf(LF_emp, "W"),
+          define_lf(LF_fit, "A", learner = learner_list[["A"]]),
+          define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
+        )
 
-      likelihood_def <- Likelihood$new(factor_list)
+        likelihood_def <- Likelihood$new(factor_list)
 
-      # fit_likelihood
-      likelihood <- likelihood_def$train(tmle_task)
+        # fit_likelihood
+        likelihood <- likelihood_def$train(tmle_task)
+      }
       return(likelihood)
     },
     make_updater = function() {

@@ -118,8 +118,8 @@
 
     <div class="ref-description">
     
-    <p>This class inherits from <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>. In addition to all the
- methods supported by <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>, it supports the following.</p>
+    <p>This class inherits from <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>. In addition to all the
+ methods supported by <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>, it supports the following.</p>
     
     </div>
 
@@ -152,7 +152,7 @@ Constructor below.</p></td>
 <p></p><dl class='dl-horizontal'>
     <dt><code>data</code></dt><dd><p>A <code>data.frame</code> or <code>data.table</code> containing the underlying data</p></dd>
     <dt><code>npsem</code></dt><dd><p>A list of <code><a href='tmle3_Node.html'>tmle3_Node</a></code> objects, where each is created using <code><a href='tmle3_Node.html'>define_node</a></code>. These specify the NPSEM. See examples.</p></dd>
-    <dt><code>...</code></dt><dd><p>Other arguments passed to the constructor of <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code>. <strong>NB:</strong> Support for these is currently limited.</p></dd>
+    <dt><code>...</code></dt><dd><p>Other arguments passed to the constructor of <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code>. <strong>NB:</strong> Support for these is currently limited.</p></dd>
     </dl>
     
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
@@ -164,7 +164,7 @@ Constructor below.</p></td>
 <li><p><code>node_name</code>: character, the name of the node to get.</p></li>
 <li><p><code>bound</code>: logical, if true the data is transformed to be in (0,1) based on pre-specified bounds.</p></li>
 </ul></p></dd>
-    <dt><code>get_regression_task(target_node, bound = FALSE)</code></dt><dd><p>Gets a <code><a href='http://sl3.tlverse.org/reference/sl3_Task.html'>sl3_Task</a></code> suitable for fitting the conditional likelihood factor with the <code>target_node</code>
+    <dt><code>get_regression_task(target_node, bound = FALSE)</code></dt><dd><p>Gets a <code><a href='http://www.rdocumentation.org/packages/sl3/topics/sl3_Task'>sl3_Task</a></code> suitable for fitting the conditional likelihood factor with the <code>target_node</code>
   as the outcome.
     <ul>
 <li><p><code>target_node</code>: character, the name of the node to get.</p></li>

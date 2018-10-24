@@ -5,8 +5,8 @@
 
 [![Travis-CI Build
 Status](https://travis-ci.org/tlverse/tmle3.svg?branch=master)](https://travis-ci.org/tlverse/tmle3)
-[![AppVeyor Build
-Status](https://ci.appveyor.com/api/projects/status/github/tlverse/tmle3?branch=master&svg=true)](https://ci.appveyor.com/project/tlverse/tmle3)
+[![Appveyor Build
+status](https://ci.appveyor.com/api/projects/status/tyl2p3wu0f9x308l?svg=true)](https://ci.appveyor.com/project/jeremyrcoyle/tmle3)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/tlverse/tmle3/master.svg)](https://codecov.io/github/tlverse/tmle3?branch=master)
 [![Project Status: WIP – Initial development is in progress, but there

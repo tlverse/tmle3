@@ -15,6 +15,8 @@ environment:
     WARNINGS_ARE_ERRORS: 0
     R_ARCH: x64
     USE_RTOOLS: true
+    GITHUB_PAT:
+      secure: Nu6c5CmcVdYHDUVGej5ZIXGKOXVPBwqUwjrLV8d6UlbUaAtYuUhgpNuv9oLztAQQ
 
 cache:
   - C:\RLibrary
@@ -31,6 +33,7 @@ build_script:
   - travis-tool.sh install_github tlverse/delayed
   - travis-tool.sh install_github tlverse/origami
   - travis-tool.sh install_github tlverse/sl3
+  - travis-tool.sh install_github tlverse/tmle3shift
 
 test_script:
   - travis-tool.sh run_tests

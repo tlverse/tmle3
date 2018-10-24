@@ -38,15 +38,18 @@ Suggests:
     speedglm,
     rmarkdown,
     nnls,
+    simcausal,
     condensier,
-    tmle
+    tmle,
+    tmle3shift
 Remotes:
+    github::osofr/simcausal,
     github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,
     github::tlverse/sl3,
-    github::jeremyrcoyle/gentmle2
-URL: https://tmle3.tlverse.com/
+    github::tlverse/tmle3shift
+URL: https://tlverse.org/tmle3
 BugReports: https://github.com/tlverse/tmle3/issues
 Encoding: UTF-8
 LazyData: yes

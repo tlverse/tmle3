@@ -6,7 +6,7 @@
 [![Travis-CI Build
 Status](https://travis-ci.org/tlverse/tmle3.svg?branch=master)](https://travis-ci.org/tlverse/tmle3)
 [![Appveyor Build
-status](https://ci.appveyor.com/api/projects/status/tyl2p3wu0f9x308l?svg=true)](https://ci.appveyor.com/project/jeremyrcoyle/tmle3)
+Status](https://ci.appveyor.com/api/projects/status/cxp6a15anauyadgb?svg=true)](https://ci.appveyor.com/project/tlverse/tmle3)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/tlverse/tmle3/master.svg)](https://codecov.io/github/tlverse/tmle3?branch=master)
 [![Project Status: WIP – Initial development is in progress, but there
@@ -51,7 +51,7 @@ devtools::install_github("tlverse/tmle3")
 
 The best place to get started is the “Framework Overview” document,
 which describes the individual components of the `tmle3` framework. It
-may be found here: <https://tmle3.tlverse.org/articles/framework.html>.
+may be found here: <https://tlverse.org/tmle3/articles/framework.html>.
 
 -----
 

@@ -38,7 +38,7 @@ Suggests:
     speedglm,
     rmarkdown,
     nnls,
-    simcausal
+    simcausal,
     condensier,
     tmle,
     tmle3shift

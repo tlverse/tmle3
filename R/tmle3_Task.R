@@ -45,8 +45,9 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
     },
     get_tmle_node = function(node_name, bound = FALSE) {
-      #todo: make sure caching and bounded outcomes play well together
-      cached_data <- get0(node_name, private$.node_cache, inherits = FALSE)
+      
+      cache_key <- sprintf("%s_%s", node_name, bound)
+      cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if(!is.null(cached_data)){
         return(cached_data)
       }
@@ -69,7 +70,7 @@ tmle3_Task <- R6Class(
         data <- unlist(data, use.names = FALSE)
       }
       
-      assign(node_name, data, private$.node_cache)
+      assign(cache_key, data, private$.node_cache)
       
       return(data)
     },

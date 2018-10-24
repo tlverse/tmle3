@@ -38,10 +38,12 @@ Suggests:
     speedglm,
     rmarkdown,
     nnls,
+    simcausal
     condensier,
     tmle,
     tmle3shift
 Remotes:
+    github::osofr/simcausal,
     github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,

@@ -37,11 +37,11 @@ tmle3_Update <- R6Class(
       private$.delta_epsilon <- delta_epsilon
       private$.verbose <- verbose
     },
-    collapse_covariates = function(estimates, clever_covariates){
+    collapse_covariates = function(estimates, clever_covariates) {
       ED <- ED_from_estimates(estimates)
-      EDnormed <- ED/norm(ED, type = "2")
+      EDnormed <- ED / norm(ED, type = "2")
       collapsed_covariate <- clever_covariates %*% EDnormed
-      
+
       return(collapsed_covariate)
     },
     update_step = function(likelihood, tmle_task, cv_fold = -1) {
@@ -52,11 +52,10 @@ tmle3_Update <- R6Class(
 
       # update likelihoods
       likelihood$update(new_epsilons, self$step_number, cv_fold)
-      
-      if(cv_fold!=-1){
+
+      if (cv_fold != -1) {
         # update full fit likelihoods if we haven't already
         likelihood$update(new_epsilons, self$step_number, -1)
-        
       }
       # increment step count
       private$.step_number <- private$.step_number + 1
@@ -72,7 +71,7 @@ tmle3_Update <- R6Class(
       all_submodels <- lapply(update_nodes, function(update_node) {
         node_covariates <- lapply(clever_covariates, `[[`, update_node)
         covariates_dt <- do.call(cbind, node_covariates)
-        if(self$one_dimensional){
+        if (self$one_dimensional) {
           observed_task <- likelihood$training_task
           estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(observed_task, cv_fold))
           covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
@@ -91,30 +90,30 @@ tmle3_Update <- R6Class(
       return(all_submodels)
     },
     fit_submodel = function(submodel_data) {
-      if(self$constrain_step){
+      if (self$constrain_step) {
         ncol_H <- ncol(submodel_data$H)
-        if(!(is.null(ncol_H)||(ncol_H==1))){
-          stop("Updater has constrain_step=TRUE but a multiepsilon submodel.\n",
-               "Consider setting collapse_covariates=TRUE")
+        if (!(is.null(ncol_H) || (ncol_H == 1))) {
+          stop(
+            "Updater has constrain_step=TRUE but a multiepsilon submodel.\n",
+            "Consider setting collapse_covariates=TRUE"
+          )
         }
-      
-        risk <- function(epsilon){
+
+        risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
           loss <- self$loss_function(submodel_estimate, submodel_data$observed)
           mean(loss)
         }
-        
-        optim_fit <- optim(par=list(epsilon=self$delta_epsilon), fn=risk, lower=0, upper=self$delta_epsilon, method = "Brent")
+
+        optim_fit <- optim(par = list(epsilon = self$delta_epsilon), fn = risk, lower = 0, upper = self$delta_epsilon, method = "Brent")
         epsilon <- optim_fit$par
         risk_val <- optim_fit$value
         risk_zero <- risk(0)
-        
-        if(self$verbose){
-          cat(sprintf("risk_change: %e ", risk_val-risk_zero))
+
+        if (self$verbose) {
+          cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }
       } else {
-         
-        
         suppressWarnings({
           submodel_fit <- glm(observed ~ H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
         })
@@ -123,11 +122,11 @@ tmle3_Update <- R6Class(
         # this protects against collinear covariates (which we don't care about, we just want an update)
         epsilon[is.na(epsilon)] <- 0
       }
-      
-      if(self$verbose){
-        cat(sprintf("epsilon: %e " , epsilon))
+
+      if (self$verbose) {
+        cat(sprintf("epsilon: %e ", epsilon))
       }
-      
+
       return(epsilon)
     },
     fit_submodels = function(all_submodels) {
@@ -160,24 +159,24 @@ tmle3_Update <- R6Class(
           tmle_param$estimates(tmle_task, cv_fold = cv_fold)
         }
       )
-      
+
       ED <- ED_from_estimates(estimates)
       ED_criterion <- max(abs(ED))
-      if(self$verbose){
-        cat(sprintf("max(abs(ED)): %e\n", ED_criterion))  
+      if (self$verbose) {
+        cat(sprintf("max(abs(ED)): %e\n", ED_criterion))
       }
-      
+
       return(ED_criterion < ED_threshold)
     },
     update = function(likelihood, tmle_task) {
-      if(self$cvtmle){
+      if (self$cvtmle) {
         # use training predictions on validation sets
         update_fold <- 0
       } else {
         # use predictions from full fit
         update_fold <- -1
       }
-      
+
       maxit <- private$.maxit
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
@@ -207,25 +206,24 @@ tmle3_Update <- R6Class(
     step_number = function() {
       return(private$.step_number)
     },
-    maxit = function(){
+    maxit = function() {
       return(private$.maxit)
     },
-    cvtmle = function(){
+    cvtmle = function() {
       return(private$.cvtmle)
     },
-    one_dimensional = function(){
+    one_dimensional = function() {
       return(private$.one_dimensional)
     },
-    constrain_step = function(){
+    constrain_step = function() {
       return(private$.constrain_step)
     },
-    delta_epsilon = function(){
+    delta_epsilon = function() {
       return(private$.delta_epsilon)
     },
-    verbose = function(){
+    verbose = function() {
       return(private$.verbose)
     }
-
   ),
   private = list(
     .epsilons = list(),

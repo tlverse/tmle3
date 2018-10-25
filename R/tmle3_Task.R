@@ -45,10 +45,9 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
     },
     get_tmle_node = function(node_name, bound = FALSE) {
-      
       cache_key <- sprintf("%s_%s", node_name, bound)
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
-      if(!is.null(cached_data)){
+      if (!is.null(cached_data)) {
         return(cached_data)
       }
       tmle_node <- self$npsem[[node_name]]
@@ -69,9 +68,9 @@ tmle3_Task <- R6Class(
       if (ncol(data) == 1) {
         data <- unlist(data, use.names = FALSE)
       }
-      
+
       assign(cache_key, data, private$.node_cache)
-      
+
       return(data)
     },
     get_regression_task = function(target_node, bound = TRUE) {
@@ -104,8 +103,8 @@ tmle3_Task <- R6Class(
       nodes <- self$nodes
       nodes$outcome <- outcome
       nodes$covariates <- covariates
-      
-      
+
+
       regression_task <- sl3_Task$new(
         data,
         nodes = nodes,
@@ -113,7 +112,7 @@ tmle3_Task <- R6Class(
         column_names = column_names,
         folds = self$folds
       )
-      
+
       return(regression_task)
     },
     generate_counterfactual_task = function(uuid, new_data) {

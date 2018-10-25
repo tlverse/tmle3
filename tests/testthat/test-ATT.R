@@ -73,4 +73,3 @@ tmle_fit$summary
 
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
-

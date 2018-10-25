@@ -106,10 +106,10 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
 
 #' Get Empirical Mean of EIFs from Estimates
 #' @param estimates a list of estimates objects
-ED_from_estimates <- function(estimates){
+ED_from_estimates <- function(estimates) {
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)
   ED <- colMeans(IC)
-  
+
   return(ED)
 }

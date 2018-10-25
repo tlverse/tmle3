@@ -34,14 +34,29 @@ Targeted_Likelihood <- R6Class(
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks
 
-      for (task in tasks_at_step) {
+      # first, calculate all updates
+      task_updates <- lapply(tasks_at_step, function(task) {
         all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
         updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
+      })
+
+      # then, store all updates
+      for (task_index in seq_along(tasks_at_step)) {
+        task <- tasks_at_step[[task_index]]
+        updated_values <- task_updates[[task_index]]
         for (node in names(updated_values)) {
           likelihood_factor <- self$factor_list[[node]]
           self$cache$set_values(likelihood_factor, task, step_number + 1, cv_fold, updated_values[[node]])
         }
       }
+      # for (task in tasks_at_step) {
+      #   all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
+      #   updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
+      #   for (node in names(updated_values)) {
+      #     likelihood_factor <- self$factor_list[[node]]
+      #     self$cache$set_values(likelihood_factor, task, step_number + 1, cv_fold, updated_values[[node]])
+      #   }
+      # }
     },
     get_likelihood = function(tmle_task, node, cv_fold = -1) {
       if (node %in% self$updater$update_nodes) {

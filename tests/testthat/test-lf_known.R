@@ -70,6 +70,8 @@ tmle_spec <- tmle_shift(
   shift_val = 0.5,
   likelihood_override = likelihood_def
 )
+
+tmle_task <- tmle_spec$make_tmle_task(sim_obj$data, node_list)
 tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
 
 psi <- tmle_fit$estimates[[1]]$psi

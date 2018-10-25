@@ -55,7 +55,8 @@ targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 # define param
 tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
-
+tmle_params[[1]]$estimates(tmle_task)
+tmle_params[[1]]
 # fit tmle update
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
 

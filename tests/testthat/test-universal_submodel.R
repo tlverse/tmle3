@@ -1,7 +1,7 @@
-context("Basic interventions: TSM for single static intervention.")
+context("universal submodel")
 
 library(sl3)
-# library(tmle3)
+library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
@@ -45,23 +45,24 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-# disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new(cvtmle = FALSE)
+updater <- tmle3_Update$new(one_dimensional = TRUE, constrain_step = TRUE, maxit = 10000, cvtmle = TRUE)
 
+# updater <- tmle3_Update$new()
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
+# params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
+
 updater$tmle_params <- tsm
 
-# debugonce(targeted_likelihood$update)
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tsm, updater)
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, -1)
+
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -99,7 +100,6 @@ classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
 classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
-test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))
-test_that("epsilon matches resullt from classic package", expect_equivalent(tmle3_epsilon, classic_epsilon))
+# test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
+test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
+test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))

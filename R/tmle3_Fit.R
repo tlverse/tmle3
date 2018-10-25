@@ -83,7 +83,7 @@ tmle3_Fit <- R6Class(
       return(private$.updater)
     },
     steps = function() {
-      return(private$.steps)
+      return(self$updater$step_number)
     },
     ED = function() {
       ED <- private$.ED
@@ -135,11 +135,9 @@ tmle3_Fit <- R6Class(
           tmle_param$estimates(self$tmle_task)
         }
       )
-      ICs <- do.call(cbind, lapply(estimates, `[[`, "IC"))
-      ED <- colMeans(ICs)
 
       private$.estimates <- estimates
-      private$.ED <- ED
+      private$.ED <- ED_from_estimates(estimates)
     }
   )
 )

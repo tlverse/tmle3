@@ -3,15 +3,33 @@
 \docType{data}
 \name{tmle3_Update}
 \alias{tmle3_Update}
-\title{Defines an update (submodel+loss function)}
+\title{Defines an update procedure (submodel+loss function)}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 tmle3_Update
 }
 \description{
 Current Limitations:
-only updating one node
 loss function and submodel are hard-coded (need to accept arguments for these)
-no support for one-step (recursive TMLE)
 }
+\section{Constructor}{
+
+  \code{define_param(maxit, cvtmle, one_dimensional, constrain_step, delta_epsilon, verbose)}
+
+  \describe{
+    \item{\code{maxit}}{The maximum number of update iterations
+    }
+    \item{\code{cvtmle}}{If TRUE, use CV-likelihood values when calculating updates.
+    }
+    \item{\code{one_dimensional}}{If TRUE, collapse clever covariates into a one-dimensional clever covariate scaled by the mean of their EIFs
+    }
+    \item{\code{constrain_step}}{If TRUE, step size is at most delta_epsilon (it can be smaller if a smaller step decreases the loss more)
+    }
+    \item{\code{delta_epsilon}}{The maximum step size allowed if constrain_step is TRUE
+    }
+    \item{\code{verbose}}{If TRUE, diagnostic output is generated about the updating procedure
+    }
+    }
+}
+
 \keyword{datasets}

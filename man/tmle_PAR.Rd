@@ -4,10 +4,12 @@
 \alias{tmle_PAR}
 \title{PAR and PAF}
 \usage{
-tmle_PAR(baseline_level)
+tmle_PAR(baseline_level, ...)
 }
 \arguments{
 \item{baseline_level, }{the baseline risk group}
+
+\item{...}{Extra arguments passed to the constructor of the superclass.}
 }
 \description{
 O=(W,A,Y)

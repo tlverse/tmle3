@@ -1,9 +1,12 @@
 #' Class for Likelihood
 #'
-#' This object represents an estimate of the relevant factors of the likelihood estimated from data, or based on \emph{a priori} knowledge where appropriate.
-#' That is, it represents some subset of $P_n$. This object inherits from \code{\link[sl3]{Lrnr_base}}, and so shares some properties with \code{sl3} learners.
-#' Specifically, to fit a likelihood object to data, one calls \code{likelihood$train(tmle3_task)}.
-#' Each likelihood factor is represented by an object inheriting from \code{\link{LF_base}}.
+#' This object represents an estimate of the relevant factors of the likelihood
+#' estimated from data, or based on \emph{a priori} knowledge where appropriate.
+#' That is, it represents some subset of $P_n$. This object inherits from
+#' \code{\link[sl3]{Lrnr_base}}, and so shares some properties with \code{sl3}
+#' learners. Specifically, to fit a likelihood object to data, one calls
+#' \code{likelihood$train(tmle3_task)}. Each likelihood factor is represented by
+#' an object inheriting from \code{\link{LF_base}}.
 #'
 #' @docType class
 #'
@@ -30,7 +33,7 @@ Likelihood <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(factor_list, cache = NULL, ...) {
+    initialize = function(factor_list, factor_subset = NA, cache = NULL, ...) {
       params <- args_to_list()
       if (inherits(factor_list, "LF_base")) {
         factor_list <- list(factor_list)
@@ -39,6 +42,9 @@ Likelihood <- R6Class(
       factor_names <- sapply(factor_list, `[[`, "name")
       names(factor_list) <- factor_names
       params$factor_list <- factor_list
+
+      params$factor_subset <- factor_subset
+
       if (is.null(cache)) {
         cache <- Likelihood_cache$new()
       }
@@ -119,6 +125,9 @@ Likelihood <- R6Class(
     nodes = function() {
       return(names(self$factor_list))
     },
+    factor_subset = function() {
+      return(self$params$factor_subset)
+    },
     cache = function() {
       return(private$.cache)
     }
@@ -131,12 +140,22 @@ Likelihood <- R6Class(
     },
     .train = function(tmle_task, factor_fits) {
       factor_list <- self$factor_list
-      for (i in seq_along(factor_list)) {
-        factor_list[[i]]$train(tmle_task, factor_fits[[i]])
-      }
-      # TODO: mutating factor list of Lrnr_object instead of returning a fit
-      #       which is not what sl3 Lrnrs usually do
+      factor_subset <- self$factor_subset
 
+      if (is.na(factor_subset)) {
+        for (i in seq_along(factor_list)) {
+          factor_list[[i]]$train(tmle_task, factor_fits[[i]])
+        }
+        # TODO: mutating factor list of Lrnr_object instead of returning a fit
+        #       which is not what sl3 Lrnrs usually do
+      } else {
+        # NOTE: fits partial likelihood components based on node names provided
+        #       in argument `factor_subset`
+        factor_idx <- which(names(factor_list) %in% factor_subset)
+        for (i in factor_idx) {
+          factor_list[[i]]$train(tmle_task, factor_fits[[i]])
+        }
+      }
       return("trained")
     },
     .predict = function(tmle_task) {

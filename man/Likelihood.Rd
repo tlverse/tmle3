@@ -19,10 +19,13 @@ Constructor below.}
 \code{Likelihood} object
 }
 \description{
-This object represents an estimate of the relevant factors of the likelihood estimated from data, or based on \emph{a priori} knowledge where appropriate.
-That is, it represents some subset of $P_n$. This object inherits from \code{\link[sl3]{Lrnr_base}}, and so shares some properties with \code{sl3} learners.
-Specifically, to fit a likelihood object to data, one calls \code{likelihood$train(tmle3_task)}.
-Each likelihood factor is represented by an object inheriting from \code{\link{LF_base}}.
+This object represents an estimate of the relevant factors of the likelihood
+estimated from data, or based on \emph{a priori} knowledge where appropriate.
+That is, it represents some subset of $P_n$. This object inherits from
+\code{\link[sl3]{Lrnr_base}}, and so shares some properties with \code{sl3}
+learners. Specifically, to fit a likelihood object to data, one calls
+\code{likelihood$train(tmle3_task)}. Each likelihood factor is represented by
+an object inheriting from \code{\link{LF_base}}.
 }
 \section{Constructor}{
 

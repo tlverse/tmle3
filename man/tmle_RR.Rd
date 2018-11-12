@@ -4,12 +4,14 @@
 \alias{tmle_RR}
 \title{Risk Ratio}
 \usage{
-tmle_RR(baseline_level, contrast_level)
+tmle_RR(baseline_level, contrast_level, ...)
 }
 \arguments{
 \item{baseline_level}{The baseline risk group.}
 
 \item{contrast_level}{The contrast risk group.}
+
+\item{...}{Extra arguments passed to the constructor of the superclass.}
 }
 \description{
 O = (W, A, Y)

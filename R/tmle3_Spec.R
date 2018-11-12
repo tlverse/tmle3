@@ -11,8 +11,9 @@ tmle3_Spec <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(likelihood_override = NULL, ...) {
-      private$.options <- list(likelihood_override = likelihood_override, ...)
+    initialize = function(likelihood_override = NULL, factor_subset = NA, ...) {
+      private$.options <- list(likelihood_override = likelihood_override,
+                               factor_subset = factor_subset, ...)
     },
     make_tmle_task = function(data, node_list, ...) {
       setDT(data)
@@ -24,8 +25,8 @@ tmle3_Spec <- R6Class(
         min_Y <- min(Y_vals)
         max_Y <- max(Y_vals)
         range <- max_Y - min_Y
-        lower <- min_Y # - 0.1 * range
-        upper <- max_Y # + 0.1 * range
+        lower <- min_Y  # - 0.1 * range
+        upper <- max_Y  # + 0.1 * range
         Y_variable_type <- variable_type(
           type = "continuous",
           bounds = c(lower, upper)
@@ -59,7 +60,8 @@ tmle3_Spec <- R6Class(
           define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
         )
 
-        likelihood_def <- Likelihood$new(factor_list)
+        factor_subset <- self$options$factor_subset
+        likelihood_def <- Likelihood$new(factor_list, factor_subset)
 
         # fit_likelihood
         likelihood <- likelihood_def$train(tmle_task)

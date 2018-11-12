@@ -4,7 +4,10 @@
 \alias{tmle_TSM_all}
 \title{All Treatment Specific Means}
 \usage{
-tmle_TSM_all()
+tmle_TSM_all(...)
+}
+\arguments{
+\item{...}{Extra arguments passed to the constructor of the superclass.}
 }
 \description{
 O=(W,A,Y)

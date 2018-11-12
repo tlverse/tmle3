@@ -43,9 +43,14 @@ tmle3_Spec_TSM_all <- R6Class(
 #' W=Covariates
 #' A=Treatment (binary or categorical)
 #' Y=Outcome (binary or bounded continuous)
+#'
 #' @importFrom sl3 make_learner Lrnr_mean
+#'
+#' @param ... Extra arguments passed to the constructor of the superclass.
+#'
 #' @export
-tmle_TSM_all <- function() {
+#
+tmle_TSM_all <- function(...) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_TSM_all$new()
+  tmle3_Spec_TSM_all$new(...)
 }

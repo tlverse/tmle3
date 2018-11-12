@@ -15,7 +15,7 @@ tmle3_Spec_PAR <- R6Class(
   public = list(
     initialize = function(baseline_level = 1, ...) {
       # todo: use sl3 param grabbing code
-      options <- list(baseline_level = baseline_level)
+      options <- list(baseline_level = baseline_level, ...)
       do.call(super$initialize, options)
     },
     make_params = function(tmle_task, likelihood) {
@@ -40,10 +40,14 @@ tmle3_Spec_PAR <- R6Class(
 #' W=Covariates
 #' A=Treatment (binary or categorical)
 #' Y=Outcome (binary or bounded continuous)
+#'
 #' @importFrom sl3 make_learner Lrnr_mean
+#'
 #' @param baseline_level, the baseline risk group
+#' @param ... Extra arguments passed to the constructor of the superclass.
+#'
 #' @export
-tmle_PAR <- function(baseline_level) {
+tmle_PAR <- function(baseline_level, ...) {
   # todo: unclear why this has to be in a factory function
-  tmle3_Spec_PAR$new(baseline_level)
+  tmle3_Spec_PAR$new(baseline_level, ...)
 }

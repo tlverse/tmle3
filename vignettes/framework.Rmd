@@ -1,6 +1,6 @@
 ---
-title: "tmle3 Framework Overview"
-author: "Jeremy Coyle"
+title: "`tmle3` Framework Overview"
+author: "[Jeremy Coyle](https://github.com/jeremyrcoyle)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -224,7 +224,7 @@ lrnr_mean <- make_learner(Lrnr_mean)
 factor_list <- list(
   define_lf(LF_emp, "W"),
   define_lf(LF_fit, "A", lrnr_glm_fast),
-  define_lf(LF_fit, "Y", lrnr_glm_fast, type="mean")
+  define_lf(LF_fit, "Y", lrnr_glm_fast, type = "mean")
 )
 ```
 
@@ -235,7 +235,7 @@ contained in `tmle_task`:
 
 ```{r likelihood_fit}
 likelihood_def <- Likelihood$new(factor_list)
-likelihood <- likelihood_def$train(tmle_task)
+qikelihood <- likelihood_def$train(tmle_task)
 print(likelihood)
 ```
 
@@ -246,7 +246,7 @@ Having fit the likelihood, we can now get likelihood values for any
 `tmle3_Task`:
 
 ```{r likelihood_values}
-likelihood_values <- likelihood$get_likelihoods(tmle_task,"Y")
+likelihood_values <- likelihood$get_likelihoods(tmle_task, "Y")
 head(likelihood_values)
 ```
 

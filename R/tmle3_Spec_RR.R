@@ -18,7 +18,8 @@ tmle3_Spec_RR <- R6Class(
       # TODO: use sl3 param grabbing code
       options <- list(
         baseline_level = baseline_level,
-        contrast_level = contrast
+        contrast_level = contrast,
+        ...
       )
       do.call(super$initialize, options)
     },
@@ -55,10 +56,11 @@ tmle3_Spec_RR <- R6Class(
 #'
 #' @param baseline_level The baseline risk group.
 #' @param contrast_level The contrast risk group.
+#' @param ... Extra arguments passed to the constructor of the superclass.
 #'
 #' @export
 #
-tmle_RR <- function(baseline_level, contrast_level) {
+tmle_RR <- function(baseline_level, contrast_level, ...) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_RR$new(baseline_level, contrast_level)
+  tmle3_Spec_RR$new(baseline_level, contrast_level, ...)
 }

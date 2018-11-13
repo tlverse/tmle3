@@ -28,12 +28,10 @@ Q_learner <- make_learner(Lrnr_glm_fast)
 g_learner <- make_learner(Lrnr_glm_fast)
 learner_list <- list(Y = Q_learner, A = g_learner)
 
-# define data
-tmle_task <- tmle_spec$make_tmle_task(data, node_list)
-
 # test: fit likelihood values should only be available for factor subsets
 test_that("Fitted likelihood values only available for W when subset is W", {
   tmle_spec <- tmle_RR(baseline = 0, contrast = 1, factor_subset = "W")
+  tmle_task <- tmle_spec$make_tmle_task(data, node_list)
   likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
   expect_true(is.numeric(likelihood$get_likelihood(tmle_task, "W")))
   expect_error(likelihood$get_likelihood(tmle_task, "A"))
@@ -42,6 +40,7 @@ test_that("Fitted likelihood values only available for W when subset is W", {
 
 test_that("Fitted likelihood values available for multiple factors", {
   tmle_spec <- tmle_RR(baseline = 0, contrast = 1, factor_subset = c("W", "A"))
+  tmle_task <- tmle_spec$make_tmle_task(data, node_list)
   likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
   expect_true(is.numeric(likelihood$get_likelihood(tmle_task, "W")))
   expect_true(is.numeric(likelihood$get_likelihood(tmle_task, "A")))
@@ -50,6 +49,7 @@ test_that("Fitted likelihood values available for multiple factors", {
 
 test_that("Fitted likelihood values available for all factors by default", {
   tmle_spec <- tmle_RR(baseline = 0, contrast = 1)
+  tmle_task <- tmle_spec$make_tmle_task(data, node_list)
   likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
   expect_true(is.numeric(likelihood$get_likelihood(tmle_task, "W")))
   expect_true(is.numeric(likelihood$get_likelihood(tmle_task, "A")))

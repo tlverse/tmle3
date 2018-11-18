@@ -7,6 +7,9 @@
     <loc>http://tmle3.tlverse.org/reference/CF_Likelihood.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/ED_from_estimates.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/LF_base.html</loc>
   </url>
   <url>
@@ -110,9 +113,6 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle3_Update.html</loc>
-  </url>
-  <url>
-    <loc>http://tmle3.tlverse.org/reference/tmle3_cv_Update.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle3_vim.html</loc>

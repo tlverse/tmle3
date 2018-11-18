@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Defines an update (submodel+loss function) — tmle3_Update • tmle</title>
+<title>Defines an update procedure (submodel+loss function) — tmle3_Update • tmle</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,12 +30,10 @@
 
 
 
-<meta property="og:title" content="Defines an update (submodel+loss function) — tmle3_Update" />
+<meta property="og:title" content="Defines an update procedure (submodel+loss function) — tmle3_Update" />
 
 <meta property="og:description" content="Current Limitations:
-only updating one node
-loss function and submodel are hard-coded (need to accept arguments for these)
-no support for one-step (recursive TMLE)" />
+loss function and submodel are hard-coded (need to accept arguments for these)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -113,7 +111,7 @@ no support for one-step (recursive TMLE)" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Defines an update (submodel+loss function)</h1>
+    <h1>Defines an update procedure (submodel+loss function)</h1>
     
     <div class="hidden name"><code>tmle3_Update.Rd</code></div>
     </div>
@@ -121,9 +119,7 @@ no support for one-step (recursive TMLE)" />
     <div class="ref-description">
     
     <p>Current Limitations:
-only updating one node
-loss function and submodel are hard-coded (need to accept arguments for these)
-no support for one-step (recursive TMLE)</p>
+loss function and submodel are hard-coded (need to accept arguments for these)</p>
     
     </div>
 
@@ -133,6 +129,19 @@ no support for one-step (recursive TMLE)</p>
 
     <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
     
+    <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
+
+    
+    <p><code><a href='define_param.html'>define_param(maxit, cvtmle, one_dimensional, constrain_step, delta_epsilon, verbose)</a></code></p>
+<p></p><dl class='dl-horizontal'>
+    <dt><code>maxit</code></dt><dd><p>The maximum number of update iterations</p></dd>
+    <dt><code>cvtmle</code></dt><dd><p>If TRUE, use CV-likelihood values when calculating updates.</p></dd>
+    <dt><code>one_dimensional</code></dt><dd><p>If TRUE, collapse clever covariates into a one-dimensional clever covariate scaled by the mean of their EIFs</p></dd>
+    <dt><code>constrain_step</code></dt><dd><p>If TRUE, step size is at most delta_epsilon (it can be smaller if a smaller step decreases the loss more)</p></dd>
+    <dt><code>delta_epsilon</code></dt><dd><p>The maximum step size allowed if constrain_step is TRUE</p></dd>
+    <dt><code>verbose</code></dt><dd><p>If TRUE, diagnostic output is generated about the updating procedure</p></dd>
+    </dl>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -140,6 +149,8 @@ no support for one-step (recursive TMLE)</p>
     <ul class="nav nav-pills nav-stacked">
       
       <li><a href="#format">Format</a></li>
+
+      <li><a href="#constructor">Constructor</a></li>
           </ul>
 
   </div>

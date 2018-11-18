@@ -235,7 +235,7 @@ contained in `tmle_task`:
 
 ```{r likelihood_fit}
 likelihood_def <- Likelihood$new(factor_list)
-qikelihood <- likelihood_def$train(tmle_task)
+likelihood <- likelihood_def$train(tmle_task)
 print(likelihood)
 ```
 

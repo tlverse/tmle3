@@ -27,7 +27,6 @@ r_packages:
 - covr
 r_github_packages:
 - jimhester/covr
-- r-lib/devtools
 - r-lib/sessioninfo
 - RDatatable/data.table
 - osofr/simcausal

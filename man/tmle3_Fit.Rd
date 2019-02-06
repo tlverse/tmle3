@@ -97,10 +97,10 @@ constructed.
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_ATT}},
-  \code{\link{Param_TSM}}, \code{\link{Param_base}},
-  \code{\link{Param_delta}}, \code{\link{Param_mean}},
-  \code{\link{define_param}}
+Other Parameters: \code{\link{Param_ATE}},
+  \code{\link{Param_ATT}}, \code{\link{Param_TSM}},
+  \code{\link{Param_base}}, \code{\link{Param_delta}},
+  \code{\link{Param_mean}}, \code{\link{define_param}}
 }
 \concept{Parameters}
 \keyword{data}

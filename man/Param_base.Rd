@@ -65,10 +65,10 @@ These objects also contain information about the efficient influence function (E
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_ATT}},
-  \code{\link{Param_TSM}}, \code{\link{Param_delta}},
-  \code{\link{Param_mean}}, \code{\link{define_param}},
-  \code{\link{tmle3_Fit}}
+Other Parameters: \code{\link{Param_ATE}},
+  \code{\link{Param_ATT}}, \code{\link{Param_TSM}},
+  \code{\link{Param_delta}}, \code{\link{Param_mean}},
+  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \concept{Parameters}
 \keyword{data}

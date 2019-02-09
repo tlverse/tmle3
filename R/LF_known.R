@@ -46,7 +46,7 @@ LF_known <- R6Class(
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
     },
-    get_mean = function(tmle_task, cv_fold) {
+    get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, bound = FALSE)
       preds <- self$mean_fun(learner_task)
 
@@ -60,7 +60,7 @@ LF_known <- R6Class(
       }
       return(preds)
     },
-    get_density = function(tmle_task, cv_fold) {
+    get_density = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, bound = FALSE)
       preds <- self$density_fun(learner_task)
 

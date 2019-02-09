@@ -63,7 +63,7 @@ tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, 0)
+submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, "validation")
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -75,16 +75,16 @@ library(tmle)
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y", 0)
+EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y", "validation")
 
-EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y", 0)
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y", "validation")
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
-EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", 0)
+EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", "validation")
 
 # get G
-pA1 <- initial_likelihood$get_likelihoods(cf_task, "A", 0)
+pA1 <- initial_likelihood$get_likelihoods(cf_task, "A", "validation")
 pDelta1 <- cbind(pA1, pA1)
 
 tmle_classic_fit <- tmle(

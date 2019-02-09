@@ -17,18 +17,18 @@ Likelihood_cache <- R6Class(
     tasks_at_step = function(current_step) {
       self$tasks[task_uuids]
     },
-    get_update_step = function(likelihood_factor, tmle_task, cv_fold) {
-      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+    get_update_step = function(likelihood_factor, tmle_task, fold_number) {
+      key <- self$key(likelihood_factor, tmle_task, fold_number)
       step_key <- sprintf("%s_%s", key, "step")
       get0(step_key, self$cache, inherits = FALSE)
     },
-    key = function(likelihood_factor, tmle_task, cv_fold) {
-      key <- sprintf("%s_%s_%s", likelihood_factor$uuid, tmle_task$uuid, cv_fold)
+    key = function(likelihood_factor, tmle_task, fold_number) {
+      key <- sprintf("%s_%s_%s", likelihood_factor$uuid, tmle_task$uuid, fold_number)
       return(key)
     },
-    set_values = function(likelihood_factor, tmle_task, update_step = 0, cv_fold, values) {
+    set_values = function(likelihood_factor, tmle_task, update_step = 0, fold_number, values) {
       self$cache_task(tmle_task)
-      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+      key <- self$key(likelihood_factor, tmle_task, fold_number)
       assign(key, values, self$cache)
 
       step_key <- sprintf("%s_%s", key, "step")
@@ -36,9 +36,9 @@ Likelihood_cache <- R6Class(
 
       return(1)
     },
-    get_values = function(likelihood_factor, tmle_task, cv_fold) {
-      # matching_index <- self$find_match(likelihood_factor, tmle_task, cv_fold)
-      key <- self$key(likelihood_factor, tmle_task, cv_fold)
+    get_values = function(likelihood_factor, tmle_task, fold_number) {
+      # matching_index <- self$find_match(likelihood_factor, tmle_task, fold_number)
+      key <- self$key(likelihood_factor, tmle_task, fold_number)
       values <- get0(key, self$cache, inherits = FALSE)
 
       return(values)

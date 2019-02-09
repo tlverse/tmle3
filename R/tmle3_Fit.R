@@ -128,7 +128,7 @@ tmle3_Fit <- R6Class(
       self$updater$update(self$likelihood, self$tmle_task)
       private$.steps <- self$updater$steps
 
-      # todo: final estimates are always on cv_fold=-1 (refit/full fit), verify that this is what we want
+      # todo: final estimates are always on fold_number="full" (refit/full fit), verify that this is what we want
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {

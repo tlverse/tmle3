@@ -59,7 +59,7 @@ Param_ATT <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -68,9 +68,9 @@ Param_ATT <- R6Class(
       intervention_nodes <- names(self$intervention_list_treatment)
 
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
@@ -81,15 +81,15 @@ Param_ATT <- R6Class(
       cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
       cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
 
-      EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node, cv_fold)
-      EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node, cv_fold)
+      EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node, fold_number)
+      EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node, fold_number)
 
       psi <- mean((EY1 - EY0) * (pA / pA_overall))
       CY <- (EY1 - EY0) - psi
 
       return(list(Y = HA, A = CY))
     },
-    estimates = function(tmle_task = NULL, cv_fold = -1) {
+    estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -98,9 +98,9 @@ Param_ATT <- R6Class(
       intervention_nodes <- names(self$intervention_list_treatment)
 
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       # todo: rethink that last term
       HA <- cf_pA_treatment - cf_pA_control * ((1 - pA) / pA)
@@ -116,9 +116,9 @@ Param_ATT <- R6Class(
       # todo: fix hardcoding
       A <- tmle_task$get_tmle_node("A")
 
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, cv_fold)
-      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, cv_fold)
-      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, cv_fold)
+      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
+      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
+      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
 
       psi <- mean((EY1 - EY0) * (pA / pA_overall))
       CY <- (EY1 - EY0) - psi

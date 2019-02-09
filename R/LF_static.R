@@ -45,10 +45,10 @@ LF_static <- R6Class(
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },
-    get_mean = function(tmle_task, cv_fold) {
+    get_mean = function(tmle_task, fold_number) {
       return(rep(self$value, tmle_task$nrow))
     },
-    get_density = function(tmle_task, cv_fold) {
+    get_density = function(tmle_task, fold_number) {
       observed <- tmle_task$get_tmle_node(self$name)
       likelihood <- as.numeric(self$value == observed)
 

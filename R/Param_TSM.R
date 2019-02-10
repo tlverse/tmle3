@@ -52,13 +52,13 @@ Param_TSM <- R6Class(
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
     },
-    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
       intervention_nodes <- names(self$intervention_list)
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       HA <- cf_pA / pA
 
@@ -68,7 +68,7 @@ Param_TSM <- R6Class(
       }
       return(list(Y = unlist(HA, use.names = FALSE)))
     },
-    estimates = function(tmle_task = NULL, cv_fold = -1) {
+    estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -81,13 +81,13 @@ Param_TSM <- R6Class(
 
 
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task, cv_fold)[[self$outcome_node]]
+      HA <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
-      EYA <- unlist(self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, cv_fold), use.names = FALSE)
+      EYA <- unlist(self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number), use.names = FALSE)
 
       # clever_covariates happen here (for all fit params), and this is repeated computation
-      EY1 <- unlist(self$cf_likelihood$get_likelihood(cf_task, self$outcome_node, cv_fold), use.names = FALSE)
+      EY1 <- unlist(self$cf_likelihood$get_likelihood(cf_task, self$outcome_node, fold_number), use.names = FALSE)
 
       # todo: integrate unbounding logic into likelihood class, or at least put it in a function
       variable_type <- tmle_task$npsem[[self$outcome_node]]$variable_type

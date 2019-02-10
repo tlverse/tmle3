@@ -51,22 +51,22 @@ Param_ATE <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, cv_fold = -1) {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
 
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       HA <- (cf_pA_treatment - cf_pA_control) / pA
 
       return(list(Y = HA))
     },
-    estimates = function(tmle_task = NULL, cv_fold = -1) {
+    estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -74,13 +74,13 @@ Param_ATE <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
       
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task, cv_fold)[[self$outcome_node]]
+      HA <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
 
 
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, cv_fold)
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       # todo: extend for stochastic
       cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
@@ -88,9 +88,9 @@ Param_ATE <- R6Class(
 
       Y <- tmle_task$get_tmle_node(self$outcome_node)
 
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, cv_fold)
-      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, cv_fold)
-      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, cv_fold)
+      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
+      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
+      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
 
       psi <- mean(EY1 - EY0)
 

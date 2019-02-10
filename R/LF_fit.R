@@ -62,24 +62,17 @@ LF_fit <- R6Class(
       super$train(tmle_task)
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task, cv_fold) {
+    get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
-      if (cv_fold == -1) {
-        preds <- learner$predict(learner_task)
-      } else {
-        preds <- learner$predict_fold(learner_task, cv_fold)
-      }
+      preds <- learner$predict_fold(learner_task, fold_number)
       return(preds)
     },
-    get_density = function(tmle_task, cv_fold) {
+    get_density = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
-      if (cv_fold == -1) {
-        preds <- learner$predict(learner_task)
-      } else {
-        preds <- learner$predict_fold(learner_task, cv_fold)
-      }
+      preds <- learner$predict_fold(learner_task, fold_number)
+
       outcome_type <- self$learner$training_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)
       if (outcome_type$type == "binomial") {

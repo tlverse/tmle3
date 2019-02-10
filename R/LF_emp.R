@@ -36,10 +36,10 @@ LF_emp <- R6Class(
       super$initialize(name, ..., type = "density")
       private$.name <- name
     },
-    get_mean = function(tmle_task, cv_fold = -1) {
+    get_mean = function(tmle_task, fold_number = "full") {
       stop("nothing to predict")
     },
-    get_density = function(tmle_task, cv_fold = -1) {
+    get_density = function(tmle_task, fold_number = "full") {
       weights <- tmle_task$weights
       return(weights / sum(weights))
     }

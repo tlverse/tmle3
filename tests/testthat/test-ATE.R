@@ -70,7 +70,7 @@ tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, -1)
+submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, "full")
 #################################################
 # compare with the tmle package
 library(tmle)

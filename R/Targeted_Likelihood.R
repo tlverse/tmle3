@@ -29,14 +29,14 @@ Targeted_Likelihood <- R6Class(
       private$.updater <- updater
       super$initialize(params)
     },
-    update = function(new_epsilons, step_number, cv_fold = -1) {
+    update = function(new_epsilons, step_number, fold_number = "full") {
       # todo: rethink which tasks need updates here
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks
 
       # first, calculate all updates
       task_updates <- lapply(tasks_at_step, function(task) {
-        all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
+        all_submodels <- self$updater$generate_submodel_data(self, task, fold_number)
         updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
       })
 
@@ -46,33 +46,33 @@ Targeted_Likelihood <- R6Class(
         updated_values <- task_updates[[task_index]]
         for (node in names(updated_values)) {
           likelihood_factor <- self$factor_list[[node]]
-          self$cache$set_values(likelihood_factor, task, step_number + 1, cv_fold, updated_values[[node]])
+          self$cache$set_values(likelihood_factor, task, step_number + 1, fold_number, updated_values[[node]])
         }
       }
       # for (task in tasks_at_step) {
-      #   all_submodels <- self$updater$generate_submodel_data(self, task, cv_fold)
+      #   all_submodels <- self$updater$generate_submodel_data(self, task, fold_number)
       #   updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
       #   for (node in names(updated_values)) {
       #     likelihood_factor <- self$factor_list[[node]]
-      #     self$cache$set_values(likelihood_factor, task, step_number + 1, cv_fold, updated_values[[node]])
+      #     self$cache$set_values(likelihood_factor, task, step_number + 1, fold_number, updated_values[[node]])
       #   }
       # }
     },
-    get_likelihood = function(tmle_task, node, cv_fold = -1) {
+    get_likelihood = function(tmle_task, node, fold_number = "full") {
       if (node %in% self$updater$update_nodes) {
         # self$updater$get_updated_likelihood(self, tmle_task, node)
         likelihood_factor <- self$factor_list[[node]]
         # first check for cached values for this task
-        value_step <- self$cache$get_update_step(likelihood_factor, tmle_task, cv_fold)
+        value_step <- self$cache$get_update_step(likelihood_factor, tmle_task, fold_number)
 
         if (!is.null(value_step)) {
           # if some are available, grab them
-          likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, cv_fold)
+          likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number)
         } else {
           # if not, generate new ones
-          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, cv_fold)
+          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number)
           value_step <- 0
-          self$cache$set_values(likelihood_factor, tmle_task, value_step, cv_fold, likelihood_values)
+          self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values)
         }
 
         if (value_step != self$updater$step_number) {
@@ -80,7 +80,7 @@ Targeted_Likelihood <- R6Class(
             "cached likelihood value is out of sync with updates\n",
             "lf_uuid: ", likelihood_factor$uuid, "\n",
             "task_uuid: ", tmle_task$uuid, "\n",
-            "node: ", node, " cv_fold: ", cv_fold, "\n",
+            "node: ", node, " fold_number: ", fold_number, "\n",
             "cached_step: ", value_step, "\n",
             "update_step: ", self$updater$step_number, "\n"
           )
@@ -88,7 +88,7 @@ Targeted_Likelihood <- R6Class(
         # todo: maybe update here, or error if not already updated
       } else {
         # not a node that updates, so we can just use initial likelihood
-        likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, cv_fold)
+        likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number)
       }
 
       return(likelihood_values)

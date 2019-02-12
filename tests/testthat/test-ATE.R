@@ -35,35 +35,25 @@ Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 
-tmle_spec <- tmle_TSM_all()
+tmle_spec <- tmle_ATE(1,0)
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # LF_fit$undebug("get_likelihood")
 # estimate likelihood
-factor_list <- list(
-  define_lf(LF_emp, "W", NA),
-  define_lf(LF_fit, "A", type = "density", learner = learner_list[["A"]]),
-  define_lf(LF_fit, "Y", type = "mean", learner = learner_list[["Y"]])
-)
-
-likelihood_def <- Likelihood$new(factor_list)
-initial_likelihood <- likelihood_def$train(tmle_task)
+initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 updater <- tmle3_Update$new()
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 # define parameter
-intervention_treatment <- define_lf(LF_static, "A", value = 1)
-intervention_control <- define_lf(LF_static, "A", value = 0)
-ate <- define_param(Param_ATE, targeted_likelihood, intervention_treatment, intervention_control)
-updater$tmle_params <- list(ate)
-
+tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+updater$tmle_params <- tmle_params
+ate <- tmle_params[[1]]
 
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(ate), updater)
-
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(ate), updater,max_it)
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est

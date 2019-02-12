@@ -105,7 +105,5 @@ classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
 test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
 test_that("epsilon matches resullt from classic package", expect_equivalent(tmle3_epsilon, classic_epsilon))
-
-# tmle3 uses full-fit likelihoods to get final parameter estimates and inference, so these won't match
-# test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
-# test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))
+test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi))
+test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se))

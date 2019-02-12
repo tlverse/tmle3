@@ -55,7 +55,7 @@ tmle3_Spec <- R6Class(
       } else {
         factor_list <- list(
           define_lf(LF_emp, "W"),
-          define_lf(LF_fit, "A", learner = learner_list[["A"]]),
+          define_lf(LF_fit, "A", learner = learner_list[["A"]], bound=0.025),
           define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
         )
 

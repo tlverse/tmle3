@@ -23,9 +23,10 @@ LF_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, ..., type = "density") {
+    initialize = function(name, bound=NULL, ..., type = "density") {
       private$.name <- name
       private$.type <- type
+      private$.bound <- bound
       private$.uuid <- UUIDgenerate(use.time = TRUE)
     },
     delayed_train = function(tmle_task) {
@@ -50,6 +51,10 @@ LF_base <- R6Class(
       } else {
         values <- self$get_density(tmle_task, fold_number)
       }
+      if(!is.null(self$bound)){
+        values <- bound(values, self$bound)
+      }
+      
       return(values)
     },
 
@@ -80,6 +85,9 @@ LF_base <- R6Class(
     },
     uuid = function() {
       return(private$.uuid)
+    },
+    bound = function(){
+      return(private$.bound)
     }
   ),
   private = list(
@@ -87,7 +95,8 @@ LF_base <- R6Class(
     .variable_type = c(),
     .memoized_values = list(),
     .type = NULL,
-    .uuid = NULL
+    .uuid = NULL,
+    .bound = NULL
   )
 )
 

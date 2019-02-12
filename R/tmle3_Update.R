@@ -78,6 +78,10 @@ tmle3_Update <- R6Class(
         }
         observed <- tmle_task$get_tmle_node(update_node, bound = TRUE)
         initial <- likelihood$get_likelihood(tmle_task, update_node, fold_number)
+        
+        # protect against qlogis(1)=Inf
+        initial <- bound(initial,1/tmle_task$nrow)
+        
         submodel_data <- list(
           observed = observed,
           H = covariates_dt,

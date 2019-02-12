@@ -23,8 +23,7 @@
 tmle3_Fit <- R6Class(
   classname = "tmle3_Fit",
   public = list(
-    initialize = function(tmle_task, likelihood, tmle_params, updater,
-                              delta_params = NULL, max_it = 100, ...) {
+    initialize = function(tmle_task, likelihood, tmle_params, updater, ...) {
       if (inherits(tmle_params, "Param_base")) {
         tmle_params <- list(tmle_params)
       }

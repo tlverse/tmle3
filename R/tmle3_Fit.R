@@ -128,11 +128,11 @@ tmle3_Fit <- R6Class(
       self$updater$update(self$likelihood, self$tmle_task)
       private$.steps <- self$updater$steps
 
-      # todo: final estimates are always on fold_number="full" (refit/full fit), verify that this is what we want
+      
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {
-          tmle_param$estimates(self$tmle_task)
+          tmle_param$estimates(self$tmle_task,self$updater$update_fold)
         }
       )
 

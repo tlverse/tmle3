@@ -169,14 +169,7 @@ tmle3_Update <- R6Class(
       return(ED_criterion < ED_threshold)
     },
     update = function(likelihood, tmle_task) {
-      if (self$cvtmle) {
-        # use training predictions on validation sets
-        update_fold <- "validation"
-      } else {
-        # use predictions from full fit
-        update_fold <- "full"
-      }
-
+     update_fold <- self$update_fold
       maxit <- private$.maxit
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
@@ -202,6 +195,15 @@ tmle3_Update <- R6Class(
     },
     update_nodes = function() {
       return(private$.update_nodes)
+    },
+    update_fold = function(){
+     if (self$cvtmle) {
+        # use training predictions on validation sets
+        update_fold <- "validation"
+      } else {
+        # use predictions from full fit
+        update_fold <- "full"
+      }
     },
     step_number = function() {
       return(private$.step_number)

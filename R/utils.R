@@ -113,3 +113,12 @@ ED_from_estimates <- function(estimates) {
 
   return(ED)
 }
+
+#' Bound (Truncate) Likelihoods
+#' @param x the likelihood values to bound
+#' @param lower the lower threshold
+#' @param upper the upper threshold (or 1-lower by default)
+#' @export
+bound <- function(x, lower = 0.01, upper = 1 - lower) {
+  pmin(pmax(x, lower), upper)
+}

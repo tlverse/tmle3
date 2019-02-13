@@ -23,8 +23,7 @@
 tmle3_Fit <- R6Class(
   classname = "tmle3_Fit",
   public = list(
-    initialize = function(tmle_task, likelihood, tmle_params, updater,
-                              delta_params = NULL, max_it = 100, ...) {
+    initialize = function(tmle_task, likelihood, tmle_params, updater, ...) {
       if (inherits(tmle_params, "Param_base")) {
         tmle_params <- list(tmle_params)
       }
@@ -128,11 +127,11 @@ tmle3_Fit <- R6Class(
       self$updater$update(self$likelihood, self$tmle_task)
       private$.steps <- self$updater$steps
 
-      # todo: final estimates are always on fold_number="full" (refit/full fit), verify that this is what we want
+      
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {
-          tmle_param$estimates(self$tmle_task)
+          tmle_param$estimates(self$tmle_task,self$updater$update_fold)
         }
       )
 

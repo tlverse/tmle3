@@ -34,6 +34,8 @@ tmle3_Spec_ATE <- R6Class(
 #' A=Treatment (binary or categorical)
 #' Y=Outcome (binary or bounded continuous)
 #' @importFrom sl3 make_learner Lrnr_mean
+#' @param treatment_level the level of A that corresponds to treatment
+#' @param control_level the level of A that corresponds to a control or reference level
 #' @export
 tmle_ATE <- function(treatment_level, control_level) {
   # TODO: unclear why this has to be in a factory function

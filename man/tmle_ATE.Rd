@@ -6,6 +6,11 @@
 \usage{
 tmle_ATE(treatment_level, control_level)
 }
+\arguments{
+\item{treatment_level}{the level of A that corresponds to treatment}
+
+\item{control_level}{the level of A that corresponds to a control or reference level}
+}
 \description{
 O=(W,A,Y)
 W=Covariates

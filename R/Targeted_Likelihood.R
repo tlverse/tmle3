@@ -35,10 +35,7 @@ Targeted_Likelihood <- R6Class(
       tasks_at_step <- self$cache$tasks
 
       # first, calculate all updates
-      task_updates <- lapply(tasks_at_step, function(task) {
-        all_submodels <- self$updater$generate_submodel_data(self, task, fold_number)
-        updated_values <- self$updater$apply_submodels(all_submodels, new_epsilons)
-      })
+      task_updates <- lapply(tasks_at_step, self$updater$apply_update, self, fold_number, new_epsilons)
 
       # then, store all updates
       for (task_index in seq_along(tasks_at_step)) {

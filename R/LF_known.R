@@ -50,14 +50,6 @@ LF_known <- R6Class(
       learner_task <- tmle_task$get_regression_task(self$name, bound = FALSE)
       preds <- self$mean_fun(learner_task)
 
-      outcome_type <- learner_task$outcome_type
-
-      bounds <- outcome_type$bounds
-      if (!is.null(bounds)) {
-        scale <- bounds[2] - bounds[1]
-        shift <- bounds[1]
-        preds <- (preds - shift) / scale
-      }
       return(preds)
     },
     get_density = function(tmle_task, fold_number) {

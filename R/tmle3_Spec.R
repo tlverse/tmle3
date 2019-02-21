@@ -16,6 +16,7 @@ tmle3_Spec <- R6Class(
     },
     make_tmle_task = function(data, node_list, ...) {
       setDT(data)
+      
       # bound Y if continuous
       Y_node <- node_list$Y
       Y_vals <- unlist(data[, Y_node, with = FALSE])
@@ -24,8 +25,8 @@ tmle3_Spec <- R6Class(
         min_Y <- min(Y_vals)
         max_Y <- max(Y_vals)
         range <- max_Y - min_Y
-        lower <- min_Y # - 0.1 * range
-        upper <- max_Y # + 0.1 * range
+        lower <- min_Y  #- 0.1 * range
+        upper <- max_Y  #+ 0.1 * range
         Y_variable_type <- variable_type(
           type = "continuous",
           bounds = c(lower, upper)

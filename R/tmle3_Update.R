@@ -66,7 +66,7 @@ tmle3_Update <- R6Class(
       # todo: support not getting observed for case where we're applying updates instead of fitting them
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) tmle_param$clever_covariates(tmle_task, fold_number))
 
-      observed_values <- lapply(update_nodes, tmle_task$get_tmle_node, bound = TRUE)
+      observed_values <- lapply(update_nodes, tmle_task$get_tmle_node)
 
       all_submodels <- lapply(update_nodes, function(update_node) {
         node_covariates <- lapply(clever_covariates, `[[`, update_node)
@@ -76,11 +76,16 @@ tmle3_Update <- R6Class(
           estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(observed_task, fold_number))
           covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
         }
-        observed <- tmle_task$get_tmle_node(update_node, bound = TRUE)
+        
+        observed <- tmle_task$get_tmle_node(update_node)
         initial <- likelihood$get_likelihood(tmle_task, update_node, fold_number)
         
+        # scale observed and predicted values for bounded continuous
+        observed <- tmle_task$scale(observed, update_node)
+        initial <- tmle_task$scale(initial, update_node)
+        
         # protect against qlogis(1)=Inf
-        initial <- bound(initial,1/tmle_task$nrow)
+        initial <- bound(initial,0.005)
         
         submodel_data <- list(
           observed = observed,
@@ -150,10 +155,28 @@ tmle3_Update <- R6Class(
     apply_submodel = function(submodel_data, epsilon) {
       self$submodel(epsilon, submodel_data$initial, submodel_data$H)
     },
-    apply_submodels = function(all_submodels, all_epsilon) {
+    apply_update = function(tmle_task, likelihood, fold_number, all_epsilon) {
+      
       update_nodes <- self$update_nodes
-      updated_likelihood <- mapply(self$apply_submodel, all_submodels, all_epsilon, SIMPLIFY = FALSE)
-      return(updated_likelihood)
+      
+      # get submodel data for all nodes
+      all_submodel_data <- self$generate_submodel_data(likelihood, tmle_task, fold_number)
+      
+      # apply update to all nodes
+      updated_likelihoods <- lapply(update_nodes,function(update_node){
+        submodel_data <- all_submodel_data[[update_node]]
+        epsilon <- all_epsilon[[update_node]]
+        updated_likelihood <- self$apply_submodel(submodel_data, epsilon)
+        
+        # unscale to handle bounded continuous
+        updated_likelihood <- tmle_task$unscale(updated_likelihood, update_node)
+        
+        
+      })
+      
+      names(updated_likelihoods) <- update_nodes
+      
+      return(updated_likelihoods)
     },
     check_convergence = function(tmle_task, fold_number = "full") {
       ED_threshold <- 1 / tmle_task$nrow

@@ -44,8 +44,8 @@ tmle3_Task <- R6Class(
       private$.npsem <- npsem
       private$.node_cache <- new.env()
     },
-    get_tmle_node = function(node_name, bound = FALSE) {
-      cache_key <- sprintf("%s_%s", node_name, bound)
+    get_tmle_node = function(node_name) {
+      cache_key <- node_name
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
         return(cached_data)
@@ -55,16 +55,6 @@ tmle3_Task <- R6Class(
 
       data <- self$get_data(, node_var)
 
-      if (bound) {
-        bounds <- tmle_node$variable_type$bounds
-        if (!is.null(bounds)) {
-          scale <- bounds[2] - bounds[1]
-          shift <- bounds[1]
-          data <- data[, lapply(.SD, function(vals) (vals - shift) / scale)]
-        }
-      }
-
-
       if (ncol(data) == 1) {
         data <- unlist(data, use.names = FALSE)
       }
@@ -73,7 +63,7 @@ tmle3_Task <- R6Class(
 
       return(data)
     },
-    get_regression_task = function(target_node, bound = TRUE) {
+    get_regression_task = function(target_node, bound = FALSE) {
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
@@ -89,12 +79,16 @@ tmle3_Task <- R6Class(
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
         (!is.null(variable_type$bounds)) &&
-        bound) {
+        bound){
+      
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes
-        bounded_vals <- self$get_tmle_node(target_node, bound = TRUE)
-        col_name <- sprintf("__%s_bounded", target_node)
-        new_data <- data.table(bounded_vals)
+        
+        outcome_data <- self$get_tmle_node(target_node)
+        scaled_outcome <- self$scale(outcome_data, target_node)
+        
+        col_name <- sprintf("__%s_scaled", target_node)
+        new_data <- data.table(scaled_outcome)
         setnames(new_data, col_name)
         column_names <- self$add_columns(new_data, self$uuid)
         outcome <- col_name
@@ -141,6 +135,40 @@ tmle3_Task <- R6Class(
     print = function() {
       cat(sprintf("A sl3 Task with %d obs and these nodes:\n", self$nrow))
       print(self$npsem)
+    },
+    get_node_bounds = function(node){
+      npsem <- self$npsem
+      node_object <- npsem[[node]]
+      variable_type <- node_object$variable_type
+      return(variable_type$bounds)
+    },
+    scale = function(x, node){
+      bounds <- self$get_node_bounds(node)
+      
+      # nothing to do if no bounds, so return untransformed
+      if(is.null(bounds)){
+        return(x)
+      }
+      
+      scale <- bounds[2] - bounds[1]
+      shift <- bounds[1]
+      x_scaled <- (x - shift) / scale
+      
+      return(x_scaled)
+    },
+    unscale = function(x_scaled, node){
+      bounds <- self$get_node_bounds(node)
+      
+      # nothing to do if no bounds, so return untransformed
+      if(is.null(bounds)){
+        return(x_scaled)
+      }
+      
+      scale <- bounds[2] - bounds[1]
+      shift <- bounds[1]
+      x <- (x_scaled * scale) + shift
+      
+      return(x)
     }
   ),
   active = list(

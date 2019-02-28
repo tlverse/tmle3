@@ -11,17 +11,27 @@ tmle3_Spec <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(likelihood_override = NULL, ...) {
-      private$.options <- list(likelihood_override = likelihood_override, ...)
+    initialize = function(likelihood_override = NULL, node_types = NULL, ...) {
+      private$.options <- list(likelihood_override = likelihood_override, node_types = node_types, ...)
     },
     make_tmle_task = function(data, node_list, ...) {
       setDT(data)
       
+      node_types <- self$options$node_types
+      if(is.null(node_types$Y)){
+        Y_node <- node_list$Y
+        Y_vals <- unlist(data[, Y_node, with = FALSE])
+        Y_variable_type <- variable_type(x = Y_vals)  
+      } else {
+        Y_variable_type <- node_types$Y
+      }
+      
+      if(!Y_variable_type$type%in%c("continuous","binomial")){
+        stop("Y variable detected to be ", Y_variable_type$type,". Only continuous and binomial are supported.")
+      }
+      
       # bound Y if continuous
-      Y_node <- node_list$Y
-      Y_vals <- unlist(data[, Y_node, with = FALSE])
-      Y_variable_type <- variable_type(x = Y_vals)
-      if (Y_variable_type$type == "continuous") {
+      if ((Y_variable_type$type == "continuous") && is.null(Y_variable_type$bounds)) {
         min_Y <- min(Y_vals)
         max_Y <- max(Y_vals)
         range <- max_Y - min_Y
@@ -36,7 +46,7 @@ tmle3_Spec <- R6Class(
       # make tmle_task
       npsem <- list(
         define_node("W", node_list$W),
-        define_node("A", node_list$A, c("W")),
+        define_node("A", node_list$A, c("W"), node_types$A),
         define_node("Y", node_list$Y, c("A", "W"), Y_variable_type)
       )
 
@@ -50,13 +60,19 @@ tmle3_Spec <- R6Class(
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {
       # produce trained likelihood when likelihood_def provided
+      A_variable_type <- tmle_task$npsem$A$variable_type$type
+      if(A_variable_type == "continuous"){
+        bound <- NULL
+      } else{
+        bound <- 0.025
+      }
       likelihood_def <- self$options$likelihood_override
       if (!is.null(likelihood_def)) {
         likelihood <- likelihood_def$train(tmle_task)
       } else {
         factor_list <- list(
           define_lf(LF_emp, "W"),
-          define_lf(LF_fit, "A", learner = learner_list[["A"]], bound=0.025),
+          define_lf(LF_fit, "A", learner = learner_list[["A"]], bound=bound),
           define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
         )
 

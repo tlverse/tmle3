@@ -22,11 +22,22 @@ Targeted_Likelihood <- R6Class(
   class = TRUE,
   inherit = Likelihood,
   public = list(
-    initialize = function(initial_likelihood, updater, ...) {
+    initialize = function(initial_likelihood, updater = NULL, ...) {
       params <- args_to_list()
 
       private$.initial_likelihood <- initial_likelihood
+      
+      # handle updater arguments
+      if(is.null(updater)){
+        updater <- tmle3_Update$new()
+      } else if(inherits(updater,"tmle3_Update")){
+        # do nothing
+      } else if(inherits(updater,"list")){
+        # construct updater from list arguments
+        updater <- do.call(tmle3_Update$new,updater)
+      }
       private$.updater <- updater
+      
       super$initialize(params)
     },
     update = function(new_epsilons, step_number, fold_number = "full") {

@@ -37,6 +37,8 @@ point_tx_task <- function(data, node_list, variable_types = NULL, ...) {
   return(tmle_task)
 }
 
+#' @export
+#' @rdname point_tx
 point_tx_likelihood <- function(tmle_task, learner_list) {
   # covariates
   W_factor <- define_lf(LF_emp, "W")

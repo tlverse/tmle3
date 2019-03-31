@@ -3,11 +3,14 @@
 \name{point_tx_npsem}
 \alias{point_tx_npsem}
 \alias{point_tx_task}
+\alias{point_tx_likelihood}
 \title{Helper Functions for Point Treatment}
 \usage{
 point_tx_npsem(node_list, variable_types = NULL)
 
 point_tx_task(data, node_list, variable_types = NULL, ...)
+
+point_tx_likelihood(tmle_task, learner_list)
 }
 \arguments{
 \item{node_list}{a list of character vectors, listing the variables that comprise each node}
@@ -21,8 +24,6 @@ point_tx_task(data, node_list, variable_types = NULL, ...)
 \item{tmle_task}{a \code{\link{tmle3_Task}} as constructed via \code{point_tx_task}}
 
 \item{learner_list}{a list of sl3 learners, one for A and one for Y to be used for likelihood estimation}
-
-\item{likelihood}{a \code{\link{Likelihood}}, as constructed via \code{point_tx_likelihood}}
 }
 \description{
 Handles the common W (covariates), A (treatment/intervention), Y (outcome) data structure

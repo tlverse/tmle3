@@ -40,6 +40,23 @@ tmle3_Task <- R6Class(
         if (is.null(npsem[[node_name]]$variable_type)) {
           npsem[[node_name]]$guess_variable_type(variable_data)
         }
+        
+        # setup bounds for scaling of bounded continuous outcome if necessary
+        current_type <- npsem[[node_name]]$variable_type
+        if((npsem[[node_name]]$scale)&&
+           (current_type$type=="continuous")&&
+           (is.null(current_type$bounds))){
+          min_x <- min(variable_data)
+          max_x <- max(variable_data)
+          range <- max_x - min_x
+          lower <- min_x  #- 0.1 * range
+          upper <- max_x  #+ 0.1 * range
+          bounded_variable_type <- variable_type(
+            type = "continuous",
+            bounds = c(lower, upper)
+          )
+          npsem[[node_name]]$variable_type <- bounded_variable_type
+        }
       }
       private$.npsem <- npsem
       private$.node_cache <- new.env()
@@ -63,7 +80,7 @@ tmle3_Task <- R6Class(
 
       return(data)
     },
-    get_regression_task = function(target_node, bound = FALSE) {
+    get_regression_task = function(target_node, scale = FALSE) {
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
@@ -74,12 +91,12 @@ tmle3_Task <- R6Class(
       # todo: consider if self$data isn't a better option here
       data <- self$internal_data
 
-      # bound continuous outcome if bounds are specified to variable_type
+      # scale continuous outcome if bounds are specified to variable_type
       variable_type <- target_node_object$variable_type
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
         (!is.null(variable_type$bounds)) &&
-        bound){
+        scale){
       
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes

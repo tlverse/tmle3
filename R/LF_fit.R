@@ -53,7 +53,7 @@ LF_fit <- R6Class(
       outcome_node <- self$name
       
       # fit scaled task for bounded continuous
-      learner_task <- tmle_task$get_regression_task(outcome_node, bound = TRUE)
+      learner_task <- tmle_task$get_regression_task(outcome_node, scale = TRUE)
       learner_fit <- delayed_learner_train(self$learner, learner_task)
       return(learner_fit)
     },

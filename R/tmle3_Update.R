@@ -204,6 +204,14 @@ tmle3_Update <- R6Class(
           break
         }
       }
+    },
+    register_param = function(new_params){
+      if (inherits(new_params, "Param_base")) {
+          new_params <- list(new_params)
+      }
+      private$.tmle_params <- c(private$.tmle_params, new_params)
+      new_update_nodes <- unlist(lapply(new_params, `[[`, "update_nodes"))
+      private$.update_nodes <- unique(c(private$.update_nodes, new_update_nodes))
     }
   ),
   active = list(

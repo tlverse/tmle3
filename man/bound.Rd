@@ -4,14 +4,12 @@
 \alias{bound}
 \title{Bound (Truncate) Likelihoods}
 \usage{
-bound(x, lower = 0.01, upper = 1 - lower)
+bound(x, bounds)
 }
 \arguments{
 \item{x}{the likelihood values to bound}
 
-\item{lower}{the lower threshold}
-
-\item{upper}{the upper threshold (or 1-lower by default)}
+\item{bounds}{Either a length two vector of c(lower,upper) or a lower bound, where the upper is then 1 - lower}
 }
 \description{
 Bound (Truncate) Likelihoods

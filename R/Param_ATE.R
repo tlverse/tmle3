@@ -72,7 +72,7 @@ Param_ATE <- R6Class(
       }
 
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
-      
+
       # clever_covariates happen here (for this param) only, but this is repeated computation
       HA <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
 

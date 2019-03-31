@@ -40,17 +40,17 @@ tmle3_Task <- R6Class(
         if (is.null(npsem[[node_name]]$variable_type)) {
           npsem[[node_name]]$guess_variable_type(variable_data)
         }
-        
+
         # setup bounds for scaling of bounded continuous outcome if necessary
         current_type <- npsem[[node_name]]$variable_type
-        if((npsem[[node_name]]$scale)&&
-           (current_type$type=="continuous")&&
-           (is.null(current_type$bounds))){
+        if ((npsem[[node_name]]$scale) &&
+          (current_type$type == "continuous") &&
+          (is.null(current_type$bounds))) {
           min_x <- min(variable_data)
           max_x <- max(variable_data)
           range <- max_x - min_x
-          lower <- min_x  #- 0.1 * range
-          upper <- max_x  #+ 0.1 * range
+          lower <- min_x #- 0.1 * range
+          upper <- max_x #+ 0.1 * range
           bounded_variable_type <- variable_type(
             type = "continuous",
             bounds = c(lower, upper)
@@ -96,14 +96,14 @@ tmle3_Task <- R6Class(
       column_names <- self$column_names
       if ((variable_type$type == "continuous") &&
         (!is.null(variable_type$bounds)) &&
-        scale){
-      
+        scale) {
+
         # TODO: make quasibinomial, make more learners play nice with
         #       quasibinomial outcomes
-        
+
         outcome_data <- self$get_tmle_node(target_node)
         scaled_outcome <- self$scale(outcome_data, target_node)
-        
+
         col_name <- sprintf("__%s_scaled", target_node)
         new_data <- data.table(scaled_outcome)
         setnames(new_data, col_name)
@@ -153,38 +153,38 @@ tmle3_Task <- R6Class(
       cat(sprintf("A sl3 Task with %d obs and these nodes:\n", self$nrow))
       print(self$npsem)
     },
-    get_node_bounds = function(node){
+    get_node_bounds = function(node) {
       npsem <- self$npsem
       node_object <- npsem[[node]]
       variable_type <- node_object$variable_type
       return(variable_type$bounds)
     },
-    scale = function(x, node){
+    scale = function(x, node) {
       bounds <- self$get_node_bounds(node)
-      
+
       # nothing to do if no bounds, so return untransformed
-      if(is.null(bounds)){
+      if (is.null(bounds)) {
         return(x)
       }
-      
+
       scale <- bounds[2] - bounds[1]
       shift <- bounds[1]
       x_scaled <- (x - shift) / scale
-      
+
       return(x_scaled)
     },
-    unscale = function(x_scaled, node){
+    unscale = function(x_scaled, node) {
       bounds <- self$get_node_bounds(node)
-      
+
       # nothing to do if no bounds, so return untransformed
-      if(is.null(bounds)){
+      if (is.null(bounds)) {
         return(x_scaled)
       }
-      
+
       scale <- bounds[2] - bounds[1]
       shift <- bounds[1]
       x <- (x_scaled * scale) + shift
-      
+
       return(x)
     }
   ),

@@ -12,8 +12,10 @@ tmle3_Spec_ATE <- R6Class(
   inherit = tmle3_Spec,
   public = list(
     initialize = function(treatment_level, control_level, ...) {
-      super$initialize(treatment_level=treatment_level, 
-        control_level=control_level, ...)
+      super$initialize(
+        treatment_level = treatment_level,
+        control_level = control_level, ...
+      )
     },
     make_params = function(tmle_task, likelihood) {
       treatment <- define_lf(LF_static, "A", value = self$options$treatment_level)

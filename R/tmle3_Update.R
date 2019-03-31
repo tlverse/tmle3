@@ -76,17 +76,17 @@ tmle3_Update <- R6Class(
           estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(observed_task, fold_number))
           covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
         }
-        
+
         observed <- tmle_task$get_tmle_node(update_node)
         initial <- likelihood$get_likelihood(tmle_task, update_node, fold_number)
-        
+
         # scale observed and predicted values for bounded continuous
         observed <- tmle_task$scale(observed, update_node)
         initial <- tmle_task$scale(initial, update_node)
-        
+
         # protect against qlogis(1)=Inf
-        initial <- bound(initial,0.005)
-        
+        initial <- bound(initial, 0.005)
+
         submodel_data <- list(
           observed = observed,
           H = covariates_dt,
@@ -156,26 +156,23 @@ tmle3_Update <- R6Class(
       self$submodel(epsilon, submodel_data$initial, submodel_data$H)
     },
     apply_update = function(tmle_task, likelihood, fold_number, all_epsilon) {
-      
       update_nodes <- self$update_nodes
-      
+
       # get submodel data for all nodes
       all_submodel_data <- self$generate_submodel_data(likelihood, tmle_task, fold_number)
-      
+
       # apply update to all nodes
-      updated_likelihoods <- lapply(update_nodes,function(update_node){
+      updated_likelihoods <- lapply(update_nodes, function(update_node) {
         submodel_data <- all_submodel_data[[update_node]]
         epsilon <- all_epsilon[[update_node]]
         updated_likelihood <- self$apply_submodel(submodel_data, epsilon)
-        
+
         # unscale to handle bounded continuous
         updated_likelihood <- tmle_task$unscale(updated_likelihood, update_node)
-        
-        
       })
-      
+
       names(updated_likelihoods) <- update_nodes
-      
+
       return(updated_likelihoods)
     },
     check_convergence = function(tmle_task, fold_number = "full") {
@@ -196,7 +193,7 @@ tmle3_Update <- R6Class(
       return(ED_criterion < ED_threshold)
     },
     update = function(likelihood, tmle_task) {
-     update_fold <- self$update_fold
+      update_fold <- self$update_fold
       maxit <- private$.maxit
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
@@ -205,9 +202,9 @@ tmle3_Update <- R6Class(
         }
       }
     },
-    register_param = function(new_params){
+    register_param = function(new_params) {
       if (inherits(new_params, "Param_base")) {
-          new_params <- list(new_params)
+        new_params <- list(new_params)
       }
       private$.tmle_params <- c(private$.tmle_params, new_params)
       new_update_nodes <- unlist(lapply(new_params, `[[`, "update_nodes"))
@@ -231,8 +228,8 @@ tmle3_Update <- R6Class(
     update_nodes = function() {
       return(private$.update_nodes)
     },
-    update_fold = function(){
-     if (self$cvtmle) {
+    update_fold = function() {
+      if (self$cvtmle) {
         # use training predictions on validation sets
         update_fold <- "validation"
       } else {

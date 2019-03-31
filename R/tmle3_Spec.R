@@ -27,7 +27,7 @@ tmle3_Spec <- R6Class(
       } else {
         likelihood <- point_tx_likelihood(tmle_task, learner_list)
       }
-      
+
       return(likelihood)
     },
     make_updater = function() {

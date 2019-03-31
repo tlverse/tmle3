@@ -23,12 +23,12 @@ Param_base <- R6Class(
     initialize = function(observed_likelihood, ..., outcome_node = "Y") {
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
-      if(inherits(observed_likelihood,"Targeted_Likelihood")){
+      if (inherits(observed_likelihood, "Targeted_Likelihood")) {
         # register parameter with updater
         observed_likelihood$updater$register_param(self)
-      } else if (inherits(observed_likelihood, "Likelihood")){
+      } else if (inherits(observed_likelihood, "Likelihood")) {
         warning("Parameter was passed a non-Targeted Likelihood object so estimates cannot be updated from initial")
-      } else{
+      } else {
         stop("Invalid Likelihood class: ", class(observed_likelihood))
       }
     },
@@ -38,7 +38,7 @@ Param_base <- R6Class(
     estimates = function(tmle_task = NULL, fold_number = "full") {
       stop("Param_base is a base class")
     },
-    print = function(){
+    print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     }
   ),
@@ -49,7 +49,7 @@ Param_base <- R6Class(
     type = function() {
       return(private$.type)
     },
- 
+
     observed_likelihood = function() {
       return(private$.observed_likelihood)
     },

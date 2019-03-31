@@ -120,7 +120,7 @@ ED_from_estimates <- function(estimates) {
 #' @export
 bound <- function(x, bounds) {
   lower <- bounds[[1]]
-  if(length(bounds)>1){
+  if (length(bounds) > 1) {
     upper <- bounds[[2]]
   } else {
     upper <- 1 - lower

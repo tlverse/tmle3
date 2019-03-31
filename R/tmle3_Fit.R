@@ -127,11 +127,11 @@ tmle3_Fit <- R6Class(
       self$updater$update(self$likelihood, self$tmle_task)
       private$.steps <- self$updater$steps
 
-      
+
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {
-          tmle_param$estimates(self$tmle_task,self$updater$update_fold)
+          tmle_param$estimates(self$tmle_task, self$updater$update_fold)
         }
       )
 

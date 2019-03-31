@@ -35,7 +35,7 @@ Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 
-tmle_spec <- tmle_ATE(1,0)
+tmle_spec <- tmle_ATE(1, 0)
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
@@ -53,7 +53,7 @@ updater$tmle_params <- tmle_params
 ate <- tmle_params[[1]]
 
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(ate), updater,max_it)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(ate), updater, max_it)
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -84,7 +84,7 @@ pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = tmle_task$get_tmle_node("A"),
-  W = cbind(tmle_task$get_tmle_node("W"),tmle_task$get_tmle_node("W")),
+  W = cbind(tmle_task$get_tmle_node("W"), tmle_task$get_tmle_node("W")),
   Q = Q,
   g1W = pA1
 )
@@ -93,6 +93,6 @@ tmle_classic_fit <- tmle(
 # extract estimates
 classic_psi <- tmle_classic_fit$estimates$ATE$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$ATE$var.psi)
-tol <- 1/sqrt(tmle_task$nrow)
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol=tol))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol=tol))
+tol <- 1 / sqrt(tmle_task$nrow)
+test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = tol))
+test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = tol))

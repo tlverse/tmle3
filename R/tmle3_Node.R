@@ -87,8 +87,8 @@ tmle3_Node <- R6Class(
       return(private$.scale)
     },
     variable_type = function(new_variable_type = NULL) {
-      if(!is.null(new_variable_type)){
-        private$.variable_type = new_variable_type
+      if (!is.null(new_variable_type)) {
+        private$.variable_type <- new_variable_type
       }
       return(private$.variable_type)
     }

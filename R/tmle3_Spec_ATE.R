@@ -18,8 +18,9 @@ tmle3_Spec_ATE <- R6Class(
       )
     },
     make_params = function(tmle_task, likelihood) {
-      treatment <- define_lf(LF_static, "A", value = self$options$treatment_level)
-      control <- define_lf(LF_static, "A", value = self$options$control_level)
+      A_levels <- tmle_task$npsem[["A"]]$variable_type$levels
+      treatment <- define_lf(LF_static, "A", value = factor(self$options$treatment_level, levels=A_levels))
+      control <- define_lf(LF_static, "A", value = factor(self$options$control_level, levels = A_levels))
       ate <- Param_ATE$new(likelihood, treatment, control)
       tmle_params <- list(ate)
       return(tmle_params)

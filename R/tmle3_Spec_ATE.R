@@ -12,12 +12,22 @@ tmle3_Spec_ATE <- R6Class(
   inherit = tmle3_Spec,
   public = list(
     initialize = function(treatment_level, control_level, ...) {
-      super$initialize(treatment_level=treatment_level, 
-        control_level=control_level, ...)
+      super$initialize(
+        treatment_level = treatment_level,
+        control_level = control_level, ...
+      )
     },
     make_params = function(tmle_task, likelihood) {
-      treatment <- define_lf(LF_static, "A", value = self$options$treatment_level)
-      control <- define_lf(LF_static, "A", value = self$options$control_level)
+      
+      treatment_value <- self$options$treatment_level
+      control_value <- self$options$control_level
+      A_levels <- tmle_task$npsem[["A"]]$variable_type$levels
+      if(!is.null(A_levels)){
+        treatment_value <- factor(treatment_value, levels=A_levels)
+        control_value <- factor(control_value, levels=A_levels)
+      }
+      treatment <- define_lf(LF_static, "A", value = treatment_value)
+      control <- define_lf(LF_static, "A", value = control_value)
       ate <- Param_ATE$new(likelihood, treatment, control)
       tmle_params <- list(ate)
       return(tmle_params)

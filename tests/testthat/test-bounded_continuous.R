@@ -58,8 +58,8 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
 Q_bar_n <- targeted_likelihood$get_likelihood(tmle_task, "Y")
 
-test_that("likelihood values are not bounded",{
-          expect_true((min(Q_bar_n)<0)||(max(Q_bar_n)>1))
+test_that("likelihood values are not bounded", {
+  expect_true((min(Q_bar_n) < 0) || (max(Q_bar_n) > 1))
 })
 
 # extract results

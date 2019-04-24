@@ -100,6 +100,9 @@ Targeted_Likelihood <- R6Class(
       }
 
       return(likelihood_values)
+    },
+    add_factors = function(factor_list){
+      self$initial_likelihood$add_factors(factor_list)
     }
   ),
   active = list(

@@ -111,6 +111,5 @@ make_e_task <- function(tmle_task, likelihood){
 
 
 lf_e <- define_lf(LF_derived, "e", hal_contin_lrnr, likelihood_targeted, make_e_task)
-lf_e_learn_fit <- lf_e$delayed_train(tmle_task)$compute()
-lf_e$train(tmle_task, lf_e_learn_fit)
-lf_e$get_likelihood(tmle_task)
+likelihood_targeted$add_factors(lf_e)
+likelihood_targeted$get_likelihoods(tmle_task)

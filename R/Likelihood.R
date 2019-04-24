@@ -110,6 +110,20 @@ Likelihood <- R6Class(
       new_object <- self$clone() # copy parameters, and whatever else
       new_object$set_train(fit_object, task)
       return(new_object)
+    },
+    add_factors = function(factor_list){
+      if (inherits(factor_list, "LF_base")) {
+        factor_list <- list(factor_list)
+      }
+      
+      factor_names <- sapply(factor_list, `[[`, "name")
+      
+      # train factors if necessary
+      factor_list <- lapply(factor_list, train_lf, self$training_task)
+      
+      # add factors to list of factors
+      private$.params$factor_list[factor_names] <- factor_list
+      
     }
   ),
   active = list(

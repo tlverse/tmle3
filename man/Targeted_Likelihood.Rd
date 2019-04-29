@@ -85,10 +85,10 @@ to target a set of parameter(s)
 
 \seealso{
 Other Likelihood objects: \code{\link{CF_Likelihood}},
-  \code{\link{LF_base}}, \code{\link{LF_emp}},
-  \code{\link{LF_fit}}, \code{\link{LF_known}},
-  \code{\link{LF_static}}, \code{\link{Likelihood}},
-  \code{\link{define_lf}}
+  \code{\link{LF_base}}, \code{\link{LF_derived}},
+  \code{\link{LF_emp}}, \code{\link{LF_fit}},
+  \code{\link{LF_known}}, \code{\link{LF_static}},
+  \code{\link{Likelihood}}, \code{\link{define_lf}}
 }
 \concept{Likelihood objects}
 \keyword{data}

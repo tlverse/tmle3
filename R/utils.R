@@ -127,3 +127,21 @@ bound <- function(x, bounds) {
   }
   pmin(pmax(x, lower), upper)
 }
+
+#' Manually Train Likelihood Factor
+#' The internal training process for likelihood factors is somewhat obtuse, so this function
+#' does the steps to manually train one, which is helpful if you want to use a likelihood factor
+#' independently of a likelihood object
+#' @param lf the likelihood factor to train
+#' @param tmle_task the task to use for training
+#' @export
+train_lf <- function(lf, tmle_task){
+  lf_fit <- lf$delayed_train(tmle_task)
+  if(inherits(lf_fit,"Delayed")){
+    lf_fit <- lf_fit$compute()
+  }
+  
+  lf$train(tmle_task, lf_fit)
+  
+  return(lf)
+}

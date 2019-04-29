@@ -41,7 +41,10 @@ Suggests:
     simcausal,
     condensier,
     tmle,
-    tmle3shift
+    tmle3shift,
+    future,
+    future.apply,
+    stringr
 Remotes:
     github::osofr/simcausal,
     github::osofr/condensier,

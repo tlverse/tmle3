@@ -1,6 +1,7 @@
 if (FALSE) {
   library(tmle3)
   library(future)
+  library(future.apply)
   library(data.table)
   library(sl3)
   sl3_debug_mode()

@@ -5,7 +5,6 @@ context("TML estimator for incremental propensity score interventions")
 library(data.table)
 library(stringr)
 library(future)
-library(hal9001)
 library(sl3)
 library(tmle3)
 set.seed(7128816)
@@ -17,15 +16,7 @@ delta <- 0.5
 
 # instantiate some learners
 mean_lrnr <- Lrnr_mean$new()
-fglm_contin_lrnr <- Lrnr_glm_fast$new()
-fglm_binary_lrnr <- Lrnr_glm_fast$new(family = binomial())
-hal_contin_lrnr <- Lrnr_hal9001$new(
-  fit_type = "glmnet", n_folds = 5
-)
-hal_binary_lrnr <- Lrnr_hal9001$new(
-  fit_type = "glmnet", n_folds = 5,
-  family = "binomial"
-)
+glm_fast <- Lrnr_glm_fast$new()
 
 ################################################################################
 # setup data and simulate to test with estimators
@@ -86,8 +77,8 @@ npsem <- list(
 
 factor_list <- list(
   define_lf(LF_emp, "W"),
-  define_lf(LF_fit, "A", hal_binary_lrnr),
-  define_lf(LF_fit, "Y", hal_contin_lrnr, type = "mean")
+  define_lf(LF_fit, "A", glm_fast),
+  define_lf(LF_fit, "Y", glm_fast, type = "mean")
 )
 
 # create TMLE task
@@ -110,6 +101,6 @@ make_e_task <- function(tmle_task, likelihood){
 }
 
 
-lf_e <- define_lf(LF_derived, "e", hal_contin_lrnr, likelihood_targeted, make_e_task)
+lf_e <- define_lf(LF_derived, "e", glm_fast, likelihood_targeted, make_e_task)
 likelihood_targeted$add_factors(lf_e)
 likelihood_targeted$get_likelihoods(tmle_task)

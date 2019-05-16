@@ -8,15 +8,26 @@
 #'   \describe{
 #'     \item{\code{maxit}}{The maximum number of update iterations
 #'     }
-#'     \item{\code{cvtmle}}{If TRUE, use CV-likelihood values when calculating updates.
+#'     \item{\code{cvtmle}}{If \code{TRUE}, use CV-likelihood values when
+#'        calculating updates.
 #'     }
-#'     \item{\code{one_dimensional}}{If TRUE, collapse clever covariates into a one-dimensional clever covariate scaled by the mean of their EIFs
+#'     \item{\code{one_dimensional}}{If \code{TRUE}, collapse clever covariates
+#'        into a one-dimensional clever covariate scaled by the mean of their
+#'        EIFs.
 #'     }
-#'     \item{\code{constrain_step}}{If TRUE, step size is at most delta_epsilon (it can be smaller if a smaller step decreases the loss more)
+#'     \item{\code{constrain_step}}{If \code{TRUE}, step size is at most
+#'        \code{delta_epsilon} (it can be smaller if a smaller step decreases
+#'        the loss more).
 #'     }
-#'     \item{\code{delta_epsilon}}{The maximum step size allowed if constrain_step is TRUE
+#'     \item{\code{delta_epsilon}}{The maximum step size allowed if
+#'        \code{constrain_step} is \code{TRUE}.
 #'     }
-#'     \item{\code{verbose}}{If TRUE, diagnostic output is generated about the updating procedure
+#'     \item{\code{convergence_type}}{The convergence criterion to use: (1)
+#'        \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
+#'        while (2) \code{"sample_size"} corresponds to 1/n.
+#'     }
+#'     \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
+#'        about the updating procedure.
 #'     }
 #'     }
 #'
@@ -29,12 +40,16 @@ tmle3_Update <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE, constrain_step = FALSE, delta_epsilon = 1e-4, verbose = FALSE) {
+    initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
+                          constrain_step = FALSE, delta_epsilon = 1e-4,
+                          convergence_type = c("se_logn", "sample_size"),
+                          verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
       private$.constrain_step <- constrain_step
       private$.delta_epsilon <- delta_epsilon
+      private$.convergence_type <- match.arg(convergence_type)
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -176,7 +191,6 @@ tmle3_Update <- R6Class(
       return(updated_likelihoods)
     },
     check_convergence = function(tmle_task, fold_number = "full") {
-      ED_threshold <- 1 / tmle_task$nrow
       estimates <- lapply(
         self$tmle_params,
         function(tmle_param) {
@@ -184,12 +198,20 @@ tmle3_Update <- R6Class(
         }
       )
 
+      if (self$convergence_type == "se_logn") {
+        IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
+        se_D <- sqrt(apply(IC, 2, var) / tmle_task$nrow)
+        ED_threshold <- se_D / max(log(tmle_task$nrow), 10)
+      } else if (self$convergence_type == "sample_size") {
+        ED_threshold <- 1 / tmle_task$nrow
+      }
+
       ED <- ED_from_estimates(estimates)
       ED_criterion <- max(abs(ED))
+
       if (self$verbose) {
         cat(sprintf("max(abs(ED)): %e\n", ED_criterion))
       }
-
       return(ED_criterion < ED_threshold)
     },
     update = function(likelihood, tmle_task) {
@@ -255,6 +277,9 @@ tmle3_Update <- R6Class(
     delta_epsilon = function() {
       return(private$.delta_epsilon)
     },
+    convergence_type = function() {
+      return(private$.convergence_type)
+    },
     verbose = function() {
       return(private$.verbose)
     }
@@ -269,6 +294,7 @@ tmle3_Update <- R6Class(
     .one_dimensional = NULL,
     .constrain_step = NULL,
     .delta_epsilon = NULL,
+    .convergence_type = NULL,
     .verbose = FALSE
   )
 )

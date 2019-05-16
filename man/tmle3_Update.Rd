@@ -19,15 +19,26 @@ loss function and submodel are hard-coded (need to accept arguments for these)
   \describe{
     \item{\code{maxit}}{The maximum number of update iterations
     }
-    \item{\code{cvtmle}}{If TRUE, use CV-likelihood values when calculating updates.
+    \item{\code{cvtmle}}{If \code{TRUE}, use CV-likelihood values when
+       calculating updates.
     }
-    \item{\code{one_dimensional}}{If TRUE, collapse clever covariates into a one-dimensional clever covariate scaled by the mean of their EIFs
+    \item{\code{one_dimensional}}{If \code{TRUE}, collapse clever covariates
+       into a one-dimensional clever covariate scaled by the mean of their
+       EIFs.
     }
-    \item{\code{constrain_step}}{If TRUE, step size is at most delta_epsilon (it can be smaller if a smaller step decreases the loss more)
+    \item{\code{constrain_step}}{If \code{TRUE}, step size is at most
+       \code{delta_epsilon} (it can be smaller if a smaller step decreases
+       the loss more).
     }
-    \item{\code{delta_epsilon}}{The maximum step size allowed if constrain_step is TRUE
+    \item{\code{delta_epsilon}}{The maximum step size allowed if
+       \code{constrain_step} is \code{TRUE}.
     }
-    \item{\code{verbose}}{If TRUE, diagnostic output is generated about the updating procedure
+    \item{\code{convergence_type}}{The convergence criterion to use: (1)
+       \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
+       while (2) \code{"sample_size"} corresponds to 1/n.
+    }
+    \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
+       about the updating procedure.
     }
     }
 }

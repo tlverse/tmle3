@@ -4,6 +4,6 @@ pkgdown_sha: 83f2afb5d2ec85abe29bfd8d67408cdf2bb55f03
 articles:
   framework: framework.html
 urls:
-  reference: http://tmle3.tlverse.org/reference
-  article: http://tmle3.tlverse.org/articles
+  reference: http://tlverse.org/tmle3/reference
+  article: http://tlverse.org/tmle3/articles
 

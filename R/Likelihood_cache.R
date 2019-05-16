@@ -28,6 +28,11 @@ Likelihood_cache <- R6Class(
     },
     set_values = function(likelihood_factor, tmle_task, update_step = 0, fold_number, values) {
       self$cache_task(tmle_task)
+      
+      # respect likelihood factors that don't want to cache
+      if(!likelihood_factor$cache){
+        return(0)
+      }
       key <- self$key(likelihood_factor, tmle_task, fold_number)
       assign(key, values, self$cache)
 

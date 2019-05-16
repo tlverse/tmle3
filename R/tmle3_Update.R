@@ -41,9 +41,9 @@ tmle3_Update <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
-                          constrain_step = FALSE, delta_epsilon = 1e-4,
-                          convergence_type = c("se_logn", "sample_size"),
-                          verbose = FALSE) {
+                              constrain_step = FALSE, delta_epsilon = 1e-4,
+                              convergence_type = c("se_logn", "sample_size"),
+                              verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional

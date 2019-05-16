@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Risk Ratio — tmle_RR • tmle</title>
+<title>Get Empirical Mean of EIFs from Estimates — ED_from_estimates • tmle</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,12 +31,9 @@
 
 
 
-<meta property="og:title" content="Risk Ratio — tmle_RR" />
+<meta property="og:title" content="Get Empirical Mean of EIFs from Estimates — ED_from_estimates" />
 
-<meta property="og:description" content="O = (W, A, Y)
-W = Covariates
-A = Treatment (binary or categorical)
-Y = Outcome (binary or bounded continuous)" />
+<meta property="og:description" content="Get Empirical Mean of EIFs from Estimates" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,32 +113,25 @@ Y = Outcome (binary or bounded continuous)" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Risk Ratio</h1>
+    <h1>Get Empirical Mean of EIFs from Estimates</h1>
     
-    <div class="hidden name"><code>tmle_RR.Rd</code></div>
+    <div class="hidden name"><code>ED_from_estimates.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>O = (W, A, Y)
-W = Covariates
-A = Treatment (binary or categorical)
-Y = Outcome (binary or bounded continuous)</p>
+    <p>Get Empirical Mean of EIFs from Estimates</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>tmle_RR</span>(<span class='no'>baseline_level</span>, <span class='no'>contrast_level</span>)</pre>
+    <pre class="usage"><span class='fu'>ED_from_estimates</span>(<span class='no'>estimates</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>baseline_level</th>
-      <td><p>The baseline risk group.</p></td>
-    </tr>
-    <tr>
-      <th>contrast_level</th>
-      <td><p>The contrast risk group.</p></td>
+      <th>estimates</th>
+      <td><p>a list of estimates objects</p></td>
     </tr>
     </table>
     

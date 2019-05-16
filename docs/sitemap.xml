@@ -7,7 +7,13 @@
     <loc>http://tmle3.tlverse.org/reference/CF_Likelihood.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/ED_from_estimates.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/LF_base.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/LF_derived.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/LF_emp.html</loc>
@@ -28,6 +34,9 @@
     <loc>http://tmle3.tlverse.org/reference/Likelihood_cache.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/Param_ATE.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/Param_ATT.html</loc>
   </url>
   <url>
@@ -44,6 +53,9 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/Targeted_Likelihood.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/bound.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/define_lf.html</loc>
@@ -73,6 +85,9 @@
     <loc>http://tmle3.tlverse.org/reference/plot_vim.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/point_tx.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/process_missing.html</loc>
   </url>
   <url>
@@ -97,6 +112,9 @@
     <loc>http://tmle3.tlverse.org/reference/tmle3_Spec.html</loc>
   </url>
   <url>
+    <loc>http://tmle3.tlverse.org/reference/tmle3_Spec_ATE.html</loc>
+  </url>
+  <url>
     <loc>http://tmle3.tlverse.org/reference/tmle3_Spec_PAR.html</loc>
   </url>
   <url>
@@ -112,10 +130,10 @@
     <loc>http://tmle3.tlverse.org/reference/tmle3_Update.html</loc>
   </url>
   <url>
-    <loc>http://tmle3.tlverse.org/reference/tmle3_cv_Update.html</loc>
+    <loc>http://tmle3.tlverse.org/reference/tmle3_vim.html</loc>
   </url>
   <url>
-    <loc>http://tmle3.tlverse.org/reference/tmle3_vim.html</loc>
+    <loc>http://tmle3.tlverse.org/reference/tmle_ATE.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle_PAR.html</loc>
@@ -125,6 +143,9 @@
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/tmle_TSM_all.html</loc>
+  </url>
+  <url>
+    <loc>http://tmle3.tlverse.org/reference/train_lf.html</loc>
   </url>
   <url>
     <loc>http://tmle3.tlverse.org/reference/wald_ci.html</loc>

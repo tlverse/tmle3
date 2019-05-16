@@ -23,7 +23,7 @@ LF_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, bound = NULL, ..., type = "density", cache=TRUE) {
+    initialize = function(name, bound = NULL, ..., type = "density", cache = TRUE) {
       private$.name <- name
       private$.type <- type
       private$.bound <- bound
@@ -90,7 +90,7 @@ LF_base <- R6Class(
     bound = function() {
       return(private$.bound)
     },
-    cache = function(){
+    cache = function() {
       return(private$.cache)
     }
   ),

@@ -42,7 +42,7 @@ tmle_spec <- tmle_TSM_all()
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 W_factor <- define_lf(LF_emp, "W")
-A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], cache=FALSE)
+A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], cache = FALSE)
 Y_factor <- define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
 
 # construct and train likelihood
@@ -57,5 +57,5 @@ likelihood_values <- likelihood$get_likelihoods(tmle_task)
 A_values <- likelihood$cache$get_values(A_factor, tmle_task, "full")
 Y_values <- likelihood$cache$get_values(Y_factor, tmle_task, "full")
 
-test_that("caching works",expect_length(Y_values,tmle_task$nrow))
-test_that("disabling caching works",expect_null(A_values))
+test_that("caching works", expect_length(Y_values, tmle_task$nrow))
+test_that("disabling caching works", expect_null(A_values))

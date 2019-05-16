@@ -47,7 +47,7 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
   A_type <- tmle_task$npsem[["A"]]$variable_type
   if (A_type$type == "continous") {
     A_bound <- c(1 / tmle_task$nrow, Inf)
-  } else if (A_type$type %in% c("binomial","categorical")) {
+  } else if (A_type$type %in% c("binomial", "categorical")) {
     A_bound <- 0.025
   } else {
     A_bound <- NULL

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TMLE fit object — tmle3_Fit • tmle</title>
+<title>Derived Likelihood Factor Estimated from Data + Other Likelihood values, using sl3. — LF_derived • tmle</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,11 +31,10 @@
 
 
 
-<meta property="og:title" content="TMLE fit object — tmle3_Fit" />
+<meta property="og:title" content="Derived Likelihood Factor Estimated from Data + Other Likelihood values, using sl3. — LF_derived" />
 
-<meta property="og:description" content="A tmle_fit object, containing initial and updated estimates, as well as data
-about the fitting procedure. TMLE updates are calculated when the object is
-constructed." />
+<meta property="og:description" content="Uses an sl3 learner to estimate a likelihood factor from data.
+Inherits from LF_base; see that page for documentation on likelihood factors in general." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -115,108 +114,66 @@ constructed." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>TMLE fit object</h1>
+    <h1>Derived Likelihood Factor Estimated from Data + Other Likelihood values, using sl3.</h1>
     
-    <div class="hidden name"><code>tmle3_Fit.Rd</code></div>
+    <div class="hidden name"><code>LF_derived.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>A tmle_fit object, containing initial and updated estimates, as well as data
-about the fitting procedure. TMLE updates are calculated when the object is
-constructed.</p>
+    <p>Uses an <code>sl3</code> learner to estimate a likelihood factor from data.
+Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>tmle3_Fit</span>
-
-<span class='fu'>fit_tmle3</span>(<span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>...</th>
-      <td><p>Passes all arguments to the constructor. See documentation for the
-Constructor.</p></td>
-    </tr>
-    </table>
-    
+    <pre class="usage"><span class='no'>LF_derived</span></pre>
+        
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
     <p><code>R6Class</code> object.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>Param_base</code> object</p>
+    <p><code>LF_base</code> object</p>
     
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code>fit_tmle3(tmle_task, likelihood, tmle_params, updater, max_it=100, ...)</code></p>                     
+    <p><code><a href='define_lf.html'>define_lf(LF_fit, name, learner, ..., type = "density")</a></code></p>
 <p></p><dl class='dl-horizontal'>
-    <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
-    <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
-    <dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
-    <dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
-    <dt><code>maxit</code></dt><dd><p>integer, maximum number of TMLE iterations</p></dd>
+    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
+    <dt><code>learner</code></dt><dd><p>An sl3 learner to be used to estimate the factor</p></dd>
     <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+    <dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
     </dl>
-    
-    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
-
-    
-    <dl class='dl-horizontal'>
-<dt><code>set_timings(start_time, task_time, likelihood_time, params_time, fit_time)</code></dt><dd><p>Provide the timings for the different steps of the TMLE procedure, for later reporting to the user
-    <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
-</ul></p></dd>
-<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.
-    <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
-</ul></p></dd>
-</dl>
     
     <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
 
     
     <dl class='dl-horizontal'>
-    <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
-    <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
-    <dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
-    <dt><code>tmle_names</code></dt><dd><p>A list of parameter names, obtained by calling <code>param$name</code> on each parameter</p></dd>
-    <dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
-    <dt><code>steps</code></dt><dd><p>integer, he number of steps until TMLE converged</p></dd>
-    <dt><code>ED</code></dt><dd><p>vector, the mean of the EIF for all the parameters</p></dd>
-    <dt><code>initial_psi</code></dt><dd><p>vector, the initial parameter estimates</p></dd>
-    <dt><code>estimates</code></dt><dd><p>list, final parameter estimates and ICs</p></dd>
-    <dt><code>summary</code></dt><dd><p>data.table, summary of results</p></dd>
-    <dt><code>timings</code></dt><dd><p>data.frame, timings for each step (provided by <code>tmle3_Fit$set_timings</code>)</p></dd>
-</dl>
+    <dt><code>learner</code></dt><dd><p>The learner or learner fit object</p></dd>
+    </dl>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATE.html'>Param_ATE</a></code>,
-  <code><a href='Param_ATT.html'>Param_ATT</a></code>, <code><a href='Param_TSM.html'>Param_TSM</a></code>,
-  <code><a href='Param_base.html'>Param_base</a></code>, <code><a href='Param_delta.html'>Param_delta</a></code>,
-  <code><a href='Param_mean.html'>Param_mean</a></code>, <code><a href='define_param.html'>define_param</a></code></p></div>
+    <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
+  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_emp.html'>LF_emp</a></code>,
+  <code><a href='LF_fit.html'>LF_fit</a></code>, <code><a href='LF_known.html'>LF_known</a></code>,
+  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
+  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+  <code><a href='define_lf.html'>define_lf</a></code></p></div>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#format">Format</a></li>
 
       <li><a href="#value">Value</a></li>
 
       <li><a href="#constructor">Constructor</a></li>
-
-      <li><a href="#methods">Methods</a></li>
 
       <li><a href="#fields">Fields</a></li>
 

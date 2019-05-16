@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Risk Ratio — tmle_RR • tmle</title>
+<title>Defines a TML Estimator (except for the data) — tmle3_Spec_ATE • tmle</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,12 +31,9 @@
 
 
 
-<meta property="og:title" content="Risk Ratio — tmle_RR" />
+<meta property="og:title" content="Defines a TML Estimator (except for the data) — tmle3_Spec_ATE" />
 
-<meta property="og:description" content="O = (W, A, Y)
-W = Covariates
-A = Treatment (binary or categorical)
-Y = Outcome (binary or bounded continuous)" />
+<meta property="og:description" content="Defines a TML Estimator (except for the data)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,42 +113,31 @@ Y = Outcome (binary or bounded continuous)" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Risk Ratio</h1>
+    <h1>Defines a TML Estimator (except for the data)</h1>
     
-    <div class="hidden name"><code>tmle_RR.Rd</code></div>
+    <div class="hidden name"><code>tmle3_Spec_ATE.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>O = (W, A, Y)
-W = Covariates
-A = Treatment (binary or categorical)
-Y = Outcome (binary or bounded continuous)</p>
+    <p>Defines a TML Estimator (except for the data)</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>tmle_RR</span>(<span class='no'>baseline_level</span>, <span class='no'>contrast_level</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>baseline_level</th>
-      <td><p>The baseline risk group.</p></td>
-    </tr>
-    <tr>
-      <th>contrast_level</th>
-      <td><p>The contrast risk group.</p></td>
-    </tr>
-    </table>
+    <pre class="usage"><span class='no'>tmle3_Spec_ATE</span></pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+
+    <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#format">Format</a></li>
+          </ul>
 
   </div>
 </div>

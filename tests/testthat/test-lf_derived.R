@@ -24,16 +24,16 @@ glm_fast <- Lrnr_glm_fast$new()
 make_simulated_data <- function(n_obs = 1000, # no. observations
                                 n_w = 3, # no. baseline covariates
                                 delta = 0.5) { # shift parameter value
-  
+
   # baseline covariate -- simple, binary
   W_1 <- rbinom(n_obs, 1, prob = 0.50)
   W_2 <- rbinom(n_obs, 1, prob = 0.65)
   W_3 <- rbinom(n_obs, 1, prob = 0.35)
   W <- cbind(W_1, W_2, W_3)
-  
+
   # create treatment based on baseline W
   A <- as.numeric(rbinom(n_obs, 1, prob = (rowSums(W) / 4 + 0.1)))
-  
+
   # mediators to affect the outcome
   ## 1st mediator (binary)
   z1_prob <- 1 - plogis((A^2 + W[, 1]) / (A + W[, 1]^3 + 0.5))
@@ -46,11 +46,11 @@ make_simulated_data <- function(n_obs = 1000, # no. observations
   Z_3 <- rbinom(n_obs, 1, prob = z3_prob)
   ## build matrix of mediators
   Z <- cbind(Z_1, Z_2, Z_3)
-  
+
   # create outcome as a linear function of A, W + white noise
   Y <- Z_1 + Z_2 - Z_3 + A - 0.1 * rowSums(W)^2 +
     rnorm(n_obs, mean = 0, sd = 0.5)
-  
+
   # full data structure
   data <- as.data.table(cbind(Y, Z, A, W))
   setnames(data, c(
@@ -91,12 +91,16 @@ likelihood_init$get_likelihoods(tmle_task)
 updater <- tmle3_Update$new(cvtmle = FALSE)
 likelihood_targeted <- Targeted_Likelihood$new(likelihood_init, updater)
 
-make_e_task <- function(tmle_task, likelihood){
+make_e_task <- function(tmle_task, likelihood) {
   e_data <- tmle_task$internal_data
-  e_task <- sl3_Task$new(data = e_data,
-                         outcome = tmle_task$npsem[["A"]]$variables,
-                         covariates = c(tmle_task$npsem[["Z"]]$variables,
-                                        tmle_task$npsem[["W"]]$variables))
+  e_task <- sl3_Task$new(
+    data = e_data,
+    outcome = tmle_task$npsem[["A"]]$variables,
+    covariates = c(
+      tmle_task$npsem[["Z"]]$variables,
+      tmle_task$npsem[["W"]]$variables
+    )
+  )
   return(e_task)
 }
 

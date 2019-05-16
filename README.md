@@ -9,9 +9,9 @@ Status](https://travis-ci.org/tlverse/tmle3.svg?branch=master)](https://travis-c
 Status](https://ci.appveyor.com/api/projects/status/cxp6a15anauyadgb?svg=true)](https://ci.appveyor.com/project/tlverse/tmle3)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/tlverse/tmle3/master.svg)](https://codecov.io/github/tlverse/tmle3?branch=master)
-[![Project Status: WIP – Initial development is in progress, but there
-has not yet been a stable, usable release suitable for the
-public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
@@ -51,7 +51,7 @@ devtools::install_github("tlverse/tmle3")
 
 The best place to get started is the “Framework Overview” document,
 which describes the individual components of the `tmle3` framework. It
-may be found here: <https://tlverse.org/tmle3/articles/framework.html>.
+may be found at <https://tlverse.org/tmle3/articles/framework.html>.
 
 -----
 
@@ -64,7 +64,7 @@ If you encounter any bugs or have any specific feature requests, please
 
 ## License
 
-© 2017-2018 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
+© 2017-2019 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
 
 The contents of this repository are distributed under the GPL-3 license.
 See file `LICENSE` for details.

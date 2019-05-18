@@ -30,7 +30,10 @@ glib <- make_learner_stack(
   "Lrnr_glm_fast"
 )
 
-logit_metalearner <- make_learner(Lrnr_solnp, metalearner_logistic_binomial, loss_loglik_binomial)
+logit_metalearner <- make_learner(
+  Lrnr_solnp, metalearner_logistic_binomial,
+  loss_loglik_binomial
+)
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
@@ -44,7 +47,7 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-updater <- tmle3_Update$new(convergence_type = "sample_size")
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "n_samp")
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 # define parameter
@@ -53,14 +56,20 @@ updater$tmle_params <- tmle_params
 ate <- tmle_params[[1]]
 
 # fit tmle update
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(ate), updater, max_it)
+tmle_fit <- fit_tmle3(
+  tmle_task, targeted_likelihood, list(ate), updater,
+  max_it
+)
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-submodel_data <- updater$generate_submodel_data(initial_likelihood, tmle_task, "full")
+submodel_data <- updater$generate_submodel_data(
+  initial_likelihood, tmle_task,
+  "full"
+)
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -94,5 +103,9 @@ tmle_classic_fit <- tmle(
 classic_psi <- tmle_classic_fit$estimates$ATE$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$ATE$var.psi)
 tol <- 1 / sqrt(tmle_task$nrow)
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = tol))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = tol))
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = tol)
+})
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = tol)
+})

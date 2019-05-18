@@ -60,7 +60,10 @@ targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 # define parameter
 intervention_treatment <- define_lf(LF_static, "A", value = 1)
 intervention_control <- define_lf(LF_static, "A", value = 0)
-att <- define_param(Param_ATT, targeted_likelihood, intervention_treatment, intervention_control)
+att <- define_param(
+  Param_ATT, targeted_likelihood, intervention_treatment,
+  intervention_control
+)
 updater$tmle_params <- list(att)
 
 

@@ -11,6 +11,6 @@ tmle3_Spec_PAR
 \description{
 Current limitations:
 pretty much tailored to Param_TSM
-see todos for places generalization can be added
+see TODOs for places generalization can be added
 }
 \keyword{datasets}

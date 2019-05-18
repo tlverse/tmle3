@@ -35,7 +35,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)
     }
     \item{\code{convergence_type}}{The convergence criterion to use: (1)
        \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
-       while (2) \code{"sample_size"} corresponds to 1/n.
+       while (2) \code{"n_samp"} corresponds to 1/n.
     }
     \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
        about the updating procedure.

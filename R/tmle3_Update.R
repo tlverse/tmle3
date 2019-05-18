@@ -24,7 +24,7 @@
 #'     }
 #'     \item{\code{convergence_type}}{The convergence criterion to use: (1)
 #'        \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
-#'        while (2) \code{"sample_size"} corresponds to 1/n.
+#'        while (2) \code{"n_samp"} corresponds to 1/n.
 #'     }
 #'     \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
 #'        about the updating procedure.
@@ -42,7 +42,7 @@ tmle3_Update <- R6Class(
   public = list(
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                               constrain_step = FALSE, delta_epsilon = 1e-4,
-                              convergence_type = c("se_logn", "sample_size"),
+                              convergence_type = c("se_logn", "n_samp"),
                               verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -202,7 +202,7 @@ tmle3_Update <- R6Class(
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
         se_D <- sqrt(apply(IC, 2, var) / tmle_task$nrow)
         ED_threshold <- se_D / max(log(tmle_task$nrow), 10)
-      } else if (self$convergence_type == "sample_size") {
+      } else if (self$convergence_type == "n_samp") {
         ED_threshold <- 1 / tmle_task$nrow
       }
 

@@ -30,7 +30,7 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 
 # define likelihood
 likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
-updater <- tmle3_Update$new(cvtmle = FALSE)
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "n_samp")
 targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 
 # define parameter
@@ -66,7 +66,7 @@ Q <- cbind(EY0, EY1)
 pA1 <- likelihood$get_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
 
-W <- 0 * Q # just need something here so tmle doesn't break, but it shouldn't be used
+W <- 0 * Q # need something here so tmle doesn't break but it shouldn't be used
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,
@@ -81,7 +81,11 @@ classic_psi <- tmle_classic_fit$estimates$EY1$psi
 classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
 
 # only approximately equal (although it's O(1/n))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+})
 
 # only approximately equal (although it's O(1/n))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = 1e-3)
+})

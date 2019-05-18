@@ -32,7 +32,10 @@ glib <- make_learner_stack(
   "Lrnr_glm_fast"
 )
 
-logit_metalearner <- make_learner(Lrnr_solnp, metalearner_logistic_binomial, loss_loglik_binomial)
+logit_metalearner <- make_learner(
+  Lrnr_solnp, metalearner_logistic_binomial,
+  loss_loglik_binomial
+)
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
@@ -45,7 +48,11 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-updater <- tmle3_Update$new(one_dimensional = TRUE, constrain_step = TRUE, maxit = 10000, cvtmle = TRUE)
+updater <- tmle3_Update$new(
+  one_dimensional = TRUE, constrain_step = TRUE,
+  maxit = 10000, cvtmle = TRUE,
+  convergence_type = "n_samp"
+)
 
 # updater <- tmle3_Update$new()
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
@@ -101,5 +108,9 @@ classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
 classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
 # test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
-test_that("psi matches result from classic package", expect_equal(tmle3_psi, classic_psi, tol = 1e-3))
-test_that("se matches result from classic package", expect_equal(tmle3_se, classic_se, tol = 1e-3))
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+})
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = 1e-3)
+})

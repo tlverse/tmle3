@@ -2,7 +2,7 @@
 #'
 #' Current limitations:
 #' pretty much tailored to Param_TSM
-#' see todos for places generalization can be added
+#' see TODOs for places generalization can be added
 #' @importFrom R6 R6Class
 #'
 #' @export
@@ -14,7 +14,7 @@ tmle3_Spec_PAR <- R6Class(
   inherit = tmle3_Spec,
   public = list(
     initialize = function(baseline_level = 1, ...) {
-      # todo: use sl3 param grabbing code
+      # TODO: use sl3 param grabbing code
       options <- list(baseline_level = baseline_level)
       do.call(super$initialize, options)
     },

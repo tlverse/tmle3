@@ -135,13 +135,13 @@ bound <- function(x, bounds) {
 #' @param lf the likelihood factor to train
 #' @param tmle_task the task to use for training
 #' @export
-train_lf <- function(lf, tmle_task){
+train_lf <- function(lf, tmle_task) {
   lf_fit <- lf$delayed_train(tmle_task)
-  if(inherits(lf_fit,"Delayed")){
+  if (inherits(lf_fit, "Delayed")) {
     lf_fit <- lf_fit$compute()
   }
-  
+
   lf$train(tmle_task, lf_fit)
-  
+
   return(lf)
 }

@@ -11,8 +11,12 @@ tmle3_Spec <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(likelihood_override = NULL, variable_types = NULL, ...) {
-      private$.options <- list(likelihood_override = likelihood_override, variable_types = NULL, ...)
+    initialize = function(likelihood_override = NULL,
+                              variable_types = NULL, ...) {
+      private$.options <- list(
+        likelihood_override = likelihood_override,
+        variable_types = NULL, ...
+      )
     },
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
@@ -30,8 +34,8 @@ tmle3_Spec <- R6Class(
 
       return(likelihood)
     },
-    make_updater = function() {
-      updater <- tmle3_Update$new()
+    make_updater = function(...) {
+      updater <- tmle3_Update$new(...)
     },
     make_targeted_likelihood = function(likelihood, updater) {
       targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)

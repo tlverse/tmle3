@@ -48,7 +48,7 @@ LF_derived <- R6Class(
     delayed_train = function(tmle_task) {
       # call task generator
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
-      
+
       # just return prefit learner if that's what we have
       # otherwise, make a delayed fit and return that
       if (self$learner$is_trained) {
@@ -82,10 +82,10 @@ LF_derived <- R6Class(
     learner = function() {
       return(private$.learner)
     },
-    task_generator = function(){
+    task_generator = function() {
       return(private$.task_generator)
     },
-    base_likelihood = function(){
+    base_likelihood = function() {
       return(private$.base_likelihood)
     }
   ),

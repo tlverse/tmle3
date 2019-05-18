@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Base Class for Defining Likelihood Factors — LF_base • tmle</title>
+<title>Defines a TML Estimator (except for the data) — tmle3_Spec_ATE • tmle</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,12 +31,9 @@
 
 
 
-<meta property="og:title" content="Base Class for Defining Likelihood Factors — LF_base" />
+<meta property="og:title" content="Defines a TML Estimator (except for the data) — tmle3_Spec_ATE" />
 
-<meta property="og:description" content="A Likelihood factor models a conditional density function.
-The conditioning set is defined as all parent nodes (defined in tmle3_Task). In the case of a continuous
-outcome variable, where a full density isn't needed, this can also model a conditional mean. This is the base class, which
-is intended to be abstract. See below for a list of possible likelihood factor classes." />
+<meta property="og:description" content="Defines a TML Estimator (except for the data)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,72 +113,22 @@ is intended to be abstract. See below for a list of possible likelihood factor c
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Base Class for Defining Likelihood Factors</h1>
+    <h1>Defines a TML Estimator (except for the data)</h1>
     
-    <div class="hidden name"><code>LF_base.Rd</code></div>
+    <div class="hidden name"><code>tmle3_Spec_ATE.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>A Likelihood factor models a conditional density function.
-The conditioning set is defined as all parent nodes (defined in <code><a href='tmle3_Task.html'>tmle3_Task</a></code>). In the case of a continuous
-outcome variable, where a full density isn't needed, this can also model a conditional mean. This is the base class, which
-is intended to be abstract. See below for a list of possible likelihood factor classes.</p>
+    <p>Defines a TML Estimator (except for the data)</p>
     
     </div>
 
-    <pre class="usage"><span class='no'>LF_base</span></pre>
+    <pre class="usage"><span class='no'>tmle3_Spec_ATE</span></pre>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p><code>R6Class</code> object.</p>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p><code>LF_base</code> object</p>
-    
-    <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
-
-    
-    <p><code><a href='define_lf.html'>define_lf(LF_base, name, ..., type = "density")</a></code></p>                     
-<p></p><dl class='dl-horizontal'>
-    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    <dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
-    </dl>
-    
-    <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
-
-    
-    <dl class='dl-horizontal'>
-<dt><code>get_density(tmle_task)</code></dt><dd><p>Get conditional density values for for the observations in <code>tmle_task</code>.
-    <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
-</ul></p></dd>
-<dt><code>get_mean(tmle_task)</code></dt><dd><p>Get conditional mean values for for the observations in <code>tmle_task</code>.
-  <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
-</ul></p></dd>
-</dl>
-    
-    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
-
-    
-    <dl class='dl-horizontal'>
-    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
-    <dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
-    <dt><code>variable_type</code></dt><dd><p><code><a href='https://tlverse.org/sl3/reference/variable_type.html'>variable_type</a></code> object, specifying the data type of the outcome variable. Only available after Likelihood training.</p></dd>
-    <dt><code>values</code></dt><dd><p>Possible values of the outcome variable, retrivied from the <code>variable_type</code> object. Only available after Likelihood training.</p></dd>
-</dl>
-    
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_derived.html'>LF_derived</a></code>, <code><a href='LF_emp.html'>LF_emp</a></code>,
-  <code><a href='LF_fit.html'>LF_fit</a></code>, <code><a href='LF_known.html'>LF_known</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
-  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
-  <code><a href='define_lf.html'>define_lf</a></code></p></div>
+    <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
     
 
   </div>
@@ -190,16 +137,6 @@ is intended to be abstract. See below for a list of possible likelihood factor c
     <ul class="nav nav-pills nav-stacked">
       
       <li><a href="#format">Format</a></li>
-
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#constructor">Constructor</a></li>
-
-      <li><a href="#methods">Methods</a></li>
-
-      <li><a href="#fields">Fields</a></li>
-
-      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

@@ -1,22 +1,22 @@
 ---
-title: "tmle3 Framework Overview"
-author: "Jeremy Coyle"
+title: "`tmle3` Framework Overview"
+author: "[Jeremy Coyle](https://github.com/jeremyrcoyle)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{tmle3 Design}
+  %\VignetteIndexEntry{tmle3 Framework Overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 
-```{r setup, echo=FALSE, warning=FALSE}
+```{r setup, echo=FALSE, warning=FALSE, eval=FALSE}
 library(knitr)
 
-# Define insert_fun.
-insert_fun = function(name) {
-  read_chunk(lines = capture.output(dump(name, '')),
-             labels = paste(name, 'source', sep = '-'))
+# define insert_fun
+insert_fun <- function(name) {
+  knitr::read_chunk(lines = utils::capture.output(dump(name, "")),
+                    labels = paste(name, "source", sep = "-"))
 }
 ```
 
@@ -452,10 +452,9 @@ Obviously, there's a lot more to do:
 * Generalize `tmle3_Update`
 * Generalize `tmpe3_Spec`
 * Better handling of bounded continuous outcomes
-* Expand documentation of parameter defintions
+* Expand documentation of parameter definitions
 * Add support for dynamic rules and stochastic interventions
 * CV-TMLE
 * C-TMLE
 * IPCW-TMLE
 * Extension to longitudinal data settings
-

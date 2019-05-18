@@ -49,7 +49,7 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
 # updater <- tmle_spec$make_updater(likelihood, list(tsm))
-updater <- tmle3_Update$new(cvtmle = FALSE)
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "n_samp")
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)
@@ -60,7 +60,10 @@ tsm_2 <- define_param(Param_TSM, targeted_likelihood, intervention_2)
 
 updater$tmle_params <- list(tsm)
 
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, updater$tmle_params, updater)
+tmle_fit <- fit_tmle3(
+  tmle_task, targeted_likelihood, updater$tmle_params,
+  updater
+)
 
 # extract results
 # debugonce(summary_from_estimates)

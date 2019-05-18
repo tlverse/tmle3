@@ -12,9 +12,11 @@ tmle3_Spec <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(likelihood_override = NULL,
-                          variable_types = NULL, ...) {
-      private$.options <- list(likelihood_override = likelihood_override,
-                               variable_types = NULL, ...)
+                              variable_types = NULL, ...) {
+      private$.options <- list(
+        likelihood_override = likelihood_override,
+        variable_types = NULL, ...
+      )
     },
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types

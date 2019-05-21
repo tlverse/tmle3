@@ -9,7 +9,6 @@ library(future)
 
 # setup data for test
 data(cpp)
-data <- as.data.table(cpp)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
 node_list <- list(

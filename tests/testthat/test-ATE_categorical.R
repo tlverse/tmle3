@@ -69,6 +69,4 @@ tmle_fit <- fit_tmle3(
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
-expect_equivalent(tmle3_psi,-0.0655, tolerance = 1e-3)
-
-
+expect_equivalent(tmle3_psi, -0.0655, tolerance = 1e-3)

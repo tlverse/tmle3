@@ -70,15 +70,15 @@ tmle3_Task <- R6Class(
       # format variables (using format Y ) when
       # categorical should be formatted as factors
       # what does the ate and tsm spec do here
-      cache_key <- sprintf("%s_%s",node_name, format)
-      
+      cache_key <- sprintf("%s_%s", node_name, format)
+
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
         return(cached_data)
       }
       tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
-      if(is.null(node_var)){
+      if (is.null(node_var)) {
         return(NULL)
       }
       data <- self$get_data(, node_var)
@@ -86,16 +86,16 @@ tmle3_Task <- R6Class(
       if ((ncol(data) == 1)) {
         data <- unlist(data, use.names = FALSE)
       }
-      
-      if(format==TRUE){
+
+      if (format == TRUE) {
         var_type <- tmle_node$variable_type
-        data  <- var_type$format(data)
+        data <- var_type$format(data)
         data <- self$scale(data, node_name)
         data <- data.table(data)
         setnames(data, node_var)
       }
-      
-      
+
+
 
       assign(cache_key, data, private$.node_cache)
 
@@ -106,14 +106,14 @@ tmle3_Task <- R6Class(
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
       parent_nodes <- npsem[parent_names]
-      
+
       outcome_data <- self$get_tmle_node(target_node, format = TRUE)
       all_covariate_data <- lapply(parent_names, self$get_tmle_node, format = TRUE)
-      
+
       outcome <- target_node_object$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
-      
-      regression_data <- do.call(cbind,c(all_covariate_data,outcome_data))
+
+      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data))
 
       nodes <- self$nodes
       nodes$outcome <- outcome

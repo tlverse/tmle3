@@ -65,8 +65,10 @@ summary <- tmle_fit$summary
 
 set.seed(1234)
 data2 <- data.table::copy(data) # for data.table weirdness
+spec <- tmle_PAR(baseline_level = 1)
+
 tmle_fit_from_spec <- tmle3(
-  tmle_PAR(baseline_level = 1), data2, node_list,
+  spec, data2, node_list,
   learner_list
 )
 

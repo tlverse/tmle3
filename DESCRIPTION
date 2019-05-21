@@ -44,7 +44,8 @@ Suggests:
     tmle3shift,
     future,
     future.apply,
-    stringr
+    stringr,
+    xgboost
 Remotes:
     github::osofr/simcausal,
     github::osofr/condensier,

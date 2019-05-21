@@ -51,6 +51,7 @@ impute_by_type <- function(x) {
 #' @importFrom stats median
 #' @export
 process_missing <- function(data, node_list, complete_nodes = c("A", "Y"), impute_nodes = NULL, max_p_missing = 0.5) {
+  data <- as.data.table(data)
   if (is.null(impute_nodes)) {
     impute_nodes <- setdiff(names(node_list), complete_nodes)
   }

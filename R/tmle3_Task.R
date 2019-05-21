@@ -61,20 +61,41 @@ tmle3_Task <- R6Class(
       private$.npsem <- npsem
       private$.node_cache <- new.env()
     },
-    get_tmle_node = function(node_name) {
-      cache_key <- node_name
+    get_tmle_node = function(node_name, format = FALSE) {
+      # node as dt vs node as column
+      # scaling
+      # caching that accounts for these
+      # keep defaults the same
+      # use this for get regession task
+      # format variables (using format Y ) when
+      # categorical should be formatted as factors
+      # what does the ate and tsm spec do here
+      cache_key <- sprintf("%s_%s", node_name, format)
+
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
         return(cached_data)
       }
       tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
-
+      if (is.null(node_var)) {
+        return(NULL)
+      }
       data <- self$get_data(, node_var)
 
-      if (ncol(data) == 1) {
+      if ((ncol(data) == 1)) {
         data <- unlist(data, use.names = FALSE)
       }
+
+      if (format == TRUE) {
+        var_type <- tmle_node$variable_type
+        data <- var_type$format(data)
+        data <- self$scale(data, node_name)
+        data <- data.table(data)
+        setnames(data, node_var)
+      }
+
+
 
       assign(cache_key, data, private$.node_cache)
 
@@ -85,31 +106,14 @@ tmle3_Task <- R6Class(
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
       parent_nodes <- npsem[parent_names]
+
+      outcome_data <- self$get_tmle_node(target_node, format = TRUE)
+      all_covariate_data <- lapply(parent_names, self$get_tmle_node, format = TRUE)
+
       outcome <- target_node_object$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
 
-      # todo: consider if self$data isn't a better option here
-      data <- self$internal_data
-
-      # scale continuous outcome if bounds are specified to variable_type
-      variable_type <- target_node_object$variable_type
-      column_names <- self$column_names
-      if ((variable_type$type == "continuous") &&
-        (!is.null(variable_type$bounds)) &&
-        scale) {
-
-        # TODO: make quasibinomial, make more learners play nice with
-        #       quasibinomial outcomes
-
-        outcome_data <- self$get_tmle_node(target_node)
-        scaled_outcome <- self$scale(outcome_data, target_node)
-
-        col_name <- sprintf("__%s_scaled", target_node)
-        new_data <- data.table(scaled_outcome)
-        setnames(new_data, col_name)
-        column_names <- self$add_columns(new_data, self$uuid)
-        outcome <- col_name
-      }
+      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data))
 
       nodes <- self$nodes
       nodes$outcome <- outcome
@@ -117,10 +121,9 @@ tmle3_Task <- R6Class(
 
 
       regression_task <- sl3_Task$new(
-        data,
+        regression_data,
         nodes = nodes,
-        outcome_type = variable_type,
-        column_names = column_names,
+        outcome_type = target_node_object$variable_type,
         folds = self$folds
       )
 

@@ -212,7 +212,7 @@ tmle3_Update <- R6Class(
       if (self$verbose) {
         cat(sprintf("max(abs(ED)): %e\n", ED_criterion))
       }
-      return(ED_criterion < ED_threshold)
+      return(all(ED_criterion < ED_threshold))
     },
     update = function(likelihood, tmle_task) {
       update_fold <- self$update_fold

@@ -83,9 +83,11 @@ tmle3_Task <- R6Class(
       }
       data <- self$get_data(, node_var)
 
-      if ((ncol(data) == 1) && format==FALSE) {
+      if ((ncol(data) == 1)) {
         data <- unlist(data, use.names = FALSE)
-      } else if(format==TRUE){
+      }
+      
+      if(format==TRUE){
         var_type <- tmle_node$variable_type
         data  <- var_type$format(data)
         data <- self$scale(data, node_name)

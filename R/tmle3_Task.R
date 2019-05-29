@@ -112,14 +112,17 @@ tmle3_Task <- R6Class(
 
       outcome <- target_node_object$variables
       covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
-
-      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data))
+      
+      
 
       nodes <- self$nodes
+      node_data <- self$get_data(,unlist(nodes))
       nodes$outcome <- outcome
       nodes$covariates <- covariates
-
-
+      
+      
+      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data,node_data))
+      
       regression_task <- sl3_Task$new(
         regression_data,
         nodes = nodes,

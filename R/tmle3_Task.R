@@ -79,7 +79,7 @@ tmle3_Task <- R6Class(
       tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
       if (is.null(node_var)) {
-        return(NULL)
+        return(data.table(NULL))
       }
       data <- self$get_data(, node_var)
 

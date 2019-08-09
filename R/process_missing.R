@@ -1,7 +1,7 @@
 impute_median <- function(x) {
   value <- median(as.numeric(x[!is.na(x)]))
   x[is.na(x)] <- value
-  x
+  return(x)
 }
 
 #' @importFrom stats aggregate
@@ -9,6 +9,7 @@ impute_mode <- function(x) {
   count_df <- aggregate(count ~ x, data = data.frame(count = 1, x = x), sum)
   value <- count_df$x[which.max(count_df$count)]
   x[is.na(x)] <- value
+  return(x)
 }
 
 impute_by_type <- function(x) {

@@ -18,19 +18,17 @@ environment:
     GITHUB_PAT:
       secure: Nu6c5CmcVdYHDUVGej5ZIXGKOXVPBwqUwjrLV8d6UlbUaAtYuUhgpNuv9oLztAQQ
 
-cache:
-  - C:\RLibrary -> appveyor.yml
+#cache:
+  #- C:\RLibrary -> appveyor.yml
 
 # Adapt as necessary starting from here
 build_script:
   - travis-tool.sh install_deps
-  - travis-tool.sh install_github jimhester/covr
+  - travis-tool.sh install_github r-lib/covr
   - travis-tool.sh install_github r-lib/sessioninfo
-  - travis-tool.sh install_github RDatatable/data.table
   - travis-tool.sh install_github osofr/simcausal
   - travis-tool.sh install_github osofr/condensier
   - travis-tool.sh install_github tlverse/delayed
-  - travis-tool.sh install_github tlverse/origami
   - travis-tool.sh install_github tlverse/sl3
   - travis-tool.sh install_github tlverse/tmle3shift
 
@@ -69,4 +67,3 @@ notifications:
    on_build_success: false
    on_build_failure: true
    on_build_status_changed: true
-

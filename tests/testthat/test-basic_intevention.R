@@ -49,7 +49,7 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
 # disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "n_samp")
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 intervention <- define_lf(LF_static, "A", value = 1)

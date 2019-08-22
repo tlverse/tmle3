@@ -47,7 +47,7 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "n_samp")
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 # define parameter

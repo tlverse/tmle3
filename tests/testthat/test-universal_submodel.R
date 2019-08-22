@@ -51,7 +51,7 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 updater <- tmle3_Update$new(
   one_dimensional = TRUE, constrain_step = TRUE,
   maxit = 10000, cvtmle = TRUE,
-  convergence_type = "n_samp"
+  convergence_type = "sample_size"
 )
 
 # updater <- tmle3_Update$new()

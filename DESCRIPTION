@@ -1,6 +1,6 @@
 Package: tmle3
 Title: The Extensible TMLE Framework
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
   person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
          role = c("aut", "cre", "cph"),
@@ -10,13 +10,13 @@ Authors@R: c(
          comment = c(ORCID = "0000-0002-7127-2789"))
   )
 Maintainer: Jeremy Coyle <jeremyrcoyle@gmail.com>
-Description: tmle3 is a general framework that supports the implementation of a
-    range of TMLE parameters with a unified interface. The goal is that the
-    tmle3 framework be as general as the mathematical framework upon which it's
-    based.
-Depends: R (>= 3.2.2),
-         graphics
-License: GPL-3
+Description: A general framework supporting the implementation of targeted
+    maximum likelihood estimators (TMLEs) of a diverse range of statistical
+    target parameters through a unified interface. The goal is that the exposed
+    framework be as general as the mathematical framework upon which it draws.
+Depends:
+    R (>= 3.2.2),
+    graphics
 Imports:
     sl3,
     delayed,
@@ -53,6 +53,7 @@ Remotes:
     github::tlverse/delayed,
     github::tlverse/sl3,
     github::tlverse/tmle3shift
+License: GPL-3
 URL: https://tlverse.org/tmle3
 BugReports: https://github.com/tlverse/tmle3/issues
 Encoding: UTF-8

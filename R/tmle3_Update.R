@@ -42,7 +42,7 @@ tmle3_Update <- R6Class(
   public = list(
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                               constrain_step = FALSE, delta_epsilon = 1e-4,
-                              convergence_type = c("se_logn", "n_samp"),
+                              convergence_type = c("scaled_var", "sample_size"),
                               verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -62,7 +62,10 @@ tmle3_Update <- R6Class(
     update_step = function(likelihood, tmle_task, fold_number = "full") {
 
       # get new submodel fit
-      all_submodels <- self$generate_submodel_data(likelihood, tmle_task, fold_number)
+      all_submodels <- self$generate_submodel_data(
+        likelihood, tmle_task,
+        fold_number
+      )
       new_epsilons <- self$fit_submodels(all_submodels)
 
       # update likelihoods
@@ -75,11 +78,15 @@ tmle3_Update <- R6Class(
       # increment step count
       private$.step_number <- private$.step_number + 1
     },
-    generate_submodel_data = function(likelihood, tmle_task, fold_number = "full") {
+    generate_submodel_data = function(likelihood, tmle_task,
+                                          fold_number = "full") {
       update_nodes <- self$update_nodes
 
-      # todo: support not getting observed for case where we're applying updates instead of fitting them
-      clever_covariates <- lapply(self$tmle_params, function(tmle_param) tmle_param$clever_covariates(tmle_task, fold_number))
+      # TODO: support not getting observed for case where we're applying
+      #       updates instead of fitting them
+      clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
+        tmle_param$clever_covariates(tmle_task, fold_number)
+      })
 
       observed_values <- lapply(update_nodes, tmle_task$get_tmle_node)
 
@@ -88,12 +95,17 @@ tmle3_Update <- R6Class(
         covariates_dt <- do.call(cbind, node_covariates)
         if (self$one_dimensional) {
           observed_task <- likelihood$training_task
-          estimates <- lapply(self$tmle_params, function(tmle_param) tmle_param$estimates(observed_task, fold_number))
+          estimates <- lapply(self$tmle_params, function(tmle_param) {
+            tmle_param$estimates(observed_task, fold_number)
+          })
           covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
         }
 
         observed <- tmle_task$get_tmle_node(update_node)
-        initial <- likelihood$get_likelihood(tmle_task, update_node, fold_number)
+        initial <- likelihood$get_likelihood(
+          tmle_task, update_node,
+          fold_number
+        )
 
         # scale observed and predicted values for bounded continuous
         observed <- tmle_task$scale(observed, update_node)
@@ -129,7 +141,11 @@ tmle3_Update <- R6Class(
           mean(loss)
         }
 
-        optim_fit <- optim(par = list(epsilon = self$delta_epsilon), fn = risk, lower = 0, upper = self$delta_epsilon, method = "Brent")
+        optim_fit <- optim(
+          par = list(epsilon = self$delta_epsilon), fn = risk,
+          lower = 0, upper = self$delta_epsilon,
+          method = "Brent"
+        )
         epsilon <- optim_fit$par
         risk_val <- optim_fit$value
         risk_zero <- risk(0)
@@ -139,11 +155,15 @@ tmle3_Update <- R6Class(
         }
       } else {
         suppressWarnings({
-          submodel_fit <- glm(observed ~ H - 1, submodel_data, offset = qlogis(submodel_data$initial), family = binomial())
+          submodel_fit <- glm(observed ~ H - 1, submodel_data,
+            offset = qlogis(submodel_data$initial),
+            family = binomial()
+          )
         })
         epsilon <- coef(submodel_fit)
 
-        # this protects against collinear covariates (which we don't care about, we just want an update)
+        # NOTE: this protects against collinear covariates
+        # (which we don't care about, we just want an update)
         epsilon[is.na(epsilon)] <- 0
       }
 
@@ -174,7 +194,10 @@ tmle3_Update <- R6Class(
       update_nodes <- self$update_nodes
 
       # get submodel data for all nodes
-      all_submodel_data <- self$generate_submodel_data(likelihood, tmle_task, fold_number)
+      all_submodel_data <- self$generate_submodel_data(
+        likelihood, tmle_task,
+        fold_number
+      )
 
       # apply update to all nodes
       updated_likelihoods <- lapply(update_nodes, function(update_node) {
@@ -182,10 +205,12 @@ tmle3_Update <- R6Class(
         epsilon <- all_epsilon[[update_node]]
         updated_likelihood <- self$apply_submodel(submodel_data, epsilon)
 
-        # unscale to handle bounded continuous
-        updated_likelihood <- tmle_task$unscale(updated_likelihood, update_node)
+        # un-scale to handle bounded continuous
+        updated_likelihood <- tmle_task$unscale(
+          updated_likelihood,
+          update_node
+        )
       })
-
       names(updated_likelihoods) <- update_nodes
 
       return(updated_likelihoods)
@@ -198,21 +223,25 @@ tmle3_Update <- R6Class(
         }
       )
 
-      if (self$convergence_type == "se_logn") {
+      if (self$convergence_type == "scaled_var") {
+        # NOTE: the point of this criterion is to avoid targeting in an overly
+        #       aggressive manner, as we simply need check that the following
+        #       condition is met |P_n D*| / SE(D*) =< max(1/log(n), 1/10)
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
-        se_D <- sqrt(apply(IC, 2, var) / tmle_task$nrow)
-        ED_threshold <- se_D / max(log(tmle_task$nrow), 10)
-      } else if (self$convergence_type == "n_samp") {
+        se_Dstar <- sqrt(apply(IC, 2, var) / tmle_task$nrow)
+        ED_threshold <- se_Dstar / min(log(tmle_task$nrow), 10)
+      } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / tmle_task$nrow
       }
 
+      # get |P_n D*| of any number of parameter estimates
       ED <- ED_from_estimates(estimates)
-      ED_criterion <- max(abs(ED))
+      ED_criterion <- abs(ED)
 
       if (self$verbose) {
         cat(sprintf("max(abs(ED)): %e\n", ED_criterion))
       }
-      return(all(ED_criterion < ED_threshold))
+      return(all(ED_criterion <= ED_threshold))
     },
     update = function(likelihood, tmle_task) {
       update_fold <- self$update_fold
@@ -230,7 +259,10 @@ tmle3_Update <- R6Class(
       }
       private$.tmle_params <- c(private$.tmle_params, new_params)
       new_update_nodes <- unlist(lapply(new_params, `[[`, "update_nodes"))
-      private$.update_nodes <- unique(c(private$.update_nodes, new_update_nodes))
+      private$.update_nodes <- unique(c(
+        private$.update_nodes,
+        new_update_nodes
+      ))
     }
   ),
   active = list(
@@ -243,7 +275,10 @@ tmle3_Update <- R6Class(
           new_params <- list(new_params)
         }
         private$.tmle_params <- new_params
-        private$.update_nodes <- unique(unlist(lapply(new_params, `[[`, "update_nodes")))
+        private$.update_nodes <- unique(unlist(lapply(
+          new_params, `[[`,
+          "update_nodes"
+        )))
       }
       return(private$.tmle_params)
     },

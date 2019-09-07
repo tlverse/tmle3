@@ -57,6 +57,7 @@ df_log_or <- function(x, dx) {
 
 or_transform <- exp
 
+#' Odds Ratio odds(Y1)/odds(Y0)
 #' @export
 delta_param_OR <- list(
   type = "OR",

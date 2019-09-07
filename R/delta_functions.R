@@ -46,6 +46,27 @@ delta_param_RR <- list(
   transform = rr_transform
 )
 
+# Odds Ratio odds(Y1)/odds(Y0)
+f_log_or <- function(x, dx) {
+  log(x[[2]]/(1-x[[2]])) - log(x[[1]]/(1-x[[1]]))
+}
+
+df_log_or <- function(x, dx) {
+  dx[[2]] / (x[[2]]*(1-x[[2]])) - dx[[1]] / (x[[1]]*(1-x[[1]]))
+}
+
+or_transform <- exp
+
+#' Odds Ratio odds(Y1)/odds(Y0)
+#' @export
+delta_param_OR <- list(
+  type = "OR",
+  name = function(names) sprintf("OR(%s/%s)", names[[2]], names[[1]]),
+  f = f_log_or,
+  df = df_log_or,
+  transform = or_transform
+)
+
 paf_transform <- function(x) {
   1 - exp(-x)
 }

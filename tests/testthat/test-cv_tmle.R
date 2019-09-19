@@ -1,4 +1,4 @@
-context("CV-TMLE: TSM for single static intervention.")
+context("CV-TMLE: TSM for single static intervention")
 set.seed(1234)
 library(sl3)
 # library(tmle3)

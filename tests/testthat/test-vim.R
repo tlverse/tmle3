@@ -1,4 +1,4 @@
-context("Variable Importance Measure Framework")
+context("Variable importance measure framework")
 
 library(sl3)
 library(uuid)

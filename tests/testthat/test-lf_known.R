@@ -1,4 +1,4 @@
-context("test-lf_known - Pass in known likelihoods as input")
+context("Pass in known likelihood factors as input")
 
 library(data.table)
 library(sl3)

@@ -23,8 +23,13 @@
 #'        \code{constrain_step} is \code{TRUE}.
 #'     }
 #'     \item{\code{convergence_type}}{The convergence criterion to use: (1)
-#'        \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
-#'        while (2) \code{"n_samp"} corresponds to 1/n.
+#'        \code{"scaled_var"} corresponds to sqrt(Var(D)/n)/logn (the default)
+#'        while (2) \code{"sample_size"} corresponds to 1/n.
+#'     }
+#'     \item{\code{fluctuation_type}}{Whether to include the auxiliary covariate
+#'        for the fluctuation model as a covariate or to treat it as a weight.
+#'        Note that the option \code{"weighted"} is incompatible with a
+#'        multi-epsilon submodel (\code{one_dimensional = FALSE}).
 #'     }
 #'     \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
 #'        about the updating procedure.
@@ -43,6 +48,7 @@ tmle3_Update <- R6Class(
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                               constrain_step = FALSE, delta_epsilon = 1e-4,
                               convergence_type = c("scaled_var", "sample_size"),
+                              fluctuation_type = c("standard", "weighted"),
                               verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -50,6 +56,7 @@ tmle3_Update <- R6Class(
       private$.constrain_step <- constrain_step
       private$.delta_epsilon <- delta_epsilon
       private$.convergence_type <- match.arg(convergence_type)
+      private$.fluctuation_type <- match.arg(fluctuation_type)
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -130,8 +137,8 @@ tmle3_Update <- R6Class(
         ncol_H <- ncol(submodel_data$H)
         if (!(is.null(ncol_H) || (ncol_H == 1))) {
           stop(
-            "Updater has constrain_step=TRUE but a multiepsilon submodel.\n",
-            "Consider setting collapse_covariates=TRUE"
+            "Updater detected `constrain_step=TRUE` but multi-epsilon submodel.\n",
+            "Consider setting `collapse_covariates=TRUE`"
           )
         }
 
@@ -154,12 +161,38 @@ tmle3_Update <- R6Class(
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }
       } else {
-        suppressWarnings({
-          submodel_fit <- glm(observed ~ H - 1, submodel_data,
-            offset = qlogis(submodel_data$initial),
-            family = binomial()
-          )
-        })
+        if (self$fluctuation_type == "standard") {
+          suppressWarnings({
+            submodel_fit <- glm(observed ~ H - 1, submodel_data,
+              offset = qlogis(submodel_data$initial),
+              family = binomial(),
+              start = rep(0, ncol(submodel_data$H))
+            )
+          })
+        } else if (self$fluctuation_type == "weighted") {
+          if  (self$one_dimensional) {
+            suppressWarnings({
+              submodel_fit <- glm(observed ~ - 1, submodel_data,
+                offset = qlogis(submodel_data$initial),
+                family = binomial(),
+                weights = as.numeric(H),
+                start = rep(0, ncol(submodel_data$H))
+              )
+            })
+          } else {
+            warning(
+              "Updater detected `fluctuation_type='weighted'` but multi-epsilon submodel.\n",
+              "This is incompatible. Proceeding with `fluctuation_type='standard'`."
+            )
+            suppressWarnings({
+              submodel_fit <- glm(observed ~ H - 1, submodel_data,
+                offset = qlogis(submodel_data$initial),
+                family = binomial(),
+                start = rep(0, ncol(submodel_data$H))
+              )
+            })
+          }
+        }
         epsilon <- coef(submodel_fit)
 
         # NOTE: this protects against collinear covariates
@@ -315,6 +348,9 @@ tmle3_Update <- R6Class(
     convergence_type = function() {
       return(private$.convergence_type)
     },
+    fluctuation_type = function() {
+      return(private$.fluctuation_type)
+    },
     verbose = function() {
       return(private$.verbose)
     }
@@ -330,6 +366,7 @@ tmle3_Update <- R6Class(
     .constrain_step = NULL,
     .delta_epsilon = NULL,
     .convergence_type = NULL,
+    .fluctuation_type = NULL,
     .verbose = FALSE
   )
 )

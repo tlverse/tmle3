@@ -1,4 +1,4 @@
-context("CV-Likelihood: Fold-specific Likelihood estimates")
+context("CV-Likelihood: fold-specific Likelihood estimates")
 
 set.seed(1234)
 library(sl3)

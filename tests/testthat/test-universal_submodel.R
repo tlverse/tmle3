@@ -1,4 +1,4 @@
-context("universal submodel")
+context("Universal submodel")
 
 library(sl3)
 library(tmle3)

@@ -1,4 +1,4 @@
-context("LF_derived: Derived Likelihood factors")
+context("Derived Likelihood factors")
 
 context("TML estimator for incremental propensity score interventions")
 

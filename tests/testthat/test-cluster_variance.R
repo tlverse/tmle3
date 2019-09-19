@@ -1,4 +1,4 @@
-context("Repeated measures: Check variance is computed from subject-level ICs")
+context("Repeated measures: check variance is computed from subject-level ICs")
 
 library(sl3)
 library(uuid)

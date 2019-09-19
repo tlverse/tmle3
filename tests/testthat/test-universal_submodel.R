@@ -109,7 +109,7 @@ classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
 # test_that("Qstar matches result from classic package", expect_equivalent(EY1_final, classic_Qstar))
 test_that("psi matches result from classic package", {
-  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+  expect_equal(tmle3_psi, classic_psi, tol = 2e-3)
 })
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se, tol = 1e-3)

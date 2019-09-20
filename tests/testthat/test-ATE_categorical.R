@@ -1,4 +1,4 @@
-context("Direct ATE for single node interventions.")
+context("Direct ATE for single node interventions")
 
 library(sl3)
 library(tmle3)

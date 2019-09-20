@@ -1,4 +1,4 @@
-context("Missingness Processing")
+context("Missingness processing")
 library(sl3)
 data(cpp)
 data <- as.data.table(cpp)

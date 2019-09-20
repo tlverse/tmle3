@@ -1,4 +1,4 @@
-context("Population Attributable Risk and Fraction")
+context("Population attributable risk and fraction")
 
 library(sl3)
 library(uuid)

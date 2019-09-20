@@ -1,4 +1,4 @@
-context("Bounded Continuous - scaling works for continous outcomes")
+context("Bounded continuous: scaling works for continous outcomes")
 
 library(sl3)
 # library(tmle3)

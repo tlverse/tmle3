@@ -1,4 +1,4 @@
-context("Basic interventions: TSM for single static intervention.")
+context("Basic interventions: TSM for single static intervention")
 
 library(sl3)
 # library(tmle3)

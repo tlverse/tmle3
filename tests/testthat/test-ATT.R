@@ -1,4 +1,4 @@
-context("Basic interventions: TSM and ATE for single node interventions.")
+context("Basic interventions: TSM and ATE for single node interventions")
 
 library(sl3)
 library(tmle3)

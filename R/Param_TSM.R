@@ -74,7 +74,9 @@ Param_TSM <- R6Class(
       }
 
       # todo: extend for stochastic
-      cf_task <- self$cf_likelihood$cf_tasks[[1]]
+      cf_task <- self$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
+      
+      # cf_task <- self$cf_likelihood$cf_tasks[[1]]
 
 
       Y <- tmle_task$get_tmle_node(self$outcome_node)

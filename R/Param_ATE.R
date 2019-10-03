@@ -83,8 +83,8 @@ Param_ATE <- R6Class(
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       # todo: extend for stochastic
-      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
-      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
+      cf_task_treatment <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task_control <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
 
       Y <- tmle_task$get_tmle_node(self$outcome_node)
 

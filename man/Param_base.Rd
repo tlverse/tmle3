@@ -68,6 +68,7 @@ These objects also contain information about the efficient influence function (E
 Other Parameters: \code{\link{Param_ATE}},
   \code{\link{Param_ATT}}, \code{\link{Param_TSM}},
   \code{\link{Param_delta}}, \code{\link{Param_mean}},
+  \code{\link{Param_stratified}},
   \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \concept{Parameters}

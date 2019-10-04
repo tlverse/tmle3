@@ -53,38 +53,40 @@ Param_stratified <- R6Class(
       private$.strata_variable=strata_variable
       
       V <- observed_likelihood$training_task$get_data(,strata_variable)
-      strata <- unique(V)
-      set(strata,,"strata_i",1:nrow(strata))
+      
+      strata <- V[,list(weight=observed_likelihood$training_task$nrow/.N),by=names(V)]
+      set(strata,,"strata_i",factor(1:nrow(strata)))
       private$.strata = strata
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       base_covs <- self$param_base$clever_covariates(tmle_task, fold_number)
-      strata_indicators <- self$get_strata_indicators(tmle_task)
+      strata_weights <- self$get_strata_weights(tmle_task)
       
-      strata_covs <- lapply(base_covs,`*`,strata_indicators)
+      strata_covs <- lapply(base_covs,`*`,strata_weights)
       return(strata_covs)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       
-      strata_indicators <- self$get_strata_indicators(tmle_task)
-      strata_tasks <- apply(strata_indicators,2,function(indicators)tmle_task[indicators])
+      strata_weights <- self$get_strata_weights(tmle_task)
+      strata_tasks <- apply(strata_weights,2,function(weights)tmle_task[which(weights!=0)])
       strata_ests <- lapply(strata_tasks, self$param_base$estimates, fold_number)
       psi <- sapply(strata_ests,`[[`,"psi")
       
-      IC <- strata_indicators
+      IC <- strata_weights
       all_ICs <- unlist(lapply(strata_ests,`[[`,"IC"))
       
-      IC[which(strata_indicators)] <- all_ICs
+      IC[which(strata_weights!=0)] <- IC[which(strata_weights!=0)] * all_ICs
       result <- list(psi = psi, IC = IC)
       return(result)
     },
-    get_strata_indicators = function(tmle_task){
+    get_strata_weights = function(tmle_task){
       V <- tmle_task$get_data(,self$strata_variable)
       strata <- self$strata
       combined <- merge(V,strata,by=self$strata_variable, sort=FALSE, all.x=TRUE)
-      stratum_indicators <- matrix(FALSE, nrow(V), ncol=nrow(strata))
-      stratum_indicators[cbind(1:nrow(V),combined$strata_i)]=TRUE
-      return(stratum_indicators)
+      combined[,index:=.I]
+      strata_weights_dt <- dcast(combined,index~strata_i,value.var='weight',fill = 0, drop=FALSE)
+      strata_weights <- as.matrix(strata_weights_dt[,-1, with=FALSE])
+      return(strata_weights)
     }
   ),
   active = list(

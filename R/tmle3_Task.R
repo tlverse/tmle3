@@ -207,12 +207,12 @@ tmle3_Task <- R6Class(
       if (drop_folds) {
         new_folds <- NULL
       } else {
-        new_folds <- self$folds
+        new_folds <- subset_folds(self$folds,row_index)
       }
       new_task$initialize(
         self$internal_data, self$npsem,
         column_names = self$column_names,
-        folds = self$folds,
+        folds = new_folds,
         row_index = row_index
       )
       return(new_task)

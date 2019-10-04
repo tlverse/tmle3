@@ -40,7 +40,9 @@ logit_metalearner <- make_learner(
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
-tmle_spec <- tmle_TSM_all()
+ate_spec <- tmle_ATE(1,0)
+strat_spec <- tmle_stratified(ate_spec, "mrace")
+tmle_spec <- strat_spec
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
@@ -50,89 +52,11 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
 # disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
+updater <- tmle3_Update$new(cvtmle = TRUE)
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-intervention <- define_lf(LF_static, "A", value = 1)
-control <- define_lf(LF_static, "A", value = 0)
 
-tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
-ate <- define_param(Param_ATE, targeted_likelihood, intervention, control)
-strat_tsm <- define_param(Param_stratified, targeted_likelihood, tsm, c("mrace"))
-strat_ate <- define_param(Param_stratified, targeted_likelihood, ate, c("mrace"))
-# strat_tsm$estimates(tmle_task)
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm, strat_tsm), updater)
+params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 
-targeted_likelihood$get_likelihood(tmle_task[V$sexn==1],"Y")
-
-cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
-
-V$Y <- targeted_likelihood$initial_likelihood$get_likelihood(cf_task,"Y")
-V[,mean(Y),by=list(sexn)]
-mean(targeted_likelihood$initial_likelihood$get_likelihood(cf_task,"Y"))
-
-mean(targeted_likelihood$initial_likelihood$get_likelihood(cf_task[V$sexn==1],"Y"))
-mean(cf_task$get_regression_task("Y")$Y[V$sexn==1])
-mean(targeted_likelihood$factor_list[["Y"]]$learner$predict(cf_task[V$sexn==1]$get_regression_task("Y")))
-mean(targeted_likelihood$factor_list[["Y"]]$learner$predict(cf_task$get_regression_task("Y")[V$sexn==1]))
-mean(targeted_likelihood$factor_list[["Y"]]$learner$predict(cf_task$get_regression_task("Y"))[V$sexn==1])
-z <- cf_task[V$sexn==1]$get_regression_task("Y")
-z2 <- cf_task$get_regression_task("Y")[V$sexn==1]
-# extract results
-tmle3_psi <- tmle_fit$summary$tmle_est
-tmle3_se <- tmle_fit$summary$se
-tmle3_epsilon <- updater$epsilons[[1]]$Y
-
-submodel_data <- updater$generate_submodel_data(
-  initial_likelihood, tmle_task,
-  "full"
-)
-#################################################
-# compare with the tmle package
-library(tmle)
-
-# construct likelihood estimates
-
-# task for A=1
-# cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), data.table(A = 1))
-cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
-
-# get Q
-EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y")
-EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
-EY0 <- rep(0, length(EY1)) # not used
-Q <- cbind(EY0, EY1)
-
-# get G
-pA1 <- initial_likelihood$get_likelihoods(cf_task, "A")
-pDelta1 <- cbind(pA1, pA1)
-tmle_classic_fit <- tmle(
-  Y = tmle_task$get_tmle_node("Y"),
-  A = NULL,
-  W = tmle_task$get_tmle_node("W"),
-  Delta = tmle_task$get_tmle_node("A"),
-  Q = Q,
-  pDelta1 = pDelta1
-)
-
-cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
-# debugonce(tsm$cf_likelihood$enumerate_cf_tasks)
-
-# extract estimates
-classic_psi <- tmle_classic_fit$estimates$EY1$psi
-classic_se <- sqrt(tmle_classic_fit$estimates$EY1$var.psi)
-classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
-classic_Qstar <- tmle_classic_fit$Qstar[, 2]
-
-test_that("Qstar matches result from classic package", {
-  expect_equivalent(EY1_final, classic_Qstar)
-})
-test_that("psi matches result from classic package", {
-  expect_equal(tmle3_psi, classic_psi)
-})
-test_that("se matches result from classic package", {
-  expect_equal(tmle3_se, classic_se)
-})
-test_that("epsilon matches resullt from classic package", {
-  expect_equivalent(tmle3_epsilon, classic_epsilon)
-})
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, params, updater)
+tmle_fit <- tmle3(strat_spec, data, node_list, learner_list)

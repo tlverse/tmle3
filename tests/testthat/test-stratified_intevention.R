@@ -1,7 +1,6 @@
 context("Stratification - estimate TSM in strata")
 
 library(sl3)
-# library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
@@ -40,7 +39,7 @@ logit_metalearner <- make_learner(
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
-ate_spec <- tmle_ATE(1,0)
+ate_spec <- tmle_ATE(1, 0)
 strat_spec <- tmle_stratified(ate_spec, "mrace")
 tmle_spec <- strat_spec
 

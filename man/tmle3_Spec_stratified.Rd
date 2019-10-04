@@ -3,12 +3,12 @@
 \docType{data}
 \name{tmle3_Spec_stratified}
 \alias{tmle3_Spec_stratified}
-\title{Defines a TML Estimator (except for the data)}
+\title{Defines a Stratified TML Estimator (except for the data)}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 tmle3_Spec_stratified
 }
 \description{
-Defines a TML Estimator (except for the data)
+Defines a Stratified TML Estimator (except for the data)
 }
 \keyword{datasets}

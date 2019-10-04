@@ -33,8 +33,10 @@ glib <- make_learner_stack(
   "Lrnr_glm_fast"
 )
 
-logit_metalearner <- make_learner(Lrnr_solnp, metalearner_logistic_binomial,
-                                  loss_loglik_binomial)
+logit_metalearner <- make_learner(
+  Lrnr_solnp, metalearner_logistic_binomial,
+  loss_loglik_binomial
+)
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)

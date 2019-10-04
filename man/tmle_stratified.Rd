@@ -2,14 +2,14 @@
 % Please edit documentation in R/tmle3_Spec_stratified.R
 \name{tmle_stratified}
 \alias{tmle_stratified}
-\title{All Treatment Specific Means}
+\title{Stratified version of TML estimator from other Spec classes}
 \usage{
 tmle_stratified(base_spec, strata_variable)
 }
 \arguments{
-\item{base_spec}{an underlying spec to stratify}
+\item{base_spec}{An underlying spec to stratify.}
 
-\item{stra_variable}{the variable(s) to use for stratification}
+\item{strata_variable}{The variable(s) to use for stratification.}
 }
 \description{
 O=(W,A,Y)

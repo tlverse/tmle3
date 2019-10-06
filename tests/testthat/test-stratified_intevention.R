@@ -44,19 +44,13 @@ ate_spec <- tmle_ATE(1,0)
 strat_spec <- tmle_stratified(ate_spec, "mrace")
 tmle_spec <- strat_spec
 
-# define data
-tmle_task <- tmle_spec$make_tmle_task(data, node_list)
-
-# define likelihood
-initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
-
-# define update method (submodel + loss function)
-# disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new(cvtmle = TRUE)
-
-targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-
-params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
-
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, params, updater)
 tmle_fit <- tmle3(strat_spec, data, node_list, learner_list)
+
+tmle_ests <- tmle_fit$summary$tmle_est
+pA <- 1/tmle_fit$tmle_params[[2]]$strata$weight
+wm <- weighted.mean(tmle_ests[-1],pA)
+test_that("overall ATE is weighted average of strata ATEs",expect_equal(tmle_ests[[1]],wm))
+
+ses <- tmle_fit$summary$se
+
+test_that("overall ATE has lower SE than strata ATEs",expect_equal(which.min(ses),1))

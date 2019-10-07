@@ -8,10 +8,12 @@
 
 <title>TMLE fit object — tmle3_Fit • tmle</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
@@ -22,8 +24,9 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -31,12 +34,13 @@
 
 
 
-<meta property="og:title" content="TMLE fit object — tmle3_Fit" />
 
+<meta property="og:title" content="TMLE fit object — tmle3_Fit" />
 <meta property="og:description" content="A tmle_fit object, containing initial and updated estimates, as well as data
 about the fitting procedure. TMLE updates are calculated when the object is
 constructed." />
 <meta name="twitter:card" content="summary" />
+
 
 
 
@@ -60,6 +64,7 @@ constructed." />
   gtag('config', 'UA-115145808-1');
 </script>
 
+
   </head>
 
   <body>
@@ -76,7 +81,7 @@ constructed." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
       </span>
     </div>
 
@@ -95,7 +100,6 @@ constructed." />
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/tlverse/tmle3">
@@ -110,6 +114,7 @@ constructed." />
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -121,17 +126,15 @@ constructed." />
     </div>
 
     <div class="ref-description">
-    
     <p>A tmle_fit object, containing initial and updated estimates, as well as data
 about the fitting procedure. TMLE updates are calculated when the object is
 constructed.</p>
-    
     </div>
 
     <pre class="usage"><span class='no'>tmle3_Fit</span>
 
 <span class='fu'>fit_tmle3</span>(<span class='no'>...</span>)</pre>
-    
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -141,19 +144,18 @@ constructed.</p>
 Constructor.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
     <p><code>R6Class</code> object.</p>
-    
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p><code>Param_base</code> object</p>
-    
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code>fit_tmle3(tmle_task, likelihood, tmle_params, updater, max_it=100, ...)</code></p>                     
+
+<p><code>fit_tmle3(tmle_task, likelihood, tmle_params, updater, max_it=100, ...)</code></p>                     
 <p></p><dl class='dl-horizontal'>
     <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
     <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
@@ -161,28 +163,31 @@ Constructor.</p></td>
     <dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
     <dt><code>maxit</code></dt><dd><p>integer, maximum number of TMLE iterations</p></dd>
     <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    </dl>
     
+</dl>
+
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
 
     
-    <dl class='dl-horizontal'>
-<dt><code>set_timings(start_time, task_time, likelihood_time, params_time, fit_time)</code></dt><dd><p>Provide the timings for the different steps of the TMLE procedure, for later reporting to the user
-    <ul>
+
+
+<dl class='dl-horizontal'>
+<dt><code>set_timings(start_time, task_time, likelihood_time, params_time, fit_time)</code></dt><dd><p>Provide the timings for the different steps of the TMLE procedure, for later reporting to the user  <ul>
 <li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
     If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
-<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.
-    <ul>
+<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.  <ul>
 <li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
     If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
+
 </dl>
-    
+
     <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
 
     
-    <dl class='dl-horizontal'>
+
+<dl class='dl-horizontal'>
     <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
     <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
     <dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
@@ -194,37 +199,33 @@ Constructor.</p></td>
     <dt><code>estimates</code></dt><dd><p>list, final parameter estimates and ICs</p></dd>
     <dt><code>summary</code></dt><dd><p>data.table, summary of results</p></dd>
     <dt><code>timings</code></dt><dd><p>data.frame, timings for each step (provided by <code>tmle3_Fit$set_timings</code>)</p></dd>
+
 </dl>
-    
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATE.html'>Param_ATE</a></code>,
   <code><a href='Param_ATT.html'>Param_ATT</a></code>, <code><a href='Param_TSM.html'>Param_TSM</a></code>,
   <code><a href='Param_base.html'>Param_base</a></code>, <code><a href='Param_delta.html'>Param_delta</a></code>,
-  <code><a href='Param_mean.html'>Param_mean</a></code>, <code><a href='define_param.html'>define_param</a></code></p></div>
-    
+  <code><a href='Param_mean.html'>Param_mean</a></code>, <code><a href='Param_stratified.html'>Param_stratified</a></code>,
+  <code><a href='define_param.html'>define_param</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
       <li><a href="#format">Format</a></li>
-
       <li><a href="#value">Value</a></li>
-
       <li><a href="#constructor">Constructor</a></li>
-
       <li><a href="#methods">Methods</a></li>
-
       <li><a href="#fields">Fields</a></li>
-
       <li><a href="#see-also">See also</a></li>
-          </ul>
+    </ul>
 
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -232,13 +233,16 @@ Constructor.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

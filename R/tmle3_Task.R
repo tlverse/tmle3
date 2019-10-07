@@ -81,7 +81,7 @@ tmle3_Task <- R6Class(
       if (is.null(node_var)) {
         return(data.table(NULL))
       }
-      data <- self$get_data(, node_var)
+      data <- self$get_data(self$row_index, node_var)
 
       if ((ncol(data) == 1)) {
         data <- unlist(data, use.names = FALSE)
@@ -148,7 +148,8 @@ tmle3_Task <- R6Class(
       new_task$initialize(
         self$internal_data, self$npsem,
         column_names = new_column_names,
-        folds = self$folds
+        folds = self$folds,
+        row_index = self$row_index
       )
       return(new_task)
     },
@@ -192,6 +193,30 @@ tmle3_Task <- R6Class(
       x <- (x_scaled * scale) + shift
 
       return(x)
+    },
+    subset_task = function(row_index, drop_folds = FALSE) {
+      if (is.logical(row_index)) {
+        row_index <- which(row_index)
+      }
+      old_row_index <- private$.row_index
+      if (!is.null(old_row_index)) {
+        # index into the logical rows of this task
+        row_index <- old_row_index[row_index]
+      }
+      new_task <- self$clone()
+      if (drop_folds) {
+        new_folds <- NULL
+      } else {
+        new_folds <- sl3::subset_folds(self$folds,row_index)
+      }
+      
+      new_task$initialize(
+        self$internal_data, self$npsem,
+        column_names = self$column_names,
+        folds = new_folds,
+        row_index = row_index
+      )
+      return(new_task)
     }
   ),
   active = list(

@@ -76,7 +76,7 @@ tmle_classic_fit <- tmle(
   W = cbind(tmle_task$get_tmle_node("W"), tmle_task$get_tmle_node("W")),
   Q = Q,
   g1W = pA1,
-  family="binomial"
+  family = "binomial"
 )
 
 

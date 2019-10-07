@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Summarize Estimates — summary_from_estimates • tmle</title>
+<title>Odds Ratio odds(Y1)/odds(Y0) — delta_param_OR • tmle</title>
 
 
 <!-- jquery -->
@@ -35,8 +35,8 @@
 
 
 
-<meta property="og:title" content="Summarize Estimates — summary_from_estimates" />
-<meta property="og:description" content="Generates a data.table summarizing results with inference" />
+<meta property="og:title" content="Odds Ratio odds(Y1)/odds(Y0) — delta_param_OR" />
+<meta property="og:description" content="Odds Ratio odds(Y1)/odds(Y0)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -118,59 +118,27 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Summarize Estimates</h1>
+    <h1>Odds Ratio odds(Y1)/odds(Y0)</h1>
     
-    <div class="hidden name"><code>summary_from_estimates.Rd</code></div>
+    <div class="hidden name"><code>delta_param_OR.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Generates a <code>data.table</code> summarizing results with inference</p>
+    <p>Odds Ratio odds(Y1)/odds(Y0)</p>
     </div>
 
-    <pre class="usage"><span class='fu'>summary_from_estimates</span>(<span class='no'>task</span>, <span class='no'>estimates</span>, <span class='kw'>param_types</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>param_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>init_psi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>simultaneous_ci</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='no'>delta_param_OR</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>task</th>
-      <td><p><code>tmle3_Task</code> containing the observed data of interest; the
-same as that passed to ..</p></td>
-    </tr>
-    <tr>
-      <th>estimates</th>
-      <td><p><code>list</code>, TMLE estimates of parameter and ICs from
-<code><a href='tmle3_Fit.html'>tmle3_Fit</a>$estimates</code></p></td>
-    </tr>
-    <tr>
-      <th>param_types</th>
-      <td><p>the types of the parameters being estimated</p></td>
-    </tr>
-    <tr>
-      <th>param_names</th>
-      <td><p>the names of the parameters being estimated</p></td>
-    </tr>
-    <tr>
-      <th>init_psi</th>
-      <td><p>the names of the parameters being estimated</p></td>
-    </tr>
-    <tr>
-      <th>simultaneous_ci</th>
-      <td><p>if TRUE, calculate simulatenous confidence intervals</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p><code>data.table</code> summarizing results</p>
+    <p>An object of class <code>list</code> of length 5.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#value">Value</a></li>
+      <li><a href="#format">Format</a></li>
     </ul>
 
   </div>

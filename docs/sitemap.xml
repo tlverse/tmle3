@@ -52,6 +52,9 @@
     <loc>http://tlverse.org/tmle3/reference/Param_mean.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/Param_stratified.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/Targeted_Likelihood.html</loc>
   </url>
   <url>
@@ -65,6 +68,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/delta_param_ATE.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/delta_param_OR.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/delta_param_PAF.html</loc>
@@ -115,6 +121,9 @@
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_ATE.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_OR.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_PAR.html</loc>
   </url>
   <url>
@@ -122,6 +131,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_TSM_all.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_stratified.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Task.html</loc>
@@ -136,6 +148,9 @@
     <loc>http://tlverse.org/tmle3/reference/tmle_ATE.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_OR.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_PAR.html</loc>
   </url>
   <url>
@@ -143,6 +158,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_TSM_all.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_stratified.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/train_lf.html</loc>

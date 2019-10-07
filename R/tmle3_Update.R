@@ -170,9 +170,9 @@ tmle3_Update <- R6Class(
             )
           })
         } else if (self$fluctuation_type == "weighted") {
-          if  (self$one_dimensional) {
+          if (self$one_dimensional) {
             suppressWarnings({
-              submodel_fit <- glm(observed ~ - 1, submodel_data,
+              submodel_fit <- glm(observed ~ -1, submodel_data,
                 offset = qlogis(submodel_data$initial),
                 family = binomial(),
                 weights = as.numeric(H),

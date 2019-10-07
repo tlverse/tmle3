@@ -49,52 +49,53 @@ Param_stratified <- R6Class(
     initialize = function(observed_likelihood, param_base, strata_variable, ..., outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.param_base <- param_base
-      private$.type = sprintf("stratified %s",param_base$type)
-      private$.strata_variable=strata_variable
-      
-      V <- observed_likelihood$training_task$get_data(,strata_variable)
-      
-      strata <- V[,list(weight=observed_likelihood$training_task$nrow/.N),by=names(V)]
-      set(strata,,"strata_i",factor(1:nrow(strata)))
-      private$.strata = strata
+      private$.type <- sprintf("stratified %s", param_base$type)
+      private$.strata_variable <- strata_variable
+
+      V <- observed_likelihood$training_task$get_data(, strata_variable)
+
+      strata <- V[, list(weight = observed_likelihood$training_task$nrow / .N), by = names(V)]
+      set(strata, , "strata_i", factor(1:nrow(strata)))
+      private$.strata <- strata
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       base_covs <- self$param_base$clever_covariates(tmle_task, fold_number)
       strata_weights <- self$get_strata_weights(tmle_task)
-      
-      strata_covs <- lapply(base_covs,`*`,strata_weights)
+
+      strata_covs <- lapply(base_covs, `*`, strata_weights)
       return(strata_covs)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
-      
       strata_weights <- self$get_strata_weights(tmle_task)
-      strata_tasks <- apply(strata_weights,2,function(weights)tmle_task[which(weights!=0)])
+      strata_tasks <- apply(strata_weights, 2, function(weights) tmle_task[which(weights != 0)])
       strata_ests <- lapply(strata_tasks, self$param_base$estimates, fold_number)
-      psi <- sapply(strata_ests,`[[`,"psi")
-      
+      psi <- sapply(strata_ests, `[[`, "psi")
+
       IC <- strata_weights
-      all_ICs <- unlist(lapply(strata_ests,`[[`,"IC"))
-      
-      IC[which(strata_weights!=0)] <- IC[which(strata_weights!=0)] * all_ICs
+      all_ICs <- unlist(lapply(strata_ests, `[[`, "IC"))
+
+      IC[which(strata_weights != 0)] <- IC[which(strata_weights != 0)] * all_ICs
       result <- list(psi = psi, IC = IC)
       return(result)
     },
-    get_strata_weights = function(tmle_task){
-      V <- tmle_task$get_data(,self$strata_variable)
+    get_strata_weights = function(tmle_task) {
+      V <- tmle_task$get_data(, self$strata_variable)
       strata <- self$strata
-      combined <- merge(V,strata,by=self$strata_variable, sort=FALSE, all.x=TRUE)
-      combined[,index:=.I]
-      strata_weights_dt <- dcast(combined,index~strata_i,value.var='weight',fill = 0, drop=FALSE)
-      strata_weights <- as.matrix(strata_weights_dt[,-1, with=FALSE])
+      combined <- merge(V, strata, by = self$strata_variable, sort = FALSE, all.x = TRUE)
+      combined[, index := .I]
+      strata_weights_dt <- dcast(combined, index ~ strata_i, value.var = "weight", fill = 0, drop = FALSE)
+      strata_weights <- as.matrix(strata_weights_dt[, -1, with = FALSE])
       return(strata_weights)
     }
   ),
   active = list(
     name = function() {
-      strata_labels <- apply(self$strata[,self$strata_variable, with=FALSE],1,paste,collapse=", ")
-      param_form <- sprintf("%s | V=%s",
-                            self$param_base$name,
-                            strata_labels)
+      strata_labels <- apply(self$strata[, self$strata_variable, with = FALSE], 1, paste, collapse = ", ")
+      param_form <- sprintf(
+        "%s | V=%s",
+        self$param_base$name,
+        strata_labels
+      )
       return(param_form)
     },
     param_base = function() {

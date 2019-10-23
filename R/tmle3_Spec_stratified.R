@@ -1,6 +1,7 @@
 #' Defines a Stratified TML Estimator (except for the data)
 #'
 #' @importFrom R6 R6Class
+#' @importFrom assertthat assert_that
 #'
 #' @export
 #
@@ -15,6 +16,18 @@ tmle3_Spec_stratified <- R6Class(
       private$.strata_variable <- strata_variable
     },
     make_tmle_task = function(data, node_list, ...) {
+      assert_that(
+        node_list$V == private$.strata_variable,
+        msg = sprintf(
+          "Strata variable does not match that of node list."
+        )
+      )
+      # Initial estimate should include V as covariate
+      # Note: Upon current structure, the easiest way is to add V into W.
+      #       This won't cause problem in calculation, 
+      #       but nodes dependency graph will be off.
+      node_list$W = c(node_list$W, node_list$V)
+      
       tmle_task <- self$base_spec$make_tmle_task(data, node_list, ...)
 
       return(tmle_task)

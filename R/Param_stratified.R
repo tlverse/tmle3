@@ -8,7 +8,6 @@
 #'   \item clever covariate gets recalculated all the time (inefficient)
 #' }
 #' @importFrom R6 R6Class
-#' @importFrom sl3 dt_expand_factor
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
 #' @family Parameters
@@ -48,7 +47,6 @@ Param_stratified <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, param_base, strata_variable, ..., outcome_node = "Y") {
-      browser()
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.param_base <- param_base
       private$.type <- sprintf("stratified %s", param_base$type)
@@ -62,11 +60,10 @@ Param_stratified <- R6Class(
     },
     
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
-      browser()
       base_covs <- self$param_base$clever_covariates(tmle_task, fold_number)
-      strata_indicators <- self$get_strata_indicators(tmle_task)
+      strata_weights <- self$get_strata_weights(tmle_task)
 
-      strata_covs <- lapply(base_covs, `*`, strata_indicators)
+      strata_covs <- lapply(base_covs, `*`, strata_weights)
       return(strata_covs)
     },
     
@@ -78,7 +75,7 @@ Param_stratified <- R6Class(
 
       IC <- strata_weights
       all_ICs <- unlist(lapply(strata_ests, `[[`, "IC"))
-
+      
       IC[which(strata_weights != 0)] <- IC[which(strata_weights != 0)] * all_ICs
       result <- list(psi = psi, IC = IC)
       return(result)
@@ -95,6 +92,8 @@ Param_stratified <- R6Class(
     },
     
     get_strata_indicators = function(tmle_task) {
+      # deprecated
+      # keeping it here temporarily in case it's needed
       V <- tmle_task$get_data(, self$strata_variable)
       strata <- self$strata[, !"weight"][, "indicators":= 1]
       combined <- merge(V, strata, by = self$strata_variable, sort = FALSE, all.x = TRUE)

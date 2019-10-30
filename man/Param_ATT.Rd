@@ -58,9 +58,9 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \seealso{
 Other Parameters: \code{\link{Param_ATE}},
-  \code{\link{Param_TSM}}, \code{\link{Param_base}},
-  \code{\link{Param_delta}}, \code{\link{Param_mean}},
-  \code{\link{Param_stratified}},
+  \code{\link{Param_MSM}}, \code{\link{Param_TSM}},
+  \code{\link{Param_base}}, \code{\link{Param_delta}},
+  \code{\link{Param_mean}}, \code{\link{Param_stratified}},
   \code{\link{define_param}}, \code{\link{tmle3_Fit}}
 }
 \concept{Parameters}

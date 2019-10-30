@@ -5,45 +5,39 @@ library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
-
-data(cpp)
-data <- as.data.table(cpp)
-data$parity01 <- as.numeric(data$parity > 0)
-data$parity01_fac <- factor(data$parity01)
-data$haz01 <- as.numeric(data$haz > 0)
-data$mrace = factor(data$mrace) # TODO: fix conversion bug
-data[is.na(data)] <- 0
+# data
+washb_data <- fread("https://raw.githubusercontent.com/tlverse/tlverse-data/master/wash-benefits/washb_data.csv", stringsAsFactors = TRUE)
 node_list <- list(
   W = c(
-    "apgar1", "apgar5", "gagebrth", "mage",
-    "meducyrs", "sexn"
+    "month", "aged", "momage",
+    "momheight", "hfiacat"
   ),
-  V = "mrace",
-  A = "parity01",
-  Y = "haz01"
+  V = "sex", #Nlt18
+  A = "tr",
+  Y = "whz"
 )
-
+processed <- process_missing(washb_data[1:500,], node_list)
+data <- processed$data
+node_list <- processed$node_list
+# leaners
 qlib <- make_learner_stack(
   "Lrnr_mean",
-  "Lrnr_glm_fast"
+  "Lrnr_xgboost"
 )
-
 glib <- make_learner_stack(
   "Lrnr_mean",
-  "Lrnr_glm_fast"
+  "Lrnr_xgboost"
 )
-
-logit_metalearner <- make_learner(
-  Lrnr_solnp, metalearner_logistic_binomial,
-  loss_loglik_binomial
+ls_metalearner <- make_learner(Lrnr_nnls)
+mn_metalearner <- make_learner(
+  Lrnr_solnp, metalearner_linear_multinomial,
+  loss_loglik_multinomial
 )
-Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
-g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
+Q_learner <- make_learner(Lrnr_sl, qlib, ls_metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, mn_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
-ate_spec <- tmle_ATE(1, 0)
-strat_spec <- tmle_stratified(ate_spec)
-tmle_spec <- strat_spec
-
+# estimators
+tmle_spec <- tmle_MSM()
 
 
 # define data

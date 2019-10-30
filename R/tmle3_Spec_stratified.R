@@ -11,17 +11,12 @@ tmle3_Spec_stratified <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(base_spec, strata_variable, ...) {
+    initialize = function(base_spec, base_estimate = TRUE, ...) {
       private$.base_spec <- base_spec
-      private$.strata_variable <- strata_variable
+      private$.base_estimate <- base_estimate
     },
     make_tmle_task = function(data, node_list, ...) {
-      assert_that(
-        node_list$V == private$.strata_variable,
-        msg = sprintf(
-          "Strata variable does not match that of node list."
-        )
-      )
+      private$.strata_variable = node_list$V
       # Initial estimate should include V as covariate
       # Note: Upon current structure, the easiest way is to add V into W.
       #       This won't cause problem in calculation, 
@@ -60,7 +55,11 @@ tmle3_Spec_stratified <- R6Class(
           base_param, self$strata_variable
         )
       })
-      tmle_params <- c(base_params, strat_params)
+      
+      tmle_params <- strat_params
+      if (private$.base_estimate) {
+        tmle_params <- c(base_params, tmle_params)
+      }
       return(tmle_params)
     }
   ),
@@ -74,7 +73,8 @@ tmle3_Spec_stratified <- R6Class(
   ),
   private = list(
     .base_spec = NULL,
-    .strata_variable = NULL
+    .strata_variable = NULL,
+    .base_estimate = NULL
   )
 )
 
@@ -91,7 +91,7 @@ tmle3_Spec_stratified <- R6Class(
 #' @param strata_variable The variable(s) to use for stratification.
 #'
 #' @export
-tmle_stratified <- function(base_spec, strata_variable) {
+tmle_stratified <- function(base_spec, strata_variable, base_estimate = TRUE) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_stratified$new(base_spec, strata_variable)
+  tmle3_Spec_stratified$new(base_spec, strata_variable, base_estimate = base_estimate)
 }

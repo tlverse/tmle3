@@ -4,8 +4,7 @@
 \alias{tmle_stratified}
 \title{Stratified version of TML estimator from other Spec classes}
 \usage{
-tmle_stratified(base_spec, strata_variable, base_estimate = TRUE,
-  smoothen = FALSE)
+tmle_stratified(base_spec, strata_variable, base_estimate = TRUE)
 }
 \arguments{
 \item{base_spec}{An underlying spec to stratify.}

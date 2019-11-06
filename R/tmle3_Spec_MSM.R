@@ -17,6 +17,9 @@ tmle3_Spec_MSM <- R6Class(
       )
     },
     make_tmle_task = function(data, node_list, ...) {
+      assert_that(data.class(data[[node_list$V]]) == "numeric",
+                  msg = "Stratified variable should be numeric.")
+      
       private$.strata_variable = node_list$V
       # Initial estimate should include V as covariate
       # Note: Upon current structure, the easiest way is to add V into W.
@@ -24,9 +27,7 @@ tmle3_Spec_MSM <- R6Class(
       #       but nodes dependency graph will be off.
       node_list$W = c(node_list$W, node_list$V)
       
-      tmle_task <- self$make_tmle_task(data, node_list, ...)
-      
-      return(tmle_task)
+      super$make_tmle_task(data, node_list, ...)
     },
     make_params = function(tmle_task, targeted_likelihood) {
       A_vals <- tmle_task$get_tmle_node("A")

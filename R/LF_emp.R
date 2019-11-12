@@ -40,8 +40,30 @@ LF_emp <- R6Class(
       stop("nothing to predict")
     },
     get_density = function(tmle_task, fold_number = "full") {
+      #TODO: this only makes sense if the tmle_task is the same as the training one
       weights <- tmle_task$weights
       return(weights / sum(weights))
+    },
+    sample = function(n = NULL, resample_marginal = FALSE, tmle_task = NULL) {
+      #TODO: handle weights
+      training_task <- self$training_task
+      n_training <- training_task$nrow
+      if(!resample_marginal){
+        
+        copies <- n_training/n
+        rem <- n_training%%n
+        if(rem!=0){
+          stop("if resample_marignal=FALSE, n must be a multiple of the training sample size")
+        }
+        
+        index <- rep(1:n_training, each=copies)
+      } else {
+        index <- sample(1:n_training, n, replace=TRUE)
+      }
+      
+      sampled_task <- training_task[index]
+      
+      return(sampled_task)
     }
   ),
   active = list(),

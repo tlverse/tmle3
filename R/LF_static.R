@@ -57,6 +57,19 @@ LF_static <- R6Class(
     cf_values = function(tmle_task) {
       cf_values <- rep(self$value, tmle_task$nrow)
       return(cf_values)
+    },
+    sample = function(n = NULL, resample_marginal = FALSE, tmle_task = NULL) {
+      if(is.null(tmle_task)){
+        stop("sample requires a tmle_task contained sample parent nodes")
+      }
+      
+      cf_values <- rep(self$value, tmle_task$nrow)
+      cf_data <- data.table(cf_values)
+      setnames(cf_data, names(cf_data), self$name)
+      
+      sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),cf_data)
+      
+      return(sampled_task)
     }
   ),
   active = list(

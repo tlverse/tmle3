@@ -123,6 +123,16 @@ Likelihood <- R6Class(
 
       # add factors to list of factors
       private$.params$factor_list[factor_names] <- factor_list
+    },
+    sample = function(n = NULL, resample_marginal = FALSE) {
+      # for now assume nodes are in order
+      # TODO: order nodes based on dependencies
+      tmle_task <- NULL
+      for(lf in self$factor_list){
+        tmle_task <- lf$sample(n, resample_marginal, tmle_task)
+      }
+       
+      return(tmle_task)
     }
   ),
   active = list(

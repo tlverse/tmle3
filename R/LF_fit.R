@@ -80,7 +80,7 @@ LF_fit <- R6Class(
       if (outcome_type$type == "binomial") {
         likelihood <- ifelse(observed == 1, preds, 1 - preds)
       } else if (outcome_type$type == "categorical") {
-        unpacked <- sl3::unpack_predictions(preds)
+        unpacked <- sl3::unpack_predictions(as.vector(preds))
         index_mat <- cbind(seq_along(observed), observed)
         likelihood <- unpacked[index_mat]
       } else if (outcome_type$type == "continuous") {
@@ -89,6 +89,43 @@ LF_fit <- R6Class(
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       return(likelihood)
+    },
+    sample = function(n = NULL, resample_marginal = FALSE, tmle_task = NULL) {
+      if(is.null(tmle_task)){
+        stop("sample requires a tmle_task contained sample parent nodes")
+      }
+      
+      learner_task <- tmle_task$get_regression_task(self$name)
+      learner <- self$learner
+      
+      # TODO: think about how folds should be structured on resample
+      # need to keep ids the same
+      # probably also predict using training set fits
+      preds <- learner$predict_fold(learner_task, "full")
+      outcome_type <- self$learner$training_task$outcome_type
+      
+      if (outcome_type$type == "binomial") {
+        values <- rbinom(tmle_task$nrow,1,preds)
+      } else if (outcome_type$type == "categorical") {
+        unpacked <- sl3::unpack_predictions(as.vector(preds))
+        indicators <- apply(unpacked, 1, function(probs)rmultinom(1,1,probs))
+        values <- outcome_type$levels[apply(indicators==1,2,which)]
+      } else if (outcome_type$type == "continuous") {
+        # TODO: figure out how to sample from continuous in two cases
+        # 1) we have a conditional density
+        # 2) we only have a conditional mean (sample from a normal with variance=cvMSE)
+        
+        stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
+      } else {
+        stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
+      }
+      
+      
+      cf_data <- data.table(values)
+      setnames(cf_data, names(cf_data), self$name)
+      sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),cf_data)
+      
+      return(sampled_task)
     }
   ),
   active = list(

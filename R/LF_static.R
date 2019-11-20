@@ -67,7 +67,7 @@ LF_static <- R6Class(
       cf_data <- data.table(cf_values)
       setnames(cf_data, names(cf_data), self$name)
       
-      sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(),cf_data)
+      sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data, tmle_task$n_samples)
       
       return(sampled_task)
     }

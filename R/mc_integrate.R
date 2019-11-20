@@ -7,10 +7,16 @@ resample <- function(likelihood, fun, n_samples = NULL, bootstrap=FALSE, converg
 	}
 	
 	# TODO: parallelize using future or dopar
-	all_results <- foreach(i=1:n_samples)%do%{
-		tmle_task <- likelihood$sample(original_n, resample_marginal=bootstrap)
-		result <- fun(tmle_task)
-		return(result)
+	if (!bootstrap) {
+	  all_results <- foreach(i=1:original_n)%do%{
+	    tmle_task <- likelihood$training_task[i]
+	    sample_task <- likelihood$sample(1*n_samples, resample_marginal=bootstrap)
+	    result <- fun(sample_task)
+	    return(result)
+	  }
+	} else {
+	  # TODO: when bootstrap=TRUE
+	  all_results <- NULL
 	}
 
 	return(all_results)

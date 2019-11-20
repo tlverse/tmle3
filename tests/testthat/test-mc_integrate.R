@@ -52,6 +52,7 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 # debugonce(likelihood$factor_list[["Y"]]$sample)
 
+# TODO: rewrite sampling test below
 # verify we can obtain one sample
 tmle_task2 <- likelihood$sample(tmle_task$nrow)
 
@@ -73,4 +74,4 @@ param_est <- param_ests$psi
 ic_se <- sd(param_ests$IC)/sqrt(length(param_ests$IC))
 
 test_that("mc integration is the same as simple mean up to mc error", 
-          expect_equal(est,param_est, tol=se))
+          expect_equal(est, param_est, tol=se))

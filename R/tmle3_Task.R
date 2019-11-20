@@ -27,7 +27,7 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem, ...) {
+    initialize = function(data, npsem, ..., n_samples = NULL) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
@@ -60,6 +60,7 @@ tmle3_Task <- R6Class(
       }
       private$.npsem <- npsem
       private$.node_cache <- new.env()
+      private$.n_samples <- n_samples
     },
     get_tmle_node = function(node_name, format = FALSE) {
       # node as dt vs node as column
@@ -132,7 +133,7 @@ tmle3_Task <- R6Class(
 
       return(regression_task)
     },
-    generate_counterfactual_task = function(uuid, new_data) {
+    generate_counterfactual_task = function(uuid, new_data, n_samples = NULL) {
       # for current_factor, generate counterfactual values
       node_names <- names(new_data)
       node_variables <- sapply(
@@ -149,7 +150,8 @@ tmle3_Task <- R6Class(
         self$internal_data, self$npsem,
         column_names = new_column_names,
         folds = self$folds,
-        row_index = self$row_index
+        row_index = self$row_index,
+        n_samples = n_samples
       )
       return(new_task)
     },
@@ -194,7 +196,7 @@ tmle3_Task <- R6Class(
 
       return(x)
     },
-    subset_task = function(row_index, drop_folds = FALSE) {
+    subset_task = function(row_index, drop_folds = FALSE, n_samples = NULL) {
       if (is.logical(row_index)) {
         row_index <- which(row_index)
       }
@@ -214,7 +216,8 @@ tmle3_Task <- R6Class(
         self$internal_data, self$npsem,
         column_names = self$column_names,
         folds = new_folds,
-        row_index = row_index
+        row_index = row_index,
+        n_samples = n_samples
       )
       return(new_task)
     }
@@ -230,7 +233,8 @@ tmle3_Task <- R6Class(
   ),
   private = list(
     .npsem = NULL,
-    .node_cache = NULL
+    .node_cache = NULL,
+    .n_samples = NULL
   )
 )
 

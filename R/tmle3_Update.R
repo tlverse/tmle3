@@ -120,7 +120,7 @@ tmle3_Update <- R6Class(
 
         # protect against qlogis(1)=Inf
         initial <- bound(initial, 0.005)
-
+        # TODO parameterize this
         submodel_data <- list(
           observed = observed,
           H = covariates_dt,

@@ -48,6 +48,14 @@ Param_ATE <- R6Class(
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
+      if(!is.null(observed_likelihood$censoring_nodes[[outcome_node]])){
+        # add delta_Y=0 to intervention lists
+        outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
+        censoring_intervention <- define_lf(LF_static, outcome_censoring_node, value = 1)
+        intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)  
+        intervention_list_control <- c(intervention_list_treatment, censoring_intervention)  
+      }
+      
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
@@ -63,7 +71,7 @@ Param_ATE <- R6Class(
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       HA <- (cf_pA_treatment - cf_pA_control) / pA
-
+      HA <- bound(HA, c(-40,40))
       return(list(Y = HA))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
@@ -86,7 +94,7 @@ Param_ATE <- R6Class(
       cf_task_treatment <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
       cf_task_control <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
 
-      Y <- tmle_task$get_tmle_node(self$outcome_node)
+      Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring=TRUE)
 
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
       EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
@@ -124,6 +132,7 @@ Param_ATE <- R6Class(
   private = list(
     .type = "ATE",
     .cf_likelihood_treatment = NULL,
-    .cf_likelihood_control = NULL
+    .cf_likelihood_control = NULL,
+    .supports_outcome_censoring = TRUE
   )
 )

@@ -57,10 +57,29 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
 
   # outcome
   Y_factor <- define_lf(LF_fit, "Y", learner = learner_list[["Y"]], type = "mean")
+  
 
   # construct and train likelihood
   factor_list <- list(W_factor, A_factor, Y_factor)
 
+  # add outcome censoring factor if necessary
+  if(!is.null(tmle_task$npsem[["Y"]]$censoring_node)){
+    if(is.null(learner_list[["delta_Y"]])){
+      stop("Y is subject to censoring, but no learner was specified for censoring mechanism delta_Y")
+    }
+    
+    delta_Y_factor <- define_lf(LF_fit, "delta_Y", learner = learner_list[["delta_Y"]], type = "mean", bound=c(0.025,1))
+    factor_list <- c(factor_list, delta_Y_factor)
+  }
+  
+  if(!is.null(tmle_task$npsem[["A"]]$censoring_node)){
+    stop("A is subject to censoring, this isn't supported yet")
+  }
+  
+  if(!is.null(tmle_task$npsem[["W"]]$censoring_node)){
+    stop("W is subject to censoring, this isn't supported yet")
+  }
+  
   likelihood_def <- Likelihood$new(factor_list)
   likelihood <- likelihood_def$train(tmle_task)
   return(likelihood)

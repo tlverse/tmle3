@@ -134,6 +134,9 @@ Likelihood <- R6Class(
     },
     cache = function() {
       return(private$.cache)
+    },
+    censoring_nodes = function(){
+      return(private$.censoring_nodes)
     }
   ),
   private = list(
@@ -150,6 +153,12 @@ Likelihood <- R6Class(
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
 
+      censoring_nodes <- lapply(tmle_task$npsem, function(node){
+        node$censoring_node$name
+      })
+      
+      names(censoring_nodes) <- names(tmle_task$npsem)
+      private$.censoring_nodes <- censoring_nodes
       return("trained")
     },
     .predict = function(tmle_task) {
@@ -158,7 +167,8 @@ Likelihood <- R6Class(
     .chain = function(tmle_task) {
       stop("chain method doesn't work for Likelihood. Currently, no analogous functionality")
     },
-    .cache = NULL
+    .cache = NULL,
+    .censoring_nodes = NULL
   )
 )
 

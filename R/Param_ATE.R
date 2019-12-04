@@ -53,7 +53,7 @@ Param_ATE <- R6Class(
         outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
         censoring_intervention <- define_lf(LF_static, outcome_censoring_node, value = 1)
         intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)  
-        intervention_list_control <- c(intervention_list_treatment, censoring_intervention)  
+        intervention_list_control <- c(intervention_list_control, censoring_intervention)  
       }
       
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
@@ -69,8 +69,22 @@ Param_ATE <- R6Class(
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-
-      HA <- (cf_pA_treatment - cf_pA_control) / pA
+      
+      HA_treatment <- cf_pA_treatment/pA
+      HA_control <-  cf_pA_control / pA
+      
+      # collapse across multiple intervention nodes
+      if (!is.null(ncol(HA_treatment)) && ncol(HA_treatment) > 1) {
+        HA_treatment <- apply(HA_treatment, 1, prod)
+      }
+      
+      # collapse across multiple intervention nodes
+      if (!is.null(ncol(HA_control)) && ncol(HA_control) > 1) {
+        HA_control <- apply(HA_control, 1, prod)
+      }
+      
+      HA <- HA_treatment - HA_control
+      
       HA <- bound(HA, c(-40,40))
       return(list(Y = HA))
     },

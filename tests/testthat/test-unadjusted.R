@@ -73,7 +73,11 @@ tmle_classic_fit <- tmle(
   W = W,
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
-  pDelta1 = pDelta1
+  pDelta1 = pDelta1,
+  family="binomial",
+  alpha=0.995,
+  target.gwt = FALSE,
+  prescreenW.g = FALSE
 )
 
 # extract estimates

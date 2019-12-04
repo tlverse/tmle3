@@ -44,30 +44,18 @@ LF_emp <- R6Class(
       weights <- tmle_task$weights
       return(weights / sum(weights))
     },
-    sample = function(n = NULL, resample_marginal = FALSE,
-                      tmle_task = NULL, interval = NULL) {
+    sample = function(tmle_task = NULL, n_samples = NULL) {
       #TODO: handle weights
       if (is.null(tmle_task)) {
-        training_task <- self$training_task
-        n_task <- training_task$nrow
-      } else {
-        n_task <- tmle_task$nrow
+        tmle_task <- self$training_task
       }
-      if(!resample_marginal){
-        copies <- n_task/n
-        rem <- n_task%%n
-        if(rem!=0){
-          stop("if resample_marignal=FALSE, n must be a multiple of the training sample size")
-        }
-        
-        index <- rep(1:n_task, each=copies)
-      } else {
-        copies <- NULL
-        
-        index <- sample(1:n_task, n, replace=TRUE)
+      if (is.null(n_samples)) {
+        return(tmle_task)
       }
       
-      sampled_task <- training_task$subset_task(index, n_samples = copies)
+      index <- sample(1:tmle_task$nrow, n_samples, replace=TRUE)
+      
+      sampled_task <- tmle_task[index]
       
       return(sampled_task)
     }

@@ -30,15 +30,24 @@ tmle3_Spec_MSM <- R6Class(
       super$make_tmle_task(data, node_list, ...)
     },
     make_params = function(tmle_task, targeted_likelihood) {
-      A_vals <- tmle_task$get_tmle_node("A")
-      if (is.factor(A_vals)) {
-        A_levels <- levels(A_vals)
-        A_levels <- factor(A_levels, A_levels)
+      treatment_type <- variable_type(x=tmle_task$get_tmle_node("A"))$type
+      
+      if (treatment_type == "continuous") {
+        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
+                                    continuous_treatment = TRUE, n_samples = 30, 
+                                    mass = self$options$mass)
       } else {
-        A_levels <- sort(unique(A_vals))
+        A_vals <- tmle_task$get_tmle_node("A")
+        if (is.factor(A_vals)) {
+          A_levels <- levels(A_vals)
+          A_levels <- factor(A_levels, A_levels)
+        } else {
+          A_levels <- sort(unique(A_vals))
+        }
+        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
+                                    continuous_treatment = FALSE, treatment_values = A_levels, 
+                                    mass = self$options$mass)
       }
-      tmle_params <- define_param(Param_MSM, targeted_likelihood, A_levels,
-                                  self$strata_variable, self$options$mass)
       return(tmle_params)
     }
   ),

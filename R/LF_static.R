@@ -58,15 +58,23 @@ LF_static <- R6Class(
       cf_values <- rep(self$value, tmle_task$nrow)
       return(cf_values)
     },
-    sample = function(tmle_task, n_samples = NULL) {
+    sample = function(tmle_task, n_samples = NULL, 
+                      return_values=FALSE, fold_number = "full") {
+      # TODO: fold
       if (is.null(n_samples)) {
         return(tmle_task)
       }
       
-      cf_values <- rep(self$value, tmle_task$nrow)
-      cf_data <- data.table(cf_values)
-      setnames(cf_data, names(cf_data), self$name)
+      values <- t(replicate(n_samples, rep(self$value, tmle_task$nrow)))
+      if (return_values) {
+        return(values)
+      }
       
+      index <- rep(1:tmle_task$nrow, each=n_samples)
+      expanded_task <- tmle_task[index]
+      
+      cf_data <- data.table(as.vector(values))
+      setnames(cf_data, names(cf_data), self$name)
       sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       
       return(sampled_task)

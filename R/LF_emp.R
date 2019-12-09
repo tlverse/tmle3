@@ -44,8 +44,10 @@ LF_emp <- R6Class(
       weights <- tmle_task$weights
       return(weights / sum(weights))
     },
-    sample = function(tmle_task = NULL, n_samples = NULL) {
-      #TODO: handle weights
+    sample = function(tmle_task = NULL, n_samples = NULL, 
+                      return_values=FALSE, fold_number = "full") {
+      # TODO: fold
+      # TODO: handle weights
       if (is.null(tmle_task)) {
         tmle_task <- self$training_task
       }
@@ -56,6 +58,9 @@ LF_emp <- R6Class(
       index <- sample(1:tmle_task$nrow, n_samples, replace=TRUE)
       
       sampled_task <- tmle_task[index]
+      if (return_values) {
+        # TODO: return a vector of sampled values
+      }
       
       return(sampled_task)
     }

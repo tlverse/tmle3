@@ -90,7 +90,12 @@ LF_fit <- R6Class(
       }
       return(likelihood)
     },
-    sample = function(tmle_task, n_samples = NULL) {
+    get_support = function() {
+      
+    },
+    sample = function(tmle_task, n_samples = NULL, 
+                      return_values=FALSE, fold_number = "full") {
+      # TODO: fold
       if (is.null(n_samples)) {
         return(tmle_task)
       }
@@ -138,6 +143,9 @@ LF_fit <- R6Class(
         }
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
+      }
+      if (return_values) {
+        return(values)
       }
       
       index <- rep(1:tmle_task$nrow, each=n_samples)

@@ -95,9 +95,9 @@ Param_MSM <- R6Class(
       if (self$continuous_treatment) {
         clever_covs <- strata_covs * cbind(A, V)
       } else {
-        covs_A_mat <- matrix(, nrow = length(h), ncol = length(self$treatment_values))
+        covs_A_mat <- matrix(0, nrow = length(h), ncol = length(self$treatment_values))
         for (i in 1:length(h)) {
-          covs_A_mat[i, which(self$treatment_values == A[i,])] <- strata_covs[i]
+          covs_A_mat[i, which(names(self$treatment_values) == A[i,])] <- strata_covs[i]
         }
         clever_covs <- cbind(covs_A_mat, strata_covs * V)
       }
@@ -114,11 +114,11 @@ Param_MSM <- R6Class(
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
       h <- private$.mass(tmle_task, fold_number)
       if (self$continuous_treatment) {
-        A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$get_outcome_range(tmle_task, fold_number)
+        A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$learner$get_outcome_range(tmle_task$get_regression_task(self$outcome_node), fold_number)
         U <- runif(100)
         A_vals <- t(apply(A_range, 1, function(r) r[1] + (r[2] - r[1]) * U))
         # Generate counterfactual tasks for each sample of A:
-        cf_tasks <- lapply(A_samp, function(A_val) {
+        cf_tasks <- apply(A_vals, 2, function(A_val) {
           newdata <- data.table(A = A_val)
           cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), new_data = newdata)
           return(cf_task)
@@ -176,9 +176,9 @@ Param_MSM <- R6Class(
       if (self$continuous_treatment) {
         IC_term1 <- strata_res * cbind(A, V)
       } else {
-        ic_A_mat <- matrix(, nrow = length(h), ncol = length(self$treatment_values))
+        ic_A_mat <- matrix(0, nrow = length(h), ncol = length(self$treatment_values))
         for (i in 1:length(h)) {
-          ic_A_mat[i, which(self$treatment_values == A[i,])] <- strata_res[i]
+          ic_A_mat[i, which(names(self$treatment_values) == A[i,])] <- strata_res[i]
         }
         IC_term1 <- cbind(ic_A_mat, strata_res * V)
       }
@@ -214,12 +214,17 @@ Param_MSM <- R6Class(
   
   active = list(
     name = function() {
-      treatment_labels <- names(self$treatment_values)
+      if (continuous_treatment) {
+        treatment_labels <- self$treatment_node
+      } else {
+        treatment_labels <- names(self$treatment_values)
+      }
       strata_label <- self$strata_variable
       param_form <- sprintf(
         "Param_MSM: %s",
         c(treatment_labels, strata_label)
       )
+      
       return(param_form)
     },
     continuous_treatment = function() {

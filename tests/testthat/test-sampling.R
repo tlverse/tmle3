@@ -1,4 +1,4 @@
-context("MC integration")
+context("Sampling")
 
 library(sl3)
 library(tmle3)
@@ -52,26 +52,6 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 # debugonce(likelihood$factor_list[["Y"]]$sample)
 
-# TODO: rewrite sampling test below
-# verify we can obtain one sample
-tmle_task2 <- likelihood$sample(tmle_task$nrow)
-
-# define param and cf likelihood
-lf_static <- define_lf(LF_static, "A", value = 1)
-tsm <- Param_TSM$new(likelihood, lf_static)
-cf_likelihood <- tsm$cf_likelihood
-fun <- function(tmle_task){mean(tmle_task$get_tmle_node("Y"))}
-
-result <- resample(cf_likelihood, fun)
-
-# TODO: format results in resample
-result <- unlist(result)
-est <- mean(result)
-se <- sd(result)/sqrt(length(result))
-
-param_ests <- tsm$estimates(tmle_task)
-param_est <- param_ests$psi
-ic_se <- sd(param_ests$IC)/sqrt(length(param_ests$IC))
-
-test_that("mc integration is the same as simple mean up to mc error", 
-          expect_equal(est, param_est, tol=se))
+# verify we can obtain samples
+samp_vals <- likelihood$factor_list$A$sample(tmle_task[1:50], 30, return_values=TRUE)
+samp_task <- likelihood$factor_list$A$sample(tmle_task[1:50], 30, return_values=FALSE)

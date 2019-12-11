@@ -90,9 +90,6 @@ LF_fit <- R6Class(
       }
       return(likelihood)
     },
-    get_support = function() {
-      
-    },
     sample = function(tmle_task, n_samples = NULL, 
                       return_values=FALSE, fold_number = "full") {
       # TODO: fold
@@ -144,6 +141,7 @@ LF_fit <- R6Class(
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
+      values <- t(values)
       if (return_values) {
         return(values)
       }
@@ -153,7 +151,7 @@ LF_fit <- R6Class(
       
       cf_data <- data.table(as.vector(values))
       setnames(cf_data, names(cf_data), self$name)
-      sampled_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
+      sampled_task <- expanded_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       
       return(sampled_task)
     }

@@ -49,6 +49,7 @@ tmle3_Update <- R6Class(
                               constrain_step = FALSE, delta_epsilon = 1e-4,
                               convergence_type = c("scaled_var", "sample_size"),
                               fluctuation_type = c("standard", "weighted"),
+                              optim_delta_epsilon = TRUE,
                               verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -57,6 +58,7 @@ tmle3_Update <- R6Class(
       private$.delta_epsilon <- delta_epsilon
       private$.convergence_type <- match.arg(convergence_type)
       private$.fluctuation_type <- match.arg(fluctuation_type)
+      private$.optim_delta_epsilon <- optim_delta_epsilon
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -67,70 +69,81 @@ tmle3_Update <- R6Class(
       return(collapsed_covariate)
     },
     update_step = function(likelihood, tmle_task, fold_number = "full") {
+      
+      
+      update_nodes <- self$update_nodes
+      
+      current_step <- self$step_number + 1
+      
+      # initialize epsilons for this step
+      na_epsilons <- as.list(rep(NA, length(update_nodes)))
+      names(na_epsilons) <- update_nodes
+      private$.epsilons[[current_step]] <- na_epsilons
+      
+      for(update_node in update_nodes){
+        # get new submodel fit
+        submodel_data <- self$generate_submodel_data(
+          likelihood, tmle_task,
+          fold_number, update_node
+        )
+        
+        new_epsilon <- self$fit_submodel(submodel_data)
 
-      # get new submodel fit
-      all_submodels <- self$generate_submodel_data(
-        likelihood, tmle_task,
-        fold_number
-      )
-      new_epsilons <- self$fit_submodels(all_submodels)
+        # update likelihoods
+        likelihood$update(new_epsilon, current_step, fold_number, update_node)
 
-      # update likelihoods
-      likelihood$update(new_epsilons, self$step_number, fold_number)
-
-      if (fold_number != "full") {
-        # update full fit likelihoods if we haven't already
-        likelihood$update(new_epsilons, self$step_number, "full")
+        if (fold_number != "full") {
+          # update full fit likelihoods if we haven't already
+          likelihood$update(new_epsilon, self$step_number, "full", update_node)
+        }
+        
+        private$.epsilons[[current_step]][[update_node]] <- new_epsilon
       }
-      # increment step count
-      private$.step_number <- private$.step_number + 1
+     
+      # update step number
+      private$.step_number <- current_step
     },
     generate_submodel_data = function(likelihood, tmle_task,
-                                          fold_number = "full") {
-      update_nodes <- self$update_nodes
+                                          fold_number = "full",
+                                          update_node = "Y") {
 
-      # TODO: support not getting observed for case where we're applying
-      #       updates instead of fitting them
+      # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$clever_covariates(tmle_task, fold_number)
       })
+      
+      node_covariates <- lapply(clever_covariates, `[[`, update_node)
+      covariates_dt <- do.call(cbind, node_covariates)
+      
+      if (self$one_dimensional) {
+        observed_task <- likelihood$training_task
+        estimates <- lapply(self$tmle_params, function(tmle_param) {
+          tmle_param$estimates(observed_task, fold_number)
+        })
+        covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
+      }
 
-      observed_values <- lapply(update_nodes, tmle_task$get_tmle_node)
+      observed <- tmle_task$get_tmle_node(update_node)
+      initial <- likelihood$get_likelihood(
+        tmle_task, update_node,
+        fold_number
+      )
 
-      all_submodels <- lapply(update_nodes, function(update_node) {
-        node_covariates <- lapply(clever_covariates, `[[`, update_node)
-        covariates_dt <- do.call(cbind, node_covariates)
-        if (self$one_dimensional) {
-          observed_task <- likelihood$training_task
-          estimates <- lapply(self$tmle_params, function(tmle_param) {
-            tmle_param$estimates(observed_task, fold_number)
-          })
-          covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
-        }
+      # scale observed and predicted values for bounded continuous
+      observed <- tmle_task$scale(observed, update_node)
+      initial <- tmle_task$scale(initial, update_node)
 
-        observed <- tmle_task$get_tmle_node(update_node)
-        initial <- likelihood$get_likelihood(
-          tmle_task, update_node,
-          fold_number
-        )
+      # protect against qlogis(1)=Inf
+      initial <- bound(initial, 0.005)
 
-        # scale observed and predicted values for bounded continuous
-        observed <- tmle_task$scale(observed, update_node)
-        initial <- tmle_task$scale(initial, update_node)
-
-        # protect against qlogis(1)=Inf
-        initial <- bound(initial, 0.005)
-
-        submodel_data <- list(
-          observed = observed,
-          H = covariates_dt,
-          initial = initial
-        )
-      })
-
-      names(all_submodels) <- update_nodes
-
-      return(all_submodels)
+      submodel_data <- list(
+        observed = observed,
+        H = covariates_dt,
+        initial = initial
+      )
+      
+      
+      return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
       if (self$constrain_step) {
@@ -141,6 +154,7 @@ tmle3_Update <- R6Class(
             "Consider setting `collapse_covariates=TRUE`"
           )
         }
+        
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
@@ -148,15 +162,28 @@ tmle3_Update <- R6Class(
           mean(loss)
         }
 
-        optim_fit <- optim(
-          par = list(epsilon = self$delta_epsilon), fn = risk,
-          lower = 0, upper = self$delta_epsilon,
-          method = "Brent"
-        )
-        epsilon <- optim_fit$par
-        risk_val <- optim_fit$value
-        risk_zero <- risk(0)
 
+        if(self$optim_delta_epsilon){
+          
+          optim_fit <- optim(
+            par = list(epsilon = self$delta_epsilon), fn = risk,
+            lower = 0, upper = self$delta_epsilon,
+            method = "Brent"
+          )
+          epsilon <- optim_fit$par
+        
+        } else {
+          epsilon <- self$delta_epsilon
+        }
+        
+        risk_val <- risk(epsilon)
+        risk_zero <- risk(0)
+        
+        # # TODO: consider if we should do this
+        # if(risk_zero<risk_val){
+        #   epsilon <- 0
+        # }
+        
         if (self$verbose) {
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }
@@ -206,14 +233,6 @@ tmle3_Update <- R6Class(
 
       return(epsilon)
     },
-    fit_submodels = function(all_submodels) {
-      all_epsilon <- lapply(all_submodels, self$fit_submodel)
-
-      names(all_epsilon) <- names(all_submodels)
-      private$.epsilons <- c(private$.epsilons, list(all_epsilon))
-
-      return(all_epsilon)
-    },
     submodel = function(epsilon, initial, H) {
       plogis(qlogis(initial) + H %*% epsilon)
     },
@@ -223,30 +242,23 @@ tmle3_Update <- R6Class(
     apply_submodel = function(submodel_data, epsilon) {
       self$submodel(epsilon, submodel_data$initial, submodel_data$H)
     },
-    apply_update = function(tmle_task, likelihood, fold_number, all_epsilon) {
-      update_nodes <- self$update_nodes
+    apply_update = function(tmle_task, likelihood, fold_number, new_epsilon, update_node) {
 
       # get submodel data for all nodes
-      all_submodel_data <- self$generate_submodel_data(
+      submodel_data <- self$generate_submodel_data(
         likelihood, tmle_task,
-        fold_number
+        fold_number, update_node
       )
 
-      # apply update to all nodes
-      updated_likelihoods <- lapply(update_nodes, function(update_node) {
-        submodel_data <- all_submodel_data[[update_node]]
-        epsilon <- all_epsilon[[update_node]]
-        updated_likelihood <- self$apply_submodel(submodel_data, epsilon)
+      updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
 
-        # un-scale to handle bounded continuous
-        updated_likelihood <- tmle_task$unscale(
-          updated_likelihood,
-          update_node
-        )
-      })
-      names(updated_likelihoods) <- update_nodes
+      # un-scale to handle bounded continuous
+      updated_likelihood <- tmle_task$unscale(
+        updated_likelihood,
+        update_node
+      )
 
-      return(updated_likelihoods)
+      return(updated_likelihood)
     },
     check_convergence = function(tmle_task, fold_number = "full") {
       estimates <- lapply(
@@ -351,6 +363,9 @@ tmle3_Update <- R6Class(
     fluctuation_type = function() {
       return(private$.fluctuation_type)
     },
+    optim_delta_epsilon = function() {
+      return(private$.optim_delta_epsilon)
+    },
     verbose = function() {
       return(private$.verbose)
     }
@@ -365,6 +380,7 @@ tmle3_Update <- R6Class(
     .one_dimensional = NULL,
     .constrain_step = NULL,
     .delta_epsilon = NULL,
+    .optim_delta_epsilon = NULL,
     .convergence_type = NULL,
     .fluctuation_type = NULL,
     .verbose = FALSE

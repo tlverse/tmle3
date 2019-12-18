@@ -101,7 +101,9 @@ tmle_classic_fit <- tmle(
   W = tmle_task$get_tmle_node("W"),
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
-  pDelta1 = pDelta1
+  pDelta1 = pDelta1,
+  alpha=0.995,
+  target.gwt = FALSE
 )
 
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]

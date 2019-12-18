@@ -51,7 +51,7 @@ Remotes:
     github::osofr/condensier,
     github::tlverse/origami,
     github::tlverse/delayed,
-    github::tlverse/sl3,
+    github::tlverse/sl3@devel,
     github::tlverse/tmle3shift
 License: GPL-3
 URL: https://tlverse.org/tmle3

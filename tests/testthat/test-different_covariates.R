@@ -1,13 +1,13 @@
-context("CV-TMLE: TSM for single static intervention")
-set.seed(1234)
+context("Different covariates: Specify adjustment sets in learners")
+
 library(sl3)
 # library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
-library(origami)
 # setup data for test
+
 data(cpp)
 data <- as.data.table(cpp)
 data$parity01 <- as.numeric(data$parity > 0)
@@ -37,8 +37,10 @@ logit_metalearner <- make_learner(
   Lrnr_solnp, metalearner_logistic_binomial,
   loss_loglik_binomial
 )
+
+g_covariates <- "mage"
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
-g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner, covariates = g_covariates)
 learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_TSM_all()
 
@@ -48,17 +50,34 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # define likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
+# verify that learners have expected covariate sets
+g_fit <-  initial_likelihood$factor_list[["A"]]$learner
+
+test_that("g fit has a reduced covariate set", {
+  
+  expect_equal(g_fit$training_task$nodes$covariates,g_covariates)
+  internal_glm_fit <- g_fit$fit_object$full_fit$fit_object$learner_fits[[1]]$fit_object$learner_fits[[2]]
+  expect_equal(names(coef(internal_glm_fit)), c('intercept', g_covariates))
+})
+
+test_that("a manually constructed g fit matches", {
+  g_task_manual <- sl3_Task$new(data, outcome=node_list$A, covariates=g_covariates, folds=tmle_task$folds)
+  g_fit_manual <- learner_list$Y$train(g_task_manual)
+  manual_preds <- g_fit_manual$predict()
+  tmle_preds <- g_fit$predict()
+  expect_equal(manual_preds, tmle_preds)
+})
+
 # define update method (submodel + loss function)
-# cv-tmle now the default
-updater <- tmle3_Update$new(convergence_type = "sample_size")
+# disable cvtmle for this test to compare with tmle package
+updater <- tmle3_Update$new(cvtmle = FALSE)
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-
 intervention <- define_lf(LF_static, "A", value = 1)
-
 tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
 updater$tmle_params <- tsm
 
+# debugonce(targeted_likelihood$update)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
 # extract results
@@ -68,7 +87,7 @@ tmle3_epsilon <- updater$epsilons[[1]]$Y
 
 submodel_data <- updater$generate_submodel_data(
   initial_likelihood, tmle_task,
-  "validation"
+  "full"
 )
 #################################################
 # compare with the tmle package
@@ -81,18 +100,14 @@ library(tmle)
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
 
 # get Q
-EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y", "validation")
-
-EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y", "validation")
+EY1 <- initial_likelihood$get_likelihoods(cf_task, "Y")
+EY1_final <- targeted_likelihood$get_likelihoods(cf_task, "Y")
 EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
-EY <- initial_likelihood$get_likelihoods(tmle_task, "Y", "validation")
-
 # get G
-pA1 <- initial_likelihood$get_likelihoods(cf_task, "A", "validation")
+pA1 <- initial_likelihood$get_likelihoods(cf_task, "A")
 pDelta1 <- cbind(pA1, pA1)
-
 tmle_classic_fit <- tmle(
   Y = tmle_task$get_tmle_node("Y"),
   A = NULL,
@@ -105,6 +120,8 @@ tmle_classic_fit <- tmle(
   target.gwt = FALSE
 )
 
+cf_task <- tsm$cf_likelihood$cf_tasks[[1]]
+# debugonce(tsm$cf_likelihood$enumerate_cf_tasks)
 
 # extract estimates
 classic_psi <- tmle_classic_fit$estimates$EY1$psi
@@ -115,12 +132,12 @@ classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 test_that("Qstar matches result from classic package", {
   expect_equivalent(EY1_final, classic_Qstar)
 })
-test_that("epsilon matches resullt from classic package", {
-  expect_equivalent(tmle3_epsilon, classic_epsilon)
-})
 test_that("psi matches result from classic package", {
   expect_equal(tmle3_psi, classic_psi)
 })
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se)
+})
+test_that("epsilon matches resullt from classic package", {
+  expect_equivalent(tmle3_epsilon, classic_epsilon)
 })

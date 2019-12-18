@@ -55,22 +55,22 @@ Param_ATC <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      
+
       # flip treatment and control
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
-      private$.outcome_node = outcome_node
+      private$.outcome_node <- outcome_node
       private$.param_att <- Param_ATT$new(observed_likelihood, intervention_list_control, intervention_list_treatment, outcome_node)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       att_cc <- self$param_att$clever_covariates(tmle_task, fold_number)
-      
-      atc_cc <- list(A= -1 * att_cc$A, Y= -1 * att_cc$Y)
+
+      atc_cc <- list(A = -1 * att_cc$A, Y = -1 * att_cc$Y)
       return(atc_cc)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       att_est <- self$param_att$estimates(tmle_task, fold_number)
-      result <- list(psi= -1 * att_est$psi, IC= -1 * att_est$IC)
+      result <- list(psi = -1 * att_est$psi, IC = -1 * att_est$IC)
       return(result)
     }
   ),
@@ -94,14 +94,14 @@ Param_ATC <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node, names(self$intervention_list_treatment)))
     },
-    param_att = function(){
+    param_att = function() {
       return(private$.param_att)
     }
   ),
   private = list(
     .type = "ATC",
     .param_att = NULL,
-    .outcome_node = NULL, 
+    .outcome_node = NULL,
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL
   )

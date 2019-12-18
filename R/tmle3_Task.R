@@ -207,9 +207,9 @@ tmle3_Task <- R6Class(
       if (drop_folds) {
         new_folds <- NULL
       } else {
-        new_folds <- sl3::subset_folds(self$folds,row_index)
+        new_folds <- sl3::subset_folds(self$folds, row_index)
       }
-      
+
       new_task$initialize(
         self$internal_data, self$npsem,
         column_names = self$column_names,

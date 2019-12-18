@@ -52,7 +52,7 @@ Targeted_Likelihood <- R6Class(
       for (task_index in seq_along(tasks_at_step)) {
         task <- tasks_at_step[[task_index]]
         updated_values <- task_updates[[task_index]]
-        
+
         likelihood_factor <- self$factor_list[[update_node]]
         self$cache$set_values(likelihood_factor, task, step_number + 1, fold_number, updated_values)
       }

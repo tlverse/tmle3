@@ -69,24 +69,22 @@ tmle3_Update <- R6Class(
       return(collapsed_covariate)
     },
     update_step = function(likelihood, tmle_task, fold_number = "full") {
-      
-      
       update_nodes <- self$update_nodes
-      
+
       current_step <- self$step_number + 1
-      
+
       # initialize epsilons for this step
       na_epsilons <- as.list(rep(NA, length(update_nodes)))
       names(na_epsilons) <- update_nodes
       private$.epsilons[[current_step]] <- na_epsilons
-      
-      for(update_node in update_nodes){
+
+      for (update_node in update_nodes) {
         # get new submodel fit
         submodel_data <- self$generate_submodel_data(
           likelihood, tmle_task,
           fold_number, update_node
         )
-        
+
         new_epsilon <- self$fit_submodel(submodel_data)
 
         # update likelihoods
@@ -96,10 +94,10 @@ tmle3_Update <- R6Class(
           # update full fit likelihoods if we haven't already
           likelihood$update(new_epsilon, self$step_number, "full", update_node)
         }
-        
+
         private$.epsilons[[current_step]][[update_node]] <- new_epsilon
       }
-     
+
       # update step number
       private$.step_number <- current_step
     },
@@ -111,10 +109,10 @@ tmle3_Update <- R6Class(
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$clever_covariates(tmle_task, fold_number)
       })
-      
+
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
       covariates_dt <- do.call(cbind, node_covariates)
-      
+
       if (self$one_dimensional) {
         observed_task <- likelihood$training_task
         estimates <- lapply(self$tmle_params, function(tmle_param) {
@@ -141,8 +139,8 @@ tmle3_Update <- R6Class(
         H = covariates_dt,
         initial = initial
       )
-      
-      
+
+
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
@@ -154,7 +152,7 @@ tmle3_Update <- R6Class(
             "Consider setting `collapse_covariates=TRUE`"
           )
         }
-        
+
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
@@ -163,27 +161,25 @@ tmle3_Update <- R6Class(
         }
 
 
-        if(self$optim_delta_epsilon){
-          
+        if (self$optim_delta_epsilon) {
           optim_fit <- optim(
             par = list(epsilon = self$delta_epsilon), fn = risk,
             lower = 0, upper = self$delta_epsilon,
             method = "Brent"
           )
           epsilon <- optim_fit$par
-        
         } else {
           epsilon <- self$delta_epsilon
         }
-        
+
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
-        
+
         # # TODO: consider if we should do this
         # if(risk_zero<risk_val){
         #   epsilon <- 0
         # }
-        
+
         if (self$verbose) {
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }

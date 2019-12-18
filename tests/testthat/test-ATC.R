@@ -47,9 +47,11 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size", 
-                            constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 0.001,
-                            optim_delta_epsilon = FALSE, maxit = 200)
+updater <- tmle3_Update$new(
+  cvtmle = FALSE, convergence_type = "sample_size",
+  constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 0.001,
+  optim_delta_epsilon = FALSE, maxit = 200
+)
 
 # debugonce(updater$update_step)
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
@@ -86,7 +88,7 @@ EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
 EY1_final <- targeted_likelihood$get_likelihoods(cf_task1, "Y")
 EY0_final <- targeted_likelihood$get_likelihoods(cf_task0, "Y")
 
-#EY0 <- rep(0, length(EY1)) # not used
+# EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
 # get G
@@ -99,8 +101,8 @@ tmle_classic_fit <- tmle(
   W = cbind(tmle_task$get_tmle_node("W"), tmle_task$get_tmle_node("W")),
   Q = Q,
   g1W = pA1,
-  family="binomial",
-  alpha=0.995,
+  family = "binomial",
+  alpha = 0.995,
   target.gwt = FALSE
 )
 

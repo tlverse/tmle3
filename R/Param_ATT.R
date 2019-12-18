@@ -71,14 +71,14 @@ Param_ATT <- R6Class(
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      
+
       cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
       cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
 
       pA1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, intervention_nodes, fold_number)
       pA1_overall <- mean(pA1)
 
-      HA <- (cf_pA_treatment - cf_pA_control * (pA1/(1-pA1)))
+      HA <- (cf_pA_treatment - cf_pA_control * (pA1 / (1 - pA1)))
 
 
 
@@ -111,7 +111,7 @@ Param_ATT <- R6Class(
 
       pA1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, intervention_nodes, fold_number)
       pA1_overall <- mean(pA1)
-    
+
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
       EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
       EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
@@ -124,7 +124,7 @@ Param_ATT <- R6Class(
       HA <- clever_covariates$Y
       CY <- clever_covariates$A
 
-      IC <- (HA * (Y - EY) + CY * cf_pA_treatment)/pA1_overall
+      IC <- (HA * (Y - EY) + CY * cf_pA_treatment) / pA1_overall
 
       result <- list(psi = psi, IC = IC)
       return(result)

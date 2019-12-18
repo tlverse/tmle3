@@ -116,7 +116,10 @@ tmle_classic_fit <- tmle(
   Delta = Delta,
   Q = Q,
   g1W = pA1,
-  pDelta1 = pDelta1
+  pDelta1 = pDelta1,
+  family="binomial",
+  alpha=0.995,
+  target.gwt = FALSE
 )
 
 

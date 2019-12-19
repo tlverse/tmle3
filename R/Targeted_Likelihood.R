@@ -122,6 +122,9 @@ Targeted_Likelihood <- R6Class(
     },
     training_task = function() {
       return(self$initial_likelihood$training_task)
+    },
+    censoring_nodes = function(){
+      return(self$initial_likelihood$censoring_nodes)
     }
   ),
   private = list(

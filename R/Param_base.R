@@ -23,6 +23,14 @@ Param_base <- R6Class(
     initialize = function(observed_likelihood, ..., outcome_node = "Y") {
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
+      
+      if(!is.null(observed_likelihood$censoring_nodes[[outcome_node]])){
+        if(!self$supports_outcome_censoring){
+          stop(sprintf("%s has censoring mechanism, but %s does not yet support outcome node censoring",
+                       outcome_node, class(self)[1]))
+        }
+      }
+      
       if (inherits(observed_likelihood, "Targeted_Likelihood")) {
         # register parameter with updater
         observed_likelihood$updater$register_param(self)
@@ -55,12 +63,16 @@ Param_base <- R6Class(
     },
     outcome_node = function() {
       return(private$.outcome_node)
+    },
+    supports_outcome_censoring = function(){
+      return(private$.supports_outcome_censoring)
     }
   ),
   private = list(
     .type = "undefined",
     .observed_likelihood = NULL,
-    .outcome_node = NULL
+    .outcome_node = NULL,
+    .supports_outcome_censoring = FALSE
   )
 )
 

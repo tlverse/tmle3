@@ -115,6 +115,7 @@ Param_stratified <- R6Class(
     .type = NULL,
     .param_base = NULL,
     .strata_variable = NULL,
-    .strata = NULL
+    .strata = NULL,
+    .supports_outcome_censoring = TRUE
   )
 )

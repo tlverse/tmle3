@@ -131,6 +131,7 @@ tmle3_Update <- R6Class(
       observed <- tmle_task$scale(observed, update_node)
       initial <- tmle_task$scale(initial, update_node)
 
+
       # protect against qlogis(1)=Inf
       initial <- bound(initial, 0.005)
 
@@ -139,6 +140,7 @@ tmle3_Update <- R6Class(
         H = covariates_dt,
         initial = initial
       )
+
 
 
       return(submodel_data)

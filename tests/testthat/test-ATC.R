@@ -1,4 +1,4 @@
-context("ATT interventions: treatment effect amongst the treated")
+context("ATC interventions: treatment effect amongst the controls")
 
 library(sl3)
 library(tmle3)
@@ -38,7 +38,7 @@ Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
 learner_list <- list(Y = Q_learner, A = g_learner)
 
-tmle_spec <- tmle_ATT(1, 0)
+tmle_spec <- tmle_ATC(1, 0)
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
@@ -50,7 +50,7 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 updater <- tmle3_Update$new(
   cvtmle = FALSE, convergence_type = "sample_size",
   constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 0.001,
-  optim_delta_epsilon = FALSE
+  optim_delta_epsilon = FALSE, maxit = 200
 )
 
 # debugonce(updater$update_step)
@@ -60,12 +60,11 @@ targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 # define parameter
 tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
-att <- tmle_params[[1]]
+atc <- tmle_params[[1]]
 
 # fit tmle update
 tmle_fit <- fit_tmle3(
-  tmle_task, targeted_likelihood, list(att), updater,
-  max_it
+  tmle_task, targeted_likelihood, list(atc), updater
 )
 
 # extract results
@@ -80,14 +79,15 @@ library(tmle)
 # construct likelihood estimates
 
 # tasks for A=1 and A=0
-cf_task1 <- att$cf_likelihood_treatment$cf_tasks[[1]]
-cf_task0 <- att$cf_likelihood_control$cf_tasks[[1]]
+cf_task1 <- atc$cf_likelihood_treatment$cf_tasks[[1]]
+cf_task0 <- atc$cf_likelihood_control$cf_tasks[[1]]
 
 # get Q
 EY1 <- initial_likelihood$get_likelihoods(cf_task1, "Y")
 EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
 EY1_final <- targeted_likelihood$get_likelihoods(cf_task1, "Y")
 EY0_final <- targeted_likelihood$get_likelihoods(cf_task0, "Y")
+
 # EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
@@ -108,8 +108,8 @@ tmle_classic_fit <- tmle(
 
 
 # extract estimates
-classic_psi <- tmle_classic_fit$estimates$ATT$psi
-classic_se <- sqrt(tmle_classic_fit$estimates$ATT$var.psi)
+classic_psi <- tmle_classic_fit$estimates$ATC$psi
+classic_se <- sqrt(tmle_classic_fit$estimates$ATC$var.psi)
 tol <- 1 / sqrt(tmle_task$nrow)
 test_that("psi matches result from classic package", {
   expect_equal(tmle3_psi, classic_psi, tol)

@@ -40,22 +40,21 @@ Targeted_Likelihood <- R6Class(
 
       super$initialize(params)
     },
-    update = function(new_epsilons, step_number, fold_number = "full") {
+    update = function(new_epsilon, step_number, fold_number = "full", update_node) {
       # todo: rethink which tasks need updates here
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks
 
       # first, calculate all updates
-      task_updates <- lapply(tasks_at_step, self$updater$apply_update, self, fold_number, new_epsilons)
+      task_updates <- lapply(tasks_at_step, self$updater$apply_update, self, fold_number, new_epsilon, update_node)
 
       # then, store all updates
       for (task_index in seq_along(tasks_at_step)) {
         task <- tasks_at_step[[task_index]]
         updated_values <- task_updates[[task_index]]
-        for (node in names(updated_values)) {
-          likelihood_factor <- self$factor_list[[node]]
-          self$cache$set_values(likelihood_factor, task, step_number + 1, fold_number, updated_values[[node]])
-        }
+
+        likelihood_factor <- self$factor_list[[update_node]]
+        self$cache$set_values(likelihood_factor, task, step_number + 1, fold_number, updated_values)
       }
       # for (task in tasks_at_step) {
       #   all_submodels <- self$updater$generate_submodel_data(self, task, fold_number)
@@ -83,7 +82,7 @@ Targeted_Likelihood <- R6Class(
           self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values)
         }
 
-        if (value_step != self$updater$step_number) {
+        if (value_step < self$updater$step_number) {
           stop(
             "cached likelihood value is out of sync with updates\n",
             "lf_uuid: ", likelihood_factor$uuid, "\n",

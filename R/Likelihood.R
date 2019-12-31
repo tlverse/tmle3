@@ -59,6 +59,11 @@ Likelihood <- R6Class(
       if (!all(factor_names %in% task_nodes)) {
         stop("factor_list and task$npsem must have matching names")
       }
+
+      factor_types <- lapply(factor_list, function(x) x.type())
+      if (("density" %in% factor_types) & ("continuous" %in% factor_types)) {
+        warning("bounded continuous is being used with density type outcome")
+      }
     },
     get_likelihood = function(tmle_task, node, fold_number = "full") {
       likelihood_factor <- self$factor_list[[node]]

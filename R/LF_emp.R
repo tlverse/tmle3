@@ -44,10 +44,10 @@ LF_emp <- R6Class(
       weights <- tmle_task$weights
       return(weights / sum(weights))
     },
-    sample = function(tmle_task = NULL, n_samples = NULL, 
-                      return_values=FALSE, fold_number = "full") {
+    sample = function(tmle_task = NULL, n_samples = NULL, fold_number = "full") {
       # TODO: fold
       # TODO: handle weights
+      # TODO: option to return task
       if (is.null(tmle_task)) {
         tmle_task <- self$training_task
       }
@@ -59,18 +59,7 @@ LF_emp <- R6Class(
       
       values <- self$training_task$get_tmle_node(self$name)[index]
       values <- matrix(values, nrow = tmle_task$nrow)
-      if (return_values) {
-        return(values)
-      }
-      
-      index <- rep(1:tmle_task$nrow, each=n_samples)
-      expanded_task <- tmle_task[index]
-      
-      cf_data <- data.table(as.vector(values))
-      setnames(cf_data, names(cf_data), self$name)
-      sampled_task <- expanded_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
-      
-      return(sampled_task)
+      return(values)
     }
   ),
   active = list(),

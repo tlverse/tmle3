@@ -91,12 +91,7 @@ Other Likelihood objects:
 \if{html}{\out{<a id="method-sample"></a>}}
 \subsection{Method \code{sample()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LF_emp$sample(
-  tmle_task = NULL,
-  n_samples = NULL,
-  return_values = FALSE,
-  fold_number = "full"
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LF_emp$sample(tmle_task = NULL, n_samples = NULL, fold_number = "full")}\if{html}{\out{</div>}}
 }
 
 }

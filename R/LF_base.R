@@ -58,8 +58,7 @@ LF_base <- R6Class(
 
       return(values)
     },
-    sample = function(tmle_task, n_samples = NULL, 
-                      return_values=FALSE, fold_number = "full") {
+    sample = function(tmle_task, n_samples = NULL, fold_number = "full") {
       stop("sampling not supported")
     },
     cf_values = function(tmle_task) {

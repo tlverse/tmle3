@@ -53,15 +53,11 @@ likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 # debugonce(likelihood$factor_list[["Y"]]$sample)
 
 # verify we can obtain samples
-samp_W_vals <- likelihood$factor_list$W$sample(tmle_task[1:50], 30, return_values=TRUE)
-samp_W_task <- likelihood$factor_list$W$sample(tmle_task[1:50], 30, return_values=FALSE)
+samp_W <- likelihood$factor_list$W$sample(tmle_task[1:50], 30)
 
-samp_A_vals <- likelihood$factor_list$A$sample(tmle_task[1:50], 30, return_values=TRUE)
-samp_A_task <- likelihood$factor_list$A$sample(tmle_task[1:50], 30, return_values=FALSE)
+samp_Y <- likelihood$factor_list$Y$sample(tmle_task[1:50], 30)
 
-samp_Y_vals <- likelihood$factor_list$Y$sample(tmle_task[1:50], 30, return_values=TRUE)
-samp_Y_task <- likelihood$factor_list$Y$sample(tmle_task[1:50], 30, return_values=FALSE)
+samp_A <- likelihood$factor_list$A$sample(tmle_task[1:50], 30)
 
-intervention <- define_lf(LF_static, "A", value = 1)
-intervention$sample(tmle_task[1:50], 30, return_values=TRUE)
-intervention$sample(tmle_task[1:50], 30, return_values=FALSE)
+static_A <- define_lf(LF_static, "A", value = 1)
+samp_A <- intervention$sample(tmle_task[1:50], 30)

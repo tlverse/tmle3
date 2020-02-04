@@ -90,8 +90,7 @@ LF_fit <- R6Class(
       }
       return(likelihood)
     },
-    sample = function(tmle_task, n_samples = NULL, 
-                      return_values=FALSE, fold_number = "full") {
+    sample = function(tmle_task, n_samples = NULL, fold_number = "full") {
       # TODO: fold
       if (is.null(tmle_task)) {
         tmle_task <- self$training_task
@@ -106,6 +105,7 @@ LF_fit <- R6Class(
       outcome_type <- learner$training_task$outcome_type
       
       if (outcome_type$type == "binomial") {
+        # TODO: option to return task
         # TODO: think about how folds should be structured on resample
         # need to keep ids the same
         # probably also predict using training set fits
@@ -115,11 +115,9 @@ LF_fit <- R6Class(
         preds <- learner$predict_fold(learner_task, "full")
         unpacked <- sl3::unpack_predictions(as.vector(preds))
         values <- apply(unpacked, 1, 
-                        function(probs) apply(rmultinom(n_samples, 1, probs)==1, 2, which))
+                        function(probs) apply(rmultinom(n_samples, 1, probs)==1, 2, 
+                                              function(onehots) outcome_type$levels[which(onehots)]))
       } else if (outcome_type$type == "continuous") {
-        # TODO: figure out how to sample from continuous in two cases
-        # 1) we have a conditional density
-        # 2) we only have a conditional mean (sample from a normal with variance=cvMSE)
         if ("sampling" %in% learner$properties) {
           values <- learner$sample(learner_task, n_samples, "full")
         } else {
@@ -145,19 +143,7 @@ LF_fit <- R6Class(
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       values <- t(values)
-      if (return_values) {
-        return(values)
-      }
-      
-      browser()
-      index <- rep(1:tmle_task$nrow, each=n_samples)
-      expanded_task <- tmle_task[index]
-      
-      cf_data <- data.table(as.vector(values))
-      setnames(cf_data, names(cf_data), self$name)
-      sampled_task <- expanded_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
-      
-      return(sampled_task)
+      return(values)
     }
   ),
   active = list(

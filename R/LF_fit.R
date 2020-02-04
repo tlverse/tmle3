@@ -93,6 +93,9 @@ LF_fit <- R6Class(
     sample = function(tmle_task, n_samples = NULL, 
                       return_values=FALSE, fold_number = "full") {
       # TODO: fold
+      if (is.null(tmle_task)) {
+        tmle_task <- self$training_task
+      }
       if (is.null(n_samples)) {
         return(tmle_task)
       }
@@ -146,6 +149,7 @@ LF_fit <- R6Class(
         return(values)
       }
       
+      browser()
       index <- rep(1:tmle_task$nrow, each=n_samples)
       expanded_task <- tmle_task[index]
       

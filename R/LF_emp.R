@@ -55,12 +55,20 @@ LF_emp <- R6Class(
         return(tmle_task)
       }
       
-      index <- sample(1:tmle_task$nrow, n_samples, replace=TRUE)
+      index <- sample(1:self$training_task$nrow, tmle_task$nrow * n_samples, replace=TRUE)
       
-      sampled_task <- tmle_task[index]
+      values <- self$training_task$get_tmle_node(self$name)[index]
+      values <- matrix(values, nrow = tmle_task$nrow)
       if (return_values) {
-        # TODO: return a vector of sampled values
+        return(values)
       }
+      
+      index <- rep(1:tmle_task$nrow, each=n_samples)
+      expanded_task <- tmle_task[index]
+      
+      cf_data <- data.table(as.vector(values))
+      setnames(cf_data, names(cf_data), self$name)
+      sampled_task <- expanded_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       
       return(sampled_task)
     }

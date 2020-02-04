@@ -57,6 +57,7 @@ Param_MSM <- R6Class(
       private$.continuous_treatment <- continuous_treatment
       if (continuous_treatment) {
         private$.n_samples <- n_samples
+        private$.U <- runif(100)
         private$.treatment_values <- "A" # not needed but stored for simplicity
       } else {
         # numeralize treatments and store mapping
@@ -115,8 +116,7 @@ Param_MSM <- R6Class(
       h <- private$.mass(tmle_task, fold_number)
       if (self$continuous_treatment) {
         A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$learner$get_outcome_range(tmle_task$get_regression_task(self$outcome_node), fold_number)
-        U <- runif(100)
-        A_vals <- t(apply(A_range, 1, function(r) r[1] + (r[2] - r[1]) * U))
+        A_vals <- t(apply(A_range, 1, function(r) r[1] + (r[2] - r[1]) * self$U))
         # Generate counterfactual tasks for each sample of A:
         cf_tasks <- apply(A_vals, 2, function(A_val) {
           newdata <- data.table(A = A_val)
@@ -214,7 +214,7 @@ Param_MSM <- R6Class(
   
   active = list(
     name = function() {
-      if (continuous_treatment) {
+      if (self$continuous_treatment) {
         treatment_labels <- self$treatment_node
       } else {
         treatment_labels <- names(self$treatment_values)
@@ -250,6 +250,9 @@ Param_MSM <- R6Class(
     },
     treatment_node = function() {
       return(private$.treatment_node)
+    },
+    U = function() {
+      return(private$.U)
     }
   ),
   
@@ -262,6 +265,7 @@ Param_MSM <- R6Class(
     .strata = NULL,
     .mass = NULL,
     .covariate_node = NULL,
-    .treatment_node = NULL
+    .treatment_node = NULL,
+    .U = NULL
   )
 )

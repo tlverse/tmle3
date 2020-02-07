@@ -15,8 +15,8 @@ data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
 node_list <- list(
-  W = c("sexn"),
-  V = "mmaritn",
+  W = c("whz"),
+  V = "sexn",
   A = "parity01",
   Y = "haz01"
 )
@@ -56,8 +56,11 @@ updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 # define parameter
-tmle_param <- tmle_spec$make_params(tmle_task, targeted_likelihood)
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_param, updater)
+msm <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+updater$tmle_params <- msm
+
+# fit
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, msm, updater)
 
 tmle_ests <- tmle_fit$summary$tmle_est
 
@@ -70,7 +73,25 @@ tmle3_se <- tmle_fit$summary$se
 library(tmle)
 
 # construct likelihood estimates
+cf_task1 <- msm$cf_likelihoods[["1"]]$cf_tasks[[1]]
+cf_task0 <- msm$cf_likelihoods[["0"]]$cf_tasks[[1]]
 
+# get Q
+EY1 <- initial_likelihood$get_likelihoods(cf_task1, "Y")
+EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
+Q <- cbind(EY0, EY1)
+
+# get G
+pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
+tmle_classic_fit <- tmleMSM(
+  Y = tmle_task$get_tmle_node("Y"),
+  A = tmle_task$get_tmle_node("A"),
+  W = tmle_task$get_data(NULL, node_list[["W"]]),
+  V = tmle_task$get_data(NULL, node_list[["V"]]),
+  Q = Q,
+  hAV = pA1,
+  g1W = pA1
+)
 
 
 

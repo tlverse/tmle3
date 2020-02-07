@@ -58,8 +58,11 @@ Param_MSM <- R6Class(
       if (continuous_treatment) {
         private$.n_samples <- n_samples
         private$.U <- runif(100)
-        private$.treatment_values <- "A" # not needed but stored for simplicity
+        private$.treatment_values <- treatment_node # not needed but stored for simplicity
       } else {
+        if (is.null(treatment_values)) {
+          private$.treatment_values <- observed_likelihood$factor_list[[treatment_node]]$variable_type$levels
+        }
         # numeralize treatments and store mapping
         private$.treatment_values <- setNames(paste0("A", 1:length(treatment_values)), treatment_values)
       }
@@ -133,7 +136,7 @@ Param_MSM <- R6Class(
         })
       }
       
-      qY_vals <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, "Y", fold_number)
+      qY_vals <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
       h_vals <- sapply(cf_tasks, private$.mass, fold_number)
       
       #

@@ -61,10 +61,17 @@ Param_MSM <- R6Class(
         private$.treatment_values <- treatment_node # not needed but stored for simplicity
       } else {
         if (is.null(treatment_values)) {
-          private$.treatment_values <- observed_likelihood$factor_list[[treatment_node]]$variable_type$levels
+          treatment_values <- observed_likelihood$factor_list[[treatment_node]]$variable_type$levels
         }
         # numeralize treatments and store mapping
         private$.treatment_values <- setNames(paste0("A", 1:length(treatment_values)), treatment_values)
+        # 
+        private$.cf_likelihoods <- lapply(self$treatment_values, function(A_level) {
+          intervention_list <- define_lf(LF_static, "A", value = A_level)
+          cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
+          return(cf_likelihood)
+        })
+        names(private$.cf_likelihoods) <- names(self$treatment_values)
       }
       private$.strata_variable <- strata_variable
       '
@@ -112,7 +119,7 @@ Param_MSM <- R6Class(
     estimates = function(tmle_task = NULL, fold_number = "full") {
       # TODO: estimate variance of MC integration
       Y <- as.matrix(tmle_task$get_tmle_node(self$outcome_node))
-      qY <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
+      qYA <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
       V <- as.vector(as.matrix(tmle_task$get_data(, self$strata_variable)))
       A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
@@ -129,9 +136,8 @@ Param_MSM <- R6Class(
       } else {
         A_vals <- diag(length(self$treatment_values))
         # Generate counterfactual tasks for each value of A:
-        cf_tasks <- lapply(names(self$treatment_values), function(A_val) {
-          newdata <- data.table(A = A_val)
-          cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), new_data = newdata)
+        cf_tasks <- lapply(self$cf_likelihoods, function(cf_likelihood) {
+          cf_task <- cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
           return(cf_task)
         })
       }
@@ -174,7 +180,8 @@ Param_MSM <- R6Class(
       }
       IC_term2 <- cbind(res_A_mat, res_V_mat)
       
-      base_res <- (Y - qY) / pA
+      # not using clever covariates for efficiency reason
+      base_res <- (Y - qYA) / pA
       strata_res <- c(h * base_res)
       if (self$continuous_treatment) {
         IC_term1 <- strata_res * cbind(A, V)
@@ -260,6 +267,9 @@ Param_MSM <- R6Class(
     },
     U = function() {
       return(private$.U)
+    },
+    cf_likelihoods = function() {
+      return(private$.cf_likelihoods)
     }
   ),
   
@@ -273,6 +283,7 @@ Param_MSM <- R6Class(
     .mass = NULL,
     .covariate_node = NULL,
     .treatment_node = NULL,
-    .U = NULL
+    .U = NULL,
+    .cf_likelihoods = NULL
   )
 )

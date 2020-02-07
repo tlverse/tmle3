@@ -216,12 +216,16 @@ Param_MSM <- R6Class(
     name = function() {
       if (self$continuous_treatment) {
         treatment_labels <- self$treatment_node
+        treatment_names <- "Treatment Node"
       } else {
         treatment_labels <- names(self$treatment_values)
+        treatment_names <- rep("Treatment Level", length(treatment_labels))
       }
       strata_label <- self$strata_variable
+      
       param_form <- sprintf(
-        "Param_MSM: %s",
+        "%s: %s",
+        c(treatment_names, "Strata Variable"), 
         c(treatment_labels, strata_label)
       )
       

@@ -4,11 +4,109 @@
 \name{Likelihood_cache}
 \alias{Likelihood_cache}
 \title{Cache Likelihood values, update those values}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
-\usage{
-Likelihood_cache
-}
 \description{
 Cache Likelihood values, update those values
+
+Cache Likelihood values, update those values
 }
-\keyword{datasets}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{Likelihood_cache$new()}}
+\item \href{#method-tasks_at_step}{\code{Likelihood_cache$tasks_at_step()}}
+\item \href{#method-get_update_step}{\code{Likelihood_cache$get_update_step()}}
+\item \href{#method-key}{\code{Likelihood_cache$key()}}
+\item \href{#method-set_values}{\code{Likelihood_cache$set_values()}}
+\item \href{#method-get_values}{\code{Likelihood_cache$get_values()}}
+\item \href{#method-cache_lf}{\code{Likelihood_cache$cache_lf()}}
+\item \href{#method-cache_task}{\code{Likelihood_cache$cache_task()}}
+\item \href{#method-clone}{\code{Likelihood_cache$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$new()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-tasks_at_step"></a>}}
+\subsection{Method \code{tasks_at_step()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$tasks_at_step(current_step)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_update_step"></a>}}
+\subsection{Method \code{get_update_step()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$get_update_step(likelihood_factor, tmle_task, fold_number)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-key"></a>}}
+\subsection{Method \code{key()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$key(likelihood_factor, tmle_task, fold_number)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-set_values"></a>}}
+\subsection{Method \code{set_values()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$set_values(
+  likelihood_factor,
+  tmle_task,
+  update_step = 0,
+  fold_number,
+  values
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_values"></a>}}
+\subsection{Method \code{get_values()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$get_values(likelihood_factor, tmle_task, fold_number)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-cache_lf"></a>}}
+\subsection{Method \code{cache_lf()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$cache_lf(likelihood_factor)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-cache_task"></a>}}
+\subsection{Method \code{cache_task()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$cache_task(task)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood_cache$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

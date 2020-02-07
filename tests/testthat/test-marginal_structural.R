@@ -8,39 +8,38 @@ library(future)
 
 ### discrete ###
 # data
-washb_data <- fread("https://raw.githubusercontent.com/tlverse/tlverse-data/master/wash-benefits/washb_data.csv", stringsAsFactors = TRUE)
+data(cpp)
+data <- as.data.table(cpp)
+data$parity01 <- as.numeric(data$parity > 0)
+data$parity01_fac <- factor(data$parity01)
+data$haz01 <- as.numeric(data$haz > 0)
+data[is.na(data)] <- 0
 node_list <- list(
-  W = c(
-    "month", "aged", "momage",
-    "momheight", "hfiacat"
-  ),
-  V = "Nlt18",
-  A = "tr",
-  Y = "whz"
+  W = c("sexn"),
+  V = "mmaritn",
+  A = "parity01",
+  Y = "haz01"
 )
-processed <- process_missing(washb_data[1:500,], node_list)
-data <- processed$data
-node_list <- processed$node_list
 
 # leaners
-lrnr_mean <- make_learner(Lrnr_mean)
-lrnr_xgboost <- make_learner(Lrnr_xgboost)
-
-ls_metalearner <- make_learner(Lrnr_nnls)
-mn_metalearner <- make_learner(
-  Lrnr_solnp, metalearner_linear_multinomial,
-  loss_loglik_multinomial
-)
-sl_Y <- Lrnr_sl$new(
-  learners = list(lrnr_mean, lrnr_xgboost),
-  metalearner = ls_metalearner
-)
-sl_A <- Lrnr_sl$new(
-  learners = list(lrnr_mean, lrnr_xgboost),
-  metalearner = mn_metalearner
+qlib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glm_fast"
 )
 
-learner_list <- list(A = sl_A, Y = sl_Y)
+glib <- make_learner_stack(
+  "Lrnr_mean",
+  "Lrnr_glm_fast"
+)
+
+logit_metalearner <- make_learner(
+  Lrnr_solnp, metalearner_logistic_binomial,
+  loss_loglik_binomial
+)
+
+Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
+g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
+learner_list <- list(Y = Q_learner, A = g_learner)
 
 # estimators
 tmle_spec <- tmle_MSM()
@@ -53,13 +52,26 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
 # disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new()
-
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
+
+# define parameter
 tmle_param <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_param, updater)
 
 tmle_ests <- tmle_fit$summary$tmle_est
+
+# extract results
+tmle3_psi <- tmle_fit$summary$tmle_est
+tmle3_se <- tmle_fit$summary$se
+
+#################################################
+# compare with the tmle package
+library(tmle)
+
+# construct likelihood estimates
+
+
 
 
 ### continuous ###
@@ -105,7 +117,6 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-# disable cvtmle for this test to compare with tmle package
 updater <- tmle3_Update$new()
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)

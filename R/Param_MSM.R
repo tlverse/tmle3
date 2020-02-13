@@ -49,22 +49,23 @@ Param_MSM <- R6Class(
   public = list(
     initialize = function(observed_likelihood, strata_variable, 
                           continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
-                          mass = NULL, ...,
+                          mass = NULL, mass_ub = 1/0.025, ...,
                           covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = "Y")
       private$.covariate_node <- covariate_node
       private$.treatment_node <- treatment_node
       private$.continuous_treatment <- continuous_treatment
+      private$.mass_ub <- mass_ub
       if (continuous_treatment) {
         private$.n_samples <- n_samples
-        private$.U <- runif(100)
-        private$.treatment_values <- treatment_node # not needed but stored for simplicity
+        private$.U <- runif(n_samples)
+        private$.treatment_values <- setNames(treatment_node, treatment_node) # not needed but stored for simplicity
       } else {
         if (is.null(treatment_values)) {
           treatment_values <- observed_likelihood$factor_list[[treatment_node]]$variable_type$levels
         }
         # numeralize treatments and store mapping
-        private$.treatment_values <- setNames(paste0("A", 1:length(treatment_values)), treatment_values)
+        private$.treatment_values <- setNames(treatment_values, paste0(treatment_node, "_", treatment_values))
         # 
         private$.cf_likelihoods <- lapply(self$treatment_values, function(A_level) {
           intervention_list <- define_lf(LF_static, "A", value = A_level)
@@ -82,14 +83,22 @@ Param_MSM <- R6Class(
       '
       if (is.null(private$.mass)) {
         private$.mass <- function(tmle_task = NULL, fold_number = "full") {
-          self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
+          m = self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
+          if (!is.null(self$mass_ub)) {
+            m = pmin(m, self$mass_ub)
+          }
+          m
         }
       } else {
         private$.mass <- function(tmle_task = NULL, fold_number = "full") {
           # TODO: fold?
           A <- tmle_task$get_tmle_node(self$treatment_node)
           V <- tmle_task$get_tmle_node(self$covariate_node)[[self$strata_variable]]
-          sapply(1:length(A), function(i) mass(A[i], V[i]))
+          m = sapply(1:length(A), function(i) mass(A[i], V[i]))
+          if (!is.null(self$mass_ub)) {
+            m = pmin(m, self$mass_ub)
+          }
+          m
         }
       }
     },
@@ -106,12 +115,10 @@ Param_MSM <- R6Class(
       if (self$continuous_treatment) {
         clever_covs <- strata_covs * cbind(A, V)
       } else {
-        covs_A_mat <- matrix(0, nrow = length(h), ncol = length(self$treatment_values))
-        for (i in 1:length(h)) {
-          covs_A_mat[i, which(names(self$treatment_values) == A[i,])] <- strata_covs[i]
-        }
-        clever_covs <- cbind(covs_A_mat, strata_covs * V)
+        A_mat <- self$get_treatment_indicators(tmle_task)
+        clever_covs <- strata_covs * cbind(A_mat, V)
       }
+      colnames(clever_covs) <- c(names(self$treatment_values), "V")
       
       return(list(Y = clever_covs))
     },
@@ -119,7 +126,7 @@ Param_MSM <- R6Class(
     estimates = function(tmle_task = NULL, fold_number = "full") {
       # TODO: estimate variance of MC integration
       Y <- as.matrix(tmle_task$get_tmle_node(self$outcome_node))
-      qYA <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
+      qY <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
       V <- as.vector(as.matrix(tmle_task$get_data(, self$strata_variable)))
       A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
@@ -142,58 +149,84 @@ Param_MSM <- R6Class(
         })
       }
       
-      qY_vals <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
-      h_vals <- sapply(cf_tasks, private$.mass, fold_number)
+      qYA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
+      hA <- sapply(cf_tasks, private$.mass, fold_number)
       
-      #
-      qY_ext <- c(qY_vals)
+      # psi and ic
+      qY_ext <- matrix(qYA, ncol = 1, byrow = FALSE)
       if (self$continuous_treatment) {
         V_ext <- rep(V, times = self$n_samples)
-        A_ext <- c(A_vals)
+        A_ext <- matrix(A_vals, ncol = 1, byrow = FALSE)
       } else {
         V_ext <- rep(V, times = length(self$treatment_values))
         A_ext <- sapply(data.frame(A_vals), rep, each=length(V))
       }
-      h_ext <- c(h_vals)
-      regress_mat = cbind(qY_ext, A_ext, V_ext)
+      h_ext <- matrix(hA, ncol = 1, byrow = FALSE)
       
-      regress_table <- data.table(regress_mat)
-      colnames(regress_table) <- c("Q", self$treatment_values, "V")
+      regress_table <- data.table(cbind(qY_ext, A_ext, V_ext))
+      colnames(regress_table) <- c("Q", names(self$treatment_values), "V")
       formula <- as.formula(paste0("Q~", 
-                                   paste(c(self$treatment_values, "V"), collapse = "+"),
+                                   paste(c(names(self$treatment_values), "V"), collapse = "+"),
                                    "-1"))
       if (length(levels(factor(Y))) == 2 && all.equal(levels(factor(Y)), c("0", "1"))) {
-        model <- glm(formula, family = binomial, data = regress_table, weights = h_ext)
+        family = "binomial"
       } else {
-        model <- glm(formula, family = gaussian, data = regress_table, weights = h_ext)
+        family = "gaussian"
       }
+      suppressWarnings(model <- glm(formula, family = family, data = regress_table, weights = h_ext))
       
       psi <- model$coefficients
+      names(psi) <- c(names(self$treatment_values), "V")
       
       weighted_res <- residuals(model, type = "response") * h_ext
       if (self$continuous_treatment) {
-        res_A_mat <- rowMeans(matrix(weighted_res * A_ext, nrow = length(V), byrow = FALSE))
-        res_V_mat <- rowMeans(matrix(weighted_res, nrow = length(V), byrow = FALSE)) * V
+        res_A <- (A_range[, 2] - A_range[, 1]) * rowMeans(matrix(weighted_res * A_ext, nrow = length(V), byrow = FALSE))
+        res_V <- (A_range[, 2] - A_range[, 1]) * rowMeans(matrix(weighted_res, nrow = length(V), byrow = FALSE)) * V
       } else {
-        res_A_mat <- matrix(weighted_res, nrow = length(V), byrow = FALSE)
-        res_V_mat <- rowSums(res_A_mat) * V
+        res_A <- matrix(weighted_res, nrow = length(V), byrow = FALSE)
+        res_V <- rowSums(res_A) * V
       }
-      IC_term2 <- cbind(res_A_mat, res_V_mat)
+      H2 <- cbind(res_A, res_V)
       
-      # not using clever covariates for efficiency reason
-      base_res <- (Y - qYA) / pA
-      strata_res <- c(h * base_res)
+      H1 <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
+      
+      IC <- H1 * c(Y - qY) + H2
+      
+      # normalization
       if (self$continuous_treatment) {
-        IC_term1 <- strata_res * cbind(A, V)
+        # TODO: continuous normalization
       } else {
-        ic_A_mat <- matrix(0, nrow = length(h), ncol = length(self$treatment_values))
-        for (i in 1:length(h)) {
-          ic_A_mat[i, which(names(self$treatment_values) == A[i,])] <- strata_res[i]
+        ## reference: tmle - Susan Gruber
+        if (!any(is.na(IC))) {
+          nterms <- ncol(IC)
+          ntreats <- length(self$treatment_values)
+          f <- function(x) {
+            x[1:nterms] %*% t(x[(nterms + 1):(2 * nterms)])
+          }
+          if (family == "binomial") {
+            mA <- matrix(predict(model, type = "response"), nrow = length(V), byrow = FALSE)
+            derivFactor <- mA * (1 - mA)
+          } else {
+            derivFactor <- matrix(1, nrow = nrow(IC), ncol = ntreats)
+          }
+          deriv.terms <- rep(list(matrix(NA, nterms^2, length(V))), ntreats)
+          for (i in 1:length(self$treatment_values)) {
+            covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
+            deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
+          }
+          ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))
+          M <- -matrix(rowMeans(ddpsi.IC), nrow = nterms)
+          Minv <- try(solve(M))
+          if (identical(class(Minv), "try-error")) {
+            warning("Inference unavailable: normalizing matrix not invertible. IC not normalized. \n")
+          }
+          else {
+            IC <- t(Minv %*% t(IC))
+          }
         }
-        IC_term1 <- cbind(ic_A_mat, strata_res * V)
       }
       
-      IC <- IC_term1 + IC_term2
+      colnames(IC) <- c(names(self$treatment_values), "V")
       
       result <- list(psi = psi, IC = IC)
       return(result)
@@ -207,16 +240,14 @@ Param_MSM <- R6Class(
       return(strata_weights)
     },
     
-    get_treatment_indicators = function(tmle_task) {
-      # deprecated
-      treatment_variable <- tmle_task$npsem[["A"]]$variables
+    get_treatment_indicators = function(tmle_task, treatment_node = self$treatment_node) {
+      treatment_variable <- tmle_task$npsem[[treatment_node]]$variables
       A <- tmle_task$get_data(, treatment_variable)
       treatment <- factor(A[[treatment_variable]])
-      levels(treatment) <- self$treatment_values[levels(treatment)]
       
       combined <- A[, "indicators":= 1][, "level":= treatment]
       treatment_indicators <- t(sapply(combined$level, function(a) as.numeric(a == self$treatment_values)))
-      colnames(treatment_indicators) = self$treatment_values
+      colnames(treatment_indicators) <- names(self$treatment_values)
       return(treatment_indicators)
     }
     
@@ -228,7 +259,7 @@ Param_MSM <- R6Class(
         treatment_labels <- self$treatment_node
         treatment_names <- "Treatment Node"
       } else {
-        treatment_labels <- names(self$treatment_values)
+        treatment_labels <- as.character(self$treatment_values)
         treatment_names <- rep("Treatment Level", length(treatment_labels))
       }
       strata_label <- self$strata_variable
@@ -243,6 +274,9 @@ Param_MSM <- R6Class(
     },
     continuous_treatment = function() {
       return(private$.continuous_treatment)
+    },
+    mass_ub = function() {
+      return(private$.mass_ub)
     },
     treatment_values = function() {
       return(private$.treatment_values)
@@ -276,6 +310,7 @@ Param_MSM <- R6Class(
   private = list(
     .type = "stratified MSM",
     .continuous_treatment = NULL,
+    .mass_ub = NULL,
     .treatment_values = NULL,
     .n_samples = NULL,
     .strata_variable = NULL,

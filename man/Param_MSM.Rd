@@ -93,6 +93,7 @@ Other Parameters:
   treatment_values = NULL,
   n_samples = 30,
   mass = NULL,
+  mass_ub = 1/0.025,
   ...,
   covariate_node = "W",
   treatment_node = "A",
@@ -129,7 +130,10 @@ Other Parameters:
 \if{html}{\out{<a id="method-get_treatment_indicators"></a>}}
 \subsection{Method \code{get_treatment_indicators()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Param_MSM$get_treatment_indicators(tmle_task)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Param_MSM$get_treatment_indicators(
+  tmle_task,
+  treatment_node = self$treatment_node
+)}\if{html}{\out{</div>}}
 }
 
 }

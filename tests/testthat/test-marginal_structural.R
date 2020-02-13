@@ -62,8 +62,6 @@ updater$tmle_params <- msm
 # fit
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, msm, updater)
 
-tmle_ests <- tmle_fit$summary$tmle_est
-
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
@@ -73,27 +71,51 @@ tmle3_se <- tmle_fit$summary$se
 library(tmle)
 
 # construct likelihood estimates
-cf_task1 <- msm$cf_likelihoods[["1"]]$cf_tasks[[1]]
-cf_task0 <- msm$cf_likelihoods[["0"]]$cf_tasks[[1]]
+cf_task1 <- msm$cf_likelihoods[["A_1"]]$cf_tasks[[1]]
+cf_task0 <- msm$cf_likelihoods[["A_0"]]$cf_tasks[[1]]
 
 # get Q
 EY1 <- initial_likelihood$get_likelihoods(cf_task1, "Y")
 EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
 Q <- cbind(EY0, EY1)
 
-# get G
+# get g
 pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
+pA0 <- initial_likelihood$get_likelihoods(cf_task0, "A")
+h <- cbind(pA0, pA1)
+
 tmle_classic_fit <- tmleMSM(
   Y = tmle_task$get_tmle_node("Y"),
   A = tmle_task$get_tmle_node("A"),
-  W = tmle_task$get_data(NULL, node_list[["W"]]),
-  V = tmle_task$get_data(NULL, node_list[["V"]]),
+  W = setnames(tmle_task$get_data(NULL, node_list[["W"]]), "W"),
+  V = setnames(tmle_task$get_data(NULL, node_list[["V"]]), "V"),
+  MSM = "A + V",
   Q = Q,
-  hAV = pA1,
-  g1W = pA1
+  hAV = h,
+  g1W = pA1,
+  family = "binomial"
 )
 
+# extract estimates
+classic_psi <- tmle_classic_fit$psi
+classic_se <- tmle_classic_fit$se
 
+# only approximately equal (although it's O(1/n))
+names(tmle3_psi) <- c("A_0", "A_1", "V")
+classic_psi["A"] <- classic_psi["A"] + classic_psi["(Intercept)"]
+names(classic_psi) <- c("A_0", "A_1", "V")
+test_that("psi matches result from classic package", {
+  expect_equal(tmle3_psi, classic_psi, tol = 1e-3)
+})
+
+# only approximately equal (although it's O(1/n))
+tmle3_se <- tmle3_se[c(1,3)]
+names(tmle3_se) <- c("A_0", "V")
+classic_se <- classic_se[c(1,3)]
+names(classic_se) <- c("A_0", "V")
+test_that("se matches result from classic package", {
+  expect_equal(tmle3_se, classic_se, tol = 1e-3)
+})
 
 ### continuous ###
 # data

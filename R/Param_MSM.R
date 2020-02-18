@@ -193,36 +193,37 @@ Param_MSM <- R6Class(
       IC <- H1 * c(Y - qY) + H2
       
       # normalization
-      if (self$continuous_treatment) {
-        # TODO: continuous normalization
-      } else {
-        ## reference: tmle - Susan Gruber
-        if (!any(is.na(IC))) {
-          nterms <- ncol(IC)
-          ntreats <- length(self$treatment_values)
-          f <- function(x) {
-            x[1:nterms] %*% t(x[(nterms + 1):(2 * nterms)])
-          }
-          if (family == "binomial") {
-            mA <- matrix(predict(model, type = "response"), nrow = length(V), byrow = FALSE)
-            derivFactor <- mA * (1 - mA)
-          } else {
-            derivFactor <- matrix(1, nrow = nrow(IC), ncol = ntreats)
-          }
-          deriv.terms <- rep(list(matrix(NA, nterms^2, length(V))), ntreats)
-          for (i in 1:length(self$treatment_values)) {
-            covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
-            deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
-          }
+      ## reference: tmle - Susan Gruber
+      if (!any(is.na(IC))) {
+        nterms <- ncol(IC)
+        ntreats <- length(self$treatment_values)
+        f <- function(x) {
+          x[1:nterms] %*% t(x[(nterms + 1):(2 * nterms)])
+        }
+        if (family == "binomial") {
+          mA <- matrix(predict(model, type = "response"), nrow = length(V), byrow = FALSE)
+          derivFactor <- mA * (1 - mA)
+        } else {
+          derivFactor <- matrix(1, nrow = nrow(IC), ncol = ntreats)
+        }
+        deriv.terms <- rep(list(matrix(NA, nterms^2, length(V))), ntreats)
+        for (i in 1:ntreats) {
+          covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
+          deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
+        }
+        if (self$continuous_treatment) {
+          # TODO: continuous normalization
+          ddpsi.IC <- as.matrix(Reduce('+', deriv.terms)) / ntreats * (A_range[, 2] - A_range[, 1])
+        } else {
           ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))
-          M <- -matrix(rowMeans(ddpsi.IC), nrow = nterms)
-          Minv <- try(solve(M))
-          if (identical(class(Minv), "try-error")) {
-            warning("Inference unavailable: normalizing matrix not invertible. IC not normalized. \n")
-          }
-          else {
-            IC <- t(Minv %*% t(IC))
-          }
+        }
+        M <- -matrix(rowMeans(ddpsi.IC), nrow = nterms)
+        Minv <- try(solve(M))
+        if (identical(class(Minv), "try-error")) {
+          warning("Inference unavailable: normalizing matrix not invertible. IC not normalized. \n")
+        }
+        else {
+          IC <- t(Minv %*% t(IC))
         }
       }
       

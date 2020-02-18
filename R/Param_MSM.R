@@ -212,7 +212,6 @@ Param_MSM <- R6Class(
           deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
         }
         if (self$continuous_treatment) {
-          # TODO: continuous normalization
           ddpsi.IC <- as.matrix(Reduce('+', deriv.terms)) / ntreats * (A_range[, 2] - A_range[, 1])
         } else {
           ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))

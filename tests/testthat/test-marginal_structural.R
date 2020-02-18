@@ -1,6 +1,7 @@
 context("Stratification - estimate TSM in strata")
 
 library(sl3)
+library(curl)
 library(uuid)
 library(assertthat)
 library(data.table)

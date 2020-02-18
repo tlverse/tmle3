@@ -1,13 +1,12 @@
 context("Stratification - estimate TSM in strata")
 
 library(sl3)
-library(curl)
 library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
 
-### discrete ###
+
 # data
 data(cpp)
 data <- as.data.table(cpp)
@@ -15,6 +14,8 @@ data$parity01 <- as.numeric(data$parity > 0)
 data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
+
+### discrete ###
 node_list <- list(
   W = c("whz"),
   V = "sexn",
@@ -119,16 +120,14 @@ test_that("se matches result from classic package", {
 })
 
 ### continuous ###
-# data
-washb_data <- fread("https://raw.githubusercontent.com/tlverse/tlverse-data/master/wash-benefits/washb_data.csv", stringsAsFactors = TRUE)
 node_list <- list(
   W = c(
-    "month", "aged", "momage",
-    "tr", "hfiacat"
+    "apgar1", "apgar5", "gagebrth", "mage",
+    "meducyrs", "sexn"
   ),
-  V = "Nlt18",
-  A = "momheight",
-  Y = "whz"
+  V = "agedays",
+  A = "whz",
+  Y = "haz"
 )
 processed <- process_missing(washb_data[1:500,], node_list)
 data <- processed$data

@@ -60,4 +60,4 @@ samp_Y <- likelihood$factor_list$Y$sample(tmle_task[1:50], 30)
 samp_A <- likelihood$factor_list$A$sample(tmle_task[1:50], 30)
 
 static_A <- define_lf(LF_static, "A", value = 1)
-samp_A <- intervention$sample(tmle_task[1:50], 30)
+samp_A <- static_A$sample(tmle_task[1:50], 30)

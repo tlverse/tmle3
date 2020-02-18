@@ -129,7 +129,7 @@ node_list <- list(
   A = "whz",
   Y = "haz"
 )
-processed <- process_missing(washb_data[1:500,], node_list)
+processed <- process_missing(data[1:500,], node_list)
 data <- processed$data
 node_list <- processed$node_list
 

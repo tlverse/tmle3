@@ -37,7 +37,7 @@ LF_base <- R6Class(
       # get possible values from task if discrete
       tmle_node <- tmle_task$npsem[[self$name]]
       private$.variable_type <- tmle_node$variable_type
-
+      private$.training_task <- tmle_task
       # subclasses may do more, like fit sl3 models
     },
     get_density = function(tmle_task, fold_number) {
@@ -58,7 +58,9 @@ LF_base <- R6Class(
 
       return(values)
     },
-
+    sample = function(tmle_task, n_samples = NULL, fold_number = "full") {
+      stop("sampling not supported")
+    },
     cf_values = function(tmle_task) {
       stop(sprintf("%s is not a valid intervention type", class(self)[1]))
     },
@@ -92,6 +94,9 @@ LF_base <- R6Class(
     },
     cache = function() {
       return(private$.cache)
+    },
+    training_task = function(){
+      return(private$.training_task)
     }
   ),
   private = list(
@@ -101,7 +106,8 @@ LF_base <- R6Class(
     .type = NULL,
     .uuid = NULL,
     .bound = NULL,
-    .cache = TRUE
+    .cache = TRUE,
+    .training_task = NULL
   )
 )
 

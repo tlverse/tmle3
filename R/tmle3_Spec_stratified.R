@@ -89,6 +89,7 @@ tmle3_Spec_stratified <- R6Class(
 #'
 #' @param base_spec An underlying spec to stratify.
 #' @param strata_variable The variable(s) to use for stratification.
+#' @param base_estimate Indicate whether to report base parameter.
 #'
 #' @export
 tmle_stratified <- function(base_spec, strata_variable, base_estimate = TRUE) {

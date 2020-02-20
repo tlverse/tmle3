@@ -161,10 +161,15 @@ initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
 updater <- tmle3_Update$new()
-
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-tmle_param <- tmle_spec$make_params(tmle_task, targeted_likelihood)
-tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_param, updater)
 
+# define parameter
+msm <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+updater$tmle_params <- msm
+
+# fit
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, msm, updater)
+
+# extract results
 tmle_ests <- tmle_fit$summary$tmle_est
 

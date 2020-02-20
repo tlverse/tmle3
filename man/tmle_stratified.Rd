@@ -10,6 +10,8 @@ tmle_stratified(base_spec, strata_variable, base_estimate = TRUE)
 \item{base_spec}{An underlying spec to stratify.}
 
 \item{strata_variable}{The variable(s) to use for stratification.}
+
+\item{base_estimate}{Indicate whether to report base parameter.}
 }
 \description{
 O=(W,A,Y)

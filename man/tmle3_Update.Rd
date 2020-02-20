@@ -51,7 +51,6 @@ loss function and submodel are hard-coded (need to accept arguments for these)
 \item \href{#method-update_step}{\code{tmle3_Update$update_step()}}
 \item \href{#method-generate_submodel_data}{\code{tmle3_Update$generate_submodel_data()}}
 \item \href{#method-fit_submodel}{\code{tmle3_Update$fit_submodel()}}
-\item \href{#method-fit_submodels}{\code{tmle3_Update$fit_submodels()}}
 \item \href{#method-submodel}{\code{tmle3_Update$submodel()}}
 \item \href{#method-loss_function}{\code{tmle3_Update$loss_function()}}
 \item \href{#method-apply_submodel}{\code{tmle3_Update$apply_submodel()}}
@@ -74,6 +73,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)
   delta_epsilon = 1e-04,
   convergence_type = c("scaled_var", "sample_size"),
   fluctuation_type = c("standard", "weighted"),
+  optim_delta_epsilon = TRUE,
   verbose = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -102,7 +102,8 @@ loss function and submodel are hard-coded (need to accept arguments for these)
 \if{html}{\out{<div class="r">}}\preformatted{tmle3_Update$generate_submodel_data(
   likelihood,
   tmle_task,
-  fold_number = "full"
+  fold_number = "full",
+  update_node = "Y"
 )}\if{html}{\out{</div>}}
 }
 
@@ -112,14 +113,6 @@ loss function and submodel are hard-coded (need to accept arguments for these)
 \subsection{Method \code{fit_submodel()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{tmle3_Update$fit_submodel(submodel_data)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit_submodels"></a>}}
-\subsection{Method \code{fit_submodels()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{tmle3_Update$fit_submodels(all_submodels)}\if{html}{\out{</div>}}
 }
 
 }
@@ -151,7 +144,13 @@ loss function and submodel are hard-coded (need to accept arguments for these)
 \if{html}{\out{<a id="method-apply_update"></a>}}
 \subsection{Method \code{apply_update()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{tmle3_Update$apply_update(tmle_task, likelihood, fold_number, all_epsilon)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{tmle3_Update$apply_update(
+  tmle_task,
+  likelihood,
+  fold_number,
+  new_epsilon,
+  update_node
+)}\if{html}{\out{</div>}}
 }
 
 }

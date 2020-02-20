@@ -58,6 +58,7 @@ Other Likelihood objects:
 \item \href{#method-get_mean}{\code{LF_static$get_mean()}}
 \item \href{#method-get_density}{\code{LF_static$get_density()}}
 \item \href{#method-cf_values}{\code{LF_static$cf_values()}}
+\item \href{#method-sample}{\code{LF_static$sample()}}
 \item \href{#method-clone}{\code{LF_static$clone()}}
 }
 }
@@ -100,6 +101,14 @@ Other Likelihood objects:
 \subsection{Method \code{cf_values()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LF_static$cf_values(tmle_task)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-sample"></a>}}
+\subsection{Method \code{sample()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LF_static$sample(tmle_task, n_samples = NULL, fold_number = "full")}\if{html}{\out{</div>}}
 }
 
 }

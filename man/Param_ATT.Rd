@@ -54,6 +54,7 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \seealso{
 Other Parameters: 
+\code{\link{Param_ATC}},
 \code{\link{Param_ATE}},
 \code{\link{Param_MSM}},
 \code{\link{Param_TSM}},

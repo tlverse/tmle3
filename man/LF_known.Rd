@@ -56,12 +56,13 @@ Other Likelihood objects:
 }
 }
 \if{html}{
-\out{<details open ><summary>Inherited methods</summary>}
+\out{<details ><summary>Inherited methods</summary>}
 \itemize{
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="cf_values">}\href{../../tmle3/html/LF_base.html#method-cf_values}{\code{tmle3::LF_base$cf_values()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="delayed_train">}\href{../../tmle3/html/LF_base.html#method-delayed_train}{\code{tmle3::LF_base$delayed_train()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="get_likelihood">}\href{../../tmle3/html/LF_base.html#method-get_likelihood}{\code{tmle3::LF_base$get_likelihood()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="print">}\href{../../tmle3/html/LF_base.html#method-print}{\code{tmle3::LF_base$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="sample">}\href{../../tmle3/html/LF_base.html#method-sample}{\code{tmle3::LF_base$sample()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="train">}\href{../../tmle3/html/LF_base.html#method-train}{\code{tmle3::LF_base$train()}}\out{</span>}
 }
 \out{</details>}

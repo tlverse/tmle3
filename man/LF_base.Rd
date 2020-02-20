@@ -86,6 +86,7 @@ Other Likelihood objects:
 \item \href{#method-get_density}{\code{LF_base$get_density()}}
 \item \href{#method-get_mean}{\code{LF_base$get_mean()}}
 \item \href{#method-get_likelihood}{\code{LF_base$get_likelihood()}}
+\item \href{#method-sample}{\code{LF_base$sample()}}
 \item \href{#method-cf_values}{\code{LF_base$cf_values()}}
 \item \href{#method-print}{\code{LF_base$print()}}
 \item \href{#method-clone}{\code{LF_base$clone()}}
@@ -136,6 +137,14 @@ Other Likelihood objects:
 \subsection{Method \code{get_likelihood()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LF_base$get_likelihood(tmle_task, fold_number = "full")}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-sample"></a>}}
+\subsection{Method \code{sample()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LF_base$sample(tmle_task, n_samples = NULL, fold_number = "full")}\if{html}{\out{</div>}}
 }
 
 }

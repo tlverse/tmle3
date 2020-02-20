@@ -48,6 +48,7 @@ Other Likelihood objects:
 \item \href{#method-new}{\code{LF_emp$new()}}
 \item \href{#method-get_mean}{\code{LF_emp$get_mean()}}
 \item \href{#method-get_density}{\code{LF_emp$get_density()}}
+\item \href{#method-sample}{\code{LF_emp$sample()}}
 \item \href{#method-clone}{\code{LF_emp$clone()}}
 }
 }
@@ -83,6 +84,14 @@ Other Likelihood objects:
 \subsection{Method \code{get_density()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LF_emp$get_density(tmle_task, fold_number = "full")}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-sample"></a>}}
+\subsection{Method \code{sample()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LF_emp$sample(tmle_task = NULL, n_samples = NULL, fold_number = "full")}\if{html}{\out{</div>}}
 }
 
 }

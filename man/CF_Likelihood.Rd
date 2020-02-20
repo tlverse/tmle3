@@ -81,7 +81,6 @@ Other Likelihood objects:
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="get_outcome_type">}\href{../../sl3/html/Lrnr_base.html#method-get_outcome_type}{\code{sl3::Lrnr_base$get_outcome_type()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict">}\href{../../sl3/html/Lrnr_base.html#method-predict}{\code{sl3::Lrnr_base$predict()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict_fold">}\href{../../sl3/html/Lrnr_base.html#method-predict_fold}{\code{sl3::Lrnr_base$predict_fold()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="sample">}\href{../../sl3/html/Lrnr_base.html#method-sample}{\code{sl3::Lrnr_base$sample()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="set_train">}\href{../../sl3/html/Lrnr_base.html#method-set_train}{\code{sl3::Lrnr_base$set_train()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="subset_covariates">}\href{../../sl3/html/Lrnr_base.html#method-subset_covariates}{\code{sl3::Lrnr_base$subset_covariates()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="train">}\href{../../sl3/html/Lrnr_base.html#method-train}{\code{sl3::Lrnr_base$train()}}\out{</span>}
@@ -91,6 +90,7 @@ Other Likelihood objects:
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="Likelihood" data-id="get_likelihoods">}\href{../../tmle3/html/Likelihood.html#method-get_likelihoods}{\code{tmle3::Likelihood$get_likelihoods()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="Likelihood" data-id="get_possible_counterfactuals">}\href{../../tmle3/html/Likelihood.html#method-get_possible_counterfactuals}{\code{tmle3::Likelihood$get_possible_counterfactuals()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="Likelihood" data-id="print">}\href{../../tmle3/html/Likelihood.html#method-print}{\code{tmle3::Likelihood$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="Likelihood" data-id="sample">}\href{../../tmle3/html/Likelihood.html#method-sample}{\code{tmle3::Likelihood$sample()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="Likelihood" data-id="validate_task">}\href{../../tmle3/html/Likelihood.html#method-validate_task}{\code{tmle3::Likelihood$validate_task()}}\out{</span>}
 }
 \out{</details>}

@@ -48,91 +48,35 @@
 #'     }
 #' }
 #' @export
-Param_ATT <- R6Class(
-  classname = "Param_ATT",
+Param_ATC <- R6Class(
+  classname = "Param_ATC",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node)
+
+      # flip treatment and control
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
+      private$.outcome_node <- outcome_node
+      private$.param_att <- Param_ATT$new(observed_likelihood, intervention_list_control, intervention_list_treatment, outcome_node)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
-      if (is.null(tmle_task)) {
-        tmle_task <- self$observed_likelihood$training_task
-      }
+      att_cc <- self$param_att$clever_covariates(tmle_task, fold_number)
 
-      # todo: actually the union of the treatment and control nodes?
-      intervention_nodes <- names(self$intervention_list_treatment)
-
-      # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-
-      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
-      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
-
-      pA1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, intervention_nodes, fold_number)
-      pA1_overall <- mean(pA1)
-
-      HA <- (cf_pA_treatment - cf_pA_control * (pA1 / (1 - pA1)))
-
-
-
-      EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node, fold_number)
-      EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node, fold_number)
-
-      psi <- mean((EY1 - EY0) * (pA1 / pA1_overall))
-      CY <- (EY1 - EY0) - psi
-
-      return(list(A = CY, Y = HA))
+      atc_cc <- list(A = -1 * att_cc$A, Y = -1 * att_cc$Y)
+      return(atc_cc)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
-      if (is.null(tmle_task)) {
-        tmle_task <- self$observed_likelihood$training_task
-      }
-
-      # todo: actually the union of the treatment and control nodes?
-      intervention_nodes <- names(self$intervention_list_treatment)
-
-      # todo: make sure we support updating these params
-      # pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      # pA_overall <- mean(pA)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      # cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-
-
-
-      cf_task_treatment <- self$cf_likelihood_treatment$cf_tasks[[1]]
-      cf_task_control <- self$cf_likelihood_control$cf_tasks[[1]]
-
-      pA1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, intervention_nodes, fold_number)
-      pA1_overall <- mean(pA1)
-
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
-      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
-      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
-
-      psi <- mean((EY1 - EY0) * (pA1 / pA1_overall))
-
-      Y <- tmle_task$get_tmle_node(self$outcome_node)
-
-      clever_covariates <- self$clever_covariates(tmle_task, fold_number)
-      HA <- clever_covariates$Y
-      CY <- clever_covariates$A
-
-      IC <- (HA * (Y - EY) + CY * cf_pA_treatment) / pA1_overall
-
-      result <- list(psi = psi, IC = IC)
+      att_est <- self$param_att$estimates(tmle_task, fold_number)
+      result <- list(psi = -1 * att_est$psi, IC = -1 * att_est$IC)
       return(result)
     }
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("ATT[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("ATC[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
       return(param_form)
     },
     cf_likelihood_treatment = function() {
@@ -149,10 +93,15 @@ Param_ATT <- R6Class(
     },
     update_nodes = function() {
       return(c(self$outcome_node, names(self$intervention_list_treatment)))
+    },
+    param_att = function() {
+      return(private$.param_att)
     }
   ),
   private = list(
-    .type = "ATT",
+    .type = "ATC",
+    .param_att = NULL,
+    .outcome_node = NULL,
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL
   )

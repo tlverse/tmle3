@@ -118,6 +118,7 @@ Other Likelihood objects:
 \item \href{#method-get_possible_counterfactuals}{\code{Likelihood$get_possible_counterfactuals()}}
 \item \href{#method-base_train}{\code{Likelihood$base_train()}}
 \item \href{#method-add_factors}{\code{Likelihood$add_factors()}}
+\item \href{#method-sample}{\code{Likelihood$sample()}}
 \item \href{#method-clone}{\code{Likelihood$clone()}}
 }
 }
@@ -133,7 +134,6 @@ Other Likelihood objects:
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="get_outcome_type">}\href{../../sl3/html/Lrnr_base.html#method-get_outcome_type}{\code{sl3::Lrnr_base$get_outcome_type()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict">}\href{../../sl3/html/Lrnr_base.html#method-predict}{\code{sl3::Lrnr_base$predict()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict_fold">}\href{../../sl3/html/Lrnr_base.html#method-predict_fold}{\code{sl3::Lrnr_base$predict_fold()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="sample">}\href{../../sl3/html/Lrnr_base.html#method-sample}{\code{sl3::Lrnr_base$sample()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="set_train">}\href{../../sl3/html/Lrnr_base.html#method-set_train}{\code{sl3::Lrnr_base$set_train()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="subset_covariates">}\href{../../sl3/html/Lrnr_base.html#method-subset_covariates}{\code{sl3::Lrnr_base$subset_covariates()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="train">}\href{../../sl3/html/Lrnr_base.html#method-train}{\code{sl3::Lrnr_base$train()}}\out{</span>}
@@ -202,6 +202,14 @@ Other Likelihood objects:
 \subsection{Method \code{add_factors()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Likelihood$add_factors(factor_list)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-sample"></a>}}
+\subsection{Method \code{sample()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Likelihood$sample(tmle_task = NULL, sample_lib = NULL)}\if{html}{\out{</div>}}
 }
 
 }

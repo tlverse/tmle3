@@ -27,10 +27,10 @@ This class defines a node in an NPSEM
     }
     \item{\code{variables}}{character vector, the names of the variables that comprise the node
     }
-    \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+    \item{\code{parents}}{character vector, the names of the parent nodes. If censoring, node is assumed to have no parents.
     }
     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.
-    If missing, variable_type will be guessed later from the data.
+    If censoring, variable_type will be guessed later from the data.
     }
     }
 }
@@ -58,7 +58,7 @@ This class defines a node in an NPSEM
     }
     \item{\code{variables}}{character vector, the names of the variables that comprise the node
     }
-    \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+    \item{\code{parents}}{character vector, the names of the parent nodes. If censoring, node is assumed to have no parents.
     }
     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.}
 }
@@ -83,6 +83,7 @@ This class defines a node in an NPSEM
   variables,
   parents = c(),
   variable_type = NULL,
+  censoring_node = NULL,
   scale = FALSE
 )}\if{html}{\out{</div>}}
 }

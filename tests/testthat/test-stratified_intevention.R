@@ -62,10 +62,10 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_param, updater)
 
 
 tmle_ests <- tmle_fit$summary$tmle_est
-pA <- 1/tmle_fit$tmle_params[[2]]$strata$weight
-wm <- weighted.mean(tmle_ests[-1],pA)
-test_that("overall ATE is weighted average of strata ATEs",expect_equal(tmle_ests[[1]],wm))
+pA <- 1 / tmle_fit$tmle_params[[2]]$strata$weight
+wm <- weighted.mean(tmle_ests[-1], pA)
+test_that("overall ATE is weighted average of strata ATEs", expect_equal(tmle_ests[[1]], wm))
 
 ses <- tmle_fit$summary$se
 
-test_that("overall ATE has lower SE than strata ATEs",expect_equal(which.min(ses),1))
+test_that("overall ATE has lower SE than strata ATEs", expect_equal(which.min(ses), 1))

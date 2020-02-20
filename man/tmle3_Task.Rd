@@ -123,7 +123,7 @@ This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the
 \if{html}{\out{<a id="method-get_tmle_node"></a>}}
 \subsection{Method \code{get_tmle_node()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{tmle3_Task$get_tmle_node(node_name, format = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{tmle3_Task$get_tmle_node(node_name, format = FALSE, impute_censoring = FALSE)}\if{html}{\out{</div>}}
 }
 
 }
@@ -131,7 +131,11 @@ This class inherits from \code{\link[sl3]{sl3_Task}}. In addition to all the
 \if{html}{\out{<a id="method-get_regression_task"></a>}}
 \subsection{Method \code{get_regression_task()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{tmle3_Task$get_regression_task(target_node, scale = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{tmle3_Task$get_regression_task(
+  target_node,
+  scale = FALSE,
+  drop_censored = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 }

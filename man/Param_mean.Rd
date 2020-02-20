@@ -37,6 +37,7 @@ Useful for example, in calculating attributable risks.
 
 \seealso{
 Other Parameters: 
+\code{\link{Param_ATC}},
 \code{\link{Param_ATE}},
 \code{\link{Param_ATT}},
 \code{\link{Param_MSM}},

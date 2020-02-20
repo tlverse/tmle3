@@ -68,6 +68,7 @@ Other Likelihood objects:
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="cf_values">}\href{../../tmle3/html/LF_base.html#method-cf_values}{\code{tmle3::LF_base$cf_values()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="get_likelihood">}\href{../../tmle3/html/LF_base.html#method-get_likelihood}{\code{tmle3::LF_base$get_likelihood()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="print">}\href{../../tmle3/html/LF_base.html#method-print}{\code{tmle3::LF_base$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="tmle3" data-topic="LF_base" data-id="sample">}\href{../../tmle3/html/LF_base.html#method-sample}{\code{tmle3::LF_base$sample()}}\out{</span>}
 }
 \out{</details>}
 }

@@ -59,6 +59,7 @@ Other Likelihood objects:
 \item \href{#method-train}{\code{LF_fit$train()}}
 \item \href{#method-get_mean}{\code{LF_fit$get_mean()}}
 \item \href{#method-get_density}{\code{LF_fit$get_density()}}
+\item \href{#method-sample}{\code{LF_fit$sample()}}
 \item \href{#method-clone}{\code{LF_fit$clone()}}
 }
 }
@@ -108,6 +109,14 @@ Other Likelihood objects:
 \subsection{Method \code{get_density()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{LF_fit$get_density(tmle_task, fold_number)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-sample"></a>}}
+\subsection{Method \code{sample()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LF_fit$sample(tmle_task, n_samples = NULL, fold_number = "full")}\if{html}{\out{</div>}}
 }
 
 }

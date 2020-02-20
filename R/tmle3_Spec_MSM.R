@@ -34,7 +34,7 @@ tmle3_Spec_MSM <- R6Class(
       
       if (treatment_type == "continuous") {
         tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
-                                    continuous_treatment = TRUE, n_samples = 30, 
+                                    continuous_treatment = TRUE, n_samples = 3, 
                                     mass = self$options$mass)
       } else {
         A_vals <- tmle_task$get_tmle_node("A")

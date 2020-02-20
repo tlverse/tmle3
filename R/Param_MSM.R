@@ -58,7 +58,8 @@ Param_MSM <- R6Class(
       private$.mass_ub <- mass_ub
       if (continuous_treatment) {
         private$.n_samples <- n_samples
-        private$.U <- runif(n_samples)
+        #private$.U <- runif(n_samples)
+        private$.U <- seq(0, 1, length.out = n_samples)
         private$.treatment_values <- setNames(treatment_node, treatment_node) # not needed but stored for simplicity
       } else {
         if (is.null(treatment_values)) {
@@ -128,9 +129,7 @@ Param_MSM <- R6Class(
       Y <- as.matrix(tmle_task$get_tmle_node(self$outcome_node))
       qY <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
       V <- as.vector(as.matrix(tmle_task$get_data(, self$strata_variable)))
-      A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
-      h <- private$.mass(tmle_task, fold_number)
+      
       if (self$continuous_treatment) {
         A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$learner$get_outcome_range(tmle_task$get_regression_task(self$outcome_node), fold_number)
         A_vals <- t(apply(A_range, 1, function(r) r[1] + (r[2] - r[1]) * self$U))
@@ -151,8 +150,10 @@ Param_MSM <- R6Class(
       
       qYA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
       hA <- sapply(cf_tasks, private$.mass, fold_number)
+      # normalize h
+      hA <- hA / rowSums(hA)
       
-      # psi and ic
+      # psi
       qY_ext <- matrix(qYA, ncol = 1, byrow = FALSE)
       if (self$continuous_treatment) {
         V_ext <- rep(V, times = self$n_samples)
@@ -177,11 +178,11 @@ Param_MSM <- R6Class(
       
       psi <- model$coefficients
       names(psi) <- c(names(self$treatment_values), "V")
-      
+      # ic
       weighted_res <- residuals(model, type = "response") * h_ext
       if (self$continuous_treatment) {
-        res_A <- (A_range[, 2] - A_range[, 1]) * rowMeans(matrix(weighted_res * A_ext, nrow = length(V), byrow = FALSE))
-        res_V <- (A_range[, 2] - A_range[, 1]) * rowMeans(matrix(weighted_res, nrow = length(V), byrow = FALSE)) * V
+        res_A <- rowSums(matrix(weighted_res * A_ext, nrow = length(V), byrow = FALSE))
+        res_V <- rowSums(matrix(weighted_res, nrow = length(V), byrow = FALSE)) * V
       } else {
         res_A <- matrix(weighted_res, nrow = length(V), byrow = FALSE)
         res_V <- rowSums(res_A) * V
@@ -196,7 +197,11 @@ Param_MSM <- R6Class(
       ## reference: tmle - Susan Gruber
       if (!any(is.na(IC))) {
         nterms <- ncol(IC)
-        ntreats <- length(self$treatment_values)
+        if (self$continuous_treatment) {
+          ntreats <- self$n_samples
+        } else {
+          ntreats <- length(self$treatment_values)
+        }
         f <- function(x) {
           x[1:nterms] %*% t(x[(nterms + 1):(2 * nterms)])
         }
@@ -208,14 +213,14 @@ Param_MSM <- R6Class(
         }
         deriv.terms <- rep(list(matrix(NA, nterms^2, length(V))), ntreats)
         for (i in 1:ntreats) {
-          covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
+          if (self$continuous_treatment) {
+            covar.MSMA <- cbind(matrix(A_ext[((i-1)*length(V)+1):(i*length(V))]), V)
+          } else {
+            covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
+          }
           deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
         }
-        if (self$continuous_treatment) {
-          ddpsi.IC <- as.matrix(Reduce('+', deriv.terms)) / ntreats * (A_range[, 2] - A_range[, 1])
-        } else {
-          ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))
-        }
+        ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))
         M <- -matrix(rowMeans(ddpsi.IC), nrow = nterms)
         Minv <- try(solve(M))
         if (identical(class(Minv), "try-error")) {

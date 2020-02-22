@@ -1,10 +1,8 @@
-#' Stratified Parameter Estimates
-#'
+#' Stratified Parameter Estimates via MSM
 #'
 #' @section Current Issues:
 #' \itemize{
 #'   \item clever covariates doesn't support updates; always uses initial (necessary for iterative TMLE, e.g. stochastic intervention)
-#'   \item doesn't integrate over possible counterfactuals (necessary for stochastic intervention)
 #'   \item clever covariate gets recalculated all the time (inefficient)
 #' }
 #' @importFrom R6 R6Class
@@ -19,25 +17,24 @@
 #' @format \code{\link{R6Class}} object.
 #'
 #' @section Constructor:
-#'   \code{define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)}
+#'   \code{define_param(Param_MSM, observed_likelihood, strata_variable, ...)}
 #'
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
-#'     }
 #'     \item{\code{...}}{Not currently used.
+#'     }
+#'     \item{\code{covariate_node}}{character, the name of the node that should be treated as the covariate
+#'     }
+#'     \item{\code{treatment_node}}{character, the name of the node that should be treated as the treatment
 #'     }
 #'     \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
 #'     }
 #'     }
 #'
-
 #' @section Fields:
 #' \describe{
 #'     \item{\code{cf_likelihood}}{the counterfactual likelihood for this treatment
-#'     }
-#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention
 #'     }
 #' }
 #' @export
@@ -49,9 +46,9 @@ Param_MSM <- R6Class(
   public = list(
     initialize = function(observed_likelihood, strata_variable, 
                           continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
-                          mass = NULL, mass_ub = 1/0.025, ...,
+                          mass = "Cond.Prob.", mass_ub = 1/0.025, ...,
                           covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
-      super$initialize(observed_likelihood, ..., outcome_node = "Y")
+      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.covariate_node <- covariate_node
       private$.treatment_node <- treatment_node
       private$.continuous_treatment <- continuous_treatment
@@ -82,16 +79,29 @@ Param_MSM <- R6Class(
       set(strata, , "strata_i", factor(1:nrow(strata)))
       private$.strata <- strata
       '
-      if (is.null(private$.mass)) {
-        private$.mass <- function(tmle_task = NULL, fold_number = "full") {
+      if (mass == "Cond.Prob.") {
+        # current: P(A|V,W)
+        # TODO: refit P(A|V)
+        private$.mass <- function(tmle_task, fold_number = "full") {
           m = self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
           if (!is.null(self$mass_ub)) {
             m = pmin(m, self$mass_ub)
           }
           m
         }
+      } else if (mass == "Unif.") {
+        private$.mass <- function(tmle_task, fold_number = "full") {
+          m = rep(1, tmle_task$nrow)
+          if (!is.null(self$mass_ub)) {
+            m = pmin(m, self$mass_ub)
+          }
+          m
+        }
       } else {
-        private$.mass <- function(tmle_task = NULL, fold_number = "full") {
+        if (!is.function(mass)) {
+          stop("mass should be either a valid string or a function h(A, V). \n")
+        }
+        private$.mass <- function(tmle_task, fold_number = "full") {
           # TODO: fold?
           A <- tmle_task$get_tmle_node(self$treatment_node)
           V <- tmle_task$get_tmle_node(self$covariate_node)[[self$strata_variable]]

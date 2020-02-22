@@ -11,9 +11,9 @@ tmle3_Spec_MSM <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(mass = NULL, ...) {
+    initialize = function(mass = NULL, n_samples = 30, ...) {
       super$initialize(
-        mass = mass, ...
+        mass = mass, n_samples = n_samples, ...
       )
     },
     make_tmle_task = function(data, node_list, ...) {
@@ -34,7 +34,7 @@ tmle3_Spec_MSM <- R6Class(
       
       if (treatment_type == "continuous") {
         tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
-                                    continuous_treatment = TRUE, n_samples = 3, 
+                                    continuous_treatment = TRUE, n_samples = 30, 
                                     mass = self$options$mass)
       } else {
         A_vals <- tmle_task$get_tmle_node("A")
@@ -71,9 +71,10 @@ tmle3_Spec_MSM <- R6Class(
 #' @importFrom sl3 make_learner Lrnr_mean
 #'
 #' @param mass h(A, V)
+#' @param n_samples number of samples to draw for each observation if A is continuous
 #'
 #' @export
-tmle_MSM <- function(mass = NULL) {
+tmle_MSM <- function(mass = NULL, n_samples = 30) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_MSM$new(mass = mass)
+  tmle3_Spec_MSM$new(mass = mass, n_samples = n_samples)
 }

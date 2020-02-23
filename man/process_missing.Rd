@@ -4,13 +4,8 @@
 \alias{process_missing}
 \title{Preprocess Data to Handle Missing Variables}
 \usage{
-process_missing(
-  data,
-  node_list,
-  complete_nodes = c("A", "Y"),
-  impute_nodes = NULL,
-  max_p_missing = 0.5
-)
+process_missing(data, node_list, complete_nodes = c("A", "Y"),
+  impute_nodes = NULL, max_p_missing = 0.5)
 }
 \arguments{
 \item{data, }{\code{data.table}, containing the missing variables}

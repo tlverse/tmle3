@@ -9,6 +9,7 @@
 #' @importFrom stats glm predict
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
+#' @importFrom stringr str_split str_replace_all
 #' @family Parameters
 #' @keywords data
 #'
@@ -44,41 +45,43 @@ Param_MSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, strata_variable, 
+    initialize = function(observed_likelihood, strata_variable, strata = "V",
                           continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
-                          mass = "Cond.Prob.", mass_ub = 1/0.025, ...,
+                          msm = "A + V", mass = "Cond.Prob.", mass_ub = 1/0.025, ...,
                           covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
-      private$.covariate_node <- covariate_node
-      private$.treatment_node <- treatment_node
+      private$.strata_variable <- strata_variable
+      private$.strata <- strata
       private$.continuous_treatment <- continuous_treatment
       private$.mass_ub <- mass_ub
+      private$.covariate_node <- covariate_node
+      private$.treatment_node <- treatment_node
+      
       if (continuous_treatment) {
         private$.n_samples <- n_samples
         #private$.U <- runif(n_samples)
-        private$.U <- seq(0, 1, length.out = n_samples)
-        private$.treatment_values <- setNames(treatment_node, treatment_node) # not needed but stored for simplicity
+        private$.U <- seq(0, 1, length.out = self$n_samples)
+        private$.treatment_values <- setNames(self$treatment_node, self$treatment_node) # not needed but stored for simplicity
       } else {
         if (is.null(treatment_values)) {
-          treatment_values <- observed_likelihood$factor_list[[treatment_node]]$variable_type$levels
+          treatment_values <- observed_likelihood$factor_list[[self$treatment_node]]$variable_type$levels
         }
-        # numeralize treatments and store mapping
         private$.treatment_values <- setNames(treatment_values, paste0(treatment_node, "_", treatment_values))
-        # 
+        # cf_likelihoods (not needed for internal tasks)
         private$.cf_likelihoods <- lapply(self$treatment_values, function(A_level) {
-          intervention_list <- define_lf(LF_static, "A", value = A_level)
+          intervention_list <- define_lf(LF_static, self$treatment_node, value = A_level)
           cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
           return(cf_likelihood)
         })
         names(private$.cf_likelihoods) <- names(self$treatment_values)
       }
-      private$.strata_variable <- strata_variable
-      '
-      V <- observed_likelihood$training_task$get_data(, strata_variable)
-      strata <- V[, list(weight = observed_likelihood$training_task$nrow / .N), by = names(V)]
-      set(strata, , "strata_i", factor(1:nrow(strata)))
-      private$.strata <- strata
-      '
+      
+      # terms of MSM
+      msm <- str_split(a, "[ ]*~[ ]*")[[1]]
+      private$.msm_terms <- str_split(msm[length(msm)], "[ ]*\\+[ ]*")[[1]]
+      names(private$.msm_terms) <- private$.msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata, "V")
+      
+      # process h(A, V)
       if (mass == "Cond.Prob.") {
         # current: P(A|V,W)
         # TODO: refit P(A|V)
@@ -123,6 +126,8 @@ Param_MSM <- R6Class(
       
       A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
       V <- as.matrix(tmle_task$get_data(, self$strata_variable))
+      
+      msm_terms <- names(self$msm_terms)
       if (self$continuous_treatment) {
         clever_covs <- strata_covs * cbind(A, V)
       } else {
@@ -247,14 +252,6 @@ Param_MSM <- R6Class(
       return(result)
     },
     
-    get_strata_weights = function(tmle_task) {
-      V <- tmle_task$get_data(, self$strata_variable)
-      strata <- self$strata
-      combined <- merge(V, strata, by = self$strata_variable, sort = FALSE, all.x = TRUE)
-      strata_weights <- combined$weight
-      return(strata_weights)
-    },
-    
     get_treatment_indicators = function(tmle_task, treatment_node = self$treatment_node) {
       treatment_variable <- tmle_task$npsem[[treatment_node]]$variables
       A <- tmle_task$get_data(, treatment_variable)
@@ -265,7 +262,6 @@ Param_MSM <- R6Class(
       colnames(treatment_indicators) <- names(self$treatment_values)
       return(treatment_indicators)
     }
-    
   ),
   
   active = list(
@@ -319,6 +315,9 @@ Param_MSM <- R6Class(
     },
     cf_likelihoods = function() {
       return(private$.cf_likelihoods)
+    },
+    msm_terms = function() {
+      return(private$.msm_terms)
     }
   ),
   
@@ -334,6 +333,7 @@ Param_MSM <- R6Class(
     .covariate_node = NULL,
     .treatment_node = NULL,
     .U = NULL,
-    .cf_likelihoods = NULL
+    .cf_likelihoods = NULL,
+    .msm_terms = NULL
   )
 )

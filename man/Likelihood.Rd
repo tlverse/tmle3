@@ -7,6 +7,8 @@
 \title{Class for Likelihood}
 \format{\code{\link{R6Class}} object.}
 \usage{
+Likelihood
+
 make_Likelihood(...)
 }
 \arguments{
@@ -91,142 +93,12 @@ Each likelihood factor is represented by an object inheriting from \code{\link{L
 }
 
 \seealso{
-Other Likelihood objects: 
-\code{\link{CF_Likelihood}},
-\code{\link{LF_base}},
-\code{\link{LF_derived}},
-\code{\link{LF_emp}},
-\code{\link{LF_fit}},
-\code{\link{LF_known}},
-\code{\link{LF_static}},
-\code{\link{Targeted_Likelihood}},
-\code{\link{define_lf}()}
+Other Likelihood objects: \code{\link{CF_Likelihood}},
+  \code{\link{LF_base}}, \code{\link{LF_derived}},
+  \code{\link{LF_emp}}, \code{\link{LF_fit}},
+  \code{\link{LF_known}}, \code{\link{LF_static}},
+  \code{\link{Targeted_Likelihood}},
+  \code{\link{define_lf}}
 }
 \concept{Likelihood objects}
 \keyword{data}
-\section{Super class}{
-\code{\link[sl3:Lrnr_base]{sl3::Lrnr_base}} -> \code{Likelihood}
-}
-\section{Methods}{
-\subsection{Public methods}{
-\itemize{
-\item \href{#method-new}{\code{Likelihood$new()}}
-\item \href{#method-print}{\code{Likelihood$print()}}
-\item \href{#method-validate_task}{\code{Likelihood$validate_task()}}
-\item \href{#method-get_likelihood}{\code{Likelihood$get_likelihood()}}
-\item \href{#method-get_likelihoods}{\code{Likelihood$get_likelihoods()}}
-\item \href{#method-get_possible_counterfactuals}{\code{Likelihood$get_possible_counterfactuals()}}
-\item \href{#method-base_train}{\code{Likelihood$base_train()}}
-\item \href{#method-add_factors}{\code{Likelihood$add_factors()}}
-\item \href{#method-sample}{\code{Likelihood$sample()}}
-\item \href{#method-clone}{\code{Likelihood$clone()}}
-}
-}
-\if{html}{
-\out{<details ><summary>Inherited methods</summary>}
-\itemize{
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="assert_trained">}\href{../../sl3/html/Lrnr_base.html#method-assert_trained}{\code{sl3::Lrnr_base$assert_trained()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="base_chain">}\href{../../sl3/html/Lrnr_base.html#method-base_chain}{\code{sl3::Lrnr_base$base_chain()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="base_predict">}\href{../../sl3/html/Lrnr_base.html#method-base_predict}{\code{sl3::Lrnr_base$base_predict()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="chain">}\href{../../sl3/html/Lrnr_base.html#method-chain}{\code{sl3::Lrnr_base$chain()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="custom_chain">}\href{../../sl3/html/Lrnr_base.html#method-custom_chain}{\code{sl3::Lrnr_base$custom_chain()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="get_outcome_range">}\href{../../sl3/html/Lrnr_base.html#method-get_outcome_range}{\code{sl3::Lrnr_base$get_outcome_range()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="get_outcome_type">}\href{../../sl3/html/Lrnr_base.html#method-get_outcome_type}{\code{sl3::Lrnr_base$get_outcome_type()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict">}\href{../../sl3/html/Lrnr_base.html#method-predict}{\code{sl3::Lrnr_base$predict()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="predict_fold">}\href{../../sl3/html/Lrnr_base.html#method-predict_fold}{\code{sl3::Lrnr_base$predict_fold()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="set_train">}\href{../../sl3/html/Lrnr_base.html#method-set_train}{\code{sl3::Lrnr_base$set_train()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="subset_covariates">}\href{../../sl3/html/Lrnr_base.html#method-subset_covariates}{\code{sl3::Lrnr_base$subset_covariates()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="train">}\href{../../sl3/html/Lrnr_base.html#method-train}{\code{sl3::Lrnr_base$train()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="sl3" data-topic="Lrnr_base" data-id="train_sublearners">}\href{../../sl3/html/Lrnr_base.html#method-train_sublearners}{\code{sl3::Lrnr_base$train_sublearners()}}\out{</span>}
-}
-\out{</details>}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\subsection{Method \code{new()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$new(factor_list, cache = NULL, ...)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\subsection{Method \code{print()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$print()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate_task"></a>}}
-\subsection{Method \code{validate_task()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$validate_task(tmle_task)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_likelihood"></a>}}
-\subsection{Method \code{get_likelihood()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$get_likelihood(tmle_task, node, fold_number = "full")}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_likelihoods"></a>}}
-\subsection{Method \code{get_likelihoods()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$get_likelihoods(tmle_task, nodes = NULL, fold_number = "full")}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_possible_counterfactuals"></a>}}
-\subsection{Method \code{get_possible_counterfactuals()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$get_possible_counterfactuals(nodes = NULL)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-base_train"></a>}}
-\subsection{Method \code{base_train()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$base_train(task, pretrain)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-add_factors"></a>}}
-\subsection{Method \code{add_factors()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$add_factors(factor_list)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-sample"></a>}}
-\subsection{Method \code{sample()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$sample(tmle_task = NULL, sample_lib = NULL)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Likelihood$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
-}

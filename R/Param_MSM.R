@@ -66,7 +66,7 @@ Param_MSM <- R6Class(
         if (is.null(treatment_values)) {
           treatment_values <- observed_likelihood$factor_list[[self$treatment_node]]$variable_type$levels
         }
-        private$.treatment_values <- setNames(treatment_values, paste0(treatment_node, "_", treatment_values))
+        private$.treatment_values <- setNames(treatment_values, paste0(self$treatment_node, "_", treatment_values))
         # cf_likelihoods (not needed for internal tasks)
         private$.cf_likelihoods <- lapply(self$treatment_values, function(A_level) {
           intervention_list <- define_lf(LF_static, self$treatment_node, value = A_level)
@@ -77,9 +77,17 @@ Param_MSM <- R6Class(
       }
       
       # terms of MSM
-      msm <- str_split(a, "[ ]*~[ ]*")[[1]]
+      msm <- str_split(msm, "[ ]*~[ ]*")[[1]]
       private$.msm_terms <- str_split(msm[length(msm)], "[ ]*\\+[ ]*")[[1]]
-      names(private$.msm_terms) <- private$.msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata, "V")
+      
+      private$.msm_terms_all <- c()
+      for (t in self$msm_terms) {
+        if (grepl(self$treatment_node, t)) {
+          private$.msm_terms_all <- c(private$.msm_terms_all, str_replace_all(t, self$treatment_node, names(self$treatment_values)))
+        } else {
+          private$.msm_terms_all <- c(private$.msm_terms_all, t)
+        }
+      }
       
       # process h(A, V)
       if (mass == "Cond.Prob.") {
@@ -124,26 +132,29 @@ Param_MSM <- R6Class(
       base_covs <- 1. / pA
       strata_covs <- c(h * base_covs)
       
-      A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
+      if (self$continuous_treatment) {
+        A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
+      } else {
+        A <- self$get_treatment_indicators(tmle_task)
+      }
       V <- as.matrix(tmle_task$get_data(, self$strata_variable))
       
-      msm_terms <- names(self$msm_terms)
-      if (self$continuous_treatment) {
-        clever_covs <- strata_covs * cbind(A, V)
-      } else {
-        A_mat <- self$get_treatment_indicators(tmle_task)
-        clever_covs <- strata_covs * cbind(A_mat, V)
-      }
-      colnames(clever_covs) <- c(names(self$treatment_values), "V")
+      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata, "V")
+      phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
+      clever_covs <- strata_covs * phi
       
+      colnames(clever_covs) <- self$msm_terms_all
       return(list(Y = clever_covs))
     },
     
     estimates = function(tmle_task = NULL, fold_number = "full") {
       # TODO: estimate variance of MC integration
+      n_obs <- tmle_task$nrow
+      
       Y <- as.matrix(tmle_task$get_tmle_node(self$outcome_node))
       qY <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
       V <- as.vector(as.matrix(tmle_task$get_data(, self$strata_variable)))
+      H1 <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
       
       if (self$continuous_treatment) {
         A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$learner$get_outcome_range(tmle_task$get_regression_task(self$outcome_node), fold_number)
@@ -175,14 +186,17 @@ Param_MSM <- R6Class(
         A_ext <- matrix(A_vals, ncol = 1, byrow = FALSE)
       } else {
         V_ext <- rep(V, times = length(self$treatment_values))
-        A_ext <- sapply(data.frame(A_vals), rep, each=length(V))
+        A_ext <- sapply(data.frame(A_vals), rep, each = n_obs)
       }
       h_ext <- matrix(hA, ncol = 1, byrow = FALSE)
       
-      regress_table <- data.table(cbind(qY_ext, A_ext, V_ext))
-      colnames(regress_table) <- c("Q", names(self$treatment_values), "V")
+      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A_ext") %>% str_replace_all(self$strata, "V_ext")
+      phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
+      
+      regress_table <- data.table(cbind(qY_ext, phi))
+      colnames(regress_table) <- c("Q", colnames(H1))
       formula <- as.formula(paste0("Q~", 
-                                   paste(c(names(self$treatment_values), "V"), collapse = "+"),
+                                   paste(colnames(H1), collapse = "+"),
                                    "-1"))
       if (length(levels(factor(Y))) == 2 && all.equal(levels(factor(Y)), c("0", "1"))) {
         family = "binomial"
@@ -192,62 +206,28 @@ Param_MSM <- R6Class(
       suppressWarnings(model <- glm(formula, family = family, data = regress_table, weights = h_ext))
       
       psi <- model$coefficients
-      names(psi) <- c(names(self$treatment_values), "V")
+      names(psi) <- colnames(H1)
       # ic
       weighted_res <- residuals(model, type = "response") * h_ext
-      if (self$continuous_treatment) {
-        res_A <- rowSums(matrix(weighted_res * A_ext, nrow = length(V), byrow = FALSE))
-        res_V <- rowSums(matrix(weighted_res, nrow = length(V), byrow = FALSE)) * V
-      } else {
-        res_A <- matrix(weighted_res, nrow = length(V), byrow = FALSE)
-        res_V <- rowSums(res_A) * V
-      }
-      H2 <- cbind(res_A, res_V)
       
-      H1 <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
+      H2_vals <- split(weighted_res * phi, factor(rep(1:ncol(A_vals), each = n_obs)))
+      H2 <- as.matrix(Reduce('+', H2_vals))
       
       IC <- H1 * c(Y - qY) + H2
       
       # normalization
-      ## reference: tmle - Susan Gruber
       if (!any(is.na(IC))) {
-        nterms <- ncol(IC)
-        if (self$continuous_treatment) {
-          ntreats <- self$n_samples
-        } else {
-          ntreats <- length(self$treatment_values)
-        }
-        f <- function(x) {
-          x[1:nterms] %*% t(x[(nterms + 1):(2 * nterms)])
-        }
-        if (family == "binomial") {
-          mA <- matrix(predict(model, type = "response"), nrow = length(V), byrow = FALSE)
-          derivFactor <- mA * (1 - mA)
-        } else {
-          derivFactor <- matrix(1, nrow = nrow(IC), ncol = ntreats)
-        }
-        deriv.terms <- rep(list(matrix(NA, nterms^2, length(V))), ntreats)
-        for (i in 1:ntreats) {
-          if (self$continuous_treatment) {
-            covar.MSMA <- cbind(matrix(A_ext[((i-1)*length(V)+1):(i*length(V))]), V)
-          } else {
-            covar.MSMA <- cbind(matrix(A_ext[, i], nrow = length(V), byrow = FALSE), V)
-          }
-          deriv.terms[[i]] <- apply(cbind(-hA[, i] * derivFactor[, i] * covar.MSMA, covar.MSMA), 1, f)
-        }
-        ddpsi.IC <- as.matrix(Reduce('+', deriv.terms))
-        M <- -matrix(rowMeans(ddpsi.IC), nrow = nterms)
+        M <- t(H1) %*% phi / n_obs
+        
         Minv <- try(solve(M))
         if (identical(class(Minv), "try-error")) {
           warning("Inference unavailable: normalizing matrix not invertible. IC not normalized. \n")
-        }
-        else {
+        } else {
           IC <- t(Minv %*% t(IC))
         }
       }
       
-      colnames(IC) <- c(names(self$treatment_values), "V")
-      
+      colnames(IC) <- colnames(H1)
       result <- list(psi = psi, IC = IC)
       return(result)
     },
@@ -266,21 +246,7 @@ Param_MSM <- R6Class(
   
   active = list(
     name = function() {
-      if (self$continuous_treatment) {
-        treatment_labels <- self$treatment_node
-        treatment_names <- "Treatment Node"
-      } else {
-        treatment_labels <- as.character(self$treatment_values)
-        treatment_names <- rep("Treatment Level", length(treatment_labels))
-      }
-      strata_label <- self$strata_variable
-      
-      param_form <- sprintf(
-        "%s: %s",
-        c(treatment_names, "Strata Variable"), 
-        c(treatment_labels, strata_label)
-      )
-      
+      param_form <- sprintf("beta[%s]", self$msm_terms_all)
       return(param_form)
     },
     continuous_treatment = function() {
@@ -318,6 +284,9 @@ Param_MSM <- R6Class(
     },
     msm_terms = function() {
       return(private$.msm_terms)
+    },
+    msm_terms_all = function() {
+      return(private$.msm_terms_all)
     }
   ),
   
@@ -334,6 +303,7 @@ Param_MSM <- R6Class(
     .treatment_node = NULL,
     .U = NULL,
     .cf_likelihoods = NULL,
-    .msm_terms = NULL
+    .msm_terms = NULL,
+    .msm_terms_all = NULL
   )
 )

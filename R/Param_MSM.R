@@ -9,6 +9,7 @@
 #' @importFrom stats glm predict
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
+#' @importFrom magrittr %>%
 #' @importFrom stringr str_split str_replace_all
 #' @family Parameters
 #' @keywords data
@@ -174,6 +175,8 @@ Param_MSM <- R6Class(
         })
       }
       
+      n_treats <- ncol(A_vals)
+      
       qYA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
       hA <- sapply(cf_tasks, private$.mass, fold_number)
       # normalize h
@@ -191,9 +194,9 @@ Param_MSM <- R6Class(
       h_ext <- matrix(hA, ncol = 1, byrow = FALSE)
       
       msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A_ext") %>% str_replace_all(self$strata, "V_ext")
-      phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
+      phi_ext <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
       
-      regress_table <- data.table(cbind(qY_ext, phi))
+      regress_table <- data.table(cbind(qY_ext, phi_ext))
       colnames(regress_table) <- c("Q", colnames(H1))
       formula <- as.formula(paste0("Q~", 
                                    paste(colnames(H1), collapse = "+"),
@@ -208,22 +211,30 @@ Param_MSM <- R6Class(
       psi <- model$coefficients
       names(psi) <- colnames(H1)
       # ic
-      weighted_res <- residuals(model, type = "response") * h_ext
+      weighted_res <- c(residuals(model, type = "response") * h_ext)
       
-      H2_vals <- split(weighted_res * phi, factor(rep(1:ncol(A_vals), each = n_obs)))
-      H2 <- as.matrix(Reduce('+', H2_vals))
+      H2A <- split(as.data.table(weighted_res * phi_ext), 
+                       factor(rep(1:n_treats, each = n_obs)))
+      H2 <- as.matrix(Reduce('+', H2A))
       
       IC <- H1 * c(Y - qY) + H2
       
       # normalization
       if (!any(is.na(IC))) {
-        M <- t(H1) %*% phi / n_obs
+        if (family == "binomial") {
+          m_ext <- matrix(predict(model, type = "response"))
+          dm_ext <- m_ext * (1 - m_ext)
+        } else {
+          dm_ext <- matrix(1, nrow = n_obs * n_treats, ncol = 1)
+        }
+        
+        M <- t(c(dm_ext * h_ext) * phi_ext) %*% phi_ext / n_obs
         
         Minv <- try(solve(M))
         if (identical(class(Minv), "try-error")) {
           warning("Inference unavailable: normalizing matrix not invertible. IC not normalized. \n")
         } else {
-          IC <- t(Minv %*% t(IC))
+          IC <- IC %*% Minv
         }
       }
       

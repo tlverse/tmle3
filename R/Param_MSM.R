@@ -78,8 +78,8 @@ Param_MSM <- R6Class(
       }
       
       # terms of MSM
-      msm <- str_split(msm, "[ ]*~[ ]*")[[1]]
-      private$.msm_terms <- str_split(msm[length(msm)], "[ ]*\\+[ ]*")[[1]]
+      msm <- tail(str_split(msm, "[ ]*~[ ]*")[[1]], n=1)
+      private$.msm_terms <- str_split(msm, "[ ]*\\+[ ]*")[[1]]
       
       private$.msm_terms_all <- c()
       for (t in self$msm_terms) {
@@ -210,6 +210,7 @@ Param_MSM <- R6Class(
       
       psi <- model$coefficients
       names(psi) <- colnames(H1)
+      
       # ic
       weighted_res <- c(residuals(model, type = "response") * h_ext)
       

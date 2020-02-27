@@ -29,6 +29,12 @@ Stratified Parameter Estimates via MSM
   \describe{
     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
     }
+    \item{\code{msm}}{form of the MSM. Default is "A + V", consistent with the default of 
+    \code{treatment_node} and \code{strata_name}.
+    }
+    \item{\code{weight}}{"Cond.Prob.", "Unif." or custom input function. 
+    Note that custom function should support vector input. Default is "Cond.Prob.".
+    }
     \item{\code{...}}{Not currently used.
     }
     \item{\code{covariate_node}}{character, the name of the node that should be treated as the covariate

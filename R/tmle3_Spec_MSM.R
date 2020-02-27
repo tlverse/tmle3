@@ -11,9 +11,10 @@ tmle3_Spec_MSM <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(mass = "Cond.Prob.", n_samples = 30, ...) {
+    initialize = function(msm = "A + V", weight = "Cond.Prob.", weight_ub = 1/0.025, 
+                          n_samples = 30, ...) {
       super$initialize(
-        mass = mass, n_samples = n_samples, ...
+        msm = msm, weight = weight, weight_ub = weight_ub, n_samples = n_samples, ...
       )
     },
     make_tmle_task = function(data, node_list, ...) {
@@ -33,9 +34,10 @@ tmle3_Spec_MSM <- R6Class(
       treatment_type <- variable_type(x=tmle_task$get_tmle_node("A"))$type
       
       if (treatment_type == "continuous") {
-        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
-                                    continuous_treatment = TRUE, n_samples = self$options$n_samples, 
-                                    mass = self$options$mass)
+        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable,
+                                    msm = self$options$msm,
+                                    weight = self$options$weight, weight_ub = self$options$weight_ub,
+                                    continuous_treatment = TRUE, n_samples = self$options$n_samples)
       } else {
         A_vals <- tmle_task$get_tmle_node("A")
         if (is.factor(A_vals)) {
@@ -44,9 +46,10 @@ tmle3_Spec_MSM <- R6Class(
         } else {
           A_levels <- sort(unique(A_vals))
         }
-        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable, 
-                                    continuous_treatment = FALSE, treatment_values = A_levels, 
-                                    mass = self$options$mass)
+        tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable,
+                                    msm = self$options$msm,
+                                    weight = self$options$weight, weight_ub = self$options$weight_ub,
+                                    continuous_treatment = FALSE, treatment_values = A_levels)
       }
       return(tmle_params)
     }
@@ -70,11 +73,11 @@ tmle3_Spec_MSM <- R6Class(
 #'
 #' @importFrom sl3 make_learner Lrnr_mean
 #'
-#' @param mass h(A, V)
+#' @param weight h(A, V)
 #' @param n_samples number of samples to draw for each observation if A is continuous
 #'
 #' @export
-tmle_MSM <- function(mass = "Cond.Prob.", n_samples = 30) {
+tmle_MSM <- function(weight = "Cond.Prob.", n_samples = 30) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_MSM$new(mass = mass, n_samples = n_samples)
+  tmle3_Spec_MSM$new(weight = weight, n_samples = n_samples)
 }

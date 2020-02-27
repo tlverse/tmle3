@@ -24,6 +24,12 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
+#'     \item{\code{msm}}{form of the MSM. Default is "A + V", consistent with the default of 
+#'     \code{treatment_node} and \code{strata_name}.
+#'     }
+#'     \item{\code{weight}}{"Cond.Prob.", "Unif." or custom input function. 
+#'     Note that custom function should support vector input. Default is "Cond.Prob.".
+#'     }
 #'     \item{\code{...}}{Not currently used.
 #'     }
 #'     \item{\code{covariate_node}}{character, the name of the node that should be treated as the covariate
@@ -46,15 +52,16 @@ Param_MSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, strata_variable, strata = "V",
+    initialize = function(observed_likelihood, strata_variable, strata_name = "V",
+                          msm = "A + V", weight = "Cond.Prob.", weight_ub = 1/0.025,
                           continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
-                          msm = "A + V", mass = "Cond.Prob.", mass_ub = 1/0.025, ...,
+                          ...,
                           covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.strata_variable <- strata_variable
-      private$.strata <- strata
+      private$.strata_name <- strata_name
+      private$.weight_ub <- weight_ub
       private$.continuous_treatment <- continuous_treatment
-      private$.mass_ub <- mass_ub
       private$.covariate_node <- covariate_node
       private$.treatment_node <- treatment_node
       
@@ -91,48 +98,44 @@ Param_MSM <- R6Class(
       }
       
       # process h(A, V)
-      if (mass == "Cond.Prob.") {
+      if (weight == "Cond.Prob.") {
         # current: P(A|V,W)
         # TODO: refit P(A|V)
-        private$.mass <- function(tmle_task, fold_number = "full") {
-          m = self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
-          if (!is.null(self$mass_ub)) {
-            m = pmin(m, self$mass_ub)
+        private$.weight <- function(tmle_task, fold_number = "full") {
+          h = self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
+          if (!is.null(self$weight_ub)) {
+            h = pmin(h, self$weight_ub)
           }
-          m
+          h
         }
-      } else if (mass == "Unif.") {
-        private$.mass <- function(tmle_task, fold_number = "full") {
-          m = rep(1, tmle_task$nrow)
-          if (!is.null(self$mass_ub)) {
-            m = pmin(m, self$mass_ub)
+      } else if (weight == "Unif.") {
+        private$.weight <- function(tmle_task, fold_number = "full") {
+          h = rep(1, tmle_task$nrow)
+          if (!is.null(self$weight_ub)) {
+            h = pmin(h, self$weight_ub)
           }
-          m
+          h
         }
       } else {
-        if (!is.function(mass)) {
-          stop("mass should be either a valid string or a function h(A, V). \n")
+        if (!is.function(weight)) {
+          stop("weight should be either a valid string or a function h(A, V). \n")
         }
-        private$.mass <- function(tmle_task, fold_number = "full") {
+        private$.weight <- function(tmle_task, fold_number = "full") {
           # TODO: fold?
           A <- tmle_task$get_tmle_node(self$treatment_node)
           V <- tmle_task$get_tmle_node(self$covariate_node)[[self$strata_variable]]
-          m = sapply(1:length(A), function(i) mass(A[i], V[i]))
-          if (!is.null(self$mass_ub)) {
-            m = pmin(m, self$mass_ub)
+          h = sapply(1:length(A), function(i) weight(A[i], V[i]))
+          if (!is.null(self$weight_ub)) {
+            h = pmin(h, self$weight_ub)
           }
-          m
+          h
         }
       }
     },
     
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
-      h <- private$.mass(tmle_task, fold_number)
-      
-      base_covs <- 1. / pA
-      strata_covs <- c(h * base_covs)
-      
+      g <- self$observed_likelihood$get_likelihoods(tmle_task, self$treatment_node, fold_number)
+      h <- private$.weight(tmle_task, fold_number)
       if (self$continuous_treatment) {
         A <- as.matrix(tmle_task$get_tmle_node(self$treatment_node))
       } else {
@@ -140,9 +143,10 @@ Param_MSM <- R6Class(
       }
       V <- as.matrix(tmle_task$get_data(, self$strata_variable))
       
-      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata, "V")
+      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata_name, "V")
       phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
-      clever_covs <- strata_covs * phi
+      
+      clever_covs <- c(h / g) * phi
       
       colnames(clever_covs) <- self$msm_terms_all
       return(list(Y = clever_covs))
@@ -153,7 +157,7 @@ Param_MSM <- R6Class(
       n_obs <- tmle_task$nrow
       
       Y <- as.matrix(tmle_task$get_tmle_node(self$outcome_node))
-      qY <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
+      Q <- self$observed_likelihood$get_likelihoods(tmle_task, self$outcome_node, fold_number)
       V <- as.vector(as.matrix(tmle_task$get_data(, self$strata_variable)))
       H1 <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
       
@@ -161,8 +165,8 @@ Param_MSM <- R6Class(
         A_range <- self$observed_likelihood$factor_list[[self$treatment_node]]$learner$get_outcome_range(tmle_task$get_regression_task(self$outcome_node), fold_number)
         A_vals <- t(apply(A_range, 1, function(r) r[1] + (r[2] - r[1]) * self$U))
         # Generate counterfactual tasks for each sample of A:
-        cf_tasks <- apply(A_vals, 2, function(A_val) {
-          newdata <- data.table(A = A_val)
+        cf_tasks <- apply(A_vals, 2, function(a) {
+          newdata <- data.table(A = a)
           cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), new_data = newdata)
           return(cf_task)
         })
@@ -177,13 +181,15 @@ Param_MSM <- R6Class(
       
       n_treats <- ncol(A_vals)
       
-      qYA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
-      hA <- sapply(cf_tasks, private$.mass, fold_number)
-      # normalize h
-      hA <- hA / rowSums(hA)
+      QA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
+      hA <- sapply(cf_tasks, private$.weight, fold_number)
+      # normalize h, correspondingly scale H1
+      #normFactor <- rowSums(hA)
+      #hA <- hA / normFactor
+      #H1 <- H1 / normFactor
       
       # psi
-      qY_ext <- matrix(qYA, ncol = 1, byrow = FALSE)
+      Q_ext <- matrix(QA, ncol = 1, byrow = FALSE)
       if (self$continuous_treatment) {
         V_ext <- rep(V, times = self$n_samples)
         A_ext <- matrix(A_vals, ncol = 1, byrow = FALSE)
@@ -193,10 +199,10 @@ Param_MSM <- R6Class(
       }
       h_ext <- matrix(hA, ncol = 1, byrow = FALSE)
       
-      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A_ext") %>% str_replace_all(self$strata, "V_ext")
+      msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A_ext") %>% str_replace_all(self$strata_name, "V_ext")
       phi_ext <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
       
-      regress_table <- data.table(cbind(qY_ext, phi_ext))
+      regress_table <- data.table(cbind(Q_ext, phi_ext))
       colnames(regress_table) <- c("Q", colnames(H1))
       formula <- as.formula(paste0("Q~", 
                                    paste(colnames(H1), collapse = "+"),
@@ -218,7 +224,7 @@ Param_MSM <- R6Class(
                        factor(rep(1:n_treats, each = n_obs)))
       H2 <- as.matrix(Reduce('+', H2A))
       
-      IC <- H1 * c(Y - qY) + H2
+      IC <- H1 * c(Y - Q) + H2
       
       # normalization
       if (!any(is.na(IC))) {
@@ -264,8 +270,8 @@ Param_MSM <- R6Class(
     continuous_treatment = function() {
       return(private$.continuous_treatment)
     },
-    mass_ub = function() {
-      return(private$.mass_ub)
+    weight_ub = function() {
+      return(private$.weight_ub)
     },
     treatment_values = function() {
       return(private$.treatment_values)
@@ -279,8 +285,8 @@ Param_MSM <- R6Class(
     update_nodes = function() {
       return(self$outcome_node)
     },
-    strata = function() {
-      return(private$.strata)
+    strata_name = function() {
+      return(private$.strata_name)
     },
     covariate_node = function() {
       return(private$.covariate_node)
@@ -305,12 +311,12 @@ Param_MSM <- R6Class(
   private = list(
     .type = "stratified MSM",
     .continuous_treatment = NULL,
-    .mass_ub = NULL,
+    .weight_ub = NULL,
     .treatment_values = NULL,
     .n_samples = NULL,
     .strata_variable = NULL,
-    .strata = NULL,
-    .mass = NULL,
+    .strata_name = NULL,
+    .weight = NULL,
     .covariate_node = NULL,
     .treatment_node = NULL,
     .U = NULL,

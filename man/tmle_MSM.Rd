@@ -4,10 +4,10 @@
 \alias{tmle_MSM}
 \title{Make MSM version of Stratified TML estimator class}
 \usage{
-tmle_MSM(mass = "Cond.Prob.", n_samples = 30)
+tmle_MSM(weight = "Cond.Prob.", n_samples = 30)
 }
 \arguments{
-\item{mass}{h(A, V)}
+\item{weight}{h(A, V)}
 
 \item{n_samples}{number of samples to draw for each observation if A is continuous}
 }

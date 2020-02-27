@@ -76,8 +76,8 @@ Param_MSM <- R6Class(
         }
         private$.treatment_values <- setNames(treatment_values, paste0(self$treatment_node, "_", treatment_values))
         # cf_likelihoods (not needed for internal tasks)
-        private$.cf_likelihoods <- lapply(self$treatment_values, function(A_level) {
-          intervention_list <- define_lf(LF_static, self$treatment_node, value = A_level)
+        private$.cf_likelihoods <- lapply(self$treatment_values, function(a) {
+          intervention_list <- define_lf(LF_static, self$treatment_node, value = a)
           cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
           return(cf_likelihood)
         })
@@ -85,7 +85,7 @@ Param_MSM <- R6Class(
       }
       
       # terms of MSM
-      msm <- tail(str_split(msm, "[ ]*~[ ]*")[[1]], n=1)
+      msm <- tail(str_split(msm, "[ ]*~[ ]*")[[1]], n = 1)
       private$.msm_terms <- str_split(msm, "[ ]*\\+[ ]*")[[1]]
       
       private$.msm_terms_all <- c()
@@ -144,7 +144,7 @@ Param_MSM <- R6Class(
       V <- as.matrix(tmle_task$get_data(, self$strata_variable))
       
       msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata_name, "V")
-      phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
+      phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text = t))))
       
       clever_covs <- c(h / g) * phi
       
@@ -183,10 +183,6 @@ Param_MSM <- R6Class(
       
       QA <- sapply(cf_tasks, self$observed_likelihood$get_likelihood, self$outcome_node, fold_number)
       hA <- sapply(cf_tasks, private$.weight, fold_number)
-      # normalize h, correspondingly scale H1
-      #normFactor <- rowSums(hA)
-      #hA <- hA / normFactor
-      #H1 <- H1 / normFactor
       
       # psi
       Q_ext <- matrix(QA, ncol = 1, byrow = FALSE)
@@ -200,7 +196,7 @@ Param_MSM <- R6Class(
       h_ext <- matrix(hA, ncol = 1, byrow = FALSE)
       
       msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A_ext") %>% str_replace_all(self$strata_name, "V_ext")
-      phi_ext <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text=t))))
+      phi_ext <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text = t))))
       
       regress_table <- data.table(cbind(Q_ext, phi_ext))
       colnames(regress_table) <- c("Q", colnames(H1))
@@ -222,6 +218,7 @@ Param_MSM <- R6Class(
       
       H2A <- split(as.data.table(weighted_res * phi_ext), 
                        factor(rep(1:n_treats, each = n_obs)))
+      H2A <- lapply(H2A, as.matrix)
       H2 <- as.matrix(Reduce('+', H2A))
       
       IC <- H1 * c(Y - Q) + H2

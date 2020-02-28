@@ -4,14 +4,8 @@
 \alias{summary_from_estimates}
 \title{Summarize Estimates}
 \usage{
-summary_from_estimates(
-  task,
-  estimates,
-  param_types = NULL,
-  param_names = NULL,
-  init_psi = NULL,
-  simultaneous_ci = FALSE
-)
+summary_from_estimates(task, estimates, param_types = NULL,
+  param_names = NULL, init_psi = NULL, simultaneous_ci = FALSE)
 }
 \arguments{
 \item{task}{\code{tmle3_Task} containing the observed data of interest; the

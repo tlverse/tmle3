@@ -57,6 +57,16 @@ LF_static <- R6Class(
     cf_values = function(tmle_task) {
       cf_values <- rep(self$value, tmle_task$nrow)
       return(cf_values)
+    },
+    sample = function(tmle_task, n_samples = NULL, fold_number = "full") {
+      # TODO: fold
+      # TODO: option to return task
+      if (is.null(n_samples)) {
+        return(tmle_task)
+      }
+      
+      values <- replicate(n_samples, rep(self$value, tmle_task$nrow))
+      return(values)
     }
   ),
   active = list(

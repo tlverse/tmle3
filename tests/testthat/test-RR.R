@@ -1,4 +1,4 @@
-context("Risk Ratios")
+context("Risk ratios")
 
 library(sl3)
 library(uuid)

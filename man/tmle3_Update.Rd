@@ -34,8 +34,13 @@ loss function and submodel are hard-coded (need to accept arguments for these)
        \code{constrain_step} is \code{TRUE}.
     }
     \item{\code{convergence_type}}{The convergence criterion to use: (1)
-       \code{"se_logn"} corresponds to sqrt(Var(D)/n)/logn (the default)
-       while (2) \code{"n_samp"} corresponds to 1/n.
+       \code{"scaled_var"} corresponds to sqrt(Var(D)/n)/logn (the default)
+       while (2) \code{"sample_size"} corresponds to 1/n.
+    }
+    \item{\code{fluctuation_type}}{Whether to include the auxiliary covariate
+       for the fluctuation model as a covariate or to treat it as a weight.
+       Note that the option \code{"weighted"} is incompatible with a
+       multi-epsilon submodel (\code{one_dimensional = FALSE}).
     }
     \item{\code{verbose}}{If \code{TRUE}, diagnostic output is generated
        about the updating procedure.

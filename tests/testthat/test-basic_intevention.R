@@ -1,4 +1,4 @@
-context("Basic interventions: TSM for single static intervention.")
+context("Basic interventions: TSM for single static intervention")
 
 library(sl3)
 # library(tmle3)
@@ -7,7 +7,6 @@ library(assertthat)
 library(data.table)
 library(future)
 # setup data for test
-tmle3_Fit$debug(".tmle_fit")
 
 data(cpp)
 data <- as.data.table(cpp)
@@ -95,7 +94,10 @@ tmle_classic_fit <- tmle(
   W = tmle_task$get_tmle_node("W"),
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
-  pDelta1 = pDelta1
+  pDelta1 = pDelta1,
+  family = "binomial",
+  alpha = 0.995,
+  target.gwt = FALSE
 )
 
 cf_task <- tsm$cf_likelihood$cf_tasks[[1]]

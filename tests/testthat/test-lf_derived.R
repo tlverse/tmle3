@@ -1,6 +1,4 @@
-context("LF_derived: Derived Likelihood factors")
-
-context("TML estimator for incremental propensity score interventions")
+context("Derived Likelihood factors")
 
 library(data.table)
 library(stringr)
@@ -103,7 +101,6 @@ make_e_task <- function(tmle_task, likelihood) {
   )
   return(e_task)
 }
-
 
 lf_e <- define_lf(LF_derived, "e", glm_fast, likelihood_targeted, make_e_task)
 likelihood_targeted$add_factors(lf_e)

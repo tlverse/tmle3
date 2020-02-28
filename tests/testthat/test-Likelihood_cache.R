@@ -1,4 +1,4 @@
-context("Basic interventions: TSM for single static intervention.")
+context("Caching of Likelihood objects")
 
 library(sl3)
 # library(tmle3)

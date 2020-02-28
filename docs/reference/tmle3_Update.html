@@ -8,10 +8,12 @@
 
 <title>Defines an update procedure (submodel+loss function) — tmle3_Update • tmle</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
@@ -22,8 +24,9 @@
 <!-- clipboard.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -31,11 +34,12 @@
 
 
 
-<meta property="og:title" content="Defines an update procedure (submodel+loss function) — tmle3_Update" />
 
+<meta property="og:title" content="Defines an update procedure (submodel+loss function) — tmle3_Update" />
 <meta property="og:description" content="Current Limitations:
 loss function and submodel are hard-coded (need to accept arguments for these)" />
 <meta name="twitter:card" content="summary" />
+
 
 
 
@@ -59,6 +63,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
   gtag('config', 'UA-115145808-1');
 </script>
 
+
   </head>
 
   <body>
@@ -75,7 +80,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
       </span>
     </div>
 
@@ -94,7 +99,6 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/tlverse/tmle3">
@@ -109,6 +113,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -120,22 +125,21 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
     </div>
 
     <div class="ref-description">
-    
     <p>Current Limitations:
 loss function and submodel are hard-coded (need to accept arguments for these)</p>
-    
     </div>
 
     <pre class="usage"><span class='no'>tmle3_Update</span></pre>
-        
+
+
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
     <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
-    
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
-    <p><code><a href='define_param.html'>define_param(maxit, cvtmle, one_dimensional, constrain_step, delta_epsilon, verbose)</a></code></p>
+
+<p><code><a href='define_param.html'>define_param(maxit, cvtmle, one_dimensional, constrain_step, delta_epsilon, verbose)</a></code></p>
 <p></p><dl class='dl-horizontal'>
     <dt><code>maxit</code></dt><dd><p>The maximum number of update iterations</p></dd>
     <dt><code>cvtmle</code></dt><dd><p>If <code>TRUE</code>, use CV-likelihood values when
@@ -149,25 +153,29 @@ loss function and submodel are hard-coded (need to accept arguments for these)</
     <dt><code>delta_epsilon</code></dt><dd><p>The maximum step size allowed if
        <code>constrain_step</code> is <code>TRUE</code>.</p></dd>
     <dt><code>convergence_type</code></dt><dd><p>The convergence criterion to use: (1)
-       <code>"se_logn"</code> corresponds to sqrt(Var(D)/n)/logn (the default)
-       while (2) <code>"n_samp"</code> corresponds to 1/n.</p></dd>
+       <code>"scaled_var"</code> corresponds to sqrt(Var(D)/n)/logn (the default)
+       while (2) <code>"sample_size"</code> corresponds to 1/n.</p></dd>
+    <dt><code>fluctuation_type</code></dt><dd><p>Whether to include the auxiliary covariate
+       for the fluctuation model as a covariate or to treat it as a weight.
+       Note that the option <code>"weighted"</code> is incompatible with a
+       multi-epsilon submodel (<code>one_dimensional = FALSE</code>).</p></dd>
     <dt><code>verbose</code></dt><dd><p>If <code>TRUE</code>, diagnostic output is generated
        about the updating procedure.</p></dd>
-    </dl>
     
+</dl>
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      
       <li><a href="#format">Format</a></li>
-
       <li><a href="#constructor">Constructor</a></li>
-          </ul>
+    </ul>
 
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -175,13 +183,16 @@ loss function and submodel are hard-coded (need to accept arguments for these)</
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.9000.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

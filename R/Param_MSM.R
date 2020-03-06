@@ -146,10 +146,10 @@ Param_MSM <- R6Class(
       msm_terms <- self$msm_terms %>% str_replace_all(self$treatment_node, "A") %>% str_replace_all(self$strata_name, "V")
       phi <- do.call(cbind, lapply(msm_terms, function(t) eval(parse(text = t))))
       
-      clever_covs <- c(h / g) * phi
+      H1 <- c(h / g) * phi
       
-      colnames(clever_covs) <- self$msm_terms_all
-      return(list(Y = clever_covs))
+      colnames(H1) <- self$msm_terms_all
+      return(list(Y = H1))
     },
     
     estimates = function(tmle_task = NULL, fold_number = "full") {

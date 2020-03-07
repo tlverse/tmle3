@@ -68,7 +68,7 @@ tmle3_Spec_MSM <- R6Class(
 #'
 #' O=(W,A,Y)
 #' W=Covariates
-#' A=Treatment (binary or categorical)
+#' A=Treatment (binary or categorical or continuous)
 #' Y=Outcome (binary or bounded continuous)
 #'
 #' @importFrom sl3 make_learner Lrnr_mean

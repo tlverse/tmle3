@@ -50,13 +50,13 @@ Param_TSM <- R6Class(
   public = list(
     initialize = function(observed_likelihood, intervention_list, ..., outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
-      if(!is.null(observed_likelihood$censoring_nodes[[outcome_node]])){
+      if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention list
         outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
         censoring_intervention <- define_lf(LF_static, outcome_censoring_node, value = 1)
-        intervention_list <- c(intervention_list, censoring_intervention)  
+        intervention_list <- c(intervention_list, censoring_intervention)
       }
-      
+
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
@@ -73,9 +73,9 @@ Param_TSM <- R6Class(
       if (!is.null(ncol(HA)) && ncol(HA) > 1) {
         HA <- apply(HA, 1, prod)
       }
-      
-      HA <- bound(HA, c(-40,40))
-      
+
+      HA <- bound(HA, c(-40, 40))
+
       return(list(Y = unlist(HA, use.names = FALSE)))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
@@ -89,7 +89,7 @@ Param_TSM <- R6Class(
       # cf_task <- self$cf_likelihood$cf_tasks[[1]]
 
 
-      Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring=TRUE)
+      Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring = TRUE)
 
 
       # clever_covariates happen here (for this param) only, but this is repeated computation

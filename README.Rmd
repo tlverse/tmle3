@@ -43,11 +43,20 @@ inference, the canonical references are @vdl2011targeted and @vdl2018targeted.
 
 ## Installation
 
-You can install the development version of `tmle3` from GitHub via
-[`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with
+<!--
+For standard use, we recommend installing the package from
+[CRAN](https://CRAN.R-project.org/package=hal9001) via
+
+```{r cran-installation, eval = FALSE}
+install.packages("hal9001")
+```
+-->
+
+To contribute, install the _development version_ of `tmle3` from GitHub via
+[`remotes`](https://CRAN.R-project.org/package=remotes):
 
 ```{r gh-installation, eval = FALSE}
-devtools::install_github("tlverse/tmle3")
+remotes::install_github("tlverse/tmle3")
 ```
 
 ---
@@ -69,7 +78,7 @@ issue](https://github.com/tlverse/tmle3/issues).
 
 ## License
 
-&copy; 2017-2019 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
+&copy; 2017-2020 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
 
 The contents of this repository are distributed under the GPL-3 license. See
 file `LICENSE` for details.

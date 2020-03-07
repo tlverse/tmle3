@@ -80,7 +80,7 @@ Inherits from LF_base; see that page for documentation on likelihood factors in 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -129,7 +129,6 @@ Inherits from LF_base; see that page for documentation on likelihood factors in 
 Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.</p>
     </div>
 
-    <pre class="usage"><span class='no'>LF_static</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
@@ -143,12 +142,12 @@ Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for
     
 
 <p><code><a href='define_lf.html'>define_lf(LF_static, name, type, value, ...)</a></code></p>
-<p></p><dl class='dl-horizontal'>
-    <dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
-    <dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
-    <dt><code>value</code></dt><dd><p>the static value</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    
+<dl class='dl-horizontal'>
+<dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
+<dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
+<dt><code>value</code></dt><dd><p>the static value</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
@@ -156,18 +155,23 @@ Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for
     
 
 <dl class='dl-horizontal'>
-    <dt><code>value</code></dt><dd><p>the static value.</p></dd>
-    
+<dt><code>value</code></dt><dd><p>the static value.</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_derived.html'>LF_derived</a></code>,
-  <code><a href='LF_emp.html'>LF_emp</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_known.html'>LF_known</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
-  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
-  <code><a href='define_lf.html'>define_lf</a></code></p></div>
+    <div class='dont-index'><p>Other Likelihood objects: 
+<code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
+<code><a href='LF_base.html'>LF_base</a></code>,
+<code><a href='LF_derived.html'>LF_derived</a></code>,
+<code><a href='LF_emp.html'>LF_emp</a></code>,
+<code><a href='LF_fit.html'>LF_fit</a></code>,
+<code><a href='LF_known.html'>LF_known</a></code>,
+<code><a href='LF_targeted.html'>LF_targeted</a></code>,
+<code><a href='Likelihood.html'>Likelihood</a></code>,
+<code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+<code><a href='define_lf.html'>define_lf</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

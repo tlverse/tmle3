@@ -53,7 +53,7 @@ LF_fit <- R6Class(
       outcome_node <- self$name
 
       # fit scaled task for bounded continuous
-      learner_task <- tmle_task$get_regression_task(outcome_node, scale = TRUE, drop_censored=TRUE)
+      learner_task <- tmle_task$get_regression_task(outcome_node, scale = TRUE, drop_censored = TRUE)
       learner_fit <- delayed_learner_train(self$learner, learner_task)
       return(learner_fit)
     },
@@ -98,12 +98,12 @@ LF_fit <- R6Class(
       if (is.null(n_samples)) {
         return(tmle_task)
       }
-      
+
       learner_task <- tmle_task$get_regression_task(self$name)
       learner <- self$learner
-      
+
       outcome_type <- learner$training_task$outcome_type
-      
+
       if (outcome_type$type == "binomial") {
         # TODO: option to return task
         # TODO: think about how folds should be structured on resample
@@ -114,9 +114,15 @@ LF_fit <- R6Class(
       } else if (outcome_type$type == "categorical") {
         preds <- learner$predict_fold(learner_task, "full")
         unpacked <- sl3::unpack_predictions(as.vector(preds))
-        values <- apply(unpacked, 1, 
-                        function(probs) apply(rmultinom(n_samples, 1, probs)==1, 2, 
-                                              function(onehots) outcome_type$levels[which(onehots)]))
+        values <- apply(
+          unpacked, 1,
+          function(probs) {
+            apply(
+              rmultinom(n_samples, 1, probs) == 1, 2,
+              function(onehots) outcome_type$levels[which(onehots)]
+            )
+          }
+        )
       } else if (outcome_type$type == "continuous") {
         if ("sampling" %in% learner$properties) {
           values <- learner$sample(learner_task, n_samples, "full")
@@ -124,18 +130,19 @@ LF_fit <- R6Class(
           values <- matrix(nrow = n_samples, ncol = tmle_task$nrow)
           for (i in 1:tmle_task$nrow) {
             subject <- tmle_task[i]
-            f_X = function (a) {
+            f_X <- function(a) {
               cf_data <- data.table(a)
               setnames(cf_data, names(cf_data), self$name)
               subject_a <- subject$generate_counterfactual_task(UUIDgenerate(), cf_data)
-              
+
               pred <- learner$predict_fold(subject_a$get_regression_task(self$name), "full")
               likelihood <- unlist(pred)
-              
+
               return(likelihood)
             }
-            samples <- AR.Sim(n_samples, f_X, 
-                              xlim = c(min(learner$training_task$Y), max(learner$training_task$Y)))
+            samples <- AR.Sim(n_samples, f_X,
+              xlim = c(min(learner$training_task$Y), max(learner$training_task$Y))
+            )
             values[, i] <- samples
           }
         }

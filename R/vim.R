@@ -75,7 +75,8 @@ plot_vim <- function(vim_results) {
     geom_point() +
     geom_errorbarh() +
     theme_bw() +
-    xlab("Importance Measure") + ylab("Variable") +
+    xlab("Importance Measure") +
+    ylab("Variable") +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
     scale_y_discrete(limits = rev(levels(vim_results$A)))
 }

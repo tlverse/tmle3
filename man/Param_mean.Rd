@@ -17,35 +17,40 @@ Useful for example, in calculating attributable risks.
 }
 \section{Constructor}{
 
-  \code{define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)}
+\code{define_param(Param_TSM, observed_likelihood, intervention_list, ..., outcome_node)}
 
-  \describe{
-    \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
-    }
-    \item{\code{...}}{Not currently used.
-    }
-    \item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-    }
-    }
+\describe{
+\item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
+}
+\item{\code{...}}{Not currently used.
+}
+\item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
+}
+}
 }
 
 \section{Fields}{
 
 \describe{
-    \item{\code{cf_likelihood}}{the counterfactual likelihood for this treatment
-    }
-    \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention
-    }
+\item{\code{cf_likelihood}}{the counterfactual likelihood for this treatment
+}
+\item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention
+}
 }
 }
 
 \seealso{
-Other Parameters: \code{\link{Param_ATC}},
-  \code{\link{Param_ATE}}, \code{\link{Param_ATT}},
-  \code{\link{Param_MSM}}, \code{\link{Param_TSM}},
-  \code{\link{Param_base}}, \code{\link{Param_delta}},
-  \code{\link{Param_stratified}},
-  \code{\link{define_param}}, \code{\link{tmle3_Fit}}
+Other Parameters: 
+\code{\link{Param_ATC}},
+\code{\link{Param_ATE}},
+\code{\link{Param_ATT}},
+\code{\link{Param_MSM}},
+\code{\link{Param_TSM}},
+\code{\link{Param_base}},
+\code{\link{Param_delta}},
+\code{\link{Param_stratified}},
+\code{\link{define_param}()},
+\code{\link{tmle3_Fit}}
 }
 \concept{Parameters}
 \keyword{data}

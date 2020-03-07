@@ -40,7 +40,7 @@ LF_emp <- R6Class(
       stop("nothing to predict")
     },
     get_density = function(tmle_task, fold_number = "full") {
-      #TODO: this only makes sense if the tmle_task is the same as the training one
+      # TODO: this only makes sense if the tmle_task is the same as the training one
       weights <- tmle_task$weights
       return(weights / sum(weights))
     },
@@ -54,9 +54,9 @@ LF_emp <- R6Class(
       if (is.null(n_samples)) {
         return(tmle_task)
       }
-      
-      index <- sample(1:self$training_task$nrow, tmle_task$nrow * n_samples, replace=TRUE)
-      
+
+      index <- sample(1:self$training_task$nrow, tmle_task$nrow * n_samples, replace = TRUE)
+
       values <- self$training_task$get_tmle_node(self$name)[index]
       values <- matrix(values, nrow = tmle_task$nrow)
       return(values)

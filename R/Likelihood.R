@@ -100,7 +100,7 @@ Likelihood <- R6Class(
       all_levels <- lapply(factor_list, function(likelihood_factor) {
         likelihood_factor$variable_type$levels
       })
-      all_levels <- all_levels[ !(sapply(all_levels, is.null))]
+      all_levels <- all_levels[!(sapply(all_levels, is.null))]
       level_grid <- expand.grid(all_levels)
       return(level_grid)
     },
@@ -132,11 +132,11 @@ Likelihood <- R6Class(
         sample_lib <- rep(list(NULL), length(nodes))
         names(sample_lib) <- nodes
       }
-      
+
       for (node in names(self$factor_list)) {
         tmle_task <- factor_list$node$sample(tmle_task, sample_lib$node)
       }
-       
+
       return(tmle_task)
     }
   ),
@@ -150,7 +150,7 @@ Likelihood <- R6Class(
     cache = function() {
       return(private$.cache)
     },
-    censoring_nodes = function(){
+    censoring_nodes = function() {
       return(private$.censoring_nodes)
     }
   ),
@@ -168,10 +168,10 @@ Likelihood <- R6Class(
       # TODO: mutating factor list of Lrnr_object instead of returning a fit
       #       which is not what sl3 Lrnrs usually do
 
-      censoring_nodes <- lapply(tmle_task$npsem, function(node){
+      censoring_nodes <- lapply(tmle_task$npsem, function(node) {
         node$censoring_node$name
       })
-      
+
       names(censoring_nodes) <- names(tmle_task$npsem)
       private$.censoring_nodes <- censoring_nodes
       return("trained")

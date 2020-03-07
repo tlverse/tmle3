@@ -80,7 +80,7 @@ These objects also contain information about the efficient influence function (E
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -129,7 +129,6 @@ These objects also contain information about the efficient influence function (E
 These objects also contain information about the efficient influence function (EIF) of a parameter, as well as its clever covariate(s).</p>
     </div>
 
-    <pre class="usage"><span class='no'>Param_base</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
@@ -142,12 +141,12 @@ These objects also contain information about the efficient influence function (E
 
     
 
-<p><code><a href='define_param.html'>define_param(Param_base, observed_likelihood, ..., outcome_node)</a></code></p>                     
-<p></p><dl class='dl-horizontal'>
-    <dt><code>observed_likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> corresponding to the observed likelihood</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    <dt><code>outcome_node</code></dt><dd><p>character, the name of the node that should be treated as the outcome</p></dd>
-    
+<p><code><a href='define_param.html'>define_param(Param_base, observed_likelihood, ..., outcome_node)</a></code></p>
+<dl class='dl-horizontal'>
+<dt><code>observed_likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> corresponding to the observed likelihood</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+<dt><code>outcome_node</code></dt><dd><p>character, the name of the node that should be treated as the outcome</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
@@ -156,13 +155,13 @@ These objects also contain information about the efficient influence function (E
 
 
 <dl class='dl-horizontal'>
-<dt><code>clever_covariates(tmle_task = NULL)</code></dt><dd><p>Get the clever covariates for an TMLE update step.  <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
+<dt><code>clever_covariates(tmle_task = NULL)</code></dt><dd><p>Get the clever covariates for an TMLE update step.<ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for.
+If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
-<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.  <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
+<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.<ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for.
+If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
 
 </dl>
@@ -172,18 +171,23 @@ These objects also contain information about the efficient influence function (E
     
 
 <dl class='dl-horizontal'>
-    <dt><code>observed_likelihood</code></dt><dd><p>the observed likelihood</p></dd>
-    <dt><code>outcome_node</code></dt><dd><p>character, the name of the outcome node</p></dd>
+<dt><code>observed_likelihood</code></dt><dd><p>the observed likelihood</p></dd>
+<dt><code>outcome_node</code></dt><dd><p>character, the name of the outcome node</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATE.html'>Param_ATE</a></code>,
-  <code><a href='Param_ATT.html'>Param_ATT</a></code>, <code><a href='Param_TSM.html'>Param_TSM</a></code>,
-  <code><a href='Param_delta.html'>Param_delta</a></code>, <code><a href='Param_mean.html'>Param_mean</a></code>,
-  <code><a href='Param_stratified.html'>Param_stratified</a></code>,
-  <code><a href='define_param.html'>define_param</a></code>, <code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p></div>
+    <div class='dont-index'><p>Other Parameters: 
+<code><a href='Param_ATC.html'>Param_ATC</a></code>,
+<code><a href='Param_ATE.html'>Param_ATE</a></code>,
+<code><a href='Param_ATT.html'>Param_ATT</a></code>,
+<code><a href='Param_TSM.html'>Param_TSM</a></code>,
+<code><a href='Param_delta.html'>Param_delta</a></code>,
+<code><a href='Param_mean.html'>Param_mean</a></code>,
+<code><a href='Param_stratified.html'>Param_stratified</a></code>,
+<code><a href='define_param.html'>define_param</a>()</code>,
+<code><a href='tmle3_Fit.html'>tmle3_Fit</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

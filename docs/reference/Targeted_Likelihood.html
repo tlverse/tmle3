@@ -80,7 +80,7 @@ to target a set of parameter(s)" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -129,7 +129,6 @@ to target a set of parameter(s)" />
 to target a set of parameter(s)</p>
     </div>
 
-    <pre class="usage"><span class='no'>Targeted_Likelihood</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
@@ -142,11 +141,11 @@ to target a set of parameter(s)</p>
 
     
 
-<p><code><a href='Likelihood.html'>make_Likelihood(factor_list, ...)</a></code></p>                     
-<p></p><dl class='dl-horizontal'>
-    <dt><code>factor_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the individual relevant factors.</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    
+<p><code><a href='Likelihood.html'>make_Likelihood(factor_list, ...)</a></code></p>
+<dl class='dl-horizontal'>
+<dt><code>factor_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the individual relevant factors.</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
@@ -155,22 +154,22 @@ to target a set of parameter(s)</p>
 
 
 <dl class='dl-horizontal'>
-<dt><code>validate_task(tmle_task)</code></dt><dd><p>Ensure that this likelihood is compatible with a particular <code><a href='tmle3_Task.html'>tmle3_Task</a></code>, in that the factor names must match the <code>tmle_task$npsem</code> names.  <ul>
+<dt><code>validate_task(tmle_task)</code></dt><dd><p>Ensure that this likelihood is compatible with a particular <code><a href='tmle3_Task.html'>tmle3_Task</a></code>, in that the factor names must match the <code>tmle_task$npsem</code> names.<ul>
 <li><p><code>tmle_task</code>: the <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to validate.</p></li>
 </ul></p></dd>
-  
-<dt><code>get_initial_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets initial (i.e. before any TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified) 
-  for the observations in <code>tmle_task</code>.  <ul>
+
+<dt><code>get_initial_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets initial (i.e. before any TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified)
+for the observations in <code>tmle_task</code>.<ul>
 <li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
 <li><p><code>nodes</code>: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.</p></li>
 </ul></p></dd>
-<dt><code>get_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets updated (i.e. after all TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified) 
-  for the observations in <code>tmle_task</code>.  <ul>
+<dt><code>get_likelihoods(tmle_task, nodes=NULL)</code></dt><dd><p>Gets updated (i.e. after all TMLE updates) likelihood values for the specified <code>nodes</code> (or all nodes if none are specified)
+for the observations in <code>tmle_task</code>.<ul>
 <li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get likelihood values for</p></li>
 <li><p><code>nodes</code>: character vectors, the list of nodes to get likelihood values for. If missing, values will be provided for all nodes.</p></li>
 </ul></p></dd>
 <dt><code>get_possible_counterfactuals(nodes)</code></dt><dd><p>Gets all possible combination of counterfactual values for a set of nodes. This is useful for marginalizing over a node. Returns a <code>data.frame</code>
-  with one row per possibility.  <ul>
+with one row per possibility.<ul>
 <li><p><code>nodes</code>: character vectors, the list of nodes to get counterfactual values for. If missing, values will be provided for all nodes.</p></li>
 </ul></p></dd>
 
@@ -181,19 +180,25 @@ to target a set of parameter(s)</p>
     
 
 <dl class='dl-horizontal'>
-  <dt><code>factor_list</code></dt><dd><p>The list of <code><a href='LF_base.html'>LF_base</a></code> objects specifying the relevant likelihood factors</p></dd>
-  <dt><code>observed_values</code></dt><dd><p>The likelihood values for the observed data. These are cached, as they are used in many places in TMLE</p></dd>
-  <dt><code>update_list</code></dt><dd><p>A list of tmle_updates that have been calculated for this likelihood</p></dd>
+<dt><code>factor_list</code></dt><dd><p>The list of <code><a href='LF_base.html'>LF_base</a></code> objects specifying the relevant likelihood factors</p></dd>
+<dt><code>observed_values</code></dt><dd><p>The likelihood values for the observed data. These are cached, as they are used in many places in TMLE</p></dd>
+<dt><code>update_list</code></dt><dd><p>A list of tmle_updates that have been calculated for this likelihood</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Likelihood objects: <code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
-  <code><a href='LF_base.html'>LF_base</a></code>, <code><a href='LF_derived.html'>LF_derived</a></code>,
-  <code><a href='LF_emp.html'>LF_emp</a></code>, <code><a href='LF_fit.html'>LF_fit</a></code>,
-  <code><a href='LF_known.html'>LF_known</a></code>, <code><a href='LF_static.html'>LF_static</a></code>,
-  <code><a href='Likelihood.html'>Likelihood</a></code>, <code><a href='define_lf.html'>define_lf</a></code></p></div>
+    <div class='dont-index'><p>Other Likelihood objects: 
+<code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
+<code><a href='LF_base.html'>LF_base</a></code>,
+<code><a href='LF_derived.html'>LF_derived</a></code>,
+<code><a href='LF_emp.html'>LF_emp</a></code>,
+<code><a href='LF_fit.html'>LF_fit</a></code>,
+<code><a href='LF_known.html'>LF_known</a></code>,
+<code><a href='LF_static.html'>LF_static</a></code>,
+<code><a href='LF_targeted.html'>LF_targeted</a></code>,
+<code><a href='Likelihood.html'>Likelihood</a></code>,
+<code><a href='define_lf.html'>define_lf</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

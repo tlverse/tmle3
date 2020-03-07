@@ -4,8 +4,13 @@
 \alias{process_missing}
 \title{Preprocess Data to Handle Missing Variables}
 \usage{
-process_missing(data, node_list, complete_nodes = c("A", "Y"),
-  impute_nodes = NULL, max_p_missing = 0.5)
+process_missing(
+  data,
+  node_list,
+  complete_nodes = c("A", "Y"),
+  impute_nodes = NULL,
+  max_p_missing = 0.5
+)
 }
 \arguments{
 \item{data, }{\code{data.table}, containing the missing variables}
@@ -20,13 +25,13 @@ process_missing(data, node_list, complete_nodes = c("A", "Y"),
 }
 \value{
 \code{list} containing the following elements:
- \itemize{
-   \item \code{data}, the updated dataset
-   \item \code{node_list}, the updated list of nodes
-   \item \code{n_dropped}, the number of observations dropped
-   \item \code{dropped_cols}, the variables dropped due to excessive missingness
+\itemize{
+\item \code{data}, the updated dataset
+\item \code{node_list}, the updated list of nodes
+\item \code{n_dropped}, the number of observations dropped
+\item \code{dropped_cols}, the variables dropped due to excessive missingness
 
- }
+}
 }
 \description{
 Process data to account for missingness in preparation for TMLE
@@ -38,8 +43,8 @@ Indicator variables of missingness will be generated for these nodes.
 
 Then covariates will be processed as follows:
 \enumerate{
- \item any covariate with more than \code{max_p_missing} missingness will be dropped
- \item indicators of missingness will be generated
- \item missing values will be median-imputed
+\item any covariate with more than \code{max_p_missing} missingness will be dropped
+\item indicators of missingness will be generated
+\item missing values will be median-imputed
 }
 }

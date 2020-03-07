@@ -55,6 +55,6 @@ updater <- tmle3_Update$new(cvtmle = FALSE)
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 tl_preds <- targeted_likelihood$get_likelihood(tmle_task, "Y", "validation")
-lf_targ <- LF_targeted$new("Y",targeted_likelihood)
+lf_targ <- LF_targeted$new("Y", targeted_likelihood)
 lf_preds <- lf_targ$get_likelihood(tmle_task, "validation")
-test_that("LF_targeted returns the correct likelihood values", expect_equal(tl_preds,lf_preds))
+test_that("LF_targeted returns the correct likelihood values", expect_equal(tl_preds, lf_preds))

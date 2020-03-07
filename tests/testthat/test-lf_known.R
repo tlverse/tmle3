@@ -58,10 +58,9 @@ likelihood_def <- Likelihood$new(factor_list)
 # create learner list (NOTE: unused since likelihood object passed in)
 learner_list <- list(
   Y = Lrnr_mean$new(),
-  A = Lrnr_condensier$new(
-    nbins = 5,
-    bin_estimator = Lrnr_mean$new(),
-    bin_method = "dhist"
+  A = Lrnr_density_semiparametric$new(
+    mean_learner = Lrnr_glm$new(),
+    var_learner = Lrnr_mean$new()
   )
 )
 

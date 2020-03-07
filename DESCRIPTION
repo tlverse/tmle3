@@ -29,7 +29,9 @@ Imports:
     stats,
     Rsolnp,
     foreach,
-    mvtnorm
+    mvtnorm,
+    magrittr,
+    stringr
 Suggests:
     testthat,
     knitr,

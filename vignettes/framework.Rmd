@@ -194,10 +194,11 @@ of the marginal density of baseline covariates.
 framework. Based on the learner type used, this can fit a pmf (for binomial or
 categorical data, see `sl3_list_learners("binomial")` and
 `sl3_list_learners("categorical")` for lists), a conditional mean (most
-learners), or a conditional density (using `condensier` via `Lrnr_condensier`).
-`LF_fit` takes a `sl3` learner object as an argument, which is fit to the data
-in the `tmle3_Task` automatically. Details for specifying different kinds of
-learners in `sl3` may be found at http://sl3.tlverse.org/articles/intro_sl3.html
+learners), or a conditional density (e.g., using a semiparametric conditional
+density estimator via `Lrnr_density_semiparametric`).  `LF_fit` takes a `sl3`
+learner object as an argument, which is fit to the data in the `tmle3_Task`
+automatically. Details for specifying different kinds of learners in `sl3` may
+be found at http://tlverse.org/sl3/articles/intro_sl3.html
 
 ### Specifying _a priori_ knowledge.
 

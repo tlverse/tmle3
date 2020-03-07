@@ -88,11 +88,10 @@ tmle3_Spec_stratified <- R6Class(
 #' @importFrom sl3 make_learner Lrnr_mean
 #'
 #' @param base_spec An underlying spec to stratify.
-#' @param strata_variable The variable(s) to use for stratification.
 #' @param base_estimate Indicate whether to report base parameter.
 #'
 #' @export
-tmle_stratified <- function(base_spec, strata_variable, base_estimate = TRUE) {
+tmle_stratified <- function(base_spec, base_estimate = TRUE) {
   # TODO: unclear why this has to be in a factory function
-  tmle3_Spec_stratified$new(base_spec, strata_variable, base_estimate = base_estimate)
+  tmle3_Spec_stratified$new(base_spec, base_estimate = base_estimate)
 }

@@ -4,13 +4,8 @@
 \alias{tmle3_vim}
 \title{Compute Variable Importance Measures (VIM) with any given parameter}
 \usage{
-tmle3_vim(
-  tmle_spec,
-  data,
-  node_list,
-  learner_list = NULL,
-  adjust_for_other_A = TRUE
-)
+tmle3_vim(tmle_spec, data, node_list, learner_list = NULL,
+  adjust_for_other_A = TRUE)
 }
 \arguments{
 \item{tmle_spec}{\code{\link{tmle3_Spec}}, defines the TMLE}

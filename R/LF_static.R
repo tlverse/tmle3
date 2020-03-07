@@ -64,7 +64,7 @@ LF_static <- R6Class(
       if (is.null(n_samples)) {
         return(tmle_task)
       }
-      
+
       values <- replicate(n_samples, rep(self$value, tmle_task$nrow))
       return(values)
     }

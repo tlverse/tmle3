@@ -38,11 +38,21 @@ van der Laan and Rose (2018).
 
 ## Installation
 
-You can install the development version of `tmle3` from GitHub via
-[`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with
+<!--
+For standard use, we recommend installing the package from
+[CRAN](https://CRAN.R-project.org/package=hal9001) via
+
+
+```r
+install.packages("hal9001")
+```
+-->
+
+To contribute, install the *development version* of `tmle3` from GitHub
+via [`remotes`](https://CRAN.R-project.org/package=remotes):
 
 ``` r
-devtools::install_github("tlverse/tmle3")
+remotes::install_github("tlverse/tmle3")
 ```
 
 -----
@@ -64,7 +74,7 @@ If you encounter any bugs or have any specific feature requests, please
 
 ## License
 
-© 2017-2019 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
+© 2017-2020 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
 
 The contents of this repository are distributed under the GPL-3 license.
 See file `LICENSE` for details.

@@ -79,7 +79,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -127,8 +127,14 @@
     <p>Generates a <code>data.table</code> summarizing results with inference</p>
     </div>
 
-    <pre class="usage"><span class='fu'>summary_from_estimates</span>(<span class='no'>task</span>, <span class='no'>estimates</span>, <span class='kw'>param_types</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>param_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>init_psi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>simultaneous_ci</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>summary_from_estimates</span>(
+  <span class='no'>task</span>,
+  <span class='no'>estimates</span>,
+  <span class='kw'>param_types</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>param_names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>init_psi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>simultaneous_ci</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

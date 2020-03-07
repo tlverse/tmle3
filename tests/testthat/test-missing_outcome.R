@@ -24,7 +24,7 @@ node_list <- list(
 )
 
 # drop missing A for now, might add back to test later
-missing_W <- apply(is.na(data[,c(node_list$W,node_list$A), with=FALSE]),1,any)
+missing_W <- apply(is.na(data[, c(node_list$W, node_list$A), with = FALSE]), 1, any)
 data <- data[!missing_W]
 
 qlib <- make_learner_stack(
@@ -43,12 +43,12 @@ logit_metalearner <- make_learner(
 )
 Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
 g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
-learner_list <- list(Y = Q_learner, A = g_learner, delta_Y=Q_learner)
+learner_list <- list(Y = Q_learner, A = g_learner, delta_Y = Q_learner)
 tmle_spec <- tmle_TSM_all()
 
 # define data
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
-Q_task <- tmle_task$get_regression_task("Y",drop_censored = TRUE)
+Q_task <- tmle_task$get_regression_task("Y", drop_censored = TRUE)
 Q_learner <- learner_list$Y
 # debug_train(Q_learner)
 Q_fit <- Q_learner$train(Q_task)
@@ -66,7 +66,7 @@ intervention0 <- define_lf(LF_static, "A", value = 0)
 tsm1 <- define_param(Param_TSM, targeted_likelihood, intervention1)
 tsm0 <- define_param(Param_TSM, targeted_likelihood, intervention0)
 ate <- define_param(Param_delta, targeted_likelihood, delta_param_ATE, list(tsm0, tsm1))
-params <- list(tsm0,tsm1, ate)
+params <- list(tsm0, tsm1, ate)
 updater$tmle_params <- params
 H0W <- tsm0$clever_covariates(tmle_task)$Y
 H1W <- tsm1$clever_covariates(tmle_task)$Y
@@ -98,15 +98,15 @@ EY0_final <- targeted_likelihood$get_likelihoods(cf_task0, "Y")
 Qstar <- cbind(EY0_final, EY1_final)
 EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
 Q <- cbind(EY0, EY1)
-Delta = tmle_task$get_tmle_node("delta_Y")
+Delta <- tmle_task$get_tmle_node("delta_Y")
 
 # get G
 pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
-pDelta1a1 = initial_likelihood$get_likelihoods(cf_task1, "delta_Y")
-pDelta1a0 = initial_likelihood$get_likelihoods(cf_task0, "delta_Y")
+pDelta1a1 <- initial_likelihood$get_likelihoods(cf_task1, "delta_Y")
+pDelta1a0 <- initial_likelihood$get_likelihoods(cf_task0, "delta_Y")
 
-g10W=pA1*(pDelta1a1)
-g00W=(1-pA1)*(pDelta1a0)
+g10W <- pA1 * (pDelta1a1)
+g00W <- (1 - pA1) * (pDelta1a0)
 
 pDelta1 <- cbind(pDelta1a0, pDelta1a1)
 tmle_classic_fit <- tmle(
@@ -117,8 +117,8 @@ tmle_classic_fit <- tmle(
   Q = Q,
   g1W = pA1,
   pDelta1 = pDelta1,
-  family="binomial",
-  alpha=0.995,
+  family = "binomial",
+  alpha = 0.995,
   target.gwt = FALSE
 )
 

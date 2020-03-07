@@ -29,37 +29,37 @@ tmle3_Task <- R6Class(
   public = list(
     initialize = function(data, npsem, ...) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
-      
+
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
-      
+
       # process nodes
       for (node_name in node_names) {
         current_node <- npsem[[node_name]]
-        
+
         # get variable data and censoring indicator
         variables <- current_node$variables
-        
-        if(length(variables)==0){
+
+        if (length(variables) == 0) {
           next
         }
         variable_data <- super$get_data(, variables)
-        censoring <- apply(is.na(variable_data),1, any)
-        
+        censoring <- apply(is.na(variable_data), 1, any)
+
         if (ncol(variable_data) == 1) {
           variable_data <- unlist(variable_data, use.names = FALSE)
         }
-        
+
         # determine variable type
         if (is.null(current_node$variable_type)) {
           current_node$guess_variable_type(variable_data)
         }
 
         current_type <- current_node$variable_type
-        
+
         # setup bounds for scaling of bounded continuous outcome if necessary
-        
-        
+
+
         if ((current_node$scale) &&
           (current_type$type == "continuous") &&
           (is.null(current_type$bounds))) {
@@ -74,60 +74,57 @@ tmle3_Task <- R6Class(
           )
           current_node$variable_type <- bounded_variable_type
         }
-        
+
         # create or identify censoring node
-        if(any(censoring)){
-          
+        if (any(censoring)) {
+
           # first, look for explicitly denoted censoring node
           censoring_node <- current_node$censoring_node
-          
+
           # next look in the npsem with the naming convention delta_X
-          
-          if(is.null(censoring_node)){
-            censoring_node_name <- sprintf("delta_%s",current_node$name)
+
+          if (is.null(censoring_node)) {
+            censoring_node_name <- sprintf("delta_%s", current_node$name)
             censoring_node <- npsem[[censoring_node_name]]
           } else {
             censoring_node_name <- censoring_node$name
           }
-          
+
           # if we can't find a node, create one automatically
-          
-          if(is.null(censoring_node)){
-            
+
+          if (is.null(censoring_node)) {
+
             # add censoring indicator to data
             censoring_dt <- data.table(!censoring)
             names(censoring_dt) <- censoring_node_name
             new_column_names <- super$add_columns(censoring_dt, uuid::UUIDgenerate())
             private$.column_names <- new_column_names
 
-            censoring_node <- tmle3_Node$new(name = censoring_node_name,
-                                             variables = censoring_node_name,
-                                             parents = current_node$parents,
-                                             variable_type = variable_type("binomial"),
-                                             censoring_node = NULL, 
-                                             scale = FALSE)
+            censoring_node <- tmle3_Node$new(
+              name = censoring_node_name,
+              variables = censoring_node_name,
+              parents = current_node$parents,
+              variable_type = variable_type("binomial"),
+              censoring_node = NULL,
+              scale = FALSE
+            )
           }
-          
+
           # add censoring node to npsem and to current node
           current_node$censoring_node <- censoring_node
           npsem[[censoring_node_name]] <- censoring_node
-          
         } else {
-          # do we want to delete missingness node here?    
+          # do we want to delete missingness node here?
         }
-        
+
         # update npsem
         npsem[[node_name]] <- current_node
-        
       }
-      
+
       private$.npsem <- npsem
       private$.node_cache <- new.env()
-      
-
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE) {
-  
       cache_key <- sprintf("%s_%s_%s", node_name, format, impute_censoring)
 
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
@@ -139,7 +136,7 @@ tmle3_Task <- R6Class(
       if (is.null(node_var)) {
         return(data.table(NULL))
       }
-      
+
       node_type <- tmle_node$node_type
       data <- self$get_data(self$row_index, node_var)
 
@@ -156,23 +153,23 @@ tmle3_Task <- R6Class(
       }
 
       censoring_node <- tmle_node$censoring_node
-      
-      if(is(censoring_node,"tmle3_Node") && impute_censoring){
-        observed <- self$get_tmle_node(censoring_node$name)  
+
+      if (is(censoring_node, "tmle3_Node") && impute_censoring) {
+        observed <- self$get_tmle_node(censoring_node$name)
         censoring <- !observed
-        
-        # impute arbitrary value for node Need to keep the data shape the same, 
+
+        # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
         # and for generating values for ICs (which will then be cancelled by 0)
         impute_value <- data[which(!censoring)[1]]
-        if(is.data.table(data)){
-          set(data,which(censoring),names(data), as.list(impute_value))
+        if (is.data.table(data)) {
+          set(data, which(censoring), names(data), as.list(impute_value))
         } else {
           data[censoring] <- impute_value
         }
       }
-      
-      
+
+
 
       assign(cache_key, data, private$.node_cache)
 
@@ -199,28 +196,28 @@ tmle3_Task <- R6Class(
 
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
-      
+
       censoring_node <- target_node_object$censoring_node
-      
-      if(is(censoring_node,"tmle3_Node")){
-        observed <- self$get_tmle_node(censoring_node$name)  
+
+      if (is(censoring_node, "tmle3_Node")) {
+        observed <- self$get_tmle_node(censoring_node$name)
         censoring <- !observed
       } else {
-        censoring=rep(FALSE,nrow(regression_data))
+        censoring <- rep(FALSE, nrow(regression_data))
       }
-      
+
       folds <- self$folds
-      if(drop_censored){
-        regression_data <- regression_data[!censoring,]
-        folds <- sl3::subset_folds(self$folds,which(!censoring))
+      if (drop_censored) {
+        regression_data <- regression_data[!censoring, ]
+        folds <- sl3::subset_folds(self$folds, which(!censoring))
       } else {
-        # impute arbitrary value for node Need to keep the data shape the same, 
+        # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
         # and for generating values for ICs (which will then be cancelled by 0)
-        impute_value <- regression_data[which(!censoring)[1],outcome,with=FALSE]
-        set(regression_data,which(censoring),outcome, impute_value)
+        impute_value <- regression_data[which(!censoring)[1], outcome, with = FALSE]
+        set(regression_data, which(censoring), outcome, impute_value)
       }
-      
+
       suppressWarnings({
         regression_task <- sl3_Task$new(
           regression_data,

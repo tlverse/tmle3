@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Odds Ratio odds(Y1)/odds(Y0) — delta_param_OR • tmle</title>
+<title>Use a likelihood factor from an existing targeted likelihood — LF_targeted • tmle</title>
 
 
 <!-- jquery -->
@@ -35,8 +35,9 @@
 
 
 
-<meta property="og:title" content="Odds Ratio odds(Y1)/odds(Y0) — delta_param_OR" />
-<meta property="og:description" content="Odds Ratio odds(Y1)/odds(Y0)" />
+<meta property="og:title" content="Use a likelihood factor from an existing targeted likelihood — LF_targeted" />
+<meta property="og:description" content="Uses an sl3 learner to estimate a likelihood factor from data.
+Inherits from LF_base; see that page for documentation on likelihood factors in general." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -118,27 +119,69 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Odds Ratio odds(Y1)/odds(Y0)</h1>
+    <h1>Use a likelihood factor from an existing targeted likelihood</h1>
     
-    <div class="hidden name"><code>delta_param_OR.Rd</code></div>
+    <div class="hidden name"><code>LF_targeted.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Odds Ratio odds(Y1)/odds(Y0)</p>
+    <p>Uses an <code>sl3</code> learner to estimate a likelihood factor from data.
+Inherits from <code><a href='LF_base.html'>LF_base</a></code>; see that page for documentation on likelihood factors in general.</p>
     </div>
 
-    <pre class="usage"><span class='no'>delta_param_OR</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 5.</p>
+    <p><code>R6Class</code> object.</p>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p><code>LF_base</code> object</p>
+    <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
+
+    
+
+<p><code><a href='define_lf.html'>define_lf(LF_fit, name, learner, ..., type = "density")</a></code></p>
+<dl class='dl-horizontal'>
+<dt><code>name</code></dt><dd><p>character, the name of the factor. Should match a node name in the nodes specified by <code><a href='tmle3_Task.html'>tmle3_Task</a>$npsem</code></p></dd>
+<dt><code>learner</code></dt><dd><p>An sl3 learner to be used to estimate the factor</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+<dt><code>type</code></dt><dd><p>character, either "density", for conditional density or, "mean" for conditional mean</p></dd>
+
+</dl>
+
+    <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
+
+    
+
+<dl class='dl-horizontal'>
+<dt><code>learner</code></dt><dd><p>The learner or learner fit object</p></dd>
+
+</dl>
+
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>Other Likelihood objects: 
+<code><a href='CF_Likelihood.html'>CF_Likelihood</a></code>,
+<code><a href='LF_base.html'>LF_base</a></code>,
+<code><a href='LF_derived.html'>LF_derived</a></code>,
+<code><a href='LF_emp.html'>LF_emp</a></code>,
+<code><a href='LF_fit.html'>LF_fit</a></code>,
+<code><a href='LF_known.html'>LF_known</a></code>,
+<code><a href='LF_static.html'>LF_static</a></code>,
+<code><a href='Likelihood.html'>Likelihood</a></code>,
+<code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+<code><a href='define_lf.html'>define_lf</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#format">Format</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="#constructor">Constructor</a></li>
+      <li><a href="#fields">Fields</a></li>
+      <li><a href="#see-also">See also</a></li>
     </ul>
 
   </div>

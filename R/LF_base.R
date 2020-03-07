@@ -95,7 +95,7 @@ LF_base <- R6Class(
     cache = function() {
       return(private$.cache)
     },
-    training_task = function(){
+    training_task = function() {
       return(private$.training_task)
     }
   ),

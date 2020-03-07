@@ -80,7 +80,7 @@ Inherits from Likelihood. Other factors (including their updates) are taken from
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -129,9 +129,7 @@ Inherits from Likelihood. Other factors (including their updates) are taken from
 Inherits from <code><a href='Likelihood.html'>Likelihood</a></code>. Other factors (including their updates) are taken from an underlying <code>observed_likelihood</code> estimated from observed data.</p>
     </div>
 
-    <pre class="usage"><span class='no'>CF_Likelihood</span>
-
-<span class='fu'>make_CF_Likelihood</span>(<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>make_CF_Likelihood</span>(<span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -153,12 +151,12 @@ Constructor below.</p></td>
 
     
 
-<p><code>make_CF_Likelihood(observed_likelihood, intervention_list, ...)</code></p>                     
-<p></p><dl class='dl-horizontal'>
-    <dt><code>observed_likelihood</code></dt><dd><p><code><a href='Likelihood.html'>Likelihood</a></code> obect specifying the relevant factors of the observed likelihood</p></dd>
-    <dt><code>intervention_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the intervention.</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    
+<p><code>make_CF_Likelihood(observed_likelihood, intervention_list, ...)</code></p>
+<dl class='dl-horizontal'>
+<dt><code>observed_likelihood</code></dt><dd><p><code><a href='Likelihood.html'>Likelihood</a></code> obect specifying the relevant factors of the observed likelihood</p></dd>
+<dt><code>intervention_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the intervention.</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="fields"><a class="anchor" href="#fields"></a>Fields</h2>
@@ -166,19 +164,24 @@ Constructor below.</p></td>
     
 
 <dl class='dl-horizontal'>
-   <dt><code>observed_likelihood</code></dt><dd><p><code><a href='Likelihood.html'>Likelihood</a></code> obect specifying the relevant factors of the observed likelihood</p></dd>
-    <dt><code>intervention_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the intervention.</p></dd>
+<dt><code>observed_likelihood</code></dt><dd><p><code><a href='Likelihood.html'>Likelihood</a></code> obect specifying the relevant factors of the observed likelihood</p></dd>
+<dt><code>intervention_list</code></dt><dd><p>A list of objects inheriting from <code><a href='LF_base.html'>LF_base</a></code>, representing the intervention.</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Likelihood objects: <code><a href='LF_base.html'>LF_base</a></code>,
-  <code><a href='LF_derived.html'>LF_derived</a></code>, <code><a href='LF_emp.html'>LF_emp</a></code>,
-  <code><a href='LF_fit.html'>LF_fit</a></code>, <code><a href='LF_known.html'>LF_known</a></code>,
-  <code><a href='LF_static.html'>LF_static</a></code>, <code><a href='Likelihood.html'>Likelihood</a></code>,
-  <code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
-  <code><a href='define_lf.html'>define_lf</a></code></p></div>
+    <div class='dont-index'><p>Other Likelihood objects: 
+<code><a href='LF_base.html'>LF_base</a></code>,
+<code><a href='LF_derived.html'>LF_derived</a></code>,
+<code><a href='LF_emp.html'>LF_emp</a></code>,
+<code><a href='LF_fit.html'>LF_fit</a></code>,
+<code><a href='LF_known.html'>LF_known</a></code>,
+<code><a href='LF_static.html'>LF_static</a></code>,
+<code><a href='LF_targeted.html'>LF_targeted</a></code>,
+<code><a href='Likelihood.html'>Likelihood</a></code>,
+<code><a href='Targeted_Likelihood.html'>Targeted_Likelihood</a></code>,
+<code><a href='define_lf.html'>define_lf</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

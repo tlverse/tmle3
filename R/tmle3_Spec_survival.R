@@ -25,10 +25,12 @@ tmle3_Spec_survival <- R6Class(
       # TODO: random initialize dN and dA_c as binomials; function design
       # data[, "dN"] <- data[[node_list$T_tilde]]
       # data[, "dA_c"] <- data[[node_list$T_tilde]]
-      data[, "dN"] <- rbinom(nrow(data), 1,.5)
-      data[, "dA_c"] <- rbinom(nrow(data), 1,.5)
-      node_list["dN"] <- "dN"
-      node_list["dA_c"] <- "dA_c"
+
+      # data[, "dN"] <- rbinom(nrow(data), 1,.5)
+      # data[, "dA_c"] <- rbinom(nrow(data), 1,.5)
+      # node_list["dN"] <- "dN"
+      # node_list["dA_c"] <- "dA_c"
+      
       tmle_task <- survival_tx_task(data, node_list, survival_tx_npsem, variable_types)
 
       return(tmle_task)

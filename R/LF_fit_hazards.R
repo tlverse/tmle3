@@ -1,4 +1,4 @@
-#' Hazard Likelihood Factor Estimated from Transformed Data using sl3.
+#' Hazard Likelihood Factor Estimated using sl3.
 #'
 #' Uses an \code{sl3} learner to estimate a likelihood factor from data.
 #' Inherits from \code{\link{LF_base}}; see that page for documentation on likelihood factors in general.
@@ -39,9 +39,31 @@ LF_fit_hazards <- R6Class(
   class = TRUE,
   inherit = LF_fit,
   public = list(
-    initialize = function(name, learner, ..., type = "density") {
-      super$initialize(name, learner, ..., type = type)
+    initialize = function(name, learner, is_time_variant = FALSE, ..., type = "density") {
+      super$initialize(name, learner, is_time_variant = is_time_variant, ..., type = type)
     },
+    get_training_task = function(tmle_task) {
+       # TODO: select N_pev=A_c_prev=0 for training
+      t_data <- tmle_task$get_tmle_node("t", format = TRUE)
+      T_tilde_data <- tmle_task$get_tmle_node("T_tilde", format = TRUE)
+      Delta_data <- tmle_task$get_tmle_node("Delta", format = TRUE)
+
+      N_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 1, 1, 0)
+      A_c_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 0, 1, 0)
+
+      training_indices <- which(N_data_prev == 0 & A_c_data_prev == 0)
+      # TODO: check
+      tmle_task_training <- tmle_task[training_indices]
+      return(tmle_task_training)
+    },
+    delayed_train = function(tmle_task) {
+      tmle_task_training <- self$get_training_task(tmle_task)
+      return(super$delayed_train(tmle_task_training))
+    },
+    train = function(tmle_task, learner_fit) {
+      tmle_task_training <- self$get_training_task(tmle_task)
+      super$train(tmle_task_training, learner_fit)
+    }
     # delayed_train = function(tmle_task) {
     #   # just return prefit learner if that's what we have
     #   # otherwise, make a delayed fit and return that
@@ -76,35 +98,28 @@ LF_fit_hazards <- R6Class(
 
     #   super$train(long_tmle_task, learner_fit)
     # },
-    get_density = function(tmle_task, fold_number) {
-      # # transform original data into long version
-      # short_data <-tmle_task$data
-      # short_npsem <- tmle_task$npsem
-      # long_data <- make_long_data(short_data, short_npsem)
-      # long_node_list <- make_long_node_list(short_npsem)
+    # get_density = function(tmle_task, fold_number) {
+    #   # # transform original data into long version
+    #   # short_data <-tmle_task$data
+    #   # short_npsem <- tmle_task$npsem
+    #   # long_data <- make_long_data(short_data, short_npsem)
+    #   # long_node_list <- make_long_node_list(short_npsem)
 
-      # # generate likelihood estimates for dN and dA_c
-      # full_tmle_task <- make_long_tmle_task(long_data, long_node_list)
+    #   # # generate likelihood estimates for dN and dA_c
+    #   # full_tmle_task <- make_long_tmle_task(long_data, long_node_list)
 
-      # return(super$get_density(full_tmle_task, fold_number))
+    #   # return(super$get_density(full_tmle_task, fold_number))
 
-      learner_task <- tmle_task$get_regression_task(self$name)
-      learner <- self$learner
-      preds <- learner$predict_fold(learner_task, fold_number)
+    #   learner_task <- tmle_task$get_regression_task(self$name)
+    #   learner <- self$learner
+    #   preds <- learner$predict_fold(learner_task, fold_number)
 
-      # TODO: check
-      predmat <- matrix(preds, nrow = tmle_task$nrow, byrow = TRUE)
-      likelihood <- predmat
-      return(likelihood)
-    }
+    #   # TODO: check
+    #   predmat <- matrix(preds, nrow = tmle_task$nrow, byrow = TRUE)
+    #   likelihood <- predmat
+    #   return(likelihood)
+    # }
   ),
-  active = list(
-    learner = function() {
-      return(private$.learner)
-    }
-  ),
-  private = list(
-    .name = NULL,
-    .learner = NULL
-  )
+  active = list(),
+  private = list()
 )

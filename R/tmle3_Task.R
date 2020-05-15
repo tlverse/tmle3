@@ -101,7 +101,8 @@ tmle3_Task <- R6Class(
 
       return(data)
     },
-    get_regression_task = function(target_node, scale = FALSE) {
+    # TODO: add time_variance
+    get_regression_task = function(target_node, scale = FALSE, is_time_variant = FALSE) {
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
@@ -123,11 +124,26 @@ tmle3_Task <- R6Class(
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
 
+      # TODO: select subset data for time invariant
+      # print(is_time_variant)
+      new_folds <- self$folds
+      if (!is_time_variant) {
+        time_node <- npsem[["t"]]
+        if (!is.null(time_node)) {
+          time_data <- self$get_tmle_node("t", format = TRUE)
+          indices <- which(time_data == 1)
+          regression_data <- regression_data[indices, ]
+          # TODO: make new folds
+          new_folds <- subset_folds(self$folds, indices)
+        }
+      }
+
       regression_task <- sl3_Task$new(
         regression_data,
         nodes = nodes,
         outcome_type = target_node_object$variable_type,
-        folds = self$folds
+        # TODO: check folds
+        folds = new_folds
       )
 
       return(regression_task)

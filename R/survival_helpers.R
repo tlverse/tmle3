@@ -17,11 +17,14 @@ survival_tx_npsem <- function(node_list, variable_types = NULL) {
 		# TODO: causal relation, handle t_max
 		define_node("W", node_list$W, variable_type = variable_types$W),
 		define_node("A", node_list$A, c("W"), variable_type = variable_types$A),
+    define_node("T_tilde", node_list$T_tilde, c("A", "W"), variable_type = variable_types$T_tilde),
+    define_node("Delta", node_list$Delta, variable_type = variable_types$Delta),
     # TODO: check
-		define_node("T_tilde", node_list$T_tilde, c("A", "W"), variable_type = variable_types$T_tilde),
-    define_node("dN", node_list$dN, c("A", "W"), variable_type = variable_types$dN),
-    define_node("dA_c", node_list$dA_c, c("A", "W"), variable_type = variable_types$dA_c),
-		define_node("Delta", node_list$Delta, variable_type = variable_types$Delta)
+    define_node("t", node_list$t, variable_type = variable_types$t), 
+    define_node("N", node_list$N, c("A", "W", "t"), variable_type = variable_types$N),
+    define_node("A_c", node_list$A_c, c("A", "W", "t"), variable_type = variable_types$A_c)   
+    # define_node("dN", node_list$dN, c("A", "W", "t"), variable_type = variable_types$dN),
+    # define_node("dA_c", node_list$dA_c, c("A", "W", "t"), variable_type = variable_types$dA_c)
 		)
 
 	return(npsem)
@@ -190,6 +193,7 @@ survival_tx_task <- function(data, node_list, make_npsem, variable_types = NULL,
 #' @rdname survival_tx
 survival_tx_likelihood  <- function(tmle_task, learner_list) {
   # covariates
+  # TODO: whether remove duplicates for LF_emp
   W_factor <- define_lf(LF_emp, "W")
 
   # TODO: check if necessary
@@ -205,33 +209,45 @@ survival_tx_likelihood  <- function(tmle_task, learner_list) {
 
   A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], bound = A_bound)
 
-  npsem <- tmle_task$npsem
-  delta_name <- npsem$Delta$variables
-  # TODO: check
-  Delta <- tmle_task$data[[delta_name]]
-  t_tilde_name <- npsem$T_tilde$variables
-  T_tilde <- tmle_task$data[[t_tilde_name]]
+  # npsem <- tmle_task$npsem
+  # delta_name <- npsem$Delta$variables
+  # # TODO: check
+  # Delta <- tmle_task$data[[delta_name]]
+  # t_tilde_name <- npsem$T_tilde$variables
+  # T_tilde <- tmle_task$data[[t_tilde_name]]
 
-  dN_learner <- learner_list[["dN"]]
-  # TODO: check
-  dN_factor <- define_lf(LF_fit_hazards, "dN", 
-    learner = make_learner(Lrnr_conditional_hazards, "dN", Delta, T_tilde, dN_learner))
-  dA_c_learner <- learner_list[["dA_c"]]
-  dA_c_factor <- define_lf(LF_fit_hazards, "dA_c", 
-    learner = make_learner(Lrnr_conditional_hazards, "dA_c", Delta, T_tilde, dA_c_learner))
+  # dN_learner <- learner_list[["dN"]]
+  # # TODO: check
+  # dN_factor <- define_lf(LF_fit_hazards, "dN", 
+  #   learner = make_learner(Lrnr_conditional_hazards, "dN", Delta, T_tilde, dN_learner))
+  # dA_c_learner <- learner_list[["dA_c"]]
+  # dA_c_factor <- define_lf(LF_fit_hazards, "dA_c", 
+  #   learner = make_learner(Lrnr_conditional_hazards, "dA_c", Delta, T_tilde, dA_c_learner))
 
-  factor_list <- list(W_factor, A_factor, dN_factor, dA_c_factor)
+  # TODO: modify get_regression_task and LF_fit for time variance
+  N_factor <- define_lf(LF_fit_hazards, "N", learner = learner_list[["N"]], is_time_variant = TRUE)
+  A_c_factor <- define_lf(LF_fit_hazards, "A_c", learner = learner_list[["A_c"]], is_time_variant = TRUE)
+
+  factor_list <- list(W_factor, A_factor, N_factor, A_c_factor)
 
   # TODO: check
-  likelihood_def <- Likelihood_survival$new(factor_list)
+  likelihood_def <- Likelihood$new(factor_list)
+  # # TODO: select N=A_c=0 for training, would this affect gA and gW? only gW
+  # N_data <- tmle_task$get_tmle_node("N", format = TRUE)
+  # A_c_data <- tmle_task$get_tmle_node("A_c", format = TRUE)
+  # training_indices <- which(N_data == 0 & A_c_data == 0)
+  # # training_data <- tmle_task$data[training_indices,]
+  # # TODO: check
+  # # tmle_task_training <- tmle_task$next_in_chain(data = training_data)
+  # tmle_task_training <- tmle_task[training_indices]
   likelihood <- likelihood_def$train(tmle_task)
   return(likelihood)
 }
 
-# TODO: optimize
-convert_node_name <- function(node, t_max) {
-  rs <- unlist(lapply(seq(t_max), function(i) {
-      paste(node, as.character(i), sep = "_")
-      }))
-  return(rs)
-}
+# # TODO: optimize
+# convert_node_name <- function(node, t_max) {
+#   rs <- unlist(lapply(seq(t_max), function(i) {
+#       paste(node, as.character(i), sep = "_")
+#       }))
+#   return(rs)
+# }

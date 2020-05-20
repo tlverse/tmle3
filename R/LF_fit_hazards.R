@@ -63,6 +63,29 @@ LF_fit_hazards <- R6Class(
     train = function(tmle_task, learner_fit) {
       tmle_task_training <- self$get_training_task(tmle_task)
       super$train(tmle_task_training, learner_fit)
+    },
+    get_density = function(tmle_task, fold_number) {
+      # TODO: prediction is made on all data, so is_time_variant is set to TRUE
+      learner_task <- tmle_task$get_regression_task(self$name, is_time_variant = TRUE)
+      learner <- self$learner
+      preds <- learner$predict_fold(learner_task, fold_number)
+      # TODO: remove 1 - preds
+      likelihood <- preds
+
+      # outcome_type <- self$learner$training_task$outcome_type
+      # observed <- outcome_type$format(learner_task$Y)
+      # if (outcome_type$type == "binomial") {
+      #   likelihood <- ifelse(observed == 1, preds, 1 - preds)
+      # } else if (outcome_type$type == "categorical") {
+      #   unpacked <- sl3::unpack_predictions(preds)
+      #   index_mat <- cbind(seq_along(observed), observed)
+      #   likelihood <- unpacked[index_mat]
+      # } else if (outcome_type$type == "continuous") {
+      #   likelihood <- unlist(preds)
+      # } else {
+      #   stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
+      # }
+      return(likelihood)
     }
     # delayed_train = function(tmle_task) {
     #   # just return prefit learner if that's what we have

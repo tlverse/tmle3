@@ -99,13 +99,16 @@ Param_survival <- R6Class(
       })
       return(unlist(psi))
     },
-    get_single_time_Dt = function(time, HA, pN1, pS_N1, psi, I1_mat, I2_mat, t_max) {
+    get_single_time_Dt = function(time, HA, pN1, pS_N1, psi, T_tilde_data_short, Delta_data_short, t_max) {
       n <- length(pS_N1) / t_max
       # TODO: initialize properly
       Dt <- NULL
       for (k in 1:time) {
-        temp = HA[seq(1 + (k - 1) * n, k * n), time] * 
-        (I1_mat[, k] - I2_mat[, k] * pN1[seq(1 + (k - 1) * n, k * n)])
+        # TODO: optimize I1, I2 creation
+        I1 <- ifelse(T_tilde_data_short == k & Delta_data_short == 1, 1, 0)
+        I2 <- ifelse(T_tilde_data_short >= k, 1, 0)
+        temp = HA[seq(1 + (k - 1) * n, k * n), ..time] * 
+        (I1 - I2 * pN1[seq(1 + (k - 1) * n, k * n)])
         if (is.null(Dt)) {
           Dt = temp
         } else {
@@ -115,6 +118,28 @@ Param_survival <- R6Class(
       Dt = Dt + self$get_pSN_at_time(pS_N1, time, t_max, long_format = FALSE) - psi[time]
       return(Dt)
     },
+    # get_all_Dt = function(HA, pN1, pS_N1, psi, T_tilde_data_short, Delta_data_short, t_max) {
+    #   n <- length(pS_N1) / t_max
+
+    #   all_Dt_mat <- matrix(rep(0, n * t_max), nrow = n, ncol = t_max, byrow = TRUE)
+    #   all_Dt <- as.data.frame(all_Dt_mat)
+    #   cum_sum1 <- NULL
+    #   for (t in 1:t_max) { 
+    #     I1 <- ifelse(T_tilde_data_short == t & Delta_data_short == 1, 1, 0)
+    #     I2 <- ifelse(T_tilde_data_short >= t, 1, 0)
+    #     # TODO: not work because ht differs for different t
+    #     part1 <- HA[seq(1 + (t - 1) * n, t * n), t] * 
+    #     (I1 - I2 * pN1[seq(1 + (t - 1) * n, t * n)])
+    #     part2 <- self$get_pSN_at_time(pS_N1, t, t_max, long_format = FALSE) - psi[t]
+    #     if (is.null(cum_sum1)) {
+    #       cum_sum1 <- part1
+    #     } else {
+    #       cum_sum1 = cum_sum1 + part1
+    #     }
+    #     all_Dt[, t] <- cum_sum1 + part2
+    #   }
+    #   return(all_Dt)
+    # },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
@@ -125,12 +150,30 @@ Param_survival <- R6Class(
       # TODO: return format
       HA <- self$clever_covariates(tmle_task, fold_number)
 
-      t_max <- max(tmle_task$get_tmle_node("T_tilde"))
+      T_tilde_data <- tmle_task$get_tmle_node("T_tilde")
+      Delta_data <- tmle_task$get_tmle_node("Delta")
+      t_max <- max(T_tilde_data)
+      n <- length(T_tilde_data) / t_max
+      T_tilde_data_short <- T_tilde_data[seq(n)]
+      Delta_data_short <- Delta_data[seq(n)]
+
       pN1 <- self$observed_likelihood$get_likelihoods(cf_task, "N", fold_number)
       pS_N1 <- self$hazards_to_survival(pN1, t_max)
+
       psi <- self$get_psi(pS_N1, t_max)
 
-      # TODO: create I1 and I2
+      # # TODO: create I1 and I2
+      # I1_mat <- NULL
+      # I2_mat <- NULL
+
+      # TODO: as time gets large, slow
+      all_Dt <- lapply(seq(t_max), function(time) {
+        self$get_single_time_Dt(time, HA, pN1, pS_N1, psi, T_tilde_data_short, Delta_data_short, t_max)
+      })
+      all_Dt_table <- as.data.table(all_Dt)
+
+      # TODO: return format
+      IC <- all_Dt_table
     }
   ),
   active = list(

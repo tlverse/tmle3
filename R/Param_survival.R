@@ -40,6 +40,7 @@ Param_survival <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list, ..., outcome_node) {
+      # TODO: check outcome_node, current I(T<=t, delta=1), need I(T=t, delta=1)
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
     },
@@ -91,6 +92,7 @@ Param_survival <- R6Class(
 
       # TODO: return format
       HA <- all_ht_dt
+      return(list(N = HA))
     },
     get_psi = function(pS_N1, t_max) {
       n <- length(pS_N1) / t_max
@@ -148,7 +150,7 @@ Param_survival <- R6Class(
       cf_task <- self$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
 
       # TODO: return format
-      HA <- self$clever_covariates(tmle_task, fold_number)
+      HA <- self$clever_covariates(tmle_task, fold_number)[["N"]]
 
       T_tilde_data <- tmle_task$get_tmle_node("T_tilde")
       Delta_data <- tmle_task$get_tmle_node("Delta")
@@ -174,9 +176,12 @@ Param_survival <- R6Class(
 
       # TODO: return format
       IC <- all_Dt_table
+      result <- list(psi = psi, IC = IC)
+      return(result)
     }
   ),
   active = list(
+    # TODO: modify
     name = function() {
       param_form <- sprintf("E[%s_{%s}]", self$outcome_node, self$cf_likelihood$name)
       return(param_form)

@@ -225,8 +225,10 @@ survival_tx_likelihood  <- function(tmle_task, learner_list) {
   #   learner = make_learner(Lrnr_conditional_hazards, "dA_c", Delta, T_tilde, dA_c_learner))
 
   # TODO: modify get_regression_task and LF_fit for time variance
-  N_factor <- define_lf(LF_fit_hazards, "N", learner = learner_list[["N"]], is_time_variant = TRUE)
-  A_c_factor <- define_lf(LF_fit_hazards, "A_c", learner = learner_list[["A_c"]], is_time_variant = TRUE)
+  # TODO: need bound
+  outcome_bound <- 0.025
+  N_factor <- define_lf(LF_fit_hazards, "N", learner = learner_list[["N"]], is_time_variant = TRUE, bound = outcome_bound)
+  A_c_factor <- define_lf(LF_fit_hazards, "A_c", learner = learner_list[["A_c"]], is_time_variant = TRUE, bound = outcome_bound)
 
   factor_list <- list(W_factor, A_factor, N_factor, A_c_factor)
 

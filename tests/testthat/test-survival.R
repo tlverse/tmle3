@@ -14,8 +14,9 @@ vet_data$time <- ceiling(vet_data$time/20) # make fewer times for testing
 tmax <- max(vet_data$time)
 all_times <- lapply(seq_len(tmax), function(t_current){
   vet_data_time <- copy(vet_data)
-  vet_data_time$N <- ifelse(t_current >= vet_data_time$time & vet_data_time$status == 1, 1, 0)
-  vet_data_time$A_c <- ifelse(t_current >= vet_data_time$time & vet_data_time$status == 0, 1, 0)
+  # TODO: check
+  vet_data_time$N <- ifelse(t_current == vet_data_time$time & vet_data_time$status == 1, 1, 0)
+  vet_data_time$A_c <- ifelse(t_current == vet_data_time$time & vet_data_time$status == 0, 1, 0)
   vet_data_time$t <- t_current
 
   return(vet_data_time)

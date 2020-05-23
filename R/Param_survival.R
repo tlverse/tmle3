@@ -92,6 +92,8 @@ Param_survival <- R6Class(
 
       # TODO: return format
       HA <- all_ht_dt
+      # TODO: check
+      HA <- as.matrix(HA)
       return(list(N = HA))
     },
     get_psi = function(pS_N1, t_max) {
@@ -109,7 +111,8 @@ Param_survival <- R6Class(
         # TODO: optimize I1, I2 creation
         I1 <- ifelse(T_tilde_data_short == k & Delta_data_short == 1, 1, 0)
         I2 <- ifelse(T_tilde_data_short >= k, 1, 0)
-        temp = HA[seq(1 + (k - 1) * n, k * n), ..time] * 
+        # TODO: check
+        temp = HA[seq(1 + (k - 1) * n, k * n), time] * 
         (I1 - I2 * pN1[seq(1 + (k - 1) * n, k * n)])
         if (is.null(Dt)) {
           Dt = temp
@@ -176,6 +179,7 @@ Param_survival <- R6Class(
 
       # TODO: return format
       IC <- all_Dt_table
+      IC <- as.matrix(IC)
       result <- list(psi = psi, IC = IC)
       return(result)
     }

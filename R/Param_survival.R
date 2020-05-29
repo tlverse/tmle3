@@ -44,6 +44,17 @@ Param_survival <- R6Class(
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
     },
+    reshape_long_data = function(long_data, t_max) {
+      n <- length(long_data) / t_max
+      # TODO: assume long_data is a list
+      rs <- list()
+      for (i in 1:t_max) {
+        current <- long_data[seq(1 + (i - 1) * n, i * n)]
+        rs <- c(rs, list(current))
+      }
+      rs <- do.call(cbind, rs)
+      return(rs)
+    },
     hazards_to_survival = function(p_hazards, t_max) {
       # TODO: whether change the input data format to consecutive times for each observation
       n <- length(p_hazards) / t_max

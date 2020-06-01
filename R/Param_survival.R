@@ -60,7 +60,10 @@ Param_survival <- R6Class(
       n <- length(p_hazards) / t_max
       p_surv <- copy(p_hazards)
       for (i in 1:n) {
-        p_surv[i + n * seq(0, t_max - 1)] <- cumprod(1 - p_hazards[i + n * seq(0, t_max - 1)])
+        # TODO: make hazard at starting time 0
+        temp <- p_hazards[i + n * seq(0, t_max - 1)]
+        temp <- c(0, temp)
+        p_surv[i + n * seq(0, t_max - 1)] <- cumprod(1 - temp[-length(temp)])
       }
       return(p_surv)
     },

@@ -13,14 +13,17 @@ tmle3_Spec <- R6Class(
   public = list(
     initialize = function(likelihood_override = NULL,
                               variable_types = NULL, ...) {
+      # TODO: check variable_types
       private$.options <- list(
         likelihood_override = likelihood_override,
-        variable_types = NULL, ...
+        variable_types = variable_types, ...
       )
     },
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
+
       tmle_task <- point_tx_task(data, node_list, variable_types)
+      
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {

@@ -12,11 +12,13 @@ tmle3_Spec_survival <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(treatment_level, control_level, ...) {
+    initialize = function(treatment_level, control_level, variable_types = NULL,...) {
       super$initialize(
+        # TODO: check variable types
         # TODO: support multi-level treatments and etc
         treatment_level = treatment_level,
-        control_level = control_level, ...
+        control_level = control_level, 
+        variable_types = variable_types, ...
       )
     },
     make_tmle_task = function(data, node_list, ...) {
@@ -121,6 +123,7 @@ tmle3_Spec_survival <- R6Class(
 #' @param treatment_level the level of A that corresponds to treatment
 #' @param control_level the level of A that corresponds to a control or reference level
 #' @export
-tmle_survival <- function(treatment_level, control_level) {
-  tmle3_Spec_survival$new(treatment_level, control_level)
+# TODO: check variable types
+tmle_survival <- function(treatment_level, control_level, variable_types = NULL) {
+  tmle3_Spec_survival$new(treatment_level, control_level, variable_types)
 }

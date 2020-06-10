@@ -45,6 +45,7 @@ tmle3_Update <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
+    # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                               constrain_step = FALSE, delta_epsilon = 1e-4,
                               convergence_type = c("scaled_var", "sample_size"),
@@ -360,6 +361,7 @@ tmle3_Update <- R6Class(
     .tmle_params = NULL,
     .update_nodes = NULL,
     .step_number = 0,
+    # TODO: change maxit for test
     .maxit = 100,
     .cvtmle = NULL,
     .one_dimensional = NULL,

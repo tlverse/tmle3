@@ -100,7 +100,7 @@ initial_likelihood <- likelihood
 #up <- tmle3_Update_survival$new(maxit = 2e1, clipping = 1e-2)
 up <- tmle3_Update$new(constrain_step = TRUE, one_dimensional = TRUE, 
                        delta_epsilon = 3e-2, verbose = TRUE,
-                       convergence_type = "scaled_var")
+                       convergence_type = "scaled_var", maxit = 10)
 # up <- tmle3_Update$new(verbose = TRUE)
 # debugonce(up$fit_submodel)
 # debugonce(up$generate_submodel_data)
@@ -111,6 +111,7 @@ tmle_task <- survival_task
 tmle_params <- survival_spec$make_params(survival_task, targeted_likelihood)
 
 ps <- tmle_params[[1]]
+# debugonce(ps$estimates)
 max(abs(colMeans(ps$estimates(tmle_task)$IC)))
 # HA <- ps$clever_covariates(tmle_task)$N
 

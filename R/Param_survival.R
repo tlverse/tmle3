@@ -115,19 +115,23 @@ Param_survival <- R6Class(
       T_tilde <- tmle_task$get_tmle_node("T_tilde")
       Delta <- tmle_task$get_tmle_node("Delta")
       k <- time
-      Itkd <- (T_tilde == k) & (Delta==1)
-      Itk <- (T_tilde >= k)
-      resid <- as.vector(Itkd - (Itk * pN1))
+      Ittkd <- (T_tilde == k) & (Delta==1)
+      Ittk <- (T_tilde >= k)
+      
+      resid <- as.vector(Ittkd - (Ittk * pN1))
       D1_tk <- HA*resid
-      D1_tk_dt <- data.table(id=id, k=time, D1_tk)
-      # for each id, t, sum D1_tk for k<=t
+      
+      # zero out entries that don't contribute to sum
       ts <- sort(unique(k))
-      D1_all <- lapply(ts, function(t){
-        col_name <-  names(D1_tk_dt)[t+2]
-        temp <- D1_tk_dt[k<=t,sum(.SD),by=list(id),.SDcols=col_name]
-        unlist(temp$V1)
-      })
-      D1 <- do.call(cbind,D1_all)
+      t_mat <- matrix(ts,nrow=nrow(D1_tk),ncol=ncol(D1_tk),byrow = TRUE)
+      Itk <- (k<=t_mat)
+      D1_tk <- D1_tk * Itk
+      D1_tk_dt <- data.table(id=id, k=time, D1_tk)
+      
+      # sum to IC for 1:N ids
+      D1 <- D1_tk_dt[,lapply(.SD,sum),by=list(id),.SDcols=as.character(ts)]
+      D1 <- as.matrix(D1[,-1,with=FALSE])
+    
       psi_mat <- matrix(psi,nrow=nrow(D1),ncol=ncol(D1),byrow=TRUE)
       D2 <- SN1_mat - psi_mat
       

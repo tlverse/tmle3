@@ -38,10 +38,10 @@ survival_tx_task <- function(data, node_list, make_npsem, variable_types = NULL,
 	npsem <- make_npsem(node_list, variable_types)
 
 	if (!is.null(node_list$id)) {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, ...)
-  	} else {
+    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time, ...)
+	} else {
     	tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
-  	}
+	}
 
   	return(tmle_task)
 }

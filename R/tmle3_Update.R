@@ -201,7 +201,8 @@ tmle3_Update <- R6Class(
       }
 
       if (self$verbose) {
-        cat(sprintf("epsilon: %e ", epsilon))
+        max_eps <- epsilon[which.max(abs(epsilon))]
+        cat(sprintf("(max) epsilon: %e ", max_eps))
       }
 
       return(epsilon)
@@ -272,7 +273,7 @@ tmle3_Update <- R6Class(
       ED_criterion <- abs(ED)
 
       if (self$verbose) {
-        cat(sprintf("max(abs(ED)): %e\n", ED_criterion))
+        cat(sprintf("max(abs(ED)): %e\n", max(ED_criterion)))
       }
       return(all(ED_criterion <= ED_threshold))
     },

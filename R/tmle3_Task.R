@@ -162,7 +162,7 @@ tmle3_Task <- R6Class(
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(new_data, uuid)
       new_task$initialize(
-        self$internal_data, self$npsem,
+        self$internal_data, self$npsem,nodes=self$nodes,
         column_names = new_column_names,
         folds = self$folds,
         row_index = self$row_index

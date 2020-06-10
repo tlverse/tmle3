@@ -81,6 +81,20 @@ Param_survival <- R6Class(
       ht <- -((cf_pA * I_k) / (pA * pS_A_c)) * (pS_N_time / pS_N)
       return(ht)
     },
+    get_hazard = function(tmle_task, node, fold_number){
+      oH <- tmle_task$get_tmle_node(node)
+      pH <- self$observed_likelihood$get_likelihoods(tmle_task, node, fold_number)
+      return(ifelse(oH==1,pH,1-pH))
+    },
+    long_to_mat = function(x,id, time){
+      dt <- data.table(id=id,time=time,x=as.vector(x))
+      wide <- dcast(dt, id~time, value.var="x")
+      mat <- as.matrix(wide[,-1,with=FALSE])
+      return(mat)
+    },
+    hm_to_sm = function(hm){
+      t(apply(1-hm,1,cumprod))
+    },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
@@ -91,23 +105,38 @@ Param_survival <- R6Class(
       cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       # TODO: whether modify LF_fit_hazards get_density without 1 - preds
-      pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
-      pA_c <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
+      
+      pN <- self$get_hazard(tmle_task, "N", fold_number)
+      pA_c <- self$get_hazard(tmle_task, "A_c", fold_number)
 
       t_max <- max(tmle_task$get_tmle_node("T_tilde"))
-      pS_N <- self$hazards_to_survival(pN, t_max)
-      pS_A_c <- self$hazards_to_survival(pA_c, t_max)
+      
+      time <- tmle_task$time
+      id <- tmle_task$id
+      long_order <- order(id,time)
+      
+      pA_mat <- self$long_to_mat(pA,id,time)
+      t_mat <- self$long_to_mat(time,id,time)
+      
+      cf_pA_mat <- self$long_to_mat(cf_pA,id,time)
+      pN_mat <- self$long_to_mat(pN,id,time)
+      pA_c_mat <- self$long_to_mat(pA_c,id,time)
+      SN_mat <- self$hm_to_sm(pN_mat)
+      SA_c_mat <- self$hm_to_sm(pA_c_mat)
 
-      k_list <- tmle_task$get_tmle_node("t")
-      all_ht <- lapply(seq(t_max), function(time) {
-        self$get_single_time_ht(time, pA, cf_pA, pS_N, pS_A_c, k_list, t_max)
+      ks <- sort(unique(time))
+      
+      hk_all <- lapply(ks,function(k){
+        Ikt <- k <= t_mat
+        SN_mat_k <- matrix(SN_mat[,k],nrow=nrow(t_mat),ncol=ncol(t_mat))
+        SA_c_mat_k <- matrix(SA_c_mat[,k],nrow=nrow(t_mat),ncol=ncol(t_mat))
+        hk <- -1 * ((cf_pA_mat*Ikt)/(pA_mat*SA_c_mat_k))*(SN_mat/SN_mat_k)
       })
-      all_ht_dt <- as.data.table(all_ht)
-
-      # TODO: return format
-      HA <- all_ht_dt
-      # TODO: check
-      HA <- as.matrix(HA)
+      
+      # TODO: this might need to be reordered
+      HA <- do.call(rbind, hk_all)
+      
+      
       return(list(N = HA))
     },
     get_psi = function(pS_N1, t_max) {
@@ -167,33 +196,37 @@ Param_survival <- R6Class(
       cf_task <- self$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
 
       # TODO: return format
+      # TODO: share work between this and the IC code
       HA <- self$clever_covariates(tmle_task, fold_number)[["N"]]
 
-      T_tilde_data <- tmle_task$get_tmle_node("T_tilde")
-      Delta_data <- tmle_task$get_tmle_node("Delta")
-      t_max <- max(T_tilde_data)
-      n <- length(T_tilde_data) / t_max
-      T_tilde_data_short <- T_tilde_data[seq(n)]
-      Delta_data_short <- Delta_data[seq(n)]
-
-      pN1 <- self$observed_likelihood$get_likelihoods(cf_task, "N", fold_number)
-      pS_N1 <- self$hazards_to_survival(pN1, t_max)
-
-      psi <- self$get_psi(pS_N1, t_max)
-
-      # # TODO: create I1 and I2
-      # I1_mat <- NULL
-      # I2_mat <- NULL
-
-      # TODO: as time gets large, slow
-      all_Dt <- lapply(seq(t_max), function(time) {
-        self$get_single_time_Dt(time, HA, pN1, pS_N1, psi, T_tilde_data_short, Delta_data_short, t_max)
+      time <- tmle_task$time
+      id <- tmle_task$id
+      
+      pN1 <- pN <- self$get_hazard(cf_task, "N", fold_number)
+      pN1_mat <- self$long_to_mat(pN1,id,time)
+      SN1_mat <- self$hm_to_sm(pN1_mat)
+      psi <- colMeans(SN1_mat)
+      T_tilde <- tmle_task$get_tmle_node("T_tilde")
+      Delta <- tmle_task$get_tmle_node("Delta")
+      k <- time
+      Itkd <- (T_tilde == k) & (Delta==1)
+      Itk <- (T_tilde >= k)
+      resid <- as.vector(Itkd - (Itk * pN1))
+      D1_tk <- HA*resid
+      D1_tk_dt <- data.table(id=id, k=time, D1_tk)
+      # for each id, t, sum D1_tk for k<=t
+      ts <- sort(unique(k))
+      D1_all <- lapply(ts, function(t){
+        col_name <-  names(D1_tk_dt)[t+2]
+        temp <- D1_tk_dt[k<=t,sum(.SD),by=list(id),.SDcols=col_name]
+        unlist(temp$V1)
       })
-      all_Dt_table <- as.data.table(all_Dt)
-
-      # TODO: return format
-      IC <- all_Dt_table
-      IC <- as.matrix(IC)
+      D1 <- do.call(cbind,D1_all)
+      psi_mat <- matrix(psi,nrow=nrow(D1),ncol=ncol(D1),byrow=TRUE)
+      D2 <- SN1_mat - psi_mat
+      
+      IC <- D1+D2
+      
       result <- list(psi = psi, IC = IC)
       return(result)
     }

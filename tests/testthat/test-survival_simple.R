@@ -68,16 +68,18 @@ tmax <- max(df$T.tilde)
 all_times <- lapply(seq_len(tmax), function(t_current){
   df_time <- copy(df)
   # TODO: check
-  df_time$N <- ifelse(t_current == df$T.tilde & df$Delta == 1, 1, 0)
-  df_time$A_c <- ifelse(t_current == df$T.tilde & df$Delta == 0, 1, 0)
+  df_time$N <- as.numeric(t_current == df$T.tilde & df$Delta == 1)
+  df_time$A_c <- as.numeric(t_current == df$T.tilde & df$Delta == 0)
+  df_time$after_failure <- as.numeric(t_current>df$T.tilde)
   df_time$t <- t_current
 
   return(df_time)
 })
+
 df_long <- rbindlist(all_times)
 
 node_list <- list(W = c("W", "W1"), A = "A", T_tilde = "T.tilde", Delta = "Delta", 
-  t = "t", N = "N", A_c = "A_c")
+  time = "t", t="t", N = "N", A_c = "A_c", id ="ID")
 
 # TODO: lrnr
 # lrnr_glm <- make_learner(Lrnr_glm)
@@ -94,14 +96,29 @@ likelihood <- survival_spec$make_initial_likelihood(survival_task, learner_list)
 
 initial_likelihood <- likelihood
 # TODO: check
-up <- tmle3_Update_survival$new(maxit = 2e1, clipping = 1e-2)
+#up <- tmle3_Update_survival$new(maxit = 2e1, clipping = 1e-2)
+up <- tmle3_Update$new(constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 1, verbose = TRUE)
+# up <- tmle3_Update$new(verbose = TRUE)
+# debugonce(up$fit_submodel)
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater = up)
 # targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood)
 tmle_task <- survival_task
 tmle_params <- survival_spec$make_params(survival_task, targeted_likelihood)
 
 ps <- tmle_params[[1]]
+# debugonce(ps$estimates)
+max(abs(colMeans(ps$estimates(tmle_task)$IC)))
+# HA <- ps$clever_covariates(tmle_task)$N
+
+# tlverse update process
+#debugonce(tmle_params[[1]]$clever_covariates)
+tmle_fit_manual <- fit_tmle3(
+  tmle_task, targeted_likelihood, tmle_params,
+  targeted_likelihood$updater
+)
+
 cf_task <- ps$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
+ps$estimates(cf_task)
 pN1 <- ps$observed_likelihood$get_likelihoods(cf_task, "N")
 pS_N1 <- ps$hazards_to_survival(pN1, tmax)
 r_pN1 <- reshape_long_data(pN1, tmax)
@@ -131,11 +148,8 @@ psi1_moss <- moss_hazard_l2$iterate_onestep(
   method = "l2", epsilon = 1e-2, max_num_interation = 2e1, verbose = FALSE
 )
 
-# tlverse update process
-tmle_fit_manual <- fit_tmle3(
-    tmle_task, targeted_likelihood, tmle_params,
-    targeted_likelihood$updater
-)
+
+
 rs <- tmle_fit_manual$estimates[[1]]
 psi1_tl <- rs$psi
 sum(psi1_moss - psi1_tl)

@@ -51,17 +51,16 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # verify that learners have expected covariate sets
-g_fit <-  initial_likelihood$factor_list[["A"]]$learner
+g_fit <- initial_likelihood$factor_list[["A"]]$learner
 
 test_that("g fit has a reduced covariate set", {
-  
-  expect_equal(g_fit$training_task$nodes$covariates,g_covariates)
+  expect_equal(g_fit$training_task$nodes$covariates, g_covariates)
   internal_glm_fit <- g_fit$fit_object$full_fit$fit_object$learner_fits[[1]]$fit_object$learner_fits[[2]]
-  expect_equal(names(coef(internal_glm_fit)), c('intercept', g_covariates))
+  expect_equal(names(coef(internal_glm_fit)), c("intercept", g_covariates))
 })
 
 test_that("a manually constructed g fit matches", {
-  g_task_manual <- sl3_Task$new(data, outcome=node_list$A, covariates=g_covariates, folds=tmle_task$folds)
+  g_task_manual <- sl3_Task$new(data, outcome = node_list$A, covariates = g_covariates, folds = tmle_task$folds)
   g_fit_manual <- learner_list$Y$train(g_task_manual)
   manual_preds <- g_fit_manual$predict()
   tmle_preds <- g_fit$predict()
@@ -115,8 +114,8 @@ tmle_classic_fit <- tmle(
   Delta = tmle_task$get_tmle_node("A"),
   Q = Q,
   pDelta1 = pDelta1,
-  family="binomial",
-  alpha=0.995,
+  family = "binomial",
+  alpha = 0.995,
   target.gwt = FALSE
 )
 

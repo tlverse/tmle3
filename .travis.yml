@@ -17,7 +17,6 @@ r_build_args: ''
 r_check_args: '--no-build-vignettes'
 
 r:
-  - oldrel
   - release
   - devel
 
@@ -32,13 +31,11 @@ r_packages:
   - covr
   - sessioninfo
   - origami
+  - delayed
 
 r_github_packages:
   - r-lib/sessioninfo
   - r-lib/covr
-  - osofr/simcausal
-  - osofr/condensier
-  - tlverse/delayed
   - tlverse/sl3
 
 after_success:

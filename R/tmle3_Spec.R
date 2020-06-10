@@ -13,7 +13,6 @@ tmle3_Spec <- R6Class(
   public = list(
     initialize = function(likelihood_override = NULL,
                               variable_types = NULL, ...) {
-      # TODO: check variable_types
       private$.options <- list(
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...

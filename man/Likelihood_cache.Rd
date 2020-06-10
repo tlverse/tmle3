@@ -4,11 +4,6 @@
 \name{Likelihood_cache}
 \alias{Likelihood_cache}
 \title{Cache Likelihood values, update those values}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
-\usage{
-Likelihood_cache
-}
 \description{
 Cache Likelihood values, update those values
 }
-\keyword{datasets}

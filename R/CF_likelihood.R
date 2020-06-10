@@ -24,7 +24,7 @@ CF_Likelihood <- R6Class(
   public = list(
     initialize = function(observed_likelihood, intervention_list, ...) {
       private$.observed_likelihood <- observed_likelihood
-
+      private$.training_task <- observed_likelihood$training_task
       if (inherits(intervention_list, "LF_base")) {
         intervention_list <- list(intervention_list)
       }

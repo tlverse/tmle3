@@ -28,10 +28,16 @@
     <loc>http://tlverse.org/tmle3/reference/LF_static.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/LF_targeted.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/Likelihood.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/Likelihood_cache.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/Param_ATC.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/Param_ATE.html</loc>
@@ -118,7 +124,13 @@
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_ATC.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_ATE.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_ATT.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_OR.html</loc>
@@ -145,7 +157,13 @@
     <loc>http://tlverse.org/tmle3/reference/tmle3_vim.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_ATC.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_ATE.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_ATT.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_OR.html</loc>

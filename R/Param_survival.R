@@ -133,7 +133,11 @@ Param_survival <- R6Class(
       
       IC <- D1+D2
       
-      result <- list(psi = psi, IC = IC)
+      # copy IC to make it match the observation structure
+      # TODO: consider if this is the best approach
+      IC_id <- sort(unique(id))
+      IC_long <- IC[match(id,IC_id),]
+      result <- list(psi = psi, IC = IC_long)
       return(result)
     }
   ),

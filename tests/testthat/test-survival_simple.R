@@ -99,7 +99,7 @@ initial_likelihood <- likelihood
 # TODO: check
 #up <- tmle3_Update_survival$new(maxit = 2e1, clipping = 1e-2)
 up <- tmle3_Update$new(constrain_step = TRUE, one_dimensional = TRUE, 
-                       delta_epsilon = 1e-1, verbose = TRUE,
+                       delta_epsilon = 3e-2, verbose = TRUE,
                        convergence_type = "scaled_var")
 # up <- tmle3_Update$new(verbose = TRUE)
 # debugonce(up$fit_submodel)

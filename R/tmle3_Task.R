@@ -201,13 +201,7 @@ tmle3_Task <- R6Class(
 
       
 
-      regression_task <- sl3_Task$new(
-        regression_data,
-        nodes = nodes,
-        outcome_type = target_node_object$variable_type,
-        # TODO: check folds
-        folds = new_folds
-      )
+
 
       censoring_node <- target_node_object$censoring_node
 
@@ -232,19 +226,20 @@ tmle3_Task <- R6Class(
 
       
       if (!is_time_variant) {
-        if (!is.null(time_node)) {
+        if (!is.null(self$nodes$time)) {
           time_data <- self$time
           indices <- which(time_data == 1)
           indices <- intersect(indices, which(time_data == 1))
         }
       }
       
+      folds <- self$folds
       if(length(indices)<self$nrow){
         regression_data <- regression_data[indices, ]
-        folds <- sl3::subset_folds(self$folds, indices)
+        folds <- sl3::subset_folds(folds, indices)
       }
       
-      folds <- self$folds
+      
       
       
 

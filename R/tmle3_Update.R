@@ -82,7 +82,8 @@ tmle3_Update <- R6Class(
         # get new submodel fit
         submodel_data <- self$generate_submodel_data(
           likelihood, tmle_task,
-          fold_number, update_node
+          fold_number, update_node,
+          drop_censored = TRUE
         )
 
         new_epsilon <- self$fit_submodel(submodel_data)
@@ -103,7 +104,8 @@ tmle3_Update <- R6Class(
     },
     generate_submodel_data = function(likelihood, tmle_task,
                                       fold_number = "full",
-                                      update_node = "Y") {
+                                      update_node = "Y",
+                                      drop_censored = FALSE) {
 
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
@@ -142,6 +144,16 @@ tmle3_Update <- R6Class(
       )
 
 
+      if(drop_censored){
+        censoring_node<-tmle_task$npsem[[update_node]]$censoring_node$name
+        observed_node <- tmle_task$get_tmle_node(censoring_node)
+        subset <- which(observed_node==1)
+        submodel_data <- list(
+          observed = submodel_data$observed[subset],
+          H = submodel_data$H[subset, , drop=FALSE],
+          initial = submodel_data$initial[subset]
+        )
+      }
 
       return(submodel_data)
     },
@@ -246,7 +258,7 @@ tmle3_Update <- R6Class(
       # get submodel data for all nodes
       submodel_data <- self$generate_submodel_data(
         likelihood, tmle_task,
-        fold_number, update_node
+        fold_number, update_node, drop_censored = FALSE
       )
 
       updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)

@@ -70,7 +70,7 @@ all_times <- lapply(seq_len(tmax), function(t_current){
   # TODO: check
   df_time$N <- as.numeric(t_current == df$T.tilde & df$Delta == 1)
   df_time$A_c <- as.numeric(t_current == df$T.tilde & df$Delta == 0)
-  df_time$after_failure <- as.numeric(t_current>df$T.tilde)
+  df_time$pre_failure <- as.numeric(t_current<=df$T.tilde)
   df_time$t <- t_current
 
   return(df_time)
@@ -79,7 +79,7 @@ all_times <- lapply(seq_len(tmax), function(t_current){
 df_long <- rbindlist(all_times)
 
 node_list <- list(W = c("W", "W1"), A = "A", T_tilde = "T.tilde", Delta = "Delta", 
-  time = "t", t="t", N = "N", A_c = "A_c", id ="ID")
+  time = "t", N = "N", A_c = "A_c", id ="ID", pre_failure = "pre_failure")
 
 # TODO: lrnr
 # lrnr_glm <- make_learner(Lrnr_glm)
@@ -91,27 +91,32 @@ learner_list <- list(A = lrnr_mean, N = lrnr_mean, A_c = lrnr_mean)
 var_types <- list(T_tilde = Variable_Type$new("continuous"))
 survival_spec <- tmle_survival(treatment_level = 1, control_level = 0, variable_types = var_types)
 survival_task <- survival_spec$make_tmle_task(df_long, node_list)
-
+N_task <- survival_task$get_regression_task("N",is_time_variant = TRUE, drop_censored = TRUE)
+N_task$nrow
 likelihood <- survival_spec$make_initial_likelihood(survival_task, learner_list)
 
 initial_likelihood <- likelihood
 # TODO: check
 #up <- tmle3_Update_survival$new(maxit = 2e1, clipping = 1e-2)
-up <- tmle3_Update$new(constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 1, verbose = TRUE)
+up <- tmle3_Update$new(constrain_step = TRUE, one_dimensional = TRUE, 
+                       delta_epsilon = 1e-1, verbose = TRUE,
+                       convergence_type = "scaled_var")
 # up <- tmle3_Update$new(verbose = TRUE)
 # debugonce(up$fit_submodel)
+# debugonce(up$generate_submodel_data)
+# debugonce(up$apply_submodel)
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater = up)
 # targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood)
 tmle_task <- survival_task
 tmle_params <- survival_spec$make_params(survival_task, targeted_likelihood)
 
 ps <- tmle_params[[1]]
-# debugonce(ps$estimates)
 max(abs(colMeans(ps$estimates(tmle_task)$IC)))
 # HA <- ps$clever_covariates(tmle_task)$N
 
 # tlverse update process
-#debugonce(tmle_params[[1]]$clever_covariates)
+# debugonce(tmle_params[[1]]$estimates)
+# tmle_params[[1]]$estimates(tmle_task)
 tmle_fit_manual <- fit_tmle3(
   tmle_task, targeted_likelihood, tmle_params,
   targeted_likelihood$updater

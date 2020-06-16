@@ -137,10 +137,15 @@ tmle3_Update_survival <- R6Class(
     norm_l2 = function(beta) {
       return(sqrt(sum(beta^2)))
     },
+    # TODO: check
     fit_submodel = function(submodel_data) {
       if (self$fit_method == "l2") {
-        suppressWarnings({
+        # TODO: check
+        # print("l2")
+        # mean_eic <- self$get_mean_eic(self$update_fold)
+        epsilon_n <- tryCatch({
           alpha <- 0; norm_func <- self$norm_l2; lambda.min.ratio = 1e-2
+
           ind <- 1
           while (ind == 1) {
             submodel_fit <- glmnet::glmnet(
@@ -152,60 +157,116 @@ tmle3_Update_survival <- R6Class(
               standardize = FALSE,
               intercept = FALSE,
               lambda.min.ratio = lambda.min.ratio,
-              nlambda = 2e2
+              # nlambda = 2e2
+              nlambda = 1e2
+              # TODO: check
+              # penalty.factor = 1/abs(mean_eic)
               )
-              norms <- apply(submodel_fit$beta, 2, norm_func)
-              ind <- max(which(norms <= self$clipping))
-              if (ind > 1) break
-              lambda.min.ratio <- (lambda.min.ratio + 1) / 2
+            norms <- apply(submodel_fit$beta, 2, norm_func)
+            ind <- max(which(norms <= self$clipping))
+            if (ind > 1) break
+            # TODO: check
+            # lambda.min.ratio <- (lambda.min.ratio + 1) / 2
+            lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
           }
           epsilon_n <- submodel_fit$beta[, ind]
-        })
-      } 
-        # else if (self$fluctuation_type == "standard") {
-        #   suppressWarnings({
-        #     submodel_fit <- glm(observed ~ H - 1, submodel_data,
-        #       offset = qlogis(submodel_data$initial),
-        #       family = binomial(),
-        #       start = rep(0, ncol(submodel_data$H))
-        #     )
-        #   })
-        # } else if (self$fluctuation_type == "weighted") {
-        #   if (self$one_dimensional) {
-        #     suppressWarnings({
-        #       submodel_fit <- glm(observed ~ -1, submodel_data,
-        #         offset = qlogis(submodel_data$initial),
-        #         family = binomial(),
-        #         weights = as.numeric(H),
-        #         start = rep(0, ncol(submodel_data$H))
-        #       )
-        #     })
-        #   } else {
-        #     warning(
-        #       "Updater detected `fluctuation_type='weighted'` but multi-epsilon submodel.\n",
-        #       "This is incompatible. Proceeding with `fluctuation_type='standard'`."
-        #     )
-        #     suppressWarnings({
-        #       submodel_fit <- glm(observed ~ H - 1, submodel_data,
-        #         offset = qlogis(submodel_data$initial),
-        #         family = binomial(),
-        #         start = rep(0, ncol(submodel_data$H))
-        #       )
-        #     })
-        #   }
-        # }
-      epsilon <- epsilon_n
 
+          # # TODO: check
+          # is_satisfy <- FALSE
+          # while (!is_satisfy) {
+          #   submodel_fit <- glmnet::cv.glmnet(
+          #     x = submodel_data$H,
+          #     y = submodel_data$observed,
+          #     offset = qlogis(submodel_data$initial),
+          #     family = "binomial",
+          #     alpha = alpha,
+          #     # TODO: check
+          #     # standardize = FALSE,
+          #     intercept = FALSE,
+          #     lambda.min.ratio = lambda.min.ratio
+          #     # nlambda = 2e2
+          #     # nlambda = 1e2
+          #     # TODO: check
+          #     # penalty.factor = 1/abs(mean_eic)
+          #     )
+          #   beta_best <- coef(submodel_fit, s = "lambda.1se")
+          #   if (norm_func(beta_best) < clipping) {
+          #     is_satisfy <- TRUE
+          #     break
+          #   }
+          #   # TODO: check
+          #   lambda.min.ratio <- lambda.min.ratio + clipping
+          # }
+          # epsilon_n <- beta_best
+        }, error = function(e) {
+          # TODO: check
+          print(e)
+          return(rep(0, ncol(submodel_data$H)))
+        })
+        epsilon <- epsilon_n
         # TODO: check if necessary
         # NOTE: this protects against collinear covariates
         # (which we don't care about, we just want an update)
-      epsilon[is.na(epsilon)] <- 0
+        epsilon[is.na(epsilon)] <- 0
 
-      if (self$verbose) {
-        cat(sprintf("epsilon: %e ", epsilon))
-      }
-
+        if (self$verbose) {
+          cat(sprintf("epsilon: %e ", epsilon))
+        }
+      } else {
+        # TODO: check
+        # print("classic")
+        epsilon <- super$fit_submodel(submodel_data)
+      } 
+    
       return(epsilon)
+    },
+    # TODO: check
+    get_mean_eic = function(update_fold) {
+      estimates <- lapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(tmle_task, fold_number = update_fold)
+        }
+      )
+      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
+      mean_eic <- colMeans(IC)
+      return(mean_eic)
+    },
+    get_mean_eic_inner_prod = function(update_fold, tmle_task) {
+      estimates <- lapply(
+        self$tmle_params,
+        function(tmle_param) {
+          tmle_param$estimates(tmle_task, fold_number = update_fold)
+        }
+      )
+      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
+      mean_eic <- colMeans(IC)
+      return(abs(sqrt(sum(mean_eic ^ 2))))
+    },
+    update = function(likelihood, tmle_task) {
+      update_fold <- self$update_fold
+      maxit <- private$.maxit
+      # TODO: check
+      eic_list <- c(self$get_mean_eic_inner_prod(update_fold, tmle_task))
+      count <- 0
+      tol <- 0
+      for (steps in seq_len(maxit)) {
+        self$update_step(likelihood, tmle_task, update_fold)
+        # if (self$check_convergence(tmle_task, update_fold)) {
+        #   break
+        # }
+        # TODO: check
+        mean_eic_inner_prod_current <- self$get_mean_eic_inner_prod(update_fold, tmle_task)
+        if (mean_eic_inner_prod_current >= tail(eic_list, n=1)) {
+          count = count + 1
+          if (count > tol) {
+            break
+          }
+        }
+        eic_list <- c(eic_list, mean_eic_inner_prod_current)
+      }
+      # TODO: check
+      return(eic_list)
     }
     # fit_submodels = function(all_submodels) {
     #   all_epsilon <- lapply(all_submodels, self$fit_submodel)

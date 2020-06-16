@@ -9,3 +9,6 @@ vignettes/*.html
 # macOS files
 .DS_Store
 inst/doc
+
+# meld merge history
+.orig

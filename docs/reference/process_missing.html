@@ -79,7 +79,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -127,8 +127,13 @@
     <p>Process data to account for missingness in preparation for TMLE</p>
     </div>
 
-    <pre class="usage"><span class='fu'>process_missing</span>(<span class='no'>data</span>, <span class='no'>node_list</span>, <span class='kw'>complete_nodes</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"A"</span>, <span class='st'>"Y"</span>),
-  <span class='kw'>impute_nodes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>max_p_missing</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</pre>
+    <pre class="usage"><span class='fu'>process_missing</span>(
+  <span class='no'>data</span>,
+  <span class='no'>node_list</span>,
+  <span class='kw'>complete_nodes</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"A"</span>, <span class='st'>"Y"</span>),
+  <span class='kw'>impute_nodes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>max_p_missing</span> <span class='kw'>=</span> <span class='fl'>0.5</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

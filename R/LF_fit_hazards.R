@@ -48,10 +48,12 @@ LF_fit_hazards <- R6Class(
       T_tilde_data <- tmle_task$get_tmle_node("T_tilde", format = TRUE)
       Delta_data <- tmle_task$get_tmle_node("Delta", format = TRUE)
 
-      N_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 1, 1, 0)
-      A_c_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 0, 1, 0)
-
-      training_indices <- which(N_data_prev == 0 & A_c_data_prev == 0)
+      # N_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 1, 1, 0)
+      # A_c_data_prev <- ifelse(t_data - 1 >= T_tilde_data & Delta_data == 0, 1, 0)
+      
+      # TODO: this might get done by missing outcome code, if so don't need to repeat here
+      not_yet_failed <- t_data<=T_tilde_data
+      training_indices <- which(not_yet_failed)
       # TODO: check
       tmle_task_training <- tmle_task[training_indices]
       return(tmle_task_training)
@@ -70,22 +72,9 @@ LF_fit_hazards <- R6Class(
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
       # TODO: remove 1 - preds
-      likelihood <- preds
-
-      # outcome_type <- self$learner$training_task$outcome_type
-      # observed <- outcome_type$format(learner_task$Y)
-      # if (outcome_type$type == "binomial") {
-      #   likelihood <- ifelse(observed == 1, preds, 1 - preds)
-      # } else if (outcome_type$type == "categorical") {
-      #   unpacked <- sl3::unpack_predictions(preds)
-      #   index_mat <- cbind(seq_along(observed), observed)
-      #   likelihood <- unpacked[index_mat]
-      # } else if (outcome_type$type == "continuous") {
-      #   likelihood <- unlist(preds)
-      # } else {
-      #   stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
-      # }
-      return(likelihood)
+      outcome_type <- self$learner$training_task$outcome_type
+      observed <- outcome_type$format(learner_task$Y)
+      likelihood <- ifelse(observed == 1, preds, 1 - preds)
     }
     # delayed_train = function(tmle_task) {
     #   # just return prefit learner if that's what we have

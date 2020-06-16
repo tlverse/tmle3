@@ -81,7 +81,7 @@ constructed." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -131,9 +131,7 @@ about the fitting procedure. TMLE updates are calculated when the object is
 constructed.</p>
     </div>
 
-    <pre class="usage"><span class='no'>tmle3_Fit</span>
-
-<span class='fu'>fit_tmle3</span>(<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>fit_tmle3</span>(<span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -155,15 +153,15 @@ Constructor.</p></td>
 
     
 
-<p><code>fit_tmle3(tmle_task, likelihood, tmle_params, updater, max_it=100, ...)</code></p>                     
-<p></p><dl class='dl-horizontal'>
-    <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
-    <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
-    <dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
-    <dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
-    <dt><code>maxit</code></dt><dd><p>integer, maximum number of TMLE iterations</p></dd>
-    <dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
-    
+<p><code>fit_tmle3(tmle_task, likelihood, tmle_params, updater, max_it=100, ...)</code></p>
+<dl class='dl-horizontal'>
+<dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
+<dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
+<dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
+<dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
+<dt><code>maxit</code></dt><dd><p>integer, maximum number of TMLE iterations</p></dd>
+<dt><code>...</code></dt><dd><p>Not currently used.</p></dd>
+
 </dl>
 
     <h2 class="hasAnchor" id="methods"><a class="anchor" href="#methods"></a>Methods</h2>
@@ -172,13 +170,13 @@ Constructor.</p></td>
 
 
 <dl class='dl-horizontal'>
-<dt><code>set_timings(start_time, task_time, likelihood_time, params_time, fit_time)</code></dt><dd><p>Provide the timings for the different steps of the TMLE procedure, for later reporting to the user  <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
+<dt><code>set_timings(start_time, task_time, likelihood_time, params_time, fit_time)</code></dt><dd><p>Provide the timings for the different steps of the TMLE procedure, for later reporting to the user<ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for.
+If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
-<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.  <ul>
-<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for. 
-    If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
+<dt><code>estimates(tmle_task = NULL)</code></dt><dd><p>Get the parameter estimates and influence curve values.<ul>
+<li><p><code>tmle_task</code>: <code><a href='tmle3_Task.html'>tmle3_Task</a></code> to get clever covariate values for.
+If NULL, the <code>tmle_task</code> used to train the <code>observed likelihood will be used</code></p></li>
 </ul></p></dd>
 
 </dl>
@@ -188,27 +186,32 @@ Constructor.</p></td>
     
 
 <dl class='dl-horizontal'>
-    <dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
-    <dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
-    <dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
-    <dt><code>tmle_names</code></dt><dd><p>A list of parameter names, obtained by calling <code>param$name</code> on each parameter</p></dd>
-    <dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
-    <dt><code>steps</code></dt><dd><p>integer, he number of steps until TMLE converged</p></dd>
-    <dt><code>ED</code></dt><dd><p>vector, the mean of the EIF for all the parameters</p></dd>
-    <dt><code>initial_psi</code></dt><dd><p>vector, the initial parameter estimates</p></dd>
-    <dt><code>estimates</code></dt><dd><p>list, final parameter estimates and ICs</p></dd>
-    <dt><code>summary</code></dt><dd><p>data.table, summary of results</p></dd>
-    <dt><code>timings</code></dt><dd><p>data.frame, timings for each step (provided by <code>tmle3_Fit$set_timings</code>)</p></dd>
+<dt><code>tmle_task</code></dt><dd><p>A <code><a href='tmle3_Task.html'>tmle3_Task</a></code> object defining the data and NP-SEM</p></dd>
+<dt><code>likelihood</code></dt><dd><p>A <code><a href='Likelihood.html'>Likelihood</a></code> object defining the factorized likelihood</p></dd>
+<dt><code>tmle_params</code></dt><dd><p>A list of parameters inheriting from <code><a href='Param_base.html'>Param_base</a></code> defining the parameter(s) of interest</p></dd>
+<dt><code>tmle_names</code></dt><dd><p>A list of parameter names, obtained by calling <code>param$name</code> on each parameter</p></dd>
+<dt><code>updater</code></dt><dd><p>A <code><a href='tmle3_Update.html'>tmle3_Update</a></code> object defining the update procedure, including submodel and loss function</p></dd>
+<dt><code>steps</code></dt><dd><p>integer, he number of steps until TMLE converged</p></dd>
+<dt><code>ED</code></dt><dd><p>vector, the mean of the EIF for all the parameters</p></dd>
+<dt><code>initial_psi</code></dt><dd><p>vector, the initial parameter estimates</p></dd>
+<dt><code>estimates</code></dt><dd><p>list, final parameter estimates and ICs</p></dd>
+<dt><code>summary</code></dt><dd><p>data.table, summary of results</p></dd>
+<dt><code>timings</code></dt><dd><p>data.frame, timings for each step (provided by <code>tmle3_Fit$set_timings</code>)</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Parameters: <code><a href='Param_ATE.html'>Param_ATE</a></code>,
-  <code><a href='Param_ATT.html'>Param_ATT</a></code>, <code><a href='Param_TSM.html'>Param_TSM</a></code>,
-  <code><a href='Param_base.html'>Param_base</a></code>, <code><a href='Param_delta.html'>Param_delta</a></code>,
-  <code><a href='Param_mean.html'>Param_mean</a></code>, <code><a href='Param_stratified.html'>Param_stratified</a></code>,
-  <code><a href='define_param.html'>define_param</a></code></p></div>
+    <div class='dont-index'><p>Other Parameters: 
+<code><a href='Param_ATC.html'>Param_ATC</a></code>,
+<code><a href='Param_ATE.html'>Param_ATE</a></code>,
+<code><a href='Param_ATT.html'>Param_ATT</a></code>,
+<code><a href='Param_TSM.html'>Param_TSM</a></code>,
+<code><a href='Param_base.html'>Param_base</a></code>,
+<code><a href='Param_delta.html'>Param_delta</a></code>,
+<code><a href='Param_mean.html'>Param_mean</a></code>,
+<code><a href='Param_stratified.html'>Param_stratified</a></code>,
+<code><a href='define_param.html'>define_param</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

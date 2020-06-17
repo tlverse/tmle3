@@ -56,7 +56,7 @@ Param_survival <- R6Class(
       # sm <- matrix(NA, nrow = nrow(temp), ncol = ncol(temp))
       # sm[, 1] <- 1
       # sm[, seq(2, ncol(temp))] <- temp[, seq(1, ncol(temp) - 1)]
-      sm <- temp
+      sm <- cbind(1,temp[,-ncol(temp)])
       return(sm)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {

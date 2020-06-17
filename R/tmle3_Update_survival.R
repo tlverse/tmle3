@@ -50,6 +50,7 @@ tmle3_Update_survival <- R6Class(
                               constrain_step = FALSE, delta_epsilon = 1e-4,
                               convergence_type = c("scaled_var", "sample_size"),
                               fluctuation_type = c("standard", "weighted"),
+                              use_best = FALSE,
                               verbose = FALSE,
                               fit_method = "l2",
                               clipping = 1e0) {
@@ -57,6 +58,7 @@ tmle3_Update_survival <- R6Class(
                               constrain_step , delta_epsilon,
                               convergence_type,
                               fluctuation_type,
+                              use_best,
                               verbose)
      private$.fit_method <- fit_method
      private$.clipping <- clipping
@@ -242,32 +244,32 @@ tmle3_Update_survival <- R6Class(
       IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
       mean_eic <- colMeans(IC)
       return(abs(sqrt(sum(mean_eic ^ 2))))
-    },
-    update = function(likelihood, tmle_task) {
-      update_fold <- self$update_fold
-      maxit <- private$.maxit
-      # TODO: check
-      eic_list <- c(self$get_mean_eic_inner_prod(update_fold, tmle_task))
-      count <- 0
-      tol <- 0
-      for (steps in seq_len(maxit)) {
-        self$update_step(likelihood, tmle_task, update_fold)
-        # if (self$check_convergence(tmle_task, update_fold)) {
-        #   break
-        # }
-        # TODO: check
-        mean_eic_inner_prod_current <- self$get_mean_eic_inner_prod(update_fold, tmle_task)
-        if (mean_eic_inner_prod_current >= tail(eic_list, n=1)) {
-          count = count + 1
-          if (count > tol) {
-            break
-          }
-        }
-        eic_list <- c(eic_list, mean_eic_inner_prod_current)
-      }
-      # TODO: check
-      return(eic_list)
     }
+    # update = function(likelihood, tmle_task) {
+    #   update_fold <- self$update_fold
+    #   maxit <- private$.maxit
+    #   # TODO: check
+    #   eic_list <- c(self$get_mean_eic_inner_prod(update_fold, tmle_task))
+    #   count <- 0
+    #   tol <- 0
+    #   for (steps in seq_len(maxit)) {
+    #     self$update_step(likelihood, tmle_task, update_fold)
+    #     # if (self$check_convergence(tmle_task, update_fold)) {
+    #     #   break
+    #     # }
+    #     # TODO: check
+    #     mean_eic_inner_prod_current <- self$get_mean_eic_inner_prod(update_fold, tmle_task)
+    #     if (mean_eic_inner_prod_current >= tail(eic_list, n=1)) {
+    #       count = count + 1
+    #       if (count > tol) {
+    #         break
+    #       }
+    #     }
+    #     eic_list <- c(eic_list, mean_eic_inner_prod_current)
+    #   }
+    #   # TODO: check
+    #   return(eic_list)
+    # }
     # fit_submodels = function(all_submodels) {
     #   all_epsilon <- lapply(all_submodels, self$fit_submodel)
 

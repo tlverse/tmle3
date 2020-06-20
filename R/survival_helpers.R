@@ -23,8 +23,9 @@ survival_tx_npsem <- function(node_list, variable_types = NULL) {
     define_node("T_tilde", node_list$T_tilde, c("A", "W"), variable_type = variable_types$T_tilde),
     define_node("Delta", node_list$Delta, variable_type = variable_types$Delta),
 		censoring,
-    define_node("N", node_list$N, c("A", "W", "t"), variable_type = variable_types$N, censoring_node=censoring),
-    define_node("A_c", node_list$A_c, c("A", "W", "t"), variable_type = variable_types$A_c, censoring_node=censoring)   
+    # TODO: remove t parent, handle in get_regression
+    define_node("N", node_list$N, c("A", "W"), variable_type = variable_types$N, censoring_node=censoring),
+    define_node("A_c", node_list$A_c, c("A", "W"), variable_type = variable_types$A_c, censoring_node=censoring)   
 		)
 
 	return(npsem)
@@ -67,13 +68,19 @@ survival_tx_likelihood  <- function(tmle_task, learner_list) {
   A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], bound = A_bound)
 
   # TODO: modify get_regression_task and LF_fit for time variance
-  # TODO: need bound
+  # TODO: whether need bound
   outcome_bound <- 0.025
+  # N_factor <- define_lf(LF_fit, "N", learner = learner_list[["N"]], 
+  #                       is_time_variant = TRUE, bound = outcome_bound,
+  #                       type = "mean")
+  # A_c_factor <- define_lf(LF_fit, "A_c", learner = learner_list[["A_c"]], 
+  #                         is_time_variant = TRUE, bound = outcome_bound,
+  #                         type = "mean")
   N_factor <- define_lf(LF_fit, "N", learner = learner_list[["N"]], 
-                        is_time_variant = TRUE, bound = outcome_bound,
+                        is_time_variant = TRUE,
                         type = "mean")
   A_c_factor <- define_lf(LF_fit, "A_c", learner = learner_list[["A_c"]], 
-                          is_time_variant = TRUE, bound = outcome_bound,
+                          is_time_variant = TRUE,
                           type = "mean")
 
   factor_list <- list(W_factor, A_factor, N_factor, A_c_factor)

@@ -186,7 +186,13 @@ tmle3_Task <- R6Class(
       all_covariate_data <- lapply(parent_names, self$get_tmle_node, format = TRUE)
 
       outcome <- target_node_object$variables
-      covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
+      # TODO: check
+      cov_nodes <- parent_nodes
+      if (is_time_variant) {
+        time_node <- define_node("time", "t", c())
+        cov_nodes$time <- time_node
+      }
+      covariates <- unlist(lapply(cov_nodes, `[[`, "variables"))
 
 
 

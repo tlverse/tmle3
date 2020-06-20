@@ -172,34 +172,6 @@ tmle3_Update_survival <- R6Class(
             lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
           }
           epsilon_n <- submodel_fit$beta[, ind]
-
-          # # TODO: check
-          # is_satisfy <- FALSE
-          # while (!is_satisfy) {
-          #   submodel_fit <- glmnet::cv.glmnet(
-          #     x = submodel_data$H,
-          #     y = submodel_data$observed,
-          #     offset = qlogis(submodel_data$initial),
-          #     family = "binomial",
-          #     alpha = alpha,
-          #     # TODO: check
-          #     # standardize = FALSE,
-          #     intercept = FALSE,
-          #     lambda.min.ratio = lambda.min.ratio
-          #     # nlambda = 2e2
-          #     # nlambda = 1e2
-          #     # TODO: check
-          #     # penalty.factor = 1/abs(mean_eic)
-          #     )
-          #   beta_best <- coef(submodel_fit, s = "lambda.1se")
-          #   if (norm_func(beta_best) < clipping) {
-          #     is_satisfy <- TRUE
-          #     break
-          #   }
-          #   # TODO: check
-          #   lambda.min.ratio <- lambda.min.ratio + clipping
-          # }
-          # epsilon_n <- beta_best
         }, error = function(e) {
           # TODO: check
           print(e)

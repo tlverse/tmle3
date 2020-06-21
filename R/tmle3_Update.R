@@ -284,15 +284,16 @@ tmle3_Update <- R6Class(
     check_convergence = function(tmle_task, fold_number = "full") {
       estimates <- self$current_estimates
 
+      n <- length(unique(tmle_task$id))
       if (self$convergence_type == "scaled_var") {
         # NOTE: the point of this criterion is to avoid targeting in an overly
         #       aggressive manner, as we simply need check that the following
         #       condition is met |P_n D*| / SE(D*) =< max(1/log(n), 1/10)
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
-        se_Dstar <- sqrt(apply(IC, 2, var) / tmle_task$nrow)
-        ED_threshold <- se_Dstar / min(log(tmle_task$nrow), 10)
+        se_Dstar <- sqrt(apply(IC, 2, var) / n)
+        ED_threshold <- se_Dstar / min(log(n), 10)
       } else if (self$convergence_type == "sample_size") {
-        ED_threshold <- 1 / tmle_task$nrow
+        ED_threshold <- 1 / n
       }
 
       # get |P_n D*| of any number of parameter estimates

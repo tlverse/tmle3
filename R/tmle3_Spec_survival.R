@@ -45,7 +45,7 @@ tmle3_Spec_survival <- R6Class(
 
       # TODO: currently support treatment specific
       param_surv <- Param_survival$new(likelihood, treatment, 
-                                       target_times = self$optiosn$target_times, 
+                                       target_times = self$options$target_times, 
                                        outcome_node = "N")
       tmle_params <- list(param_surv)
       return(tmle_params)

@@ -167,9 +167,18 @@ tmle3_Update_survival <- R6Class(
             norms <- apply(submodel_fit$beta, 2, norm_func)
             ind <- max(which(norms <= self$clipping))
             if (ind > 1) break
-            # TODO: check
-            # lambda.min.ratio <- (lambda.min.ratio + 1) / 2
-            lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
+            
+            fit_lambda <- submodel_fit$lambda
+            
+            if(fit_lambda==1){
+              stop("only one lambda could be fit")
+            }
+            
+            # try to estimate what the correct lambda value is and go a bit beyond that
+            norm_ratio <- self$clipping/norms[2]
+            lambda_guess <- fit_lambda[1]-norm_ratio*(fit_lambda[1]-fit_lambda[2])
+            lambda_min_ratio <- 0.8*lambda_guess/fit_lambda[1]
+            # lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
           }
           epsilon_n <- submodel_fit$beta[, ind]
         }, error = function(e) {

@@ -102,7 +102,7 @@ tmle3_Update <- R6Class(
           # update full fit likelihoods if we haven't already
           likelihood$update(new_epsilon, self$step_number, "full", update_node)
         }
-
+        
         private$.epsilons[[current_step]][[update_node]] <- new_epsilon
       }
 
@@ -124,10 +124,7 @@ tmle3_Update <- R6Class(
 
       if (self$one_dimensional) {
         observed_task <- likelihood$training_task
-        estimates <- lapply(self$tmle_params, function(tmle_param) {
-          tmle_param$estimates(observed_task, fold_number)
-        })
-        covariates_dt <- self$collapse_covariates(estimates, covariates_dt)
+        covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       }
 
       observed <- tmle_task$get_tmle_node(update_node)
@@ -273,7 +270,7 @@ tmle3_Update <- R6Class(
       updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
 
       if(any(!is.finite(updated_likelihood))){
-        stop("Likelihood was updated to containe non-finite values.\n
+        stop("Likelihood was updated to contain non-finite values.\n
              This is likely a result of unbounded likelihood factors")
       }
       # un-scale to handle bounded continuous
@@ -285,12 +282,7 @@ tmle3_Update <- R6Class(
       return(updated_likelihood)
     },
     check_convergence = function(tmle_task, fold_number = "full") {
-      estimates <- lapply(
-        self$tmle_params,
-        function(tmle_param) {
-          tmle_param$estimates(tmle_task, fold_number = fold_number)
-        }
-      )
+      estimates <- self$current_estimates
 
       if (self$convergence_type == "scaled_var") {
         # NOTE: the point of this criterion is to avoid targeting in an overly
@@ -333,8 +325,19 @@ tmle3_Update <- R6Class(
     update = function(likelihood, tmle_task) {
       update_fold <- self$update_fold
       maxit <- private$.maxit
+      
+      # seed current estimates
+      private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
+        tmle_param$estimates(tmle_task, update_fold)
+      })
+      
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
+        
+        # update estimates based on updated likelihood
+        private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
+          tmle_param$estimates(tmle_task, update_fold)
+        })
         
         if (self$check_convergence(tmle_task, update_fold)) {
           break
@@ -427,6 +430,9 @@ tmle3_Update <- R6Class(
     },
     verbose = function() {
       return(private$.verbose)
+    },
+    current_estimates = function(){
+      return(private$.current_estimates)
     }
   ),
   private = list(
@@ -446,6 +452,7 @@ tmle3_Update <- R6Class(
     .convergence_type = NULL,
     .fluctuation_type = NULL,
     .use_best = NULL,
-    .verbose = FALSE
+    .verbose = FALSE,
+    .current_estimates = NULL
   )
 )

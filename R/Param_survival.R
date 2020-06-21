@@ -54,7 +54,7 @@ Param_survival <- R6Class(
     hm_to_sm = function(hm){
       # TODO: check
       sm <- t(apply(1-hm,1,cumprod))
-      # sm <- cbind(1,sm[,-ncol(sm)])
+      sm <- cbind(1,sm[,-ncol(sm)])
       return(sm)
     },
     clever_covariates_internal = function(tmle_task = NULL, fold_number = "full", subset_times = FALSE) {
@@ -73,6 +73,8 @@ Param_survival <- R6Class(
       
       pA_c <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
 
+      
+      
       time <- tmle_task$time
       id <- tmle_task$id
       long_order <- order(id,time)

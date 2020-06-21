@@ -188,10 +188,6 @@ tmle3_Task <- R6Class(
       outcome <- target_node_object$variables
       # TODO: check
       cov_nodes <- parent_nodes
-      if (is_time_variant) {
-        time_node <- define_node("time", "t", c())
-        cov_nodes$time <- time_node
-      }
       covariates <- unlist(lapply(cov_nodes, `[[`, "variables"))
 
 
@@ -203,11 +199,11 @@ tmle3_Task <- R6Class(
 
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
-
-
       
-
-
+      if (is_time_variant) {
+        regression_data$time <- self$time
+        nodes$covariates <- c(nodes$covariates, "time")
+      }
 
       censoring_node <- target_node_object$censoring_node
 

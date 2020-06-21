@@ -70,18 +70,18 @@ survival_tx_likelihood  <- function(tmle_task, learner_list) {
   # TODO: modify get_regression_task and LF_fit for time variance
   # TODO: whether need bound
   outcome_bound <- 0.025
+  N_factor <- define_lf(LF_fit, "N", learner = learner_list[["N"]],
+                        is_time_variant = TRUE, bound = outcome_bound,
+                        type = "mean")
+  A_c_factor <- define_lf(LF_fit, "A_c", learner = learner_list[["A_c"]],
+                          is_time_variant = TRUE, bound = outcome_bound,
+                          type = "mean")
   # N_factor <- define_lf(LF_fit, "N", learner = learner_list[["N"]], 
-  #                       is_time_variant = TRUE, bound = outcome_bound,
+  #                       is_time_variant = TRUE,
   #                       type = "mean")
   # A_c_factor <- define_lf(LF_fit, "A_c", learner = learner_list[["A_c"]], 
-  #                         is_time_variant = TRUE, bound = outcome_bound,
+  #                         is_time_variant = TRUE,
   #                         type = "mean")
-  N_factor <- define_lf(LF_fit, "N", learner = learner_list[["N"]], 
-                        is_time_variant = TRUE,
-                        type = "mean")
-  A_c_factor <- define_lf(LF_fit, "A_c", learner = learner_list[["A_c"]], 
-                          is_time_variant = TRUE,
-                          type = "mean")
 
   factor_list <- list(W_factor, A_factor, N_factor, A_c_factor)
 

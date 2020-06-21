@@ -39,10 +39,11 @@ Param_survival <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, intervention_list, ..., outcome_node) {
+    initialize = function(observed_likelihood, intervention_list, ..., outcome_node, target_times = NULL) {
       # TODO: check outcome_node, current I(T<=t, delta=1), need I(T=t, delta=1)
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
+      private$.target_times <- target_times
     },
     long_to_mat = function(x,id, time){
       dt <- data.table(id=id,time=time,x=as.vector(x))
@@ -52,14 +53,11 @@ Param_survival <- R6Class(
     },
     hm_to_sm = function(hm){
       # TODO: check
-      temp <- t(apply(1-hm,1,cumprod))
-      # sm <- matrix(NA, nrow = nrow(temp), ncol = ncol(temp))
-      # sm[, 1] <- 1
-      # sm[, seq(2, ncol(temp))] <- temp[, seq(1, ncol(temp) - 1)]
-      sm <- cbind(1,temp[,-ncol(temp)])
+      sm <- t(apply(1-hm,1,cumprod))
+      # sm <- cbind(1,sm[,-ncol(sm)])
       return(sm)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
+    clever_covariates_internal = function(tmle_task = NULL, fold_number = "full", subset_times = FALSE) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -69,6 +67,10 @@ Param_survival <- R6Class(
       cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
 
       pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
+      # TODO: make bound configurable
+      pN <- bound(pN, 0.005)
+      
+      
       pA_c <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
 
       time <- tmle_task$time
@@ -96,10 +98,14 @@ Param_survival <- R6Class(
       # TODO: this might need to be reordered
       HA <- do.call(rbind, hk_all)
       
-      
+      if(subset_times & !is.null(self$target_times)){
+        HA[,!(ks%in%self$target_times)] = 0
+      }
       return(list(N = HA))
     },
-
+    clever_covariates = function(tmle_task, fold_number = "full"){
+      self$clever_covariates_internal(tmle_task, fold_number, subset_times = TRUE)
+    },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
@@ -109,12 +115,15 @@ Param_survival <- R6Class(
 
       # TODO: return format
       # TODO: share work between this and the IC code
-      HA <- self$clever_covariates(tmle_task, fold_number)[["N"]]
+      HA <- self$clever_covariates_internal(tmle_task, fold_number, subset_times = FALSE)[["N"]]
 
       time <- tmle_task$time
       id <- tmle_task$id
       
       pN1 <-self$observed_likelihood$get_likelihoods(cf_task, "N", fold_number)
+      
+      # TODO: make bound configurable
+      pN1 <- bound(pN1, 0.005)
       pN1_mat <- self$long_to_mat(pN1,id,time)
       SN1_mat <- self$hm_to_sm(pN1_mat)
       psi <- colMeans(SN1_mat)
@@ -165,11 +174,15 @@ Param_survival <- R6Class(
     },
     update_nodes = function() {
       return(self$outcome_node)
+    },
+    target_times = function() {
+      return(private$.target_times)
     }
   ),
   private = list(
     .type = "survival",
     .cf_likelihood = NULL,
-    .supports_outcome_censoring = TRUE
+    .supports_outcome_censoring = TRUE,
+    .target_times = NULL
   )
 )

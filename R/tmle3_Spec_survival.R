@@ -12,13 +12,15 @@ tmle3_Spec_survival <- R6Class(
   class = TRUE,
   inherit = tmle3_Spec,
   public = list(
-    initialize = function(treatment_level, control_level, variable_types = NULL,...) {
+    initialize = function(treatment_level, control_level, target_times = NULL, variable_types = NULL,...) {
       super$initialize(
         # TODO: check variable types
         # TODO: support multi-level treatments and etc
         treatment_level = treatment_level,
         control_level = control_level, 
-        variable_types = variable_types, ...
+        variable_types = variable_types, 
+        target_times = target_times, 
+        ...
       )
     },
     make_tmle_task = function(data, node_list, ...) {
@@ -42,7 +44,9 @@ tmle3_Spec_survival <- R6Class(
       control <- define_lf(LF_static, "A", value = control_value)
 
       # TODO: currently support treatment specific
-      param_surv <- Param_survival$new(likelihood, treatment, outcome_node = "N")
+      param_surv <- Param_survival$new(likelihood, treatment, 
+                                       target_times = self$optiosn$target_times, 
+                                       outcome_node = "N")
       tmle_params <- list(param_surv)
       return(tmle_params)
     }
@@ -57,6 +61,6 @@ tmle3_Spec_survival <- R6Class(
 #' @param control_level the level of A that corresponds to a control or reference level
 #' @export
 # TODO: check variable types
-tmle_survival <- function(treatment_level, control_level, variable_types = NULL) {
-  tmle3_Spec_survival$new(treatment_level, control_level, variable_types)
+tmle_survival <- function(treatment_level, control_level, target_times = NULL, variable_types = NULL) {
+  tmle3_Spec_survival$new(treatment_level, control_level, target_times, variable_types)
 }

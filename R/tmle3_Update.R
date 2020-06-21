@@ -272,6 +272,10 @@ tmle3_Update <- R6Class(
 
       updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
 
+      if(any(!is.finite(updated_likelihood))){
+        stop("Likelihood was updated to containe non-finite values.\n
+             This is likely a result of unbounded likelihood factors")
+      }
       # un-scale to handle bounded continuous
       updated_likelihood <- tmle_task$unscale(
         updated_likelihood,

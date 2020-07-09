@@ -165,7 +165,7 @@ Param_survival <- R6Class(
   active = list(
     # TODO: modify
     name = function() {
-      param_form <- sprintf("E[%s_{%s}]", self$outcome_node, self$cf_likelihood$name)
+      param_form <- sprintf("E[P(T>t|%s, W)]", self$cf_likelihood$name)
       return(param_form)
     },
     cf_likelihood = function() {

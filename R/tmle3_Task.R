@@ -200,7 +200,7 @@ tmle3_Task <- R6Class(
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
       
-      if (is_time_variant) {
+      if ((is_time_variant) && (!is.null(self$nodes$time))){
         regression_data$time <- self$time
         nodes$covariates <- c(nodes$covariates, "time")
       }
@@ -227,12 +227,10 @@ tmle3_Task <- R6Class(
       
 
       
-      if (!is_time_variant) {
-        if (!is.null(self$nodes$time)) {
-          time_data <- self$time
-          indices <- which(time_data == 1)
-          indices <- intersect(indices, which(time_data == 1))
-        }
+      if ((!is_time_variant) && (!is.null(self$nodes$time))){
+        time_data <- self$time
+        indices <- which(time_data == 1)
+        indices <- intersect(indices, which(time_data == 1))
       }
       
       folds <- self$folds

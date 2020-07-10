@@ -7,7 +7,7 @@ library(assertthat)
 library(data.table)
 library(future)
 # setup data for test
-tmle3_Fit$debug(".tmle_fit")
+# tmle3_Fit$debug(".tmle_fit")
 
 data(cpp)
 data <- as.data.table(cpp)

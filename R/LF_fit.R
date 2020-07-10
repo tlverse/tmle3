@@ -39,9 +39,11 @@ LF_fit <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, ..., type = "density") {
+    initialize = function(name, learner, is_time_variant = FALSE, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.learner <- learner
+      # TODO: add parameter is_time_variant
+      private$.is_time_variant <- is_time_variant
     },
     delayed_train = function(tmle_task) {
       # just return prefit learner if that's what we have
@@ -53,7 +55,8 @@ LF_fit <- R6Class(
       outcome_node <- self$name
 
       # fit scaled task for bounded continuous
-      learner_task <- tmle_task$get_regression_task(outcome_node, scale = TRUE, drop_censored = TRUE)
+      learner_task <- tmle_task$get_regression_task(outcome_node, scale = TRUE, drop_censored=TRUE, 
+        is_time_variant = self$is_time_variant)
       learner_fit <- delayed_learner_train(self$learner, learner_task)
       return(learner_fit)
     },
@@ -62,7 +65,8 @@ LF_fit <- R6Class(
       private$.learner <- learner_fit
     },
     get_mean = function(tmle_task, fold_number) {
-      learner_task <- tmle_task$get_regression_task(self$name)
+      # TODO: prediction is made on all data, so is_time_variant is set to TRUE
+      learner_task <- tmle_task$get_regression_task(self$name, is_time_variant = TRUE)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 
@@ -71,7 +75,8 @@ LF_fit <- R6Class(
       return(preds_unscaled)
     },
     get_density = function(tmle_task, fold_number) {
-      learner_task <- tmle_task$get_regression_task(self$name)
+      # TODO: prediction is made on all data, so is_time_variant is set to TRUE
+      learner_task <- tmle_task$get_regression_task(self$name, is_time_variant = TRUE)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 
@@ -156,10 +161,14 @@ LF_fit <- R6Class(
   active = list(
     learner = function() {
       return(private$.learner)
+    },
+    is_time_variant = function() {
+      return(private$.is_time_variant)
     }
   ),
   private = list(
     .name = NULL,
-    .learner = NULL
+    .learner = NULL,
+    .is_time_variant = NULL
   )
 )

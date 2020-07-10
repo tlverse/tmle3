@@ -1,14 +1,12 @@
-context("Basic interventions: TSM for single static intervention.")
+context("Use best estimate (early stopping)")
 
 library(sl3)
-# library(tmle3)
+library(tmle3)
 library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
 # setup data for test
-# tmle3_Fit$debug(".tmle_fit")
-
 data(cpp)
 data <- as.data.table(cpp)
 data$parity01 <- as.numeric(data$parity > 0)
@@ -50,11 +48,24 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
 # define update method (submodel + loss function)
-# disable cvtmle for this test to compare with tmle package
-updater <- tmle3_Update$new(cvtmle = FALSE)
+updater <- tmle3_Update$new(
+  one_dimensional = TRUE, constrain_step = TRUE,
+  maxit = 10000, cvtmle = TRUE,
+  convergence_type = "sample_size",
+  use_best = TRUE
+)
 
+# updater <- tmle3_Update$new()
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
-tl_preds <- targeted_likelihood$get_likelihood(tmle_task, "Y", "validation")
-lf_targ <- LF_targeted$new("Y", targeted_likelihood)
-lf_preds <- lf_targ$get_likelihood(tmle_task, "validation")
-test_that("LF_targeted returns the correct likelihood values", expect_equal(tl_preds, lf_preds))
+intervention <- define_lf(LF_static, "A", value = 1)
+# params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
+tsm <- define_param(Param_TSM, targeted_likelihood, intervention)
+
+updater$tmle_params <- tsm
+# debugonce(updater$check_convergence)
+tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tsm, updater)
+
+# extract results
+tmle3_psi <- tmle_fit$summary$tmle_est
+tmle3_se <- tmle_fit$summary$se
+tmle3_epsilon <- updater$epsilons[[1]]$Y

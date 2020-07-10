@@ -175,7 +175,8 @@ tmle3_Task <- R6Class(
 
       return(data)
     },
-    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE) {
+    # TODO: add time_variance
+    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE) {
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
       parent_names <- target_node_object$parents
@@ -185,7 +186,9 @@ tmle3_Task <- R6Class(
       all_covariate_data <- lapply(parent_names, self$get_tmle_node, format = TRUE)
 
       outcome <- target_node_object$variables
-      covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
+      # TODO: check
+      cov_nodes <- parent_nodes
+      covariates <- unlist(lapply(cov_nodes, `[[`, "variables"))
 
 
 
@@ -196,20 +199,24 @@ tmle3_Task <- R6Class(
 
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
+      
+      if ((is_time_variant) && (!is.null(self$nodes$time))){
+        regression_data$time <- self$time
+        nodes$covariates <- c(nodes$covariates, "time")
+      }
 
       censoring_node <- target_node_object$censoring_node
 
+      indices <- seq_len(self$nrow)
       if (is(censoring_node, "tmle3_Node")) {
         observed <- self$get_tmle_node(censoring_node$name)
         censoring <- !observed
       } else {
         censoring <- rep(FALSE, nrow(regression_data))
       }
-
-      folds <- self$folds
+      
       if (drop_censored) {
-        regression_data <- regression_data[!censoring, ]
-        folds <- sl3::subset_folds(self$folds, which(!censoring))
+        indices <- intersect(indices, which(!censoring))
       } else {
         # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
@@ -217,6 +224,24 @@ tmle3_Task <- R6Class(
         impute_value <- regression_data[which(!censoring)[1], outcome, with = FALSE]
         set(regression_data, which(censoring), outcome, impute_value)
       }
+      
+
+      
+      if ((!is_time_variant) && (!is.null(self$nodes$time))){
+        time_data <- self$time
+        indices <- which(time_data == 1)
+        indices <- intersect(indices, which(time_data == 1))
+      }
+      
+      folds <- self$folds
+      if(length(indices)<self$nrow){
+        regression_data <- regression_data[indices, ]
+        folds <- sl3::subset_folds(folds, indices)
+      }
+      
+      
+      
+      
 
       suppressWarnings({
         regression_task <- sl3_Task$new(
@@ -242,7 +267,7 @@ tmle3_Task <- R6Class(
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(new_data, uuid)
       new_task$initialize(
-        self$internal_data, self$npsem,
+        self$internal_data, self$npsem,nodes=self$nodes,
         column_names = new_column_names,
         folds = self$folds,
         row_index = self$row_index

@@ -87,6 +87,8 @@ Param_survival <- R6Class(
       pA_c_mat <- self$long_to_mat(pA_c,id,time)
       SN_mat <- self$hm_to_sm(pN_mat)
       SA_c_mat <- self$hm_to_sm(pA_c_mat)
+      # TODO: fix t - 1
+      SA_c_mat <- cbind(1,SA_c_mat[,-ncol(SA_c_mat)])
 
       ks <- sort(unique(time))
       

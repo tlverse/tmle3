@@ -68,12 +68,16 @@ Param_base <- R6Class(
     },
     supports_outcome_censoring = function() {
       return(private$.supports_outcome_censoring)
+    },
+    targeted = function(){
+      return(private$.targeted)
     }
   ),
   private = list(
     .type = "undefined",
     .observed_likelihood = NULL,
     .outcome_node = NULL,
+    .targeted = TRUE,
     .supports_outcome_censoring = FALSE
   )
 )

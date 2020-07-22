@@ -298,9 +298,10 @@ tmle3_Update <- R6Class(
 
       # get |P_n D*| of any number of parameter estimates
       ED <- ED_from_estimates(estimates)
-      
+      # zero out any that are from nontargeted parameter components
+      ED <- ED * private$.targeted_components
       current_step <- self$step_number
-
+      
       private$.EDs[[current_step]] <- ED
 
 
@@ -316,7 +317,7 @@ tmle3_Update <- R6Class(
     },
     update_best = function(likelihood){
       current_step <- self$step_number
-      ED <- private$.EDs[[current_step]]
+      ED <- private$.EDs[[current_step]] 
       ED_2_norm <- sqrt(sum(ED^2))
       if(ED_2_norm<private$.best_ED){
         likelihood$cache$update_best()
@@ -360,6 +361,7 @@ tmle3_Update <- R6Class(
         new_params <- list(new_params)
       }
       private$.tmle_params <- c(private$.tmle_params, new_params)
+      private$.targeted_components <- unlist(lapply(private$.tmle_params, `[[`, "targeted"))
       new_update_nodes <- unlist(lapply(new_params, `[[`, "update_nodes"))
       private$.update_nodes <- unique(c(
         private$.update_nodes,
@@ -454,6 +456,7 @@ tmle3_Update <- R6Class(
     .fluctuation_type = NULL,
     .use_best = NULL,
     .verbose = FALSE,
+    .targeted_components = NULL,
     .current_estimates = NULL
   )
 )

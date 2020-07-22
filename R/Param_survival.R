@@ -41,9 +41,13 @@ Param_survival <- R6Class(
   public = list(
     initialize = function(observed_likelihood, intervention_list, ..., outcome_node, target_times = NULL) {
       # TODO: check outcome_node, current I(T<=t, delta=1), need I(T=t, delta=1)
-      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
+      
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
       private$.target_times <- target_times
+      times <- sort(unique(observed_likelihood$training_task$time))
+      private$.targeted <- times %in% target_times
+      
+      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
     long_to_mat = function(x,id, time){
       dt <- data.table(id=id,time=time,x=as.vector(x))
@@ -54,7 +58,7 @@ Param_survival <- R6Class(
     hm_to_sm = function(hm){
       # TODO: check
       sm <- t(apply(1-hm,1,cumprod))
-      sm <- cbind(1,sm[,-ncol(sm)])
+      # sm <- cbind(1,sm[,-ncol(sm)])
       return(sm)
     },
     clever_covariates_internal = function(tmle_task = NULL, fold_number = "full", subset_times = FALSE) {
@@ -87,7 +91,8 @@ Param_survival <- R6Class(
       pA_c_mat <- self$long_to_mat(pA_c,id,time)
       SN_mat <- self$hm_to_sm(pN_mat)
       SA_c_mat <- self$hm_to_sm(pA_c_mat)
-      # TODO: fix t - 1
+      
+      # fix t-1
       SA_c_mat <- cbind(1,SA_c_mat[,-ncol(SA_c_mat)])
 
       ks <- sort(unique(time))

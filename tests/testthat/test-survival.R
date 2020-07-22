@@ -37,20 +37,28 @@ tmle_task <- survival_spec$make_tmle_task(df_long, node_list)
 initial_likelihood <- survival_spec$make_initial_likelihood(tmle_task, learner_list)
 
 up <- tmle3_Update_survival$new(
-    maxit = 3e1, 
+    maxit = 3e1,
     cvtmle = TRUE,
     convergence_type = "scaled_var",
     delta_epsilon = 1e-2,
     fit_method = "l2",
     use_best = TRUE,
-    verbose=FALSE
+    verbose=TRUE
   )
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater = up)
 tmle_params <- survival_spec$make_params(tmle_task, targeted_likelihood)
+
+max(abs(colMeans(tmle_params[[1]]$estimates(tmle_task, "validation")$IC[,1:10])))
+
+# debugonce(tmle_params[[1]]$estimates)
 tmle_fit_manual <- fit_tmle3(
   tmle_task, targeted_likelihood, tmle_params,
   targeted_likelihood$updater
 )
 
+# conv <- apply(abs(do.call(rbind,up$EDs))[,1:10],1,max)
+tmle_fit_manual$estimates[[1]]$psi
+
 print(tmle_fit_manual)
+

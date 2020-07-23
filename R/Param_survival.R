@@ -46,8 +46,11 @@ Param_survival <- R6Class(
       private$.target_times <- target_times
       times <- sort(unique(observed_likelihood$training_task$time))
       private$.times <- times
-      private$.targeted <- times %in% target_times
-      
+      if(is.null(target_times)){
+        private$.targeted <- rep(TRUE, length(times))
+      } else {
+        private$.targeted <- times %in% target_times
+      }
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
     },
     long_to_mat = function(x,id, time){

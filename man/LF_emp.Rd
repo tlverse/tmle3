@@ -3,7 +3,9 @@
 \name{LF_emp}
 \alias{LF_emp}
 \title{Likelihood Factor Estimated using Empirical Distribution}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

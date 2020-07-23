@@ -4,7 +4,9 @@
 \alias{CF_Likelihood}
 \alias{make_CF_Likelihood}
 \title{Counterfactual Likelihood}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \usage{
 make_CF_Likelihood(...)
 }

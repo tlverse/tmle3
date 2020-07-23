@@ -1,5 +1,6 @@
 library(tmle3)
 library(sl3)
+library(data.table)
 
 vet_data <- read.csv("https://raw.githubusercontent.com/tlverse/deming2019-workshop/master/data/veteran.csv")
 vet_data$trt <- vet_data$trt - 1

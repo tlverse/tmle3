@@ -4,7 +4,9 @@
 \name{delta_param_PAF}
 \alias{delta_param_PAF}
 \title{PAF = 1 - (1/RR(EY/E0))}
-\format{An object of class \code{list} of length 5.}
+\format{
+An object of class \code{list} of length 5.
+}
 \usage{
 delta_param_PAF
 }

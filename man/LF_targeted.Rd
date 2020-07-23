@@ -3,7 +3,9 @@
 \name{LF_targeted}
 \alias{LF_targeted}
 \title{Use a likelihood factor from an existing targeted likelihood}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

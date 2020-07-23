@@ -3,7 +3,9 @@
 \name{LF_static}
 \alias{LF_static}
 \title{Static Likelihood Factor}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

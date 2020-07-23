@@ -3,7 +3,9 @@
 \name{Param_ATC}
 \alias{Param_ATC}
 \title{Additive Effect of Treatment Among the Treated}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{Param_base} object
 }
@@ -62,6 +64,7 @@ Other Parameters:
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
 \code{\link{Param_stratified}},
+\code{\link{Param_survival}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}
 }

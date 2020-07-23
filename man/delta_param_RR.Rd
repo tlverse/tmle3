@@ -4,7 +4,9 @@
 \name{delta_param_RR}
 \alias{delta_param_RR}
 \title{Risk Ratio EY1/EY0}
-\format{An object of class \code{list} of length 5.}
+\format{
+An object of class \code{list} of length 5.
+}
 \usage{
 delta_param_RR
 }

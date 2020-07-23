@@ -3,7 +3,9 @@
 \name{Param_stratified}
 \alias{Param_stratified}
 \title{Stratified Parameter Estimates}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{Param_base} object
 }
@@ -55,6 +57,7 @@ Other Parameters:
 \code{\link{Param_base}},
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
+\code{\link{Param_survival}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}
 }

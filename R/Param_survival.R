@@ -45,6 +45,7 @@ Param_survival <- R6Class(
       private$.cf_likelihood <- make_CF_Likelihood(observed_likelihood, intervention_list)
       private$.target_times <- target_times
       times <- sort(unique(observed_likelihood$training_task$time))
+      private$.times <- times
       private$.targeted <- times %in% target_times
       
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
@@ -172,7 +173,7 @@ Param_survival <- R6Class(
   active = list(
     # TODO: modify
     name = function() {
-      param_form <- sprintf("E[P(T>t|%s, W)]", self$cf_likelihood$name)
+      param_form <- sprintf("E[P(T > %s|%s, W)]", self$times, self$cf_likelihood$name)
       return(param_form)
     },
     cf_likelihood = function() {
@@ -184,6 +185,9 @@ Param_survival <- R6Class(
     update_nodes = function() {
       return(self$outcome_node)
     },
+    times = function() {
+      return(private$.times)
+    },
     target_times = function() {
       return(private$.target_times)
     }
@@ -192,6 +196,7 @@ Param_survival <- R6Class(
     .type = "survival",
     .cf_likelihood = NULL,
     .supports_outcome_censoring = TRUE,
+    .times = NULL,
     .target_times = NULL
   )
 )

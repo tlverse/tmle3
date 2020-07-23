@@ -5,7 +5,9 @@
 \alias{tmle3_Task}
 \alias{make_tmle3_Task}
 \title{Class for Storing Data and NPSEM for TMLE}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \usage{
 make_tmle3_Task(...)
 }

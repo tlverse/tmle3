@@ -4,7 +4,9 @@
 \alias{tmle3_Fit}
 \alias{fit_tmle3}
 \title{TMLE fit object}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \usage{
 fit_tmle3(...)
 }
@@ -104,6 +106,7 @@ Other Parameters:
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
 \code{\link{Param_stratified}},
+\code{\link{Param_survival}},
 \code{\link{define_param}()}
 }
 \concept{Parameters}

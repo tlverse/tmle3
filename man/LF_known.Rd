@@ -3,7 +3,9 @@
 \name{LF_known}
 \alias{LF_known}
 \title{Known True Likelihood Factor}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

@@ -4,7 +4,9 @@
 \alias{tmle3_Node}
 \alias{define_node}
 \title{A Node (set of variables) in an NPSEM}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \usage{
 define_node(...)
 }

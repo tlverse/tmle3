@@ -5,7 +5,9 @@
 \alias{Likelihood}
 \alias{make_Likelihood}
 \title{Class for Likelihood}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \usage{
 make_Likelihood(...)
 }

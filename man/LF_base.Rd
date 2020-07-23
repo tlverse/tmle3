@@ -3,7 +3,9 @@
 \name{LF_base}
 \alias{LF_base}
 \title{Base Class for Defining Likelihood Factors}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

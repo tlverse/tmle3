@@ -3,7 +3,9 @@
 \name{LF_fit}
 \alias{LF_fit}
 \title{Likelihood Factor Estimated from Data using sl3.}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

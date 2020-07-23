@@ -3,7 +3,9 @@
 \name{LF_derived}
 \alias{LF_derived}
 \title{Derived Likelihood Factor Estimated from Data + Other Likelihood values, using sl3.}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{LF_base} object
 }

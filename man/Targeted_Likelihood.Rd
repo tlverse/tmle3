@@ -3,7 +3,9 @@
 \name{Targeted_Likelihood}
 \alias{Targeted_Likelihood}
 \title{Targeted Likelihood}
-\format{\code{\link{R6Class}} object.}
+\format{
+\code{\link{R6Class}} object.
+}
 \value{
 \code{Likelihood} object
 }

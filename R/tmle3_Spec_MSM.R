@@ -31,13 +31,13 @@ tmle3_Spec_MSM <- R6Class(
       super$make_tmle_task(data, node_list, ...)
     },
     make_params = function(tmle_task, targeted_likelihood) {
-      treatment_type <- variable_type(x=tmle_task$get_tmle_node("A"))$type
+      intervention_type <- variable_type(x=tmle_task$get_tmle_node("A"))$type
       
-      if (treatment_type == "continuous") {
+      if (intervention_type == "continuous") {
         tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable,
                                     msm = self$options$msm,
                                     weight = self$options$weight, weight_ub = self$options$weight_ub,
-                                    continuous_treatment = TRUE, n_samples = self$options$n_samples)
+                                    continuous_intervention = TRUE, n_samples = self$options$n_samples)
       } else {
         A_vals <- tmle_task$get_tmle_node("A")
         if (is.factor(A_vals)) {
@@ -49,7 +49,7 @@ tmle3_Spec_MSM <- R6Class(
         tmle_params <- define_param(Param_MSM, targeted_likelihood, self$strata_variable,
                                     msm = self$options$msm,
                                     weight = self$options$weight, weight_ub = self$options$weight_ub,
-                                    continuous_treatment = FALSE, treatment_values = A_levels)
+                                    continuous_intervention = FALSE, intervention_values = A_levels)
       }
       return(tmle_params)
     }
@@ -68,7 +68,7 @@ tmle3_Spec_MSM <- R6Class(
 #'
 #' O=(W,A,Y)
 #' W=Covariates
-#' A=Treatment (binary or categorical or continuous)
+#' A=intervention (binary or categorical or continuous)
 #' Y=Outcome (binary or bounded continuous)
 #'
 #' @importFrom sl3 make_learner Lrnr_mean

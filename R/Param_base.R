@@ -69,7 +69,7 @@ Param_base <- R6Class(
     supports_outcome_censoring = function() {
       return(private$.supports_outcome_censoring)
     },
-    targeted = function(){
+    targeted = function() {
       return(private$.targeted)
     }
   ),

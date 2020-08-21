@@ -30,7 +30,7 @@ tmle3_Task <- R6Class(
   public = list(
     initialize = function(data, npsem, ...) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
-      
+
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
 
@@ -201,8 +201,8 @@ tmle3_Task <- R6Class(
 
 
       regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
-      
-      if ((is_time_variant) && (!is.null(self$nodes$time))){
+
+      if ((is_time_variant) && (!is.null(self$nodes$time))) {
         regression_data$time <- self$time
         nodes$covariates <- c(nodes$covariates, "time")
       }
@@ -216,7 +216,7 @@ tmle3_Task <- R6Class(
       } else {
         censoring <- rep(FALSE, nrow(regression_data))
       }
-      
+
       if (drop_censored) {
         indices <- intersect(indices, which(!censoring))
       } else {
@@ -226,24 +226,24 @@ tmle3_Task <- R6Class(
         impute_value <- regression_data[which(!censoring)[1], outcome, with = FALSE]
         set(regression_data, which(censoring), outcome, impute_value)
       }
-      
 
-      
-      if ((!is_time_variant) && (!is.null(self$nodes$time))){
+
+
+      if ((!is_time_variant) && (!is.null(self$nodes$time))) {
         time_data <- self$time
         indices <- which(time_data == 1)
         indices <- intersect(indices, which(time_data == 1))
       }
-      
+
       folds <- self$folds
-      if(length(indices)<self$nrow){
+      if (length(indices) < self$nrow) {
         regression_data <- regression_data[indices, ]
         folds <- sl3::subset_folds(folds, indices)
       }
-      
-      
-      
-      
+
+
+
+
 
       suppressWarnings({
         regression_task <- sl3_Task$new(
@@ -269,7 +269,8 @@ tmle3_Task <- R6Class(
       new_task <- self$clone()
       new_column_names <- new_task$add_columns(new_data, uuid)
       new_task$initialize(
-        self$internal_data, self$npsem,nodes=self$nodes,
+        self$internal_data, self$npsem,
+        nodes = self$nodes,
         column_names = new_column_names,
         folds = self$folds,
         row_index = self$row_index

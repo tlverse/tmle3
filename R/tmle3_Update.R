@@ -51,12 +51,12 @@ tmle3_Update <- R6Class(
   public = list(
     # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
-                          constrain_step = FALSE, delta_epsilon = 1e-4,
-                          convergence_type = c("scaled_var", "sample_size"),
-                          fluctuation_type = c("standard", "weighted"),
-                          optim_delta_epsilon = TRUE,
-                          use_best = FALSE,
-                          verbose = FALSE) {
+                              constrain_step = FALSE, delta_epsilon = 1e-4,
+                              convergence_type = c("scaled_var", "sample_size"),
+                              fluctuation_type = c("standard", "weighted"),
+                              optim_delta_epsilon = TRUE,
+                              use_best = FALSE,
+                              verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -65,7 +65,7 @@ tmle3_Update <- R6Class(
       private$.convergence_type <- match.arg(convergence_type)
       private$.fluctuation_type <- match.arg(fluctuation_type)
       private$.optim_delta_epsilon <- optim_delta_epsilon
-      private$.use_best = use_best
+      private$.use_best <- use_best
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -102,7 +102,7 @@ tmle3_Update <- R6Class(
           # update full fit likelihoods if we haven't already
           likelihood$update(new_epsilon, self$step_number, "full", update_node)
         }
-        
+
         private$.epsilons[[current_step]][[update_node]] <- new_epsilon
       }
 
@@ -110,9 +110,9 @@ tmle3_Update <- R6Class(
       private$.step_number <- current_step
     },
     generate_submodel_data = function(likelihood, tmle_task,
-                                      fold_number = "full",
-                                      update_node = "Y",
-                                      drop_censored = FALSE) {
+                                          fold_number = "full",
+                                          update_node = "Y",
+                                          drop_censored = FALSE) {
 
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
@@ -148,14 +148,14 @@ tmle3_Update <- R6Class(
       )
 
 
-      if(drop_censored){
-        censoring_node<-tmle_task$npsem[[update_node]]$censoring_node$name
-        if(!is.null(censoring_node)){
+      if (drop_censored) {
+        censoring_node <- tmle_task$npsem[[update_node]]$censoring_node$name
+        if (!is.null(censoring_node)) {
           observed_node <- tmle_task$get_tmle_node(censoring_node)
-          subset <- which(observed_node==1)
+          subset <- which(observed_node == 1)
           submodel_data <- list(
             observed = submodel_data$observed[subset],
-            H = submodel_data$H[subset, , drop=FALSE],
+            H = submodel_data$H[subset, , drop = FALSE],
             initial = submodel_data$initial[subset]
           )
         }
@@ -264,12 +264,13 @@ tmle3_Update <- R6Class(
       # get submodel data for all nodes
       submodel_data <- self$generate_submodel_data(
         likelihood, tmle_task,
-        fold_number, update_node, drop_censored = FALSE
+        fold_number, update_node,
+        drop_censored = FALSE
       )
 
       updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
 
-      if(any(!is.finite(updated_likelihood))){
+      if (any(!is.finite(updated_likelihood))) {
         stop("Likelihood was updated to contain non-finite values.\n
              This is likely a result of unbounded likelihood factors")
       }
@@ -301,7 +302,7 @@ tmle3_Update <- R6Class(
       # zero out any that are from nontargeted parameter components
       ED <- ED * private$.targeted_components
       current_step <- self$step_number
-      
+
       private$.EDs[[current_step]] <- ED
 
 
@@ -310,51 +311,49 @@ tmle3_Update <- R6Class(
       if (self$verbose) {
         cat(sprintf("max(abs(ED)): %e\n", max(ED_criterion)))
       }
-      
-      
+
+
       return(all(ED_criterion <= ED_threshold))
-      
     },
-    update_best = function(likelihood){
+    update_best = function(likelihood) {
       current_step <- self$step_number
-      ED <- private$.EDs[[current_step]] 
+      ED <- private$.EDs[[current_step]]
       ED_2_norm <- sqrt(sum(ED^2))
-      if(ED_2_norm<private$.best_ED){
+      if (ED_2_norm < private$.best_ED) {
         likelihood$cache$update_best()
         private$.best_ED <- ED_2_norm
-      }      
+      }
     },
     update = function(likelihood, tmle_task) {
       update_fold <- self$update_fold
       maxit <- private$.maxit
-      
+
       # seed current estimates
       private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$estimates(tmle_task, update_fold)
       })
-      
+
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
-        
+
         # update estimates based on updated likelihood
         private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
           tmle_param$estimates(tmle_task, update_fold)
         })
-        
+
         if (self$check_convergence(tmle_task, update_fold)) {
           break
         }
-        
-        if(self$use_best){
+
+        if (self$use_best) {
           self$update_best(likelihood)
         }
       }
-      
-      if(self$use_best){
+
+      if (self$use_best) {
         self$update_best(likelihood)
         likelihood$cache$set_best()
       }
-      
     },
     register_param = function(new_params) {
       if (inherits(new_params, "Param_base")) {
@@ -434,7 +433,7 @@ tmle3_Update <- R6Class(
     verbose = function() {
       return(private$.verbose)
     },
-    current_estimates = function(){
+    current_estimates = function() {
       return(private$.current_estimates)
     }
   ),

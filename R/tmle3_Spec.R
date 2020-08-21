@@ -22,7 +22,7 @@ tmle3_Spec <- R6Class(
       variable_types <- self$options$variable_types
 
       tmle_task <- point_tx_task(data, node_list, variable_types)
-      
+
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {

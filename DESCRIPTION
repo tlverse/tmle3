@@ -31,7 +31,8 @@ Imports:
     foreach,
     mvtnorm,
     magrittr,
-    stringr
+    stringr,
+    digest
 Suggests:
     testthat,
     knitr,
@@ -44,7 +45,6 @@ Suggests:
     tmle3shift,
     future,
     future.apply,
-    stringr,
     xgboost
 Remotes:
     github::tlverse/sl3,

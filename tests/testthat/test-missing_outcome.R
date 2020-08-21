@@ -120,7 +120,7 @@ tmle_classic_fit <- tmle(
   family = "binomial",
   alpha = 0.995,
   target.gwt = FALSE,
-  gbound=0.025
+  gbound = 0.025
 )
 
 

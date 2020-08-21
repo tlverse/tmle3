@@ -16,13 +16,13 @@ tmle3_Spec_stratified <- R6Class(
       private$.base_estimate <- base_estimate
     },
     make_tmle_task = function(data, node_list, ...) {
-      private$.strata_variable = node_list$V
+      private$.strata_variable <- node_list$V
       # Initial estimate should include V as covariate
       # Note: Upon current structure, the easiest way is to add V into W.
-      #       This won't cause problem in calculation, 
+      #       This won't cause problem in calculation,
       #       but nodes dependency graph will be off.
-      node_list$W = c(node_list$W, node_list$V)
-      
+      node_list$W <- c(node_list$W, node_list$V)
+
       tmle_task <- self$base_spec$make_tmle_task(data, node_list, ...)
 
       return(tmle_task)
@@ -55,7 +55,7 @@ tmle3_Spec_stratified <- R6Class(
           base_param, self$strata_variable
         )
       })
-      
+
       tmle_params <- strat_params
       if (private$.base_estimate) {
         tmle_params <- c(base_params, tmle_params)

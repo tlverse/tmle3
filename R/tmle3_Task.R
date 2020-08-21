@@ -7,6 +7,7 @@
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 sl3_Task
+#' @importFrom digest digest
 #' @import data.table
 #'
 #' @export
@@ -29,7 +30,7 @@ tmle3_Task <- R6Class(
   public = list(
     initialize = function(data, npsem, ...) {
       super$initialize(data, covariates = c(), outcome = NULL, ...)
-
+      
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
 
@@ -123,6 +124,7 @@ tmle3_Task <- R6Class(
 
       private$.npsem <- npsem
       private$.node_cache <- new.env()
+      private$.uuid <- digest(self$data)
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE) {
       cache_key <- sprintf("%s_%s_%s", node_name, format, impute_censoring)

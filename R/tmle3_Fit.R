@@ -46,7 +46,7 @@ tmle3_Fit <- R6Class(
       print(self$summary)
     },
     set_timings = function(start_time, task_time, likelihood_time, params_time,
-                           fit_time) {
+                               fit_time) {
       timings <- list(
         make_tmle_task = task_time - start_time,
         fit_likelihood = likelihood_time - task_time,

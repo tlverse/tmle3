@@ -111,9 +111,9 @@ test_that("psi matches result from classic package", {
 })
 
 # only approximately equal (although it's O(1/n))
-tmle3_se <- tmle3_se[c(1,3)]
+tmle3_se <- tmle3_se[c(1, 3)]
 names(tmle3_se) <- c("A_0", "V")
-classic_se <- classic_se[c(1,3)]
+classic_se <- classic_se[c(1, 3)]
 names(classic_se) <- c("A_0", "V")
 test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se, tol = 1e-3)
@@ -129,7 +129,7 @@ node_list <- list(
   A = "whz",
   Y = "haz"
 )
-processed <- process_missing(data[1:500,], node_list)
+processed <- process_missing(data[1:500, ], node_list)
 data <- processed$data
 node_list <- processed$node_list
 
@@ -172,4 +172,3 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, msm, updater)
 
 # extract results
 tmle_ests <- tmle_fit$summary$tmle_est
-

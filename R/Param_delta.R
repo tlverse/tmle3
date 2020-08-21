@@ -18,7 +18,7 @@ Param_delta <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, delta_param, parent_parameters,
-                          ..., outcome_node = NA) {
+                              ..., outcome_node = NA) {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.delta_param <- delta_param
       private$.parent_parameters <- parent_parameters

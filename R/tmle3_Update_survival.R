@@ -53,15 +53,17 @@ tmle3_Update_survival <- R6Class(
                               use_best = FALSE,
                               verbose = FALSE,
                               fit_method = "l2") {
-      super$initialize(maxit = maxit, cvtmle=cvtmle, 
-                       one_dimensional = one_dimensional,
-                       constrain_step = constrain_step , 
-                       delta_epsilon = delta_epsilon,
-                       convergence_type = convergence_type,
-                       fluctuation_type = fluctuation_type,
-                       use_best = use_best,
-                       verbose = verbose)
-     private$.fit_method <- fit_method
+      super$initialize(
+        maxit = maxit, cvtmle = cvtmle,
+        one_dimensional = one_dimensional,
+        constrain_step = constrain_step,
+        delta_epsilon = delta_epsilon,
+        convergence_type = convergence_type,
+        fluctuation_type = fluctuation_type,
+        use_best = use_best,
+        verbose = verbose
+      )
+      private$.fit_method <- fit_method
     },
     norm_l2 = function(beta) {
       return(sqrt(sum(beta^2)))
@@ -73,7 +75,9 @@ tmle3_Update_survival <- R6Class(
         # print("l2")
         # mean_eic <- self$get_mean_eic(self$update_fold)
         epsilon_n <- tryCatch({
-          alpha <- 0; norm_func <- self$norm_l2; lambda.min.ratio = 1e-2
+          alpha <- 0
+          norm_func <- self$norm_l2
+          lambda.min.ratio <- 1e-2
 
           ind <- 1
           while (ind == 1) {
@@ -90,21 +94,21 @@ tmle3_Update_survival <- R6Class(
               nlambda = 1e2
               # TODO: check
               # penalty.factor = 1/abs(mean_eic)
-              )
+            )
             norms <- apply(submodel_fit$beta, 2, norm_func)
             ind <- max(which(norms <= self$delta_epsilon))
             if (ind > 1) break
-            
+
             fit_lambda <- submodel_fit$lambda
-            
-            if(fit_lambda==1){
+
+            if (fit_lambda == 1) {
               stop("only one lambda could be fit")
             }
-            
+
             # try to estimate what the correct lambda value is and go a bit beyond that
-            norm_ratio <- self$delta_epsilon/norms[2]
-            lambda_guess <- fit_lambda[1]-norm_ratio*(fit_lambda[1]-fit_lambda[2])
-            lambda_min_ratio <- 0.8*lambda_guess/fit_lambda[1]
+            norm_ratio <- self$delta_epsilon / norms[2]
+            lambda_guess <- fit_lambda[1] - norm_ratio * (fit_lambda[1] - fit_lambda[2])
+            lambda_min_ratio <- 0.8 * lambda_guess / fit_lambda[1]
             # lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
           }
           epsilon_n <- submodel_fit$beta[, ind]
@@ -127,8 +131,8 @@ tmle3_Update_survival <- R6Class(
         # TODO: check
         # print("classic")
         epsilon <- super$fit_submodel(submodel_data)
-      } 
-    
+      }
+
       return(epsilon)
     }
   ),
@@ -136,7 +140,6 @@ tmle3_Update_survival <- R6Class(
     fit_method = function() {
       return(private$.fit_method)
     }
-
   ),
   private = list(
     .fit_method = NULL

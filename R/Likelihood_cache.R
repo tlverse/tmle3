@@ -56,22 +56,21 @@ Likelihood_cache <- R6Class(
         private$.tasks[[task$uuid]] <- task
       }
     },
-    set_best = function(){
-      # set the current step values as the best values 
+    set_best = function() {
+      # set the current step values as the best values
       keys <- ls(private$.cache)
-      keys <- keys[!grepl("step$",keys)]
-      lapply(keys, function(key){
+      keys <- keys[!grepl("step$", keys)]
+      lapply(keys, function(key) {
         assign(key, get(key, private$.best_cache), private$.cache)
       })
     },
-    update_best = function(){
+    update_best = function() {
       # set the best values as the current values
-      if(is.null(private$.best_cache)){
+      if (is.null(private$.best_cache)) {
         private$.best_cache <- new.env()
       }
-      
-      private$.best_cache <- as.environment(as.list(private$.cache, all.names=TRUE))
 
+      private$.best_cache <- as.environment(as.list(private$.cache, all.names = TRUE))
     }
   ),
   active = list(

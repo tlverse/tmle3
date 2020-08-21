@@ -8,7 +8,7 @@
 \usage{
 survival_tx_npsem(node_list, variable_types = NULL)
 
-survival_tx_task(data, node_list, make_npsem, variable_types = NULL, ...)
+survival_tx_task(data, node_list, variable_types = NULL, ...)
 
 survival_tx_likelihood(tmle_task, learner_list)
 }

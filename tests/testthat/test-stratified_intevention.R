@@ -11,7 +11,7 @@ data <- as.data.table(cpp)
 data$parity01 <- as.numeric(data$parity > 0)
 data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
-data$mrace = factor(data$mrace) # TODO: fix conversion bug
+data$mrace <- factor(data$mrace) # TODO: fix conversion bug
 data[is.na(data)] <- 0
 node_list <- list(
   W = c(

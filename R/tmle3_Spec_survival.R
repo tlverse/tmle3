@@ -5,7 +5,6 @@
 #'
 #' @export
 #
-
 tmle3_Spec_survival <- R6Class(
   classname = "tmle3_Spec_survival",
   portable = TRUE,
@@ -100,6 +99,7 @@ tmle3_Spec_survival <- R6Class(
 #' @param control_level the level of A that corresponds to a control or reference level
 #' @param target_times the time points to be targeted at during the TMLE adjustment
 #' @param ... others args passed to spec
+#' @export
 tmle_survival <- function(treatment_level, control_level, target_times = NULL, ...) {
   tmle3_Spec_survival$new(treatment_level, control_level, target_times, ...)
 }

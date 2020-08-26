@@ -224,9 +224,9 @@ tmle3_Task <- R6Class(
           data <- data[, last(.SD), by = id]
           if(compute_risk_set){
             if(private$.force_at_risk) {
-              data$at_risk <- 1
+              set(data, , "at_risk", 1)
             } else {
-              data$at_risk <- as.numeric(data$id %in% risk_set)
+              set(data, , "at_risk", as.numeric(data$id %in% risk_set))
             }
             if(time > 0) {
               last_vals <- self$data[t <= (time - 1), last(.SD), by = id, .SDcols = c(node_var)][,c(node_var),with = F]
@@ -234,6 +234,7 @@ tmle3_Task <- R6Class(
               last_vals <- NA
             }
             set(data, , paste0("last_val_",node_var) , last_vals)
+
           }
 
         } else {
@@ -259,14 +260,7 @@ tmle3_Task <- R6Class(
         set(data,, node_var, data_node)
       }
 
-      assign(cache_key, data, private$.node_cache)
 
-      if(!include_time){
-        data$t <- NULL
-      }
-      if(!include_id){
-        data$id <- NULL
-      }
 
       censoring_node <- tmle_node$censoring_node
 
@@ -293,85 +287,246 @@ tmle3_Task <- R6Class(
         # and for generating values for ICs (which will then be cancelled by 0)
         impute_value <- data[which(!censoring)[1]]
         if (is.data.table(data)) {
-          set(data, which(censoring), names(data), as.list(impute_value))
+          set(data, which(censoring), node_var, as.list(impute_value))
         } else {
           data[censoring] <- impute_value
         }
       }
 
 
+      if(!include_time){
+        data[, t := NULL]
+      }
+      if(!include_id){
+        data[, id := NULL]
+      }
 
       assign(cache_key, data, private$.node_cache)
 
       return(data)
     },
     # TODO: add time_variance
-    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE) {
+    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = F) {
+
+      if(!is.numeric(force_time_value)){
+        cache_key <- sprintf("%s_%s_%s_%s", target_node, scale, is_time_variant, expand)
+        cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
+        if (!is.null(cached_data)) {
+          return(cached_data)
+        }
+      }
+      if(length(target_node)>1){
+        all_tasks <- lapply(target_node, self$get_regression_task, scale, drop_censored , is_time_variant, expand = expand)
+        all_nodes <- lapply(all_tasks, function(task) task$nodes)
+        time_is_node <- sapply(all_nodes, function(node) !is.null(node$time))
+        regression_data <- do.call(rbind, lapply(all_tasks, function(task) task$get_data()))
+        setkey(pooled_data, id, t)
+        nodes <- all_nodes[[1]]
+        # Make sure time is included as covariate
+        nodes$covariates <- union("t", nodes$covariates)
+
+
+
+        folds <- self$folds
+        if (nrow(regression_data) < self$nrow) {
+          #regression_data <- regression_data[indices, ]
+          data_id_t <- self$data[, c("id", "t"), with = F]
+          #This should
+          indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
+          folds <- sl3::subset_folds(folds, indices)
+        }
+
+
+        regression_data <- Shared_Data$new(regression_data, force_copy = F)
+
+
+        pooled_regression_task <- sl3_Task$new(
+          regression_data,
+          nodes = nodes,
+          outcome_type = self$npsem[[target_node[1]]]$variable_type,
+          folds = folds
+        )
+
+        if(!is.numeric(force_time_value)){
+          #Store tasks
+          assign(cache_key, pooled_regression_task, private$.node_cache)
+        }
+        return(pooled_regression_task)
+
+      }
+
+
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
+      outcome <- target_node_object$variables
+      if(is.numeric(force_time_value)){
+        time <- force_time_value
+      } else {
+        time <- target_node_object$time
+      }
+
+      past_data <- self$data
+
+      if(length(time) > 1){
+        # TODO summary measures ae expensive to compute. The task cache helps.
+
+        # If node is pooled across time then get pooled regression task
+
+        all_tasks <- lapply(time, self$get_regression_task, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand )
+        all_nodes <- lapply(all_tasks, function(task) task$nodes)
+        regression_data <- do.call(rbind, lapply(all_tasks, function(task) task$get_data()))
+        nodes <- all_nodes[[1]]
+        nodes$covariates <- union("t", nodes$covariates)
+        setkey(regression_data, id, t)
+
+        # censoring_node <- target_node_object$censoring_node
+        # if (is(censoring_node, "tmle3_Node")) {
+        #   observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
+        #   censoring_ids <- observed[observed[[censoring_node$name]] == 1, c("id", "t"), with = F]
+        #   #Subset to (id, t) key pairs that are not censored.
+        #   if(drop_censored) {
+        #     regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
+        #   } else {
+        #     #Impute to 0
+        #     regression_data[.(censoring_ids$id, censoring_ids$t), .(outcome) := 0 ]
+        #
+        #   }
+        # }
+
+        folds <- self$folds
+        if (nrow(regression_data) < self$nrow) {
+          #regression_data <- regression_data[indices, ]
+          data_id_t <- self$data[, c("id", "t"), with = F]
+          #This should
+          indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
+          folds <- sl3::subset_folds(folds, indices)
+        }
+
+        regression_data <- Shared_Data$new(regression_data, force_copy = F)
+
+        pooled_regression_task <- sl3_Task$new(
+          regression_data,
+          nodes = nodes,
+          outcome_type = self$npsem[[target_node[1]]]$variable_type,
+          folds = folds
+        )
+
+        if(!is.numeric(force_time_value)){
+          #Store tasks
+          assign(cache_key, pooled_regression_task, private$.node_cache)
+        }
+        return(pooled_regression_task)
+      }
+
       parent_names <- target_node_object$parents
       parent_nodes <- npsem[parent_names]
 
-      outcome_data <- self$get_tmle_node(target_node, format = TRUE)
-      all_covariate_data <- lapply(parent_names, self$get_tmle_node, format = TRUE)
+      if(is.null(unlist(target_node_object$summary_functions))){
+        # No summary functions so simply stack node values of parents
+        parent_data <- do.call(cbind, lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F))
+        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
+        data <- merge(outcome_data, parent_data, by = id, all.x = T)
+        covariates <- colnames(parent_data)
+        outcome = setdiff(colnames(outcome_data), c("id", "t", grep("last_val", colnames(outcome_data), value = T), "at_risk"))
+        if((time == "pooled")){
+          covariates <- c(covariates, "t")
+        }
+        outcome_index <-  match(outcome, colnames(outcome_data))
+        if(length(parent_data)>0){
+          cov_index <- ncol(outcome_data) + match(covariates, colnames(parent_data))
+        } else {
+          cov_index <- c()
+        }
+        #Due to time indexing, we do not have unique column names.
+        #In order to support pooling across time, we shouldn't use node names as column names
+        #important that outcome variable name doesnt change
+        setnames(data, make.unique(colnames(data)))
+        covariates <- colnames(data)[cov_index]
+        outcome <- colnames(data)[outcome_index]
+        all_covariate_data <- data
 
-      outcome <- target_node_object$variables
-      # TODO: check
-      cov_nodes <- parent_nodes
-      covariates <- unlist(lapply(cov_nodes, `[[`, "variables"))
+      } else {
 
 
+        all_vars <- unique(unlist(lapply(npsem, `[[`, "variables")))
+
+        times <- as.vector(sapply(parent_nodes, function(node) node$time))
+        parent_covariates <- as.vector(sapply(parent_nodes, function(node) node$variables))
+
+        # Note that those with missing rows will be included in outcome_data.
+        # There value will be set to last measured value.
+        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = (time == "pooled"), force_time_value = force_time_value, expand = expand)
+
+        past_data <- past_data[t <= time & id %in% outcome_data$id,]
+
+
+        if(length(parent_covariates) != 0 | !is.null(unlist(target_node_object$summary_functions))){
+          summary_measures <- target_node_object$summary_functions
+          all_covariate_data <- lapply(summary_measures, function(fun){
+            return(fun$summarize(past_data, time))}
+          )
+          all_covariate_data <- all_covariate_data %>% purrr::reduce(merge, by = "id")
+          covariates <- setdiff(colnames(all_covariate_data), "id")
+          if("t" %in% colnames(all_covariate_data))  all_covariate_data$t <- NULL
+
+        } else {
+          all_covariate_data <- data.table(rep(NA, nrow(outcome_data)))
+          all_covariate_data$id <- outcome_data$id
+          covariates <- c()
+        }
+      }
 
       nodes <- self$nodes
-      node_data <- self$get_data(, unlist(nodes))
+      node_data <- self$get_data(self$row_index, unlist(nodes))
+
+      #TODO since number of time rows vary per person, only time-indepdent nodes make sense
+      # Keep only node_data for each individual at the time of this tmle node
+      node_data <- node_data[node_data$id %in% outcome_data$id & node_data$t <= time, last(.SD), by = id]
+
+      node_data$t <- time
       nodes$outcome <- outcome
       nodes$covariates <- covariates
 
+      regression_data <-  list(all_covariate_data, outcome_data, node_data) %>% reduce(merge, "id")
+      regression_data$t = time
+      setkey(regression_data, id, t)
 
-      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
-
-      if ((is_time_variant) && (!is.null(self$nodes$time))) {
-        regression_data$time <- self$time
-        nodes$covariates <- c(nodes$covariates, "time")
-      }
 
       censoring_node <- target_node_object$censoring_node
 
-      indices <- seq_len(self$nrow)
+
       if (is(censoring_node, "tmle3_Node")) {
-        observed <- self$get_tmle_node(censoring_node$name)
-        censoring <- !observed
-      } else {
-        censoring <- rep(FALSE, nrow(regression_data))
-      }
+        #This node should share the same time/ riskset
+        observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
+        censoring_ids <- observed[observed[[censoring_node$name]] == 1, c("id", "t"), with = F]
+        #Subset to (id, t) key pairs that are not censored.
+        if(drop_censored) {
+          regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
+        } else {
+          #Impute to 0
+          regression_data[.(censoring_ids$id, censoring_ids$t), .(outcome) := 0 ]
 
-      if (drop_censored) {
-        indices <- intersect(indices, which(!censoring))
-      } else {
-        # impute arbitrary value for node Need to keep the data shape the same,
-        # but value should not matter here as this will only be used for prediction
-        # and for generating values for ICs (which will then be cancelled by 0)
-        impute_value <- regression_data[which(!censoring)[1], outcome, with = FALSE]
-        set(regression_data, which(censoring), outcome, impute_value)
+        }
       }
 
 
 
-      if ((!is_time_variant) && (!is.null(self$nodes$time))) {
-        time_data <- self$time
-        indices <- which(time_data == 1)
-        indices <- intersect(indices, which(time_data == 1))
-      }
 
       folds <- self$folds
-      if (length(indices) < self$nrow) {
-        regression_data <- regression_data[indices, ]
+      if (nrow(regression_data) < self$nrow) {
+        #regression_data <- regression_data[indices, ]
+        data_id_t <- self$data[, c("id", "t"), with = F]
+        #This should
+        indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
         folds <- sl3::subset_folds(folds, indices)
       }
 
 
+      regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
-
+      if(is_time_variant){
+        nodes$covariates <- union(nodes$covariates, "t")
+      }
 
       suppressWarnings({
         regression_task <- sl3_Task$new(
@@ -381,6 +536,10 @@ tmle3_Task <- R6Class(
           folds = folds
         )
       })
+      if(!is.numeric(force_time_value)){
+        assign(cache_key, regression_task, private$.node_cache)
+      }
+
       return(regression_task)
     },
     generate_counterfactual_task = function(uuid, new_data) {

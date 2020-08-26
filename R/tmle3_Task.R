@@ -28,7 +28,42 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem, ...) {
+    initialize = function(data, npsem,  intervene_all_at_risk = F, summary_measure_columns = NULL, ...) {
+
+      if(!inherits(data, "Shared_Data")){
+        # For ease of coding and cleanness of code (and working with data.tables)
+        # I assume that the id and time columns are "id" and "t" respectively.
+
+        if(!is.null(nodes)){
+          id <- nodes$id
+          time <- nodes$time
+        }
+
+        if(is.null(id)){
+          set(data, , "id", 1:nrow(data))
+        }
+        if(is.null(time)){
+          set(data, , "t", rep(0,nrow(data)))
+        }
+
+        if(id!="id"){
+          data[,"id", with = F] <- data[,id, with = F]
+          id = "id"
+        }
+        if(time!="t"){
+          data[, "t", with = F] <- data[,time, with = F]
+          time = "t"
+        }
+        data <- setkey(data, id, t)
+        shared_data <- data
+      } else{
+        # This assumes preprocessing has been done (e.g. sorting by id and t)
+        shared_data <- data
+        if(key(shared_data$data) != c("id", "t")){
+          stop("Shared_Data object passed does not have a (id, t) key set.")
+        }
+      }
+
       super$initialize(data, covariates = c(), outcome = NULL, ...)
 
       node_names <- sapply(npsem, `[[`, "name")
@@ -77,6 +112,8 @@ tmle3_Task <- R6Class(
         }
 
         # create or identify censoring node
+        # TODO Should rethink this and how it will work with the risk_set_map
+        # In principle,
         if (any(censoring)) {
 
           # first, look for explicitly denoted censoring node
@@ -126,36 +163,127 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
       private$.uuid <- digest(self$data)
     },
-    get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE) {
-      cache_key <- sprintf("%s_%s_%s", node_name, format, impute_censoring)
+    get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = F, compute_risk_set = T) {
+      if(private$.force_at_risk) expand <- T
+
+      if(is.null(force_time_value)) force_time_value <- F
+      cache_key <- sprintf("%s_%s_%s_%s", node_name, format, force_time_value, expand)
 
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
+        if(!include_time){
+          cached_data$t <- NULL
+        }
+        if(!include_id){
+          cached_data$id <- NULL
+        }
         return(cached_data)
       }
       tmle_node <- self$npsem[[node_name]]
       node_var <- tmle_node$variables
+
       if (is.null(node_var)) {
         return(data.table(NULL))
       }
 
-      node_type <- tmle_node$node_type
-      data <- self$get_data(self$row_index, node_var)
 
-      if ((ncol(data) == 1)) {
-        data <- unlist(data, use.names = FALSE)
+
+      if(is.numeric(force_time_value)){
+        time <- force_time_value
+      } else {
+        time <- tmle_node$time
+      }
+      if(is.null(time)) time <- 0
+
+      if(length(time) > 1){
+        at_risk_map <- tmle_node$at_risk_map
+        if(expand  | !is.null(tmle_node$at_risk_map) | !tmle_node$missing_not_at_risk){
+          #TODO, when to get value at all times by repeeatedly calling get_tmle_node with force_time_value argument??
+          # The main issue is that computing the at_risk indicator requires applying a function to data[t <= time]
+          # so there isn't any general shortcut exploiting the long format of the data
+          data <- lapply(time, self$get_tmle_node, node_name= node_name, format = format, include_time = T, include_id = T, expand = expand)
+          #setkey(data, id , t)
+          return(data)
+        }
+        else {
+          data <-  self$get_data(self$row_index,  c("id", "t", node_var))
+          data <- data[t %in% time]
+        }
+
+      } else {
+        #The at_risk summary measure might need other columns so grab all
+        data <-  self$get_data(self$row_index,)
+        data <- data[t <= time]
+        if(compute_risk_set & !private$.force_at_risk){
+          risk_set <- tmle_node$risk_set(data, time)
+        }
+        data <- data[, c("id", "t", node_var), with = F]
+
+        if(expand){
+          # Get most recent value for all
+          data <- data[, last(.SD), by = id]
+          if(compute_risk_set){
+            if(private$.force_at_risk) {
+              data$at_risk <- 1
+            } else {
+              data$at_risk <- as.numeric(data$id %in% risk_set)
+            }
+            if(time > 0) {
+              last_vals <- self$data[t <= (time - 1), last(.SD), by = id, .SDcols = c(node_var)][,c(node_var),with = F]
+            } else {
+              last_vals <- NA
+            }
+            set(data, , paste0("last_val_",node_var) , last_vals)
+          }
+
+        } else {
+          # Get most recent value for all those at risk
+          if(compute_risk_set){
+            data <- data[id %in% risk_set, last(.SD), by = id]
+          } else {
+            data <- data[, last(.SD), by = id]
+          }
+
+        }
+
+      }
+      set(data,, "t", time)
+      if (format == TRUE) {
+        data_node <- data[, node_var, with = F]
+        if ((ncol(data_node) == 1)) {
+          data_node <- unlist(data_node, use.names = FALSE)
+        }
+        var_type <- tmle_node$variable_type
+        data_node <- var_type$format(data_node)
+        data_node <- self$scale(data_node, node_name)
+        set(data,, node_var, data_node)
       }
 
-      if (format == TRUE) {
-        var_type <- tmle_node$variable_type
-        data <- var_type$format(data)
-        data <- self$scale(data, node_name)
-        data <- data.table(data)
-        setnames(data, node_var)
+      assign(cache_key, data, private$.node_cache)
+
+      if(!include_time){
+        data$t <- NULL
+      }
+      if(!include_id){
+        data$id <- NULL
       }
 
       censoring_node <- tmle_node$censoring_node
 
+      # TODO So I think we should treat censoring and risk_set's differently
+      # We say someone is no longer at_risk if their value will not change in time
+      # We say someone is censored if their value is truly missing/unobserved
+      # For the case of Param_survival, if we define our nodes
+      # as the observed censoring and failure counting processes:
+      #N(t) = 1(Ttilde <=t, Delta = 1), A(t) = 1(Ttilde <=t, Delta = 0)
+      #Then we do not actually have censoring/outcome missingness in the sense that
+      # the observed data we need for estimation isn't actually missing.
+      # In this case, the risk_set_map is what we need to describe the nodes
+      # (i.e. when any of the counting processes jumps, then they both remain the same value with prob 1)
+      # On the other hand, if we have (W, A Y) and Y is missing then this is true censoring
+      # We are really missing the observed data Y.
+      # And it does not make sense to say this individual is no longer at risk/their value of Y stays the same
+      #So I think we still need the notion of a censoring node but just need to be careful how we use it.
       if (is(censoring_node, "tmle3_Node") && impute_censoring) {
         observed <- self$get_tmle_node(censoring_node$name)
         censoring <- !observed

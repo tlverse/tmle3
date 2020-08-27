@@ -1,0 +1,85 @@
+---
+title: "tests"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+devtools::document()
+
+```
+
+
+```{r}
+library(data.table)
+
+# Generate simple causal model
+library(simcausal)
+
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "runif", min =-1, max = 1) +
+  node("A", distr = "rbinom", size = 1, prob = 0.5 + W/4 ) +
+  node("T", distr = "rexp", rate = 0.05*(1 + 0.5*A - 0.3*W) )+
+  node("C", distr = "rexp",  rate = 0.03*(1 + 0.4*A - 0.2*W)) +
+  node("Delta", distr = "rconst", const = as.numeric(T<=C)  ) +
+  node("Ttilde", distr = "rconst", const = round(min(T,C,10) +1  ))
+setD <- set.DAG(D)
+dat <- sim(setD, n = 1e2)
+# only grab ID, W's, A, T.tilde, Delta
+Lname <- grep("W", colnames(dat), value = TRUE)
+Aname <- grep("A", colnames(dat), value = TRUE)
+df <- dat[, c("ID", Lname, Aname, "T", "C", "Delta", "Ttilde")]
+
+data <- df[,c( "W", "A", "Ttilde", "Delta")]
+data$id = df$ID
+
+data$t <- data$Ttilde 
+data = data.table(data)
+data$processA = as.numeric(data$Delta ==0)
+data$processN = as.numeric(data$Delta ==1)
+data_baseline <- data
+data_baseline$t =0
+data_baseline$processA = 0
+data_baseline$processN = 0
+data_baseline$Ttilde = NA
+data_baseline$Delta = NA
+data = rbind(data_baseline, data)
+data$Ttilde = NULL
+data$Delta = NULL
+data$at_risk = 1 - (data$processA + data$processN)
+data[which(data$processN==1), "processA"] = 0
+npsem = list(define_node("W", c("W"), time =0), 
+     define_node("A", c("A"), c("W"), time =0, summary_functions = make_summary_measure_baseline(c("W"))),
+     
+     define_node("processA", c("processA"),  c("A","W"), time = seq(1,max(data$t)), summary_functions = make_summary_measure_baseline(c("A", "W")),
+                  risk_set_map = make_summary_measure_last_value("at_risk", strict_past  = T), missing_row_implies_not_at_risk = F),
+     
+define_node("processN", c("processN"), c("A","W"),time = seq(1,max(data$t)), summary_functions = make_summary_measure_baseline(c("A", "W")),
+                  risk_set_map = make_summary_measure_last_value("at_risk", strict_past = T), missing_row_implies_not_at_risk = F))
+# Delta is the counting process which is 1 at death
+data
+```
+
+```{r}
+data
+dat<-data
+dat[, processN := 1]
+dat
+data
+```
+
+```{r}
+
+
+task <- tmle3_Task$new(as.data.table(data), npsem, id = "id", time = "t")
+
+print(task$get_tmle_node("W", expand = F))
+print(task$get_tmle_node("A", expand = F))
+
+```

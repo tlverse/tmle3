@@ -83,7 +83,7 @@ LF_fit <- R6Class(
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       #
       if(is.null(node)) node <- self$name
-      learner_task <- tmle_task$get_regression_tasknode, expand =expand)
+      learner_task <- tmle_task$get_regression_task(node, expand =expand)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 

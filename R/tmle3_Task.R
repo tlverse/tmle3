@@ -7,6 +7,7 @@
 #'
 #' @importFrom R6 R6Class
 #' @importFrom sl3 sl3_Task
+#' @importFrom sl3 Shared_Data
 #' @importFrom digest digest
 #' @import data.table
 #'
@@ -28,7 +29,7 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem,  intervene_all_at_risk = F, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, ...) {
+    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, ...) {
 
       if(!inherits(data, "Shared_Data")){
         # For ease of coding and cleanness of code (and working with data.tables)
@@ -57,7 +58,7 @@ tmle3_Task <- R6Class(
       } else{
         # This assumes preprocessing has been done (e.g. sorting by id and t)
         shared_data <- data
-        if(key(shared_data$data) != c("id", "t")){
+        if(key(shared_data$raw_data) != c("id", "t")){
           stop("Shared_Data object passed does not have a (id, t) key set.")
         }
       }
@@ -161,6 +162,7 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
       private$.force_at_risk <- force_at_risk
       private$.uuid <- digest(self$data)
+      private$.summary_measure_columns <- summary_measure_columns
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = F, compute_risk_set = T) {
       force_at_risk <- private$.force_at_risk
@@ -319,10 +321,10 @@ tmle3_Task <- R6Class(
       return(data)
     },
     # TODO: add time_variance
-    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = F) {
+    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = F, cache_task = T) {
 
-      if(!is.numeric(force_time_value)){
-        cache_key <- sprintf("%s_%s_%s_%s", target_node, scale, is_time_variant, expand)
+      if(!is.numeric(force_time_value) & cache_task){
+        cache_key <- sprintf("%s_%s_%s_%s_%s", target_node, scale, drop_censored, is_time_variant, expand)
         cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
         if (!is.null(cached_data)) {
           return(cached_data)
@@ -371,6 +373,7 @@ tmle3_Task <- R6Class(
 
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]
+      target_node <- target_node_object$name
       outcome <- target_node_object$variables
       if(is.numeric(force_time_value)){
         time <- force_time_value
@@ -436,27 +439,31 @@ tmle3_Task <- R6Class(
 
       if(is.null(unlist(target_node_object$summary_functions))){
         # No summary functions so simply stack node values of parents
+
         parent_data <- do.call(cbind, lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F))
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
-        data <- merge(outcome_data, parent_data, by = id, all.x = T)
+
+
+
         covariates <- colnames(parent_data)
         outcome = setdiff(colnames(outcome_data), c("id", "t", grep("last_val", colnames(outcome_data), value = T), "at_risk"))
-        if((time == "pooled")){
+        if((length(time) >1)){
           covariates <- c(covariates, "t")
         }
-        outcome_index <-  match(outcome, colnames(outcome_data))
+        outcome_index <-  1:length(outcome)
         if(length(parent_data)>0){
-          cov_index <- ncol(outcome_data) + match(covariates, colnames(parent_data))
+
+          cov_index <- length(outcome) + 1:length(covariates)
         } else {
           cov_index <- c()
         }
         #Due to time indexing, we do not have unique column names.
         #In order to support pooling across time, we shouldn't use node names as column names
         #important that outcome variable name doesnt change
-        setnames(data, make.unique(colnames(data)))
-        covariates <- colnames(data)[cov_index]
-        outcome <- colnames(data)[outcome_index]
-        all_covariate_data <- data
+        uniq_names <- make.unique(c(outcome,covariates))
+        covariates <- uniq_names[cov_index]
+        outcome <- uniq_names[outcome_index]
+        all_covariate_data <- parent_data
 
       } else {
 
@@ -495,14 +502,17 @@ tmle3_Task <- R6Class(
       #TODO since number of time rows vary per person, only time-indepdent nodes make sense
       # Keep only node_data for each individual at the time of this tmle node
       node_data <- node_data[node_data$id %in% outcome_data$id & node_data$t <= time, last(.SD), by = id]
-
-      node_data$t <- time
+      node_data$t <- NULL
       nodes$outcome <- outcome
       nodes$covariates <- covariates
+      if(length(all_covariate_data) == 0){
+        regression_data <-  list(outcome_data, node_data) %>% purrr::reduce(merge, "id")
+      } else {
+        regression_data <-  list(all_covariate_data, outcome_data, node_data) %>% purrr::reduce(merge, "id")
+      }
+      set(regression_data, , "t" , time)
 
-      regression_data <-  list(all_covariate_data, outcome_data, node_data) %>% reduce(merge, "id")
-      regression_data$t = time
-      setkey(regression_data, id, t)
+      #setkey(regression_data, id, t)
 
 
       censoring_node <- target_node_object$censoring_node
@@ -549,33 +559,175 @@ tmle3_Task <- R6Class(
           folds = folds
         )
       })
-      if(!is.numeric(force_time_value)){
+      if(!is.numeric(force_time_value) & cache_task){
         assign(cache_key, regression_task, private$.node_cache)
       }
 
       return(regression_task)
     },
-    generate_counterfactual_task = function(uuid, new_data) {
+    generate_counterfactual_task = function(uuid, new_data,  force_at_risk = NULL, through_data =  F , remove_rows = F) {
+      # for current_factor, generate counterfactual values
+      if(is.null(force_at_risk)){
+        force_at_risk <- private$.force_at_risk
+      }
+      if(nrow(new_data)==1){
+        node <- colnames(new_data)
+        node_var <- sapply(
+          node,
+          function(node_name) {
+            self$npsem[[node_name]]$variables
+          }
+        )
+        nrow <- nrow(self$data)
+        new_data <- new_data[rep(1,nrow)]
+        setnames(new_data, node, node_var)
+        new_task <- self$clone()
+        new_column_names <- new_task$add_columns(new_data, uuid)
+        new_task$initialize(
+          self$internal_data, self$npsem,
+          nodes = self$nodes,
+          column_names = new_column_names,
+          folds = self$folds,
+          row_index = self$row_index,
+          force_at_risk = force_at_risk,
+          summary_measure_columns = private$.summary_measure_columns
+        )
+        return(new_task)
+
+      }
+
+
+
+      if(!("t" %in% colnames(new_data)) | !("id" %in% colnames(new_data))){
+        if(nrow(new_data) == self$nrow){
+
+          node_names <- setdiff(names(new_data), c("id", "t"))
+          node_variables <- sapply(
+            node_names,
+            function(node_name) {
+              self$npsem[[node_name]]$variables
+            }
+          )
+          setnames(new_data, node_names, node_variables)
+
+          new_task <- self$clone()
+          new_column_names <- new_task$add_columns(new_data, uuid)
+          new_task$initialize(
+            self$internal_data, self$npsem,
+            nodes = self$nodes,
+            column_names = new_column_names,
+            folds = self$folds,
+            row_index = self$row_index,
+            force_at_risk = force_at_risk,
+            summary_measure_columns = private$.summary_measure_columns
+          )
+          return(new_task)
+        } else {
+          through_data = T
+        }
+      }
+
+      if(!through_data){
+
+        if(!("t" %in% colnames(new_data)) | !("id" %in% colnames(new_data))){
+          stop("t and id column not found")
+        }
+
+
+        data <- data.table::copy(self$get_data(self$row_index,))
+        node <-  setdiff(colnames(new_data), c("id", "t"))
+        if(remove_rows){
+          id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
+          data <- data[!.(id_t_ex$id, id_t_ex$t), .(node)]
+        } else {
+          id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
+          data <- data[.(id_t_ex$id, id_t_ex$t), .(node) := NA]
+        }
+        has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(node[[1]]), with = F], use.names = F))
+        append_row_data <- new_data[-has_row]
+        alter_row_data <- new_data[has_row]
+        data[.(alter_row_data$id, alter_row_data$t), .(node) :=  alter_row_data[, .(node)]]
+        if(nrow(append_row_data) > 0){
+          data <- rbind(data, append_row_data, fill = T)
+          setkey(data, id, t)
+          setnafill(data, "locf")
+
+        }
+
+        new_task <- self$clone()
+
+        #TODO regenerate folds?? But preserve id division? We are adding rows of time
+
+        new_task$initialize(
+          data, self$npsem,
+          #folds = self$folds,
+          #row_index = self$row_index,
+          t = "t",
+          id = "id",
+          nodes = self$nodes,
+          force_at_risk = force_at_risk,
+          summary_measure_columns = private$.summary_measure_columns
+
+        )
+        return(new_task)
+      }
+
+
+
       # for current_factor, generate counterfactual values
       node_names <- names(new_data)
+
       node_variables <- sapply(
         node_names,
         function(node_name) {
           self$npsem[[node_name]]$variables
         }
       )
-      setnames(new_data, node_names, node_variables)
+
+      node_times <- sapply(
+        node_names,
+        function(node_name) {
+          time <- self$npsem[[node_name]]$time
+          }
+      )
+
+      node_index <- lapply(
+        node_times,
+        function(time) {
+          if(is.null(time)) return(1:nrow(new_data))
+          sort(which(self$data$t %in% time))
+        }
+      )
+
+      old_data <- data.table::copy(self$data[, unique(node_variables), with = F])
+
+      lapply(seq_along(node_index), function(i){
+        index <- node_index[[i]]
+        var <- node_variables[[i]]
+
+        set(old_data, index, var, new_data[,node_names[[i]],with=F])
+      })
+
+      new_data <- old_data
+
+      #setnames(new_data, node_names, node_variables)
 
       new_task <- self$clone()
+
       new_column_names <- new_task$add_columns(new_data, uuid)
+
+
       new_task$initialize(
         self$internal_data, self$npsem,
-        nodes = self$nodes,
         column_names = new_column_names,
         folds = self$folds,
-        row_index = self$row_index
+        row_index = self$row_index,
+        force_at_risk = force_at_risk,
+        summary_measure_columns = private$.summary_measure_columns
       )
+
       return(new_task)
+
     },
     next_in_chain = function(...) {
       return(super$next_in_chain(npsem = self$npsem, ...))
@@ -638,7 +790,9 @@ tmle3_Task <- R6Class(
         self$internal_data, self$npsem,
         column_names = self$column_names,
         folds = new_folds,
-        row_index = row_index
+        row_index = row_index,
+        force_at_risk = force_at_risk,
+        summary_measure_columns = private$.summary_measure_columns
       )
       return(new_task)
     }
@@ -650,14 +804,15 @@ tmle3_Task <- R6Class(
     data = function() {
       all_variables <- unlist(lapply(self$npsem, `[[`, "variables"))
       # I need self$data to give me t and id, so lets include nodes
-      all_variables <- union(all_variables,unlist(self$nodes))
+      all_variables <- union(all_variables, c(unlist(self$nodes), private$.summary_measure_columns))
       self$get_data(columns = all_variables)
     }
   ),
   private = list(
     .npsem = NULL,
     .node_cache = NULL,
-    .force_at_risk = F
+    .force_at_risk = F,
+    .summary_measure_columns = NULL
   )
 )
 

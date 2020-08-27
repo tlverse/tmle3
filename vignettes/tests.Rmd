@@ -66,20 +66,12 @@ define_node("processN", c("processN"), c("A","W"),time = seq(1,max(data$t)), sum
 data
 ```
 
-```{r}
-data
-dat<-data
-dat[, processN := 1]
-dat
-data
-```
+
 
 ```{r}
 
 
 task <- tmle3_Task$new(as.data.table(data), npsem, id = "id", time = "t")
-
-print(task$get_tmle_node("W", expand = F))
-print(task$get_tmle_node("A", expand = F))
-
+task$data
+task$generate_counterfactual_task(UUIDgenerate(), data.table(processA=0))$data
 ```

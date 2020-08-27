@@ -28,22 +28,20 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem,  intervene_all_at_risk = F, summary_measure_columns = NULL, ...) {
+    initialize = function(data, npsem,  intervene_all_at_risk = F, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, ...) {
 
       if(!inherits(data, "Shared_Data")){
         # For ease of coding and cleanness of code (and working with data.tables)
         # I assume that the id and time columns are "id" and "t" respectively.
-
-        if(!is.null(nodes)){
-          id <- nodes$id
-          time <- nodes$time
-        }
-
+        if(!is.data.table(data)) data <- as.data.table(data)
+        #TODO if passed through nodes arg
         if(is.null(id)){
           set(data, , "id", 1:nrow(data))
+          id = "id"
         }
         if(is.null(time)){
           set(data, , "t", rep(0,nrow(data)))
+          time = "t"
         }
 
         if(id!="id"){
@@ -64,7 +62,7 @@ tmle3_Task <- R6Class(
         }
       }
 
-      super$initialize(data, covariates = c(), outcome = NULL, ...)
+      super$initialize(data, covariates = c(), outcome = NULL, id = id, time  = time,  ...)
 
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
@@ -161,21 +159,26 @@ tmle3_Task <- R6Class(
 
       private$.npsem <- npsem
       private$.node_cache <- new.env()
+      private$.force_at_risk <- force_at_risk
       private$.uuid <- digest(self$data)
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = F, compute_risk_set = T) {
-      if(private$.force_at_risk) expand <- T
+      force_at_risk <- private$.force_at_risk
+      if(force_at_risk) {
+        expand <- T
+        compute_risk_set <- F
+      }
 
       if(is.null(force_time_value)) force_time_value <- F
-      cache_key <- sprintf("%s_%s_%s_%s", node_name, format, force_time_value, expand)
+      cache_key <- sprintf("%s_%s_%s_%s_%s_%s", node_name, format, impute_censoring, force_time_value, expand, compute_risk_set)
 
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
         if(!include_time){
-          cached_data$t <- NULL
+          cached_data <- cached_data[, setdiff( names(cached_data), c("t")), with = F]
         }
         if(!include_id){
-          cached_data$id <- NULL
+          cached_data <- cached_data[, setdiff( names(cached_data), c("id")), with = F]
         }
         return(cached_data)
       }
@@ -201,13 +204,15 @@ tmle3_Task <- R6Class(
           #TODO, when to get value at all times by repeeatedly calling get_tmle_node with force_time_value argument??
           # The main issue is that computing the at_risk indicator requires applying a function to data[t <= time]
           # so there isn't any general shortcut exploiting the long format of the data
-          data <- lapply(time, self$get_tmle_node, node_name= node_name, format = format, include_time = T, include_id = T, expand = expand)
+          data <- lapply(time, function(t) self$get_tmle_node( force_time_value = t,node_name= node_name, format = format, include_time = T, include_id = T, expand = expand))
+
           #setkey(data, id , t)
-          return(data)
+          return(rbindlist(data))
         }
         else {
           data <-  self$get_data(self$row_index,  c("id", "t", node_var))
           data <- data[t %in% time]
+
         }
 
       } else {
@@ -228,12 +233,20 @@ tmle3_Task <- R6Class(
             } else {
               set(data, , "at_risk", as.numeric(data$id %in% risk_set))
             }
-            if(time > 0) {
-              last_vals <- self$data[t <= (time - 1), last(.SD), by = id, .SDcols = c(node_var)][,c(node_var),with = F]
+
+            if(tmle_node$degeneracy_type == "last" & time > 0){
+              degeneracy_value <- self$data[t < time , last(.SD), by = id, .SDcols = c(node_var)][,c(node_var),with = F]
+            } else if(is.numeric(tmle_node$degeneracy_type) & length(tmle_node$degeneracy_type)==1){
+              degeneracy_value <- tmle_node$degeneracy_type
             } else {
-              last_vals <- NA
+              if(time > 0) {
+                degeneracy_value <- self$data[t < time , last(.SD), by = id, .SDcols = c(node_var)][,c(node_var),with = F]
+              } else {
+                degeneracy_value <- NA
+                }
             }
-            set(data, , paste0("last_val_",node_var) , last_vals)
+
+            set(data, , paste0("degeneracy_value_",node_var) , degeneracy_value)
 
           }
 
@@ -246,9 +259,9 @@ tmle3_Task <- R6Class(
           }
 
         }
-
+        set(data,, "t", time)
       }
-      set(data,, "t", time)
+
       if (format == TRUE) {
         data_node <- data[, node_var, with = F]
         if ((ncol(data_node) == 1)) {
@@ -293,15 +306,15 @@ tmle3_Task <- R6Class(
         }
       }
 
+      assign(cache_key, data, private$.node_cache)
 
       if(!include_time){
-        data[, t := NULL]
+        data <- data[, setdiff( names(data), c("t")), with = F]
       }
       if(!include_id){
-        data[, id := NULL]
+        data <- data[, setdiff( names(data), c("id")), with = F]
       }
 
-      assign(cache_key, data, private$.node_cache)
 
       return(data)
     },
@@ -636,12 +649,15 @@ tmle3_Task <- R6Class(
     },
     data = function() {
       all_variables <- unlist(lapply(self$npsem, `[[`, "variables"))
+      # I need self$data to give me t and id, so lets include nodes
+      all_variables <- union(all_variables,unlist(self$nodes))
       self$get_data(columns = all_variables)
     }
   ),
   private = list(
     .npsem = NULL,
-    .node_cache = NULL
+    .node_cache = NULL,
+    .force_at_risk = F
   )
 )
 

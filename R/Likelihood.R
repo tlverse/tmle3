@@ -37,8 +37,22 @@ Likelihood <- R6Class(
       }
 
       factor_names <- sapply(factor_list, `[[`, "name")
-      names(factor_list) <- factor_names
-      params$factor_list <- factor_list
+      factor_list_unpooled <- list()
+      for(i in seq_along(factor_names)){
+        names <- c(factor_names[[i]])
+        factor <- factor_list[[i]]
+        for(name in names){
+          factor_list_unpooled[[name]] <- factor
+        }
+      }
+
+
+
+      names(factor_list) <-  sapply(factor_names, function(name) paste(name, collapse = "%"))
+
+      params$factor_list <- factor_list_unpooled
+      params$factor_list_pooled <- factor_list
+
       if (is.null(cache)) {
         cache <- Likelihood_cache$new()
       }
@@ -60,30 +74,89 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_likelihood = function(tmle_task, node, fold_number = "full") {
+    get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, to_wide = F, expand = T) {
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
-      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number)
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
+
+      if(!expand & !is.null(likelihood_values)) {
+        #Only store the full likelihood
+        #Regression task should be cached so this is cheap
+        keep <- tmle_task$get_regression_task(node, expand = T)$data$at_risk == 1
+        likelihood_values <- likelihood_values[keep,]
+      }
 
       if (is.null(likelihood_values)) {
         # if not, generate new ones
-        likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
-        self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values)
+        #Include id's and time
+        likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node)
       }
 
+      if(expand){
+        self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values, node = node)
+      }
+
+     # names_of <- colnames(likelihood_values)
+      #keep_cols <- intersect(c("t", "id", grep(node, names_of, value = T)), names_of)
+
+
+     # likelihood_values <- likelihood_values[,  keep_cols, with = F]
+
+      if(to_wide & length(unique(likelihood_values$t))==1){
+        likelihood_values$t <- NULL
+      }
+      else if(to_wide){
+        likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
+      }
+      if(drop_id & "id" %in% colnames(likelihood_values)) likelihood_values$id <- NULL
+      if(drop_time & "t" %in% colnames(likelihood_values)) likelihood_values$t <- NULL
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full") {
+    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, to_wide = T, expand = T) {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
 
       if (length(nodes) > 1) {
         all_likelihoods <- lapply(nodes, function(node) {
-          self$get_likelihood(tmle_task, node, fold_number)
+          self$get_likelihood(tmle_task, node, fold_number, to_wide = to_wide, expand =  expand)
         })
-        likelihood_dt <- as.data.table(all_likelihoods)
-        setnames(likelihood_dt, nodes)
+        contains_t <- all(unlist(lapply(all_likelihoods, function(lik){
+          "t" %in% colnames(lik)
+        })))
+        if(contains_t){
+          likelihood_dt <- all_likelihoods %>% reduce(full_join, c("id", "t"))#as.data.table(all_likelihoods)
+        } else{
+          all_likelihoods <- lapply(all_likelihoods, function(lik){
+            if(!(all(c("id", "t") %in% colnames(lik)))){
+              if("t" %in% colnames(lik)) lik$t <- NULL
+              return(lik)
+            }
+            if(length(unique(lik$t))==1){
+              if("t" %in% colnames(lik)) lik$t <- NULL
+              return(lik)
+            }
+            reshape(lik, idvar = "id", timevar = "t", direction = "wide")
+          })
+
+          tryCatch(
+            {
+              likelihood_dt <- all_likelihoods %>% reduce(full_join, c("id"))
+            }, error = function(cond) {
+              # Handle case when one of predictions doesn't include ID.
+              likelihood_dt <- cbindlist(all_likelihoods)
+              # Remove duplicate columns (id columns)
+              likelihood_dt <- likelihood_dt[, !duplicated(names(likelihood_dt)), with = F]
+            }
+          )
+
+          #as.data.table(all_likelihoods)
+          if("t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
+        }
+        # TODO Already has names
+        #setnames(likelihood_dt, nodes)
+        if(drop_id) likelihood_dt$id <- NULL
+        if(drop_time & t %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
         return(likelihood_dt)
       } else {
         return(self$get_likelihood(tmle_task, nodes[[1]], fold_number))
@@ -112,6 +185,7 @@ Likelihood <- R6Class(
       return(new_object)
     },
     add_factors = function(factor_list) {
+      #TODO this will fail if the factor_list contains pooled likelihood factors
       if (inherits(factor_list, "LF_base")) {
         factor_list <- list(factor_list)
       }
@@ -127,6 +201,7 @@ Likelihood <- R6Class(
     sample = function(tmle_task = NULL, sample_lib = NULL) {
       # for now assume nodes are in order
       # TODO: order nodes based on dependencies
+      stop("This doesn't work")
       if (is.NULL(sample_lib = NULL)) {
         nodes <- names(self$factor_list)
         sample_lib <- rep(list(NULL), length(nodes))
@@ -141,6 +216,9 @@ Likelihood <- R6Class(
     }
   ),
   active = list(
+    factor_list_pooled = function(){
+      return(self$params$factor_list_pooled)
+    },
     factor_list = function() {
       return(self$params$factor_list)
     },

@@ -46,16 +46,30 @@ LF_static <- R6Class(
       private$.variable_type <- variable_type("constant", value)
     },
     get_mean = function(tmle_task, fold_number) {
-      return(rep(self$value, tmle_task$nrow))
+      observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = T)
+      node_vars <- tmle_task$npsem[[self$name]]$variables
+      set(observed, , node_vars, self$value)
+      pred <- observed
+      setnames(pred, node_vars, self$name )
+      return(pred)
     },
     get_density = function(tmle_task, fold_number) {
-      observed <- tmle_task$get_tmle_node(self$name)
-      likelihood <- as.numeric(self$value == observed)
-
+      observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = T)
+      node_vars <- tmle_task$npsem[[self$name]]$variables
+      set(observed, , node_vars, data.table(as.numeric(self$value == unlist(observed[,self$name, with = F ]))))
+      likelihood <- observed
+      setnames(likelihood,node_vars, self$name)
       return(likelihood)
     },
     cf_values = function(tmle_task) {
-      cf_values <- rep(self$value, tmle_task$nrow)
+      #cf_values <- rep(self$value, tmle_task$nrow)
+      node <- tmle_task$npsem[[self$name]]
+      times <- node$times
+      if(is.null(times)){
+        times <- 0
+      }
+      num_times <- (length(times))
+      cf_values <- rep(self$value, length(unique(tmle_task$id)) * num_times)
       return(cf_values)
     },
     sample = function(tmle_task, n_samples = NULL, fold_number = "full") {

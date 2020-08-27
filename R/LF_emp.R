@@ -36,33 +36,73 @@ LF_emp <- R6Class(
       super$initialize(name, ..., type = "density")
       private$.name <- name
     },
+    train = function(tmle_task, ...) {
+      # get possible values from task if discrete
+      super$train(tmle_task)
+      weights <- tmle_task$get_regression_task(self$name)$weights
+
+      observed <- unlist(tmle_task$get_tmle_node(self$name, format = T, include_id = F), use.names = F)
+      uniq_obs <- unique(observed)
+      counts <- unlist(lapply(uniq_obs, function(obs){ sum(weights * as.numeric(observed == obs))}), use.names = F)
+
+      emp_probs <- counts/sum(counts)
+      names(emp_probs) <- uniq_obs
+
+      private$.empirical_fit <- list(emp_probs = emp_probs, uniq_obs = uniq_obs )
+    },
     get_mean = function(tmle_task, fold_number = "full") {
       stop("nothing to predict")
     },
     get_density = function(tmle_task, fold_number = "full") {
       # TODO: this only makes sense if the tmle_task is the same as the training one
-      weights <- tmle_task$weights
-      return(weights / sum(weights))
+      # Does not use the empirical measure of training sample but instead recomputes each time for new data
+      # Not sure if this is what we want.
+      # TODO: this only makes sense if the tmle_task is the same as the training one
+      # This computes the true empirical density, including when there are ties.
+      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
+
+      observed <- unlist(observedfull[, setdiff(colnames(observedfull), c("id", "t")), with = F])
+
+      # TODO dont need weights for prediction??
+      #weights <- tmle_task$get_regression_task(self$name)$weights
+      emp_probs <-  private$.empirical_fit$emp_probs
+      uniq_obs <-  private$.empirical_fit$uniq_obs
+
+
+      matched_obs <- match(observed, uniq_obs)
+      #Match observations to empirical probs obtained from training set
+      probs <- as.vector(sapply(matched_obs, function(i) {
+        if(is.na(i)) {
+          return(0)
+        }
+        return(emp_probs[i])
+      }))
+
+      #probs <- weights*probs
+      #weights <- tmle_task$get_regression_task(self$name)$weights
+      probs <- data.table(probs )
+      setnames(probs, self$name)
+      probs$id = observedfull$id
+      probs$t = observedfull$t
+
+      # probs$t = NULL
+      return(probs)
     },
     sample = function(tmle_task = NULL, n_samples = NULL, fold_number = "full") {
-      # TODO: fold
-      # TODO: handle weights
-      # TODO: option to return task
-      if (is.null(tmle_task)) {
-        tmle_task <- self$training_task
-      }
-      if (is.null(n_samples)) {
-        return(tmle_task)
-      }
+      #TODO No conditioning variables so dont need task
+      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
 
-      index <- sample(1:self$training_task$nrow, tmle_task$nrow * n_samples, replace = TRUE)
+      emp_probs <-  private$.empirical_fit$emp_probs
+      uniq_obs <-  private$.empirical_fit$uniq_obs
 
-      values <- self$training_task$get_tmle_node(self$name)[index]
-      values <- matrix(values, nrow = tmle_task$nrow)
+      values <- as.matrix(do.call(rbind, lapply(1:nrow(observedfull), function(i) uniq_obs[base::sample(seq_along(uniq_obs), n_samples, prob = emp_probs)])))
       return(values)
     }
   ),
-  active = list(),
+  active = list(
+    empirical_fit = function()
+      private$.empirical_fit
+  ),
   private = list(
     .name = NULL
   )

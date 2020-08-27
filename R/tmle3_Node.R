@@ -96,7 +96,7 @@ tmle3_Node <- R6Class(
     guess_variable_type = function(variable_data) {
       private$.variable_type <- sl3::variable_type(x = variable_data)
     },
-    risk_set = function(data, time, subset_time = F){
+    risk_set = function(data, time, subset_time = T){
 
       if(subset_time) data <- data[t <= time]
       #Assumes data == data[t <= time,] and time is single number

@@ -56,34 +56,82 @@ LF_fit <- R6Class(
 
       # fit scaled task for bounded continuous
       learner_task <- tmle_task$get_regression_task(outcome_node,
-        scale = TRUE, drop_censored = TRUE,
-        is_time_variant = self$is_time_variant
+        scale = TRUE, drop_censored = TRUE, expand = F
       )
       learner_fit <- delayed_learner_train(self$learner, learner_task)
       return(learner_fit)
     },
     train = function(tmle_task, learner_fit) {
-      super$train(tmle_task)
+      tmle_nodes <- lapply(self$names, function(node) tmle_task$npsem[[node]])
+      private$.variable_type <- lapply(tmle_nodes, function(node) node$variable_type)
+      private$.training_task <- tmle_task
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task, fold_number) {
+    get_likelihood = function(tmle_task, fold_number = "full", expand = T, node = NULL) {
+      if (self$type == "mean") {
+        values <- self$get_mean(tmle_task, fold_number, expand = expand, node = node)
+      } else {
+        values <- self$get_density(tmle_task, fold_number, expand = expand, node = node)
+      }
+      if (!is.null(self$bound)) {
+        values <- bound(values, self$bound)
+      }
+
+      return(values)
+    },
+    get_mean = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = T, drop_id = F, drop_time = F, drop = T, expand = T) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
-      learner_task <- tmle_task$get_regression_task(self$name, is_time_variant = TRUE)
+      #
+      if(is.null(node)) node <- self$name
+      learner_task <- tmle_task$get_regression_tasknode, expand =expand)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 
       # unscale preds (to handle bounded continuous)
-      preds_unscaled <- tmle_task$unscale(preds, self$name)
-      return(preds_unscaled)
+      preds <- tmle_task$unscale(preds, self$name)
+      data <-  learner_task$get_data()
+
+      # For conditional means, degenerate value is exactly the value to be predicted
+      if(check_at_risk & "at_risk" %in% colnames(data) ) {
+        # By setting check_at_risk = F then one can obtain the counterfactual predictions
+        # conditioned on everyone being at risk.
+        names_degen_val <- paste0("degeneracy_value_", learner_task$nodes$outcome)
+        # TODO Support multivariate outcome
+        assertthat::assert_that(all(names_degen_val %in% colnames(data)), msg = "If at_risk is a column then last_val must be as well.")
+        not_at_risk <- which(data$at_risk == 0)
+        if(length(not_at_risk)>0){
+          degen_val <- data[not_at_risk, names_degen_val, with = F]
+          preds[not_at_risk] <-  degen_val
+        }
+
+      }
+      preds <- data.table(preds)
+      preds$id <- learner_task$data$id
+      preds$t <- learner_task$data$t
+
+      setnames(preds, c(node, "id", "t"))
+      if(to_wide){
+        preds <- reshape(preds, idvar = "id", timevar = "t", direction = "wide")
+        setnames(preds, c("id", node))
+      }
+      if(drop_id & "id" %in% colnames(preds)) preds$id <- NULL
+      if(drop_time & "t" %in% colnames(preds)) preds$t <- NULL
+      if(drop & ncol(likelihood) == 1) preds <- unlist(preds, use.names = F)
+
+      return(preds)
     },
-    get_density = function(tmle_task, fold_number) {
+    get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = T, drop_id = F, drop_time = F, drop = T, expand = T) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
-      learner_task <- tmle_task$get_regression_task(self$name, is_time_variant = TRUE)
+      if(is.null(node)) node <- self$name
+      learner_task <- tmle_task$get_regression_task(node, expand = expand)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 
       outcome_type <- self$learner$training_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)
+
+      data <-  learner_task$get_data()
+
       if (outcome_type$type == "binomial") {
         likelihood <- ifelse(observed == 1, preds, 1 - preds)
       } else if (outcome_type$type == "categorical") {
@@ -95,18 +143,52 @@ LF_fit <- R6Class(
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
+      if(check_at_risk & "at_risk" %in% colnames(data) ) {
+        # By setting check_at_risk = F then one can obtain the counterfactual predictions
+        # conditioned on everyone being at risk.
+        names_degen_val <- paste0("degeneracy_value_", learner_task$nodes$outcome)
+        # TODO Support multivariate outcome
+        assertthat::assert_that(all(names_degen_val %in% colnames(data)), msg = "If at_risk is a column then last_val must be as well.")
+        not_at_risk <- which(data$at_risk == 0)
+        if(length(not_at_risk)>0){
+          degen_val <- data[not_at_risk, names_degen_val, with = F]
+          #If not at risk then equal to degenerate value with prob 1
+          #TODO  we should probably not compute the likelihood for all the not at risk people?
+          #Since we change their value anyway?
+          likelihood[not_at_risk] <- as.numeric(observed[not_at_risk] == degen_val)
+        }
+
+      }
+      likelihood <- data.table(likelihood)
+      likelihood$id <- learner_task$data$id
+      likelihood$t <- learner_task$data$t
+
+      setnames(likelihood, c(node, "id", "t"))
+      if(to_wide){
+        likelihood <- reshape(likelihood, idvar = "id", timevar = "t", direction = "wide")
+        setnames(likelihood, c("id", node))
+      }
+      if(drop_id & "id" %in% colnames(likelihood)) likelihood$id <- NULL
+      if(drop_time & "t" %in% colnames(likelihood)) likelihood$t <- NULL
+      if(drop & ncol(likelihood) == 1) likelihood <- unlist(likelihood, use.names = F)
+
+
       return(likelihood)
     },
-    sample = function(tmle_task, n_samples = NULL, fold_number = "full") {
+    sample = function(tmle_task, n_samples = NULL, fold_number = "full", node = NULL, expand = T) {
       # TODO: fold
+      # TODO when we have pooled tasks
+      if(is.null(node)) node <- self$name
+
       if (is.null(tmle_task)) {
         tmle_task <- self$training_task
       }
       if (is.null(n_samples)) {
         return(tmle_task)
       }
-
-      learner_task <- tmle_task$get_regression_task(self$name)
+      #TODO sampling will be messed up with degenerate likelihoods for some people
+      #Need to sample the at_risk people and the not at_risk people separately.
+      learner_task <- tmle_task$get_regression_task(node, expand = expand)
       learner <- self$learner
 
       outcome_type <- learner$training_task$outcome_type

@@ -31,34 +31,43 @@ tmle3_Task <- R6Class(
   public = list(
     initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, ...) {
 
+      dot_args <- list(...)
+      if(is.null(id)){
+        id <- dot_args$nodes$id
+      }
+      if(is.null(time)){
+        time <- dot_args$nodes$time
+      }
       if(!inherits(data, "Shared_Data")){
         # For ease of coding and cleanness of code (and working with data.tables)
         # I assume that the id and time columns are "id" and "t" respectively.
         if(!is.data.table(data)) data <- as.data.table(data)
         #TODO if passed through nodes arg
         if(is.null(id)){
+
           set(data, , "id", 1:nrow(data))
-          id = "id"
+          id <- "id"
         }
         if(is.null(time)){
           set(data, , "t", rep(0,nrow(data)))
-          time = "t"
+          time <- "t"
         }
 
         if(id!="id"){
           data[,"id", with = F] <- data[,id, with = F]
-          id = "id"
+          id <- "id"
         }
         if(time!="t"){
           data[, "t", with = F] <- data[,time, with = F]
-          time = "t"
+          time <- "t"
         }
         data <- setkey(data, id, t)
         shared_data <- data
       } else{
         # This assumes preprocessing has been done (e.g. sorting by id and t)
         shared_data <- data
-        if(key(shared_data$raw_data) != c("id", "t")){
+        if(!all(key(shared_data$raw_data) == c("id", "t"))){
+          setkey(shared_data$raw_data, "id", "t")
           stop("Shared_Data object passed does not have a (id, t) key set.")
         }
       }
@@ -141,6 +150,7 @@ tmle3_Task <- R6Class(
               name = censoring_node_name,
               variables = censoring_node_name,
               parents = current_node$parents,
+              time = current_node$time,
               variable_type = variable_type("binomial"),
               censoring_node = NULL,
               scale = FALSE
@@ -161,8 +171,8 @@ tmle3_Task <- R6Class(
       private$.npsem <- npsem
       private$.node_cache <- new.env()
       private$.force_at_risk <- force_at_risk
-      private$.uuid <- digest(self$data)
       private$.summary_measure_columns <- summary_measure_columns
+      private$.uuid <- digest(self$data)
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = F, compute_risk_set = T) {
       force_at_risk <- private$.force_at_risk
@@ -279,20 +289,7 @@ tmle3_Task <- R6Class(
 
       censoring_node <- tmle_node$censoring_node
 
-      # TODO So I think we should treat censoring and risk_set's differently
-      # We say someone is no longer at_risk if their value will not change in time
-      # We say someone is censored if their value is truly missing/unobserved
-      # For the case of Param_survival, if we define our nodes
-      # as the observed censoring and failure counting processes:
-      #N(t) = 1(Ttilde <=t, Delta = 1), A(t) = 1(Ttilde <=t, Delta = 0)
-      #Then we do not actually have censoring/outcome missingness in the sense that
-      # the observed data we need for estimation isn't actually missing.
-      # In this case, the risk_set_map is what we need to describe the nodes
-      # (i.e. when any of the counting processes jumps, then they both remain the same value with prob 1)
-      # On the other hand, if we have (W, A Y) and Y is missing then this is true censoring
-      # We are really missing the observed data Y.
-      # And it does not make sense to say this individual is no longer at risk/their value of Y stays the same
-      #So I think we still need the notion of a censoring node but just need to be careful how we use it.
+
       if (is(censoring_node, "tmle3_Node") && impute_censoring) {
         observed <- self$get_tmle_node(censoring_node$name)
         censoring <- !observed

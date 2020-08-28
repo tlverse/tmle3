@@ -30,7 +30,7 @@ D <- D +
   node("Delta", distr = "rconst", const = as.numeric(T<=C)  ) +
   node("Ttilde", distr = "rconst", const = round(min(T,C,10) +1  ))
 setD <- set.DAG(D)
-dat <- sim(setD, n = 1e2)
+dat <- sim(setD, n = 1e6)
 # only grab ID, W's, A, T.tilde, Delta
 Lname <- grep("W", colnames(dat), value = TRUE)
 Aname <- grep("A", colnames(dat), value = TRUE)
@@ -67,12 +67,11 @@ data
 ```
 
 ```{r}
+```
+ 
+```{r}
+setDT(unlist(list(data.table(NULL), data.table(1:10)), recursive = F))[]
 
-f = function(...){
-  v=list(...)
-  names(v)
-}
-  f(x=3)
 ```
 
 ```{r}
@@ -84,10 +83,11 @@ way = data.table(W = runif(n), A = rbinom(n, size = 1, 0.5), Y = rnorm(n), Delta
 ```{r}
 npsem = list(define_node("W", c("W")), define_node("Y", c("Y"), c("A", "W"), censoring_node = define_node("Delta", "Delta") ), define_node("A", c("A"), c("W")), define_node("Delta", "Delta"))
 
+
 task <- tmle3_Task$new(as.data.table(way), npsem)
 task$get_tmle_node("Delta", impute_censoring = T)
 task$get_tmle_node("Y", impute_censoring = T)
 
-task$get_regression_task("W", drop_censored = T)$nodes
-
+task$get_regression_task("Y", drop_censored = F, expand = F)$get_data()
+task$data
 ```

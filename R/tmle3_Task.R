@@ -331,7 +331,7 @@ tmle3_Task <- R6Class(
         all_tasks <- lapply(target_node, self$get_regression_task, scale, drop_censored , is_time_variant, expand = expand)
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         time_is_node <- sapply(all_nodes, function(node) !is.null(node$time))
-        regression_data <- do.call(rbind, lapply(all_tasks, function(task) task$get_data()))
+        regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
         setkey(pooled_data, id, t)
         nodes <- all_nodes[[1]]
         # Make sure time is included as covariate
@@ -387,7 +387,7 @@ tmle3_Task <- R6Class(
 
         all_tasks <- lapply(time, self$get_regression_task, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand )
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
-        regression_data <- do.call(rbind, lapply(all_tasks, function(task) task$get_data()))
+        regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
         nodes <- all_nodes[[1]]
         nodes$covariates <- union("t", nodes$covariates)
         setkey(regression_data, id, t)
@@ -438,10 +438,12 @@ tmle3_Task <- R6Class(
         # No summary functions so simply stack node values of parents
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
         if(length(parent_names) >0){
-          parent_data <-  lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F) %>% purrr::reduce(merge, "id")
+          #Id order should be same
+          parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
+          parent_data <- setDT(unlist(parent_data, recursive = F))[]
           setnames(parent_data, make.unique(names(parent_data)))
         } else {
-          parent_data <- outcome_data[, "id", with = F]
+          parent_data <- data.table(NULL)
         }
 
 
@@ -484,36 +486,56 @@ tmle3_Task <- R6Class(
         if(length(parent_covariates) != 0 | !is.null(unlist(target_node_object$summary_functions))){
           summary_measures <- target_node_object$summary_functions
           all_covariate_data <- lapply(summary_measures, function(fun){
-            return(fun$summarize(past_data, time))}
+            return(fun$summarize(past_data, time, add_id = F))}
           )
-          all_covariate_data <- all_covariate_data %>% purrr::reduce(merge, by = "id")
+          #all_covariate_data <- all_covariate_data %>% purrr::reduce(merge, by = "id")
+          #all_covariate_data <- do.call(cbind, all_covariate_data)
+          all_covariate_data <- setDT(unlist(all_covariate_data, recursive = F))[]
+
+          #set(all_covariate_data, , (which(duplicated(names(all_covariate_data)))), NULL)
           covariates <- setdiff(colnames(all_covariate_data), "id")
-          if("t" %in% colnames(all_covariate_data))  all_covariate_data$t <- NULL
+          if("t" %in% names(all_covariate_data))  set(all_covariate_data, "t", NULL)
 
         } else {
-          all_covariate_data <-  outcome_data[, "id", with = F]
+          all_covariate_data <-  data.table(NULL)
 
           covariates <- c()
         }
       }
 
       nodes <- self$nodes
-      node_data <- self$get_data(self$row_index, unlist(nodes))
 
-      #TODO since number of time rows vary per person, only time-indepdent nodes make sense
-      # Keep only node_data for each individual at the time of this tmle node
-      node_data <- node_data[node_data$id %in% outcome_data$id & node_data$t <= time, last(.SD), by = id]
-      node_data$t <- NULL
+      if(length(setdiff(nodes, c("id", "time"))) > 0){
+        node_data <- self$get_data(self$row_index, unlist(nodes))
+        #TODO since number of time rows vary per person, only time-indepdent nodes make sense
+        # Keep only node_data for each individual at the time of this tmle node
+        node_data <- node_data[node_data$id %in% outcome_data$id & node_data$t <= time, last(.SD), by = id]
+        setorder(node_data, id)
+        node_data$t <- NULL
+        node_data$id <- NULL
+      } else {
+        node_data <- data.table(NULL)
+      }
+
       nodes$outcome <- outcome
       nodes$covariates <- covariates
       if(ncol(all_covariate_data) == 0){
-        regression_data <-  list(outcome_data, node_data) %>% purrr::reduce(merge, "id")
-      } else {
-        regression_data <-  list(all_covariate_data, outcome_data, node_data) %>% purrr::reduce(merge, "id")
+        #regression_data <-  list(outcome_data, node_data) %>% purrr::reduce(merge, "id")
+        regression_data <- list(outcome_data, node_data)
+        regression_data <- setDT(unlist(regression_data, recursive = F))
+
+        #Handle id duplicates
+        #set(regression_data, , (which(duplicated(names(regression_data)))), NULL)
       }
+           else {
+          #The ids should already be matched up in order so we can just cbind, and not merge
+        regression_data <-   list(all_covariate_data, outcome_data, node_data) # %>% purrr::reduce(merge, "id")
+        regression_data <- setDT(unlist(regression_data, recursive = F))
+        #set(regression_data, ,(which(duplicated(names(regression_data)))), NULL)
+        }
       set(regression_data, , "t" , time)
 
-      #setkey(regression_data, id, t)
+      setkey(regression_data, id, t)
 
 
       censoring_node <- target_node_object$censoring_node
@@ -529,7 +551,7 @@ tmle3_Task <- R6Class(
           regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
         } else {
           #Impute to 0
-          regression_data[.(censoring_ids$id, censoring_ids$t), outcome := 0 , with = F]
+          regression_data[.(censoring_ids$id, censoring_ids$t), (outcome) := 0]
 
         }
       }
@@ -546,7 +568,7 @@ tmle3_Task <- R6Class(
         folds <- sl3::subset_folds(folds, indices)
       }
 
-
+      setcolorder(regression_data)
       regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
       if(F & is_time_variant){
@@ -643,12 +665,12 @@ tmle3_Task <- R6Class(
           data <- data[!.(id_t_ex$id, id_t_ex$t), node, with = F]
         } else {
           id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
-          data <- data[.(id_t_ex$id, id_t_ex$t), node := NA, with = F]
+          data <- data[.(id_t_ex$id, id_t_ex$t), (node) := NA]
         }
         has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(node[[1]]), with = F], use.names = F))
         append_row_data <- new_data[-has_row]
         alter_row_data <- new_data[has_row]
-        data[.(alter_row_data$id, alter_row_data$t), node :=  alter_row_data[, node, with = F], with = F]
+        data[.(alter_row_data$id, alter_row_data$t), (node) :=  alter_row_data[, node, with = F]]
         if(nrow(append_row_data) > 0){
           data <- rbind(data, append_row_data, fill = T)
           setkey(data, id, t)

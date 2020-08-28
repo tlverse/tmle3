@@ -74,7 +74,7 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, to_wide = F, expand = T) {
+    get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, drop = T, to_wide = F, expand = T) {
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
       likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
@@ -89,10 +89,16 @@ Likelihood <- R6Class(
       if(is.null(likelihood_values)) {
         # if not, generate new ones
         #Include id's and time
-        likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node)
+        args <- formalArgs(likelihood_factor$get_likelihood)
+        if(!all(c("expand", "node") %in% args)){
+          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
+        } else {
+          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node, drop = drop)
+
+        }
 
         if(!is.data.table(likelihood_values)){
-          setDT(likelihood_values)
+          likelihood_values <- as.data.table(likelihood_values)
           setnames(likelihood_values, node)
         }
         if(expand){
@@ -108,18 +114,19 @@ Likelihood <- R6Class(
 
      # likelihood_values <- likelihood_values[,  keep_cols, with = F]
 
-      if(to_wide & length(unique(likelihood_values$t))==1){
+      if("t" %in% colnames(likelihood_values) & to_wide & length(unique(likelihood_values$t))==1){
 
         likelihood_values$t <- NULL
       }
-      else if(to_wide){
+      else if("t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values) & to_wide){
         likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
       }
       if(drop_id & "id" %in% colnames(likelihood_values)) likelihood_values$id <- NULL
       if(drop_time & "t" %in% colnames(likelihood_values)) likelihood_values$t <- NULL
+      if(drop == T & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, to_wide = T, expand = T) {
+    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, drop = T, to_wide = T, expand = T) {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
@@ -153,10 +160,11 @@ Likelihood <- R6Class(
               likelihood_dt <- all_likelihoods %>% purrr::reduce(merge, by = "id")
             }, error = function(cond) {
               # Handle case when one of predictions doesn't include ID.
+              # This is mainly for backwards compatibility pre-ltmle changes
               likelihood_dt <- setDT(unlist(all_likelihoods, recursive = F))[]
+              # Need to change likelihood_dt object in parent frame
               likelihood_dt <<- likelihood_dt[, which(!duplicated(names(likelihood_dt))), with = F]
-              # Remove duplicate columns (id columns)
-              #likelihood_dt <- likelihood_dt[, !duplicated(names(likelihood_dt)), with = F]
+
             }
           )
 
@@ -169,7 +177,7 @@ Likelihood <- R6Class(
         if(drop_time & "t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
         return(likelihood_dt)
       } else {
-        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number, drop_id = drop_id, drop_time =drop_time ))
+        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number, drop_id = drop_id, drop_time =drop_time, drop = drop, expand = expand ))
       }
     },
     get_possible_counterfactuals = function(nodes = NULL) {

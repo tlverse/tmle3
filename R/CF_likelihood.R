@@ -51,6 +51,7 @@ CF_Likelihood <- R6Class(
       # todo: need to do this sequentially and build the task up based on time ordering
       # because dynamic rules depend on past rule values
       all_values <- lapply(intervention_list, function(likelihood_factor) {
+
         likelihood_factor$cf_values(tmle_task)
       })
 
@@ -60,15 +61,15 @@ CF_Likelihood <- R6Class(
       return(cf_tasks)
     },
 
-    get_likelihood = function(tmle_task, node, fold_number = "full") {
+    get_likelihood = function(tmle_task, node, fold_number = "full", ...) {
       # todo: this will not handle the case where the cf_likelihood is based on
       # an updated likelihood factor (e.g. old tx shift)
       if (node %in% self$intervention_nodes) {
-        likelihood_values <- super$get_likelihood(tmle_task, node, fold_number)
+        likelihood_values <- super$get_likelihood(tmle_task, node, fold_number, ...)
       } else {
         # dispatch to observed likelihood if not an intervention node
         # that way, we get updates to those nodes
-        likelihood_values <- self$observed_likelihood$get_likelihood(tmle_task, node, fold_number)
+        likelihood_values <- self$observed_likelihood$get_likelihood(tmle_task, node, fold_number, ...)
       }
 
       return(likelihood_values)

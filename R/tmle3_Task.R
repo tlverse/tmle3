@@ -66,13 +66,15 @@ tmle3_Task <- R6Class(
       } else{
         # This assumes preprocessing has been done (e.g. sorting by id and t)
         shared_data <- data
+        id <- "id"
+        time <- "t"
         if(!all(key(shared_data$raw_data) == c("id", "t"))){
           setkey(shared_data$raw_data, "id", "t")
           stop("Shared_Data object passed does not have a (id, t) key set.")
         }
       }
 
-      super$initialize(data, covariates = c(), outcome = NULL, id = id, time  = time,  ...)
+      super$initialize(shared_data, covariates = c(), outcome = NULL, id = id, time  = time,  ...)
 
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
@@ -192,6 +194,9 @@ tmle3_Task <- R6Class(
         if(!include_id){
           cached_data <- cached_data[, setdiff( names(cached_data), c("id")), with = F]
         }
+        if (!format & (ncol(cached_data) == 1)) {
+          cached_data <- unlist(cached_data, use.names = FALSE)
+        }
         return(cached_data)
       }
       tmle_node <- self$npsem[[node_name]]
@@ -229,7 +234,7 @@ tmle3_Task <- R6Class(
 
       } else {
         #The at_risk summary measure might need other columns so grab all
-        data <-  self$get_data(self$row_index,)
+        data <-  self$data
         data <- data[t <= time]
         if(compute_risk_set & !private$.force_at_risk){
           risk_set <- tmle_node$risk_set(data, time)
@@ -314,6 +319,10 @@ tmle3_Task <- R6Class(
         data <- data[, setdiff( names(data), c("id")), with = F]
       }
 
+
+      if (!format & (ncol(data) == 1)) {
+        data <- unlist(data, use.names = FALSE)
+      }
 
       return(data)
     },
@@ -591,6 +600,7 @@ tmle3_Task <- R6Class(
     },
     generate_counterfactual_task = function(uuid, new_data,  force_at_risk = NULL, through_data =  F , remove_rows = F) {
       # for current_factor, generate counterfactual values
+
       if(is.null(force_at_risk)){
         force_at_risk <- private$.force_at_risk
       }
@@ -623,15 +633,19 @@ tmle3_Task <- R6Class(
 
 
       if(!("t" %in% colnames(new_data)) | !("id" %in% colnames(new_data))){
+
         if(nrow(new_data) == self$nrow){
 
-          node_names <- setdiff(names(new_data), c("id", "t"))
+          node_names <- setdiff(colnames(new_data), c("id", "t"))
           node_variables <- sapply(
             node_names,
             function(node_name) {
               self$npsem[[node_name]]$variables
             }
           )
+          print("hi")
+          print(as.vector(unlist(node_variables)))
+          print(as.vector(unlist(node_names)))
           setnames(new_data, node_names, node_variables)
 
           new_task <- self$clone()

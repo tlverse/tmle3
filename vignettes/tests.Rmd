@@ -7,8 +7,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
+data.table(A = data.table(A = 1:10))
+
+```
+
+```{r, include = F}
 
 devtools::document()
 
@@ -91,11 +95,10 @@ npsem = list(define_node("W", c("W")), define_node("Y", c("Y"), c("A", "W"), cen
 
 
 task <- tmle3_Task$new(as.data.table(way), npsem)
-task$get_tmle_node("Delta", impute_censoring = T)
-task$get_tmle_node("Y", impute_censoring = T)
+task$get_tmle_node("Delta", format = F)
+task$get_tmle_node("Y", format = F)
 
-task$get_regression_task("Y", drop_censored = F, expand = F)$get_data()
-task$data
+
 ```
 
 

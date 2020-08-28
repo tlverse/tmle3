@@ -635,10 +635,10 @@ tmle3_Task <- R6Class(
         node <-  setdiff(colnames(new_data), c("id", "t"))
         if(remove_rows){
           id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
-          data <- data[!.(id_t_ex$id, id_t_ex$t), .(node)]
+          data <- data[!.(id_t_ex$id, id_t_ex$t), node, with = F]
         } else {
           id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
-          data <- data[.(id_t_ex$id, id_t_ex$t), .(node) := NA]
+          data <- data[.(id_t_ex$id, id_t_ex$t), node := NA, with = F]
         }
         has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(node[[1]]), with = F], use.names = F))
         append_row_data <- new_data[-has_row]

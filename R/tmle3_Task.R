@@ -297,9 +297,9 @@ tmle3_Task <- R6Class(
         # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
         # and for generating values for ICs (which will then be cancelled by 0)
-        impute_value <- data[which(!censoring)[1]]
+        impute_value <- 0
         if (is.data.table(data)) {
-          set(data, which(censoring), node_var, as.list(impute_value))
+          set(data, which(censoring), node_var, impute_value)
         } else {
           data[censoring] <- impute_value
         }
@@ -437,12 +437,11 @@ tmle3_Task <- R6Class(
       if(is.null(unlist(target_node_object$summary_functions))){
         # No summary functions so simply stack node values of parents
 
-        parent_data <- do.call(cbind, lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F))
+        parent_data <-  lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F) %>% purrr::reduce(merge, "id")
+        setnames(parent_data, make.unique(names(parent_data)))
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
 
-
-
-        covariates <- colnames(parent_data)
+        covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
         outcome = setdiff(colnames(outcome_data), c("id", "t", grep("last_val", colnames(outcome_data), value = T), "at_risk"))
         if((length(time) >1)){
           covariates <- c(covariates, "t")
@@ -518,13 +517,14 @@ tmle3_Task <- R6Class(
       if (is(censoring_node, "tmle3_Node")) {
         #This node should share the same time/ riskset
         observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
-        censoring_ids <- observed[observed[[censoring_node$name]] == 1, c("id", "t"), with = F]
+        censoring_ids <- observed[observed[[censoring_node$variables]] == 1, c("id", "t"), with = F]
         #Subset to (id, t) key pairs that are not censored.
+        print(censoring_ids)
         if(drop_censored) {
           regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
         } else {
           #Impute to 0
-          regression_data[.(censoring_ids$id, censoring_ids$t), .(outcome) := 0 ]
+          regression_data[.(censoring_ids$id, censoring_ids$t), outcome := 0 , with = F]
 
         }
       }
@@ -544,7 +544,7 @@ tmle3_Task <- R6Class(
 
       regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
-      if(is_time_variant){
+      if(F & is_time_variant){
         nodes$covariates <- union(nodes$covariates, "t")
       }
 

@@ -65,8 +65,9 @@ Targeted_Likelihood <- R6Class(
       #   }
       # }
     },
-    update_task = function(tmle_task, fold_number = "full"){
+    sync_task = function(tmle_task, fold_number = "full"){
       # Takes a task and syncs it with current update status of likelihood
+      # Returns task invisibly.
       epsilons <- self$updater$epsilons
       step_count <- 0
       for(eps_step in epsilons){
@@ -89,8 +90,7 @@ Targeted_Likelihood <- R6Class(
         step_count <- step_count + 1
 
       }
-
-
+      return(invisible(tmle_task))
     },
     get_likelihood = function(tmle_task, node, fold_number = "full", ...) {
       if (node %in% self$updater$update_nodes) {

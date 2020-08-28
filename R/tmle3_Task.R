@@ -442,7 +442,7 @@ tmle3_Task <- R6Class(
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
 
         covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
-        outcome = setdiff(colnames(outcome_data), c("id", "t", grep("last_val", colnames(outcome_data), value = T), "at_risk"))
+        outcome = setdiff(colnames(outcome_data), c("id", "t", grep("degeneracy_value", colnames(outcome_data), value = T), "at_risk"))
         if((length(time) >1)){
           covariates <- c(covariates, "t")
         }

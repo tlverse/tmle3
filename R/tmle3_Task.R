@@ -648,7 +648,6 @@ tmle3_Task <- R6Class(
           data <- rbind(data, append_row_data, fill = T)
           setkey(data, id, t)
           setnafill(data, "locf")
-
         }
 
         new_task <- self$clone()

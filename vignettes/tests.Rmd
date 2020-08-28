@@ -88,6 +88,6 @@ task <- tmle3_Task$new(as.data.table(way), npsem)
 task$get_tmle_node("Delta", impute_censoring = T)
 task$get_tmle_node("Y", impute_censoring = T)
 
-task$get_regression_task("Y", drop_censored = T)$Y
+task$get_regression_task("W", drop_censored = T)$data
 
 ```

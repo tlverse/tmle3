@@ -436,18 +436,20 @@ tmle3_Task <- R6Class(
 
       if(is.null(unlist(target_node_object$summary_functions))){
         # No summary functions so simply stack node values of parents
-
-        parent_data <-  lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F) %>% purrr::reduce(merge, "id")
-        setnames(parent_data, make.unique(names(parent_data)))
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
+        if(length(parent_names) >0){
+          parent_data <-  lapply(parent_names, self$get_tmle_node, include_id = T, include_time = F, format = T, expand = T, compute_risk_set = F) %>% purrr::reduce(merge, "id")
+          setnames(parent_data, make.unique(names(parent_data)))
+        } else {
+          parent_data <- outcome_data[, "id", with = F]
+        }
+
 
         covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
         outcome = setdiff(colnames(outcome_data), c("id", "t", grep("degeneracy_value", colnames(outcome_data), value = T), "at_risk"))
-        if((length(time) >1)){
-          covariates <- c(covariates, "t")
-        }
+
         outcome_index <-  1:length(outcome)
-        if(length(parent_data)>0){
+        if(length(covariates)>0){
 
           cov_index <- length(outcome) + 1:length(covariates)
         } else {
@@ -459,6 +461,9 @@ tmle3_Task <- R6Class(
         uniq_names <- make.unique(c(outcome,covariates))
         covariates <- uniq_names[cov_index]
         outcome <- uniq_names[outcome_index]
+        if((length(time) >1)){
+          covariates <- c(covariates, "t")
+        }
         all_covariate_data <- parent_data
 
       } else {
@@ -486,7 +491,7 @@ tmle3_Task <- R6Class(
           if("t" %in% colnames(all_covariate_data))  all_covariate_data$t <- NULL
 
         } else {
-          all_covariate_data <- data.table(rep(NA, nrow(outcome_data)))
+          all_covariate_data <- data.table(id = rep(NA, nrow(outcome_data)))
           all_covariate_data$id <- outcome_data$id
           covariates <- c()
         }

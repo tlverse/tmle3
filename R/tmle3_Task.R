@@ -519,7 +519,7 @@ tmle3_Task <- R6Class(
         observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
         censoring_ids <- observed[observed[[censoring_node$variables]] == 1, c("id", "t"), with = F]
         #Subset to (id, t) key pairs that are not censored.
-        print(censoring_ids)
+
         if(drop_censored) {
           regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
         } else {

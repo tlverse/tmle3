@@ -156,7 +156,7 @@ Likelihood <- R6Class(
         # TODO Already has names
         #setnames(likelihood_dt, nodes)
         if(drop_id) likelihood_dt$id <- NULL
-        if(drop_time & t %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
+        if(drop_time & "t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
         return(likelihood_dt)
       } else {
         return(self$get_likelihood(tmle_task, nodes[[1]], fold_number))

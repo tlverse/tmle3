@@ -63,14 +63,14 @@ LF_derived <- R6Class(
       super$train(tmle_task)
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task, fold_number) {
+    get_mean = function(tmle_task, fold_number, ...) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
       preds <- learner$predict_fold(derived_task, fold_number)
 
       return(preds)
     },
-    get_density = function(tmle_task, fold_number) {
+    get_density = function(tmle_task, fold_number, ...) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
       preds <- learner$predict_fold(derived_task, fold_number)

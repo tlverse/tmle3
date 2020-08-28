@@ -79,7 +79,7 @@ LF_fit <- R6Class(
 
       return(values)
     },
-    get_mean = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = T, drop_id = F, drop_time = F, drop = T, expand = T) {
+    get_mean = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       #
       if(is.null(node)) node <- self$name
@@ -88,7 +88,7 @@ LF_fit <- R6Class(
       preds <- learner$predict_fold(learner_task, fold_number)
 
       # unscale preds (to handle bounded continuous)
-      preds <- tmle_task$unscale(preds, self$name)
+      preds <- tmle_task$unscale(preds, node)
       data <-  learner_task$get_data()
 
       # For conditional means, degenerate value is exactly the value to be predicted
@@ -108,7 +108,6 @@ LF_fit <- R6Class(
       preds <- data.table(preds)
       preds$id <- learner_task$data$id
       preds$t <- learner_task$data$t
-
       setnames(preds, c(node, "id", "t"))
       if(to_wide){
         preds <- reshape(preds, idvar = "id", timevar = "t", direction = "wide")
@@ -116,11 +115,11 @@ LF_fit <- R6Class(
       }
       if(drop_id & "id" %in% colnames(preds)) preds$id <- NULL
       if(drop_time & "t" %in% colnames(preds)) preds$t <- NULL
-      if(drop & ncol(likelihood) == 1) preds <- unlist(preds, use.names = F)
+      if(drop & ncol(preds) == 1) preds <- unlist(preds, use.names = F)
 
       return(preds)
     },
-    get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = T, drop_id = F, drop_time = F, drop = T, expand = T) {
+    get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       if(is.null(node)) node <- self$name
       learner_task <- tmle_task$get_regression_task(node, expand = expand)

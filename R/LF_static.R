@@ -45,7 +45,7 @@ LF_static <- R6Class(
       private$.value <- value
       private$.variable_type <- variable_type("constant", value)
     },
-    get_mean = function(tmle_task, fold_number) {
+    get_mean = function(tmle_task, fold_number, ...) {
       observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = T)
       node_vars <- tmle_task$npsem[[self$name]]$variables
       set(observed, , node_vars, self$value)
@@ -53,8 +53,8 @@ LF_static <- R6Class(
       setnames(pred, node_vars, self$name )
       return(pred)
     },
-    get_density = function(tmle_task, fold_number) {
-      observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = T)
+    get_density = function(tmle_task, fold_number, expand = T, ...) {
+      observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = expand)
       node_vars <- tmle_task$npsem[[self$name]]$variables
       set(observed, , node_vars, data.table(as.numeric(self$value == unlist(observed[,self$name, with = F ]))))
       likelihood <- observed

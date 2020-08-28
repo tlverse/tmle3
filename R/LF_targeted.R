@@ -43,7 +43,7 @@ LF_targeted <- R6Class(
       super$initialize(name, ..., type = type)
       private$.base_likelihood <- base_likelihood
     },
-    get_likelihood = function(tmle_task, fold_number) {
+    get_likelihood = function(tmle_task, fold_number, ...) {
       lik <- self$base_likelihood$get_likelihood(tmle_task, self$name, fold_number)
 
       return(lik)

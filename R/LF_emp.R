@@ -53,15 +53,18 @@ LF_emp <- R6Class(
     get_mean = function(tmle_task, fold_number = "full") {
       stop("nothing to predict")
     },
-    get_density = function(tmle_task, fold_number = "full") {
+    get_density = function(tmle_task, fold_number = "full", expand = T, node = NULL) {
+      if (is.null(node)) {
+        nodes <- self$name
+      }
       # TODO: this only makes sense if the tmle_task is the same as the training one
       # Does not use the empirical measure of training sample but instead recomputes each time for new data
       # Not sure if this is what we want.
       # TODO: this only makes sense if the tmle_task is the same as the training one
       # This computes the true empirical density, including when there are ties.
-      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
+      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T, expand = expand)
 
-      observed <- unlist(observedfull[, setdiff(colnames(observedfull), c("id", "t")), with = F])
+      observed <-observedfull[, self$name, with = F][[1]] #unlist(observedfull[, setdiff(colnames(observedfull), c("id", "t")), with = F])
 
       # TODO dont need weights for prediction??
       #weights <- tmle_task$get_regression_task(self$name)$weights
@@ -104,6 +107,7 @@ LF_emp <- R6Class(
       private$.empirical_fit
   ),
   private = list(
-    .name = NULL
+    .name = NULL,
+    .empirical_fit = NULL
   )
 )

@@ -643,9 +643,7 @@ tmle3_Task <- R6Class(
               self$npsem[[node_name]]$variables
             }
           )
-          print("hi")
-          print(as.vector(unlist(node_variables)))
-          print(as.vector(unlist(node_names)))
+
           setnames(new_data, node_names, node_variables)
 
           new_task <- self$clone()

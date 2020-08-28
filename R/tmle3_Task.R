@@ -643,7 +643,7 @@ tmle3_Task <- R6Class(
         has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(node[[1]]), with = F], use.names = F))
         append_row_data <- new_data[-has_row]
         alter_row_data <- new_data[has_row]
-        data[.(alter_row_data$id, alter_row_data$t), .(node) :=  alter_row_data[, .(node)]]
+        data[.(alter_row_data$id, alter_row_data$t), node :=  alter_row_data[, node, with = F], with = F]
         if(nrow(append_row_data) > 0){
           data <- rbind(data, append_row_data, fill = T)
           setkey(data, id, t)

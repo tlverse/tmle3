@@ -65,6 +65,33 @@ Targeted_Likelihood <- R6Class(
       #   }
       # }
     },
+    update_task = function(tmle_task, fold_number = "full"){
+      # Takes a task and syncs it with current update status of likelihood
+      epsilons <- self$updater$epsilons
+      step_count <- 0
+      for(eps_step in epsilons){
+        for(node in names(eps_step)){
+
+          eps <- eps_step[[node]]
+          likelihood_factor <- self$factor_list[[node]]
+
+          step_number <- self$cache$get_update_step(likelihood_factor, tmle_task, fold_number, node = node)
+          if(is.null(step_number)){
+            step_number <- 0
+          }
+          if(step_number > step_count){
+            next
+          }
+          updated_likelihoods <-  self$updater$apply_update(tmle_task, self, fold_number, eps, node)
+          self$cache$set_values(likelihood_factor, tmle_task, step_number + 1, fold_number, updated_likelihoods, node)
+
+        }
+        step_count <- step_count + 1
+
+      }
+
+
+    },
     get_likelihood = function(tmle_task, node, fold_number = "full", ...) {
       if (node %in% self$updater$update_nodes) {
         # self$updater$get_updated_likelihood(self, tmle_task, node)

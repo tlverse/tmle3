@@ -491,8 +491,8 @@ tmle3_Task <- R6Class(
           if("t" %in% colnames(all_covariate_data))  all_covariate_data$t <- NULL
 
         } else {
-          all_covariate_data <- data.table(id = rep(NA, nrow(outcome_data)))
-          all_covariate_data$id <- outcome_data$id
+          all_covariate_data <-  outcome_data[, "id", with = F]
+
           covariates <- c()
         }
       }
@@ -506,7 +506,7 @@ tmle3_Task <- R6Class(
       node_data$t <- NULL
       nodes$outcome <- outcome
       nodes$covariates <- covariates
-      if(length(all_covariate_data) == 0){
+      if(ncol(all_covariate_data) == 0){
         regression_data <-  list(outcome_data, node_data) %>% purrr::reduce(merge, "id")
       } else {
         regression_data <-  list(all_covariate_data, outcome_data, node_data) %>% purrr::reduce(merge, "id")

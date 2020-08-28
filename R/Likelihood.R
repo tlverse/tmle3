@@ -93,7 +93,7 @@ Likelihood <- R6Class(
         if(!all(c("expand", "node") %in% args)){
           likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
         } else {
-          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node, drop = drop)
+          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node)
 
         }
 

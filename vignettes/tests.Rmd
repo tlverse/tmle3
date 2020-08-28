@@ -20,6 +20,14 @@ devtools::document()
 
 
 ```{r}
+
+expr <- expression({t<5})
+
+setkey(data,id,t)
+data[eval(expr)]
+```
+
+```{r}
 library(data.table)
 
 # Generate simple causal model
@@ -34,7 +42,7 @@ D <- D +
   node("Delta", distr = "rconst", const = as.numeric(T<=C)  ) +
   node("Ttilde", distr = "rconst", const = round(min(T,C,10) +1  ))
 setD <- set.DAG(D)
-dat <- sim(setD, n = 1e6)
+dat <- sim(setD, n = 1e2)
 # only grab ID, W's, A, T.tilde, Delta
 Lname <- grep("W", colnames(dat), value = TRUE)
 Aname <- grep("A", colnames(dat), value = TRUE)

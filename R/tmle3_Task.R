@@ -394,7 +394,7 @@ tmle3_Task <- R6Class(
 
         # If node is pooled across time then get pooled regression task
 
-        all_tasks <- lapply(time, self$get_regression_task, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand )
+        all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand ))
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
         nodes <- all_nodes[[1]]
@@ -448,6 +448,7 @@ tmle3_Task <- R6Class(
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
         if(length(parent_names) >0){
           #Id order should be same
+
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))[]
           setnames(parent_data, make.unique(names(parent_data)))

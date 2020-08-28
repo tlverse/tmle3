@@ -66,7 +66,7 @@ LF_emp <- R6Class(
       # This computes the true empirical density, including when there are ties.
       observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T, expand = expand)
 
-      print(node)
+
       observed <-observedfull[, node, with = F][[1]] #unlist(observedfull[, setdiff(colnames(observedfull), c("id", "t")), with = F])
 
       # TODO dont need weights for prediction??

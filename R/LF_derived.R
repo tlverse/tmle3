@@ -66,14 +66,17 @@ LF_derived <- R6Class(
     get_mean = function(tmle_task, fold_number, ...) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
-      preds <- learner$predict_fold(derived_task, fold_number)
+      preds <- as.data.table(learner$predict_fold(derived_task, fold_number))
+      setnames(preds, self$name)
 
       return(preds)
     },
     get_density = function(tmle_task, fold_number, ...) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
-      preds <- learner$predict_fold(derived_task, fold_number)
+      preds <- as.data.table(learner$predict_fold(derived_task, fold_number))
+      setnames(preds, self$name)
+
       # todo: think about derived task with other outcome types (this assumes continuous)
       return(preds)
     }

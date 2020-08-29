@@ -1,5 +1,5 @@
 context("Bounding for likelihood factors")
-
+library(sl3)
 # generate likelihood with extreme values
 set.seed(1234)
 n <- 1000
@@ -54,7 +54,7 @@ params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- params
 submodel_data <- updater$generate_submodel_data(targeted_likelihood, tmle_task)
 
-Q_submodel <- submodel_data$Y$initial
+Q_submodel <- submodel_data$initial
 Q_bound_level <- 1 / n
 test_that("bounds are being respected in submodel", {
   expect_gt(max(Q_preds), 1 - Q_bound_level)

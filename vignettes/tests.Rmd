@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, include = F}
 
 devtools::document()
-
+library(sl3)
 ```
 
 
@@ -88,7 +88,10 @@ devtools::document()
 ```{r}
 n=100
 way = data.table(W = runif(n), A = rbinom(n, size = 1, 0.5), Y = rbinom(n, size =1, 0.5), Delta =rbinom(n, size = 1, 0.5) )
-
+way
+var = "A"
+way[, (var) := way[[var]]]
+way
 ```
 
 ```{r}

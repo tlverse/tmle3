@@ -135,7 +135,7 @@ Likelihood <- R6Class(
 
         all_likelihoods <- lapply(nodes, function(node) {
 
-          self$get_likelihood(tmle_task, node = node, fold_number = fold_number, drop_id = F, drop_time = F, to_wide = to_wide, expand =  expand)
+          self$get_likelihood(tmle_task, node = node, fold_number = fold_number, drop_id = F, drop_time = F, to_wide = to_wide, expand =  expand, drop=F)
         })
         contains_t <- all(unlist(lapply(all_likelihoods, function(lik){
           "t" %in% colnames(lik)
@@ -143,6 +143,7 @@ Likelihood <- R6Class(
         if(contains_t){
           likelihood_dt <- all_likelihoods %>% reduce(full_join, c("id", "t"))#as.data.table(all_likelihoods)
         } else{
+
           all_likelihoods <- lapply(all_likelihoods, function(lik){
             if(!(all(c("id", "t") %in% colnames(lik)))){
               if("t" %in% colnames(lik)) lik$t <- NULL
@@ -152,8 +153,12 @@ Likelihood <- R6Class(
               if("t" %in% colnames(lik)) lik$t <- NULL
               return(lik)
             }
-            reshape(lik, idvar = "id", timevar = "t", direction = "wide")
+            if(all(c("id", "t")) %in% colnames(lik)){
+              return(reshape(lik, idvar = "id", timevar = "t", direction = "wide"))
+            }
+            lik
           })
+
           likelihood_dt <- NULL
           tryCatch(
             {
@@ -161,6 +166,7 @@ Likelihood <- R6Class(
             }, error = function(cond) {
               # Handle case when one of predictions doesn't include ID.
               # This is mainly for backwards compatibility pre-ltmle changes
+
               likelihood_dt <- setDT(unlist(all_likelihoods, recursive = F))[]
               # Need to change likelihood_dt object in parent frame
               likelihood_dt <<- likelihood_dt[, which(!duplicated(names(likelihood_dt))), with = F]
@@ -252,12 +258,12 @@ Likelihood <- R6Class(
   ),
   private = list(
     .train_sublearners = function(tmle_task) {
-      factor_fits <- lapply(self$factor_list, function(factor) factor$delayed_train(tmle_task))
+      factor_fits <- lapply(self$factor_list_pooled, function(factor) factor$delayed_train(tmle_task))
       result <- bundle_delayed(factor_fits)
       return(result)
     },
     .train = function(tmle_task, factor_fits) {
-      factor_list <- self$factor_list
+      factor_list <- self$factor_list_pooled
       for (i in seq_along(factor_list)) {
         factor_list[[i]]$train(tmle_task, factor_fits[[i]])
       }

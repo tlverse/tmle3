@@ -358,7 +358,7 @@ tmle3_Task <- R6Class(
         }
 
 
-        regression_data <- Shared_Data$new(regression_data, force_copy = F)
+        #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
 
         pooled_regression_task <- sl3_Task$new(
@@ -424,7 +424,7 @@ tmle3_Task <- R6Class(
           folds <- sl3::subset_folds(folds, indices)
         }
 
-        regression_data <- Shared_Data$new(regression_data, force_copy = F)
+        #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
         pooled_regression_task <- sl3_Task$new(
           regression_data,
@@ -579,7 +579,7 @@ tmle3_Task <- R6Class(
       }
 
       setcolorder(regression_data)
-      regression_data <- Shared_Data$new(regression_data, force_copy = F)
+      #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
       if(F & is_time_variant){
         nodes$covariates <- union(nodes$covariates, "t")

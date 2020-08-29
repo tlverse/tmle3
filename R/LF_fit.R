@@ -68,13 +68,15 @@ LF_fit <- R6Class(
       private$.learner <- learner_fit
     },
     get_likelihood = function(tmle_task, fold_number = "full", expand = T, node = NULL) {
+      if(is.null(node)) node <- self$name
       if (self$type == "mean") {
         values <- self$get_mean(tmle_task, fold_number, expand = expand, node = node)
       } else {
         values <- self$get_density(tmle_task, fold_number, expand = expand, node = node)
       }
       if (!is.null(self$bound)) {
-        values <- bound(values, self$bound)
+        #values <- bound(values, self$bound)
+        values[, (node) := bound(values[[node]], self$bound)]
       }
 
       return(values)

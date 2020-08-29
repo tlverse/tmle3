@@ -60,7 +60,9 @@ LF_emp <- R6Class(
         node <- tmle_task$npsem[[node]]$variables
       }
       observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T, expand = expand)
-
+      if(length(observedfull)==0){
+        return(observedfull)
+      }
 
       observed <-observedfull[, node, with = F][[1]] #unlist(observedfull[, setdiff(colnames(observedfull), c("id", "t")), with = F])
 
@@ -96,7 +98,7 @@ LF_emp <- R6Class(
       emp_probs <-  private$.empirical_fit$emp_probs
       uniq_obs <-  private$.empirical_fit$uniq_obs
 
-      values <- as.matrix(do.call(rbind, lapply(1:nrow(observedfull), function(i) uniq_obs[base::sample(seq_along(uniq_obs), n_samples, prob = emp_probs)])))
+      values <- as.matrix(do.call(rbind, lapply(1:nrow(observedfull), function(i) uniq_obs[base::sample(seq_along(uniq_obs), n_samples, prob = emp_probs, replace = T)])))
       return(values)
     }
   ),

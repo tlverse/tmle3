@@ -17,9 +17,7 @@ library(sl3)
 
 
 ```{r}
-fac = as.factor(sample(1:5, 20, replace = T))
-fac
-levels(fac)
+colnames(data.table(NULL))
 ```
 
 ```{r}
@@ -88,33 +86,40 @@ devtools::document()
 ```{r}
 n=100
 way = data.table(W = runif(n), A = rbinom(n, size = 1, 0.5), Y = rbinom(n, size =1, 0.5), Delta =rbinom(n, size = 1, 0.5) )
-way
-var = "A"
-way[, (var) := way[[var]]]
+way[way$Delta==0, Y:= NA]
 way
 ```
 
 ```{r}
-
-npsem = list(define_node("W", c("W")), define_node("Y", c("Y"), c("A", "W"), censoring_node = define_node("Delta", "Delta") ), define_node("A", c("A"), c("W")), define_node("Delta", "Delta"))
+library(data.table)
+npsem = list(define_node("W", c()), define_node("Y", c("Y"), c("A")),  define_node("A", c("A")))
 
 
 task <- tmle3_Task$new(as.data.table(way), npsem)
-task$get_tmle_node("Delta", format = F)
-task$get_tmle_node("Y", format = F)
-
 
 ```
 
+```{r}
+task$npsem$Y
+task$get_tmle_node("delta_Y", include_id = T, include_time = T, expand = T, compute_risk_set = F)
+task$get_regression_task("Y")$data
+
+```
 
 ```{r}
 library(sl3)
-likelihood_factors <- list("W" = LF_emp$new("W" ), "A" = LF_fit$new("A", make_learner(Lrnr_glm)), "Y" =  LF_fit$new("Y", make_learner(Lrnr_glm), type = "mean"))
+likelihood_factors <- list("W" = LF_emp$new("W" ), "A" = LF_fit$new("A", make_learner(Lrnr_mean)), "Y" =  LF_fit$new("Y", make_learner(Lrnr_glm), type = "mean"))
 liks <- Likelihood$new(likelihood_factors)
 ```
 
-```{r}
-liks = liks$train(task)
 
+
+
+
+```{r}
+
+liks = liks$train(task)
+liks$factor_list$A$get_likelihood(task, "full")
+liks$get_likelihood(task, "A")
 liks$get_likelihoods(task)
 ```

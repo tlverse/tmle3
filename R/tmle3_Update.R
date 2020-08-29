@@ -148,6 +148,7 @@ tmle3_Update <- R6Class(
       )
 
 
+
       if (drop_censored) {
         censoring_node <- tmle_task$npsem[[update_node]]$censoring_node$name
         if (!is.null(censoring_node)) {

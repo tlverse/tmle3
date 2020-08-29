@@ -78,6 +78,9 @@ Likelihood <- R6Class(
       likelihood_factor <- self$factor_list[[node]]
       # first check for cached values for this task
       likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
+      if(!is.null(likelihood_values) & length(likelihood_values)==0){
+        return(likelihood_values)
+      }
 
       if(!expand & !is.null(likelihood_values)) {
         #Only store the full likelihood
@@ -107,7 +110,9 @@ Likelihood <- R6Class(
 
       }
 
-
+      if(length(likelihood_values)==0){
+        return(likelihood_values)
+      }
      # names_of <- colnames(likelihood_values)
       #keep_cols <- intersect(c("t", "id", grep(node, names_of, value = T)), names_of)
 
@@ -137,6 +142,8 @@ Likelihood <- R6Class(
 
           self$get_likelihood(tmle_task, node = node, fold_number = fold_number, drop_id = F, drop_time = F, to_wide = to_wide, expand =  expand, drop=F)
         })
+        keep <- unlist(lapply(all_likelihoods, function(lik) length(lik) != 0))
+        all_likelihoods <- all_likelihoods[keep]
         contains_t <- all(unlist(lapply(all_likelihoods, function(lik){
           "t" %in% colnames(lik)
         })))

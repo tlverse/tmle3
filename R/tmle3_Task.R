@@ -446,6 +446,17 @@ tmle3_Task <- R6Class(
       if(is.null(unlist(target_node_object$summary_functions))){
         # No summary functions so simply stack node values of parents
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
+        if(length(outcome_data)==0){
+          suppressWarnings({
+            regression_task <- sl3_Task$new(
+              outcome_data,
+              covariates = c(),
+              outcome_type = target_node_object$variable_type
+
+            )
+          })
+          return(regression_task)
+        }
         if(length(parent_names) >0){
           #Id order should be same
 
@@ -489,7 +500,17 @@ tmle3_Task <- R6Class(
         # Note that those with missing rows will be included in outcome_data.
         # There value will be set to last measured value.
         outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = (time == "pooled"), force_time_value = force_time_value, expand = expand)
+        if(length(outcome_data)==0){
+          suppressWarnings({
+            regression_task <- sl3_Task$new(
+              outcome_data,
+              covariates = c(),
+              outcome_type = target_node_object$variable_type
 
+            )
+          })
+          return(regression_task)
+        }
         past_data <- past_data[t <= time & id %in% outcome_data$id,]
 
 
@@ -554,7 +575,7 @@ tmle3_Task <- R6Class(
       if (is(censoring_node, "tmle3_Node")) {
         #This node should share the same time/ riskset
         observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
-        censoring_ids <- observed[observed[[censoring_node$variables]] == 1, c("id", "t"), with = F]
+        censoring_ids <- observed[as.numeric(observed[[censoring_node$variables]]) == 0, c("id", "t"), with = F]
         #Subset to (id, t) key pairs that are not censored.
 
         if(drop_censored) {
@@ -827,7 +848,9 @@ tmle3_Task <- R6Class(
         column_names = self$column_names,
         folds = new_folds,
         row_index = row_index,
-        force_at_risk = force_at_risk,
+        id = "id",
+        time = "t",
+        force_at_risk = private$.force_at_risk,
         summary_measure_columns = private$.summary_measure_columns
       )
       return(new_task)

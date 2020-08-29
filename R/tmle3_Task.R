@@ -123,7 +123,7 @@ tmle3_Task <- R6Class(
 
         # create or identify censoring node
         # TODO Should rethink this and how it will work with the risk_set_map
-        # In principle,
+
         if (any(censoring)) {
 
           # first, look for explicitly denoted censoring node
@@ -235,9 +235,9 @@ tmle3_Task <- R6Class(
       } else {
         #The at_risk summary measure might need other columns so grab all
         data <-  self$data
-        data <- data[t <= time]
+        data <- data[t <= time, ]
         if(compute_risk_set & !private$.force_at_risk){
-          risk_set <- tmle_node$risk_set(data, time)
+          risk_set <- tmle_node$risk_set(data, time, subset_time = F)
         }
         data <- data[, c("id", "t", node_var), with = F]
 

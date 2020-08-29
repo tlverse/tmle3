@@ -59,11 +59,6 @@ LF_emp <- R6Class(
       } else {
         node <- tmle_task$npsem[[node]]$variables
       }
-      # TODO: this only makes sense if the tmle_task is the same as the training one
-      # Does not use the empirical measure of training sample but instead recomputes each time for new data
-      # Not sure if this is what we want.
-      # TODO: this only makes sense if the tmle_task is the same as the training one
-      # This computes the true empirical density, including when there are ties.
       observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T, expand = expand)
 
 

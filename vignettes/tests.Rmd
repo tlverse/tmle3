@@ -7,10 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-data.table(A = data.table(A = 1:10))
 
-```
 
 ```{r, include = F}
 
@@ -24,6 +21,7 @@ devtools::document()
 expr <- expression({t<5})
 
 setkey(data,id,t)
+data
 data[eval(expr)]
 ```
 

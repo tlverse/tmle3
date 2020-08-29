@@ -54,11 +54,11 @@ tmle3_Task <- R6Class(
         }
 
         if(id!="id"){
-          data[,"id", with = F] <- data[,id, with = F]
+          data$id <- data[,id, with = F]
           id <- "id"
         }
         if(time!="t"){
-          data[, "t", with = F] <- data[,time, with = F]
+          data$t <- data[,time, with = F]
           time <- "t"
         }
         data <- setkey(data, id, t)

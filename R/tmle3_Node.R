@@ -146,13 +146,21 @@ tmle3_Node <- R6Class(
     parents = function() {
       return(private$.parents)
     },
-    summary_functions = function(){
+    summary_functions = function(summary_function = NULL){
+      if(!is.null(summary_function)) {
+        if(!is.list(summary_function)) summary_function <- list(summary_function)
+        private$.ltmle_params$summary_functions <- c(private$.ltmle_params$summary_functions, summary_function)
+      }
+
       private$.ltmle_params$summary_functions
     },
     missing_not_at_risk = function(){
       private$.ltmle_params$missing_row_implies_not_at_risk
     },
-    time = function(){
+    time = function(time = NULL){
+      if(!is.null(time)){
+        private$.ltmle_params$time <- time
+      }
       private$.ltmle_params$time
     },
     risk_set_map = function(){

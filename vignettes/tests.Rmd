@@ -17,7 +17,10 @@ library(sl3)
 
 
 ```{r}
-colnames(data.table(NULL))
+tsk = task[c(1,1,1)]
+newcols = tsk$add_columns(data.table(id = c(3,2,4))) 
+tsk = tsk$next_in_chain(column_names = newcols)
+tsk$data
 ```
 
 ```{r}

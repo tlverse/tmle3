@@ -121,13 +121,15 @@ LF_fit <- R6Class(
 
       return(preds)
     },
-    get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T) {
+    get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T, quick_pred = F) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       if(is.null(node)) node <- self$name
       learner_task <- tmle_task$get_regression_task(node, expand = expand)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
-
+      if(quick_pred){
+        return(preds)
+      }
       outcome_type <- self$learner$training_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)
 

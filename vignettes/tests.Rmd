@@ -17,12 +17,9 @@ devtools::document()
 
 
 ```{r}
-
-expr <- expression({t<5})
-
-setkey(data,id,t)
-data
-data[eval(expr)]
+fac = as.factor(sample(1:5, 20, replace = T))
+fac
+levels(fac)
 ```
 
 ```{r}
@@ -79,8 +76,7 @@ data
 
  
 ```{r}
-setDT(unlist(list(data.table(NULL), data.table(1:10)), recursive = F))[]
-
+c(T,T, F) && T
 ```
 
 ```{r}

@@ -65,11 +65,34 @@ Targeted_Likelihood <- R6Class(
       #   }
       # }
     },
-    sync_task = function(tmle_task, fold_number = "full"){
+    sync_task = function(tmle_task, fold_number = "full", check = T){
       # Takes a task and syncs it with current update status of likelihood
       # Returns task invisibly.
+
+      # Checks if task is up to date
+      # Might be useful to set check = F for efficiency ...
+      # e.g. if you are montecarlo simulating from a targeted likelihood
+      if(check){
+        current_step <- self$updater$step_number
+        nodes <- self$updater$update_nodes
+        in_sync <- TRUE
+        for(node in nodes){
+          likelihood_factor <- self$factor_list[[node]]
+          step_number <- self$cache$get_update_step(likelihood_factor, tmle_task, fold_number, node = node)
+          if(step_number != current_step) {
+            in_sync <- FALSE
+          }
+        }
+        if(in_sync) {
+          return(invisible(tmle_task))
+        }
+      }
+
+
+
       epsilons <- self$updater$epsilons
       step_count <- 0
+      #TODO is this double for loop something to worry about?
       for(eps_step in epsilons){
         for(node in names(eps_step)){
 

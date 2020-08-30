@@ -17,10 +17,13 @@ library(sl3)
 
 
 ```{r}
-tsk = task[c(1,1,1)]
-newcols = tsk$add_columns(data.table(id = c(3,2,4))) 
-tsk = tsk$next_in_chain(column_names = newcols)
-tsk$data
+task$data
+generator <-function(task, Likelihood = NULL, target_param = NULL, node, outcome = T){
+  task <- task$get_regression_task(node)
+  cols <- task$add_columns(data.table(IC = rnorm(task$nrow)))
+  task$next_in_chain(column_names = cols, covariates  = c(task$nodes$covariates, task$nodes$outcome), outcome = "IC")
+}
+generator(task, node = "Y")$data
 ```
 
 ```{r}
@@ -81,48 +84,125 @@ c(T,T, F) && T
 ```
 
 ```{r}
+library(sl3)
 devtools::document()
 
 ```
 
 
 ```{r}
-n=100
-way = data.table(W = runif(n), A = rbinom(n, size = 1, 0.5), Y = rbinom(n, size =1, 0.5), Delta =rbinom(n, size = 1, 0.5) )
-way[way$Delta==0, Y:= NA]
+n=5000
+way = data.table(W = (rbinom(n, size = 50, 0.5)), A = (rbinom(n, size = 50, 0.5)), Y = (rbinom(n, size = 300, 0.5)))
 way
-```
+generator <-function(task, Likelihood = NULL, target_param = NULL, node, outcome = T){
+  task <- task$get_regression_task(node)
+  cols <- task$add_columns(data.table(Y= as.numeric(as.character(task$Y)) , IC = as.numeric(as.character(task$Y)) + rowSums(task$X)))
+  task$next_in_chain( column_names = cols, covariates  = c(task$nodes$covariates, task$nodes$outcome), outcome = "IC")
+}
 
-```{r}
 library(data.table)
-npsem = list(define_node("W", c()), define_node("Y", c("Y"), c("A")),  define_node("A", c("A")))
+npsem = list(define_node("W", c("W")), define_node("Y", c("Y"), c("A", "W"), variable_type = variable_type(type = "categorical", levels = sort(unique(way$Y)))),  define_node("A", c("A"), "W"))
 
 
 task <- tmle3_Task$new(as.data.table(way), npsem)
-
-```
-
-```{r}
-task$npsem$Y
-task$get_tmle_node("delta_Y", include_id = T, include_time = T, expand = T, compute_risk_set = F)
+way
 task$get_regression_task("Y")$data
-
-```
-
-```{r}
+task$npsem$Y$variable_type$type
 library(sl3)
-likelihood_factors <- list("W" = LF_emp$new("W" ), "A" = LF_fit$new("A", make_learner(Lrnr_mean)), "Y" =  LF_fit$new("Y", make_learner(Lrnr_glm), type = "mean"))
+likelihood_factors <- list("W" = LF_emp$new("W" ), "A" = LF_fit$new("A", make_learner(Lrnr_condensier)), "Y" =  LF_fit$new("Y", make_learner(Lrnr_pooled_hazards), type = "density"))
 liks <- Likelihood$new(likelihood_factors)
-```
 
-
-
-
-
-```{r}
 
 liks = liks$train(task)
-liks$factor_list$A$get_likelihood(task, "full")
-liks$get_likelihood(task, "A")
-liks$get_likelihoods(task)
+
+
 ```
+
+```{r}
+
+preds <- liks$factor_list$Y$get_density(task, "full", quick_pred = T)
+levels <- task$npsem$Y$variable_type$levels
+preds <- data.table(sl3::unpack_predictions(as.vector(preds)))
+preds
+setnames(preds, as.character(seq_along(levels)))
+preds
+cdf <- data.table(t(apply(preds, 1, cumsum)))
+X = as.matrix(cbind(task$get_regression_task("Y")$X, as.numeric(as.character(task$get_regression_task("Y")$Y))))
+basis_list = hal9001::enumerate_basis(X, 2)
+data.table(X)
+design1 <- as.data.table(as.matrix(hal9001::make_design_matrix(X, basis_list)))
+```
+
+
+
+
+```{r}
+design <- copy(design1)
+# Design matrix where Y part of indicator always evaluated to 1
+clean_basis <- function(basis){
+  if(!(3 %in% basis$cols)){
+    return(basis)
+  }
+  index = which(basis$cols == 3)
+  basis$cutoffs[index] <- -100
+  return(basis)
+}
+clean_list = lapply(basis_list, clean_basis)
+clean_design <- hal9001::make_design_matrix(X, clean_list)
+clean_design <- data.table(as.matrix(clean_design))
+
+
+
+# Get basis functions to change and their cdf column
+diff_map <- unlist(lapply(seq_along(basis_list), function(i) {
+  basis <- basis_list[[i]]
+  if(!(3 %in% basis$cols)){
+    return(NULL)
+  }
+  result <- (list(which(levels == basis$cutoffs[which(basis$cols == 3)])))
+  names(result) = i
+  return(result)
+}))
+
+donothing <- lapply((names(diff_map)), function(i){
+  col_index <- diff_map[[i]]
+  diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]] 
+  set(design, , as.integer(i), diff)
+})
+
+result = (design* clean_design)
+dim(result)
+```
+
+
+```{r}
+result
+```
+
+```{r}
+grad <- Gradient$new(liks, generator, list(update_nodes = "Y"))
+
+grad <- grad$train(task)
+grad$set_basis()
+```
+
+```{r}
+basis_list = grad$fit_object$Y$basis_list
+
+```
+
+```{r}
+n = 5
+task[n]$data
+i = 23
+grad$fit_object$Y$basis_list[[i]]
+b = grad$basis[["Y"]][[i]]
+b(task[n], "full")
+```
+
+
+
+
+
+
+

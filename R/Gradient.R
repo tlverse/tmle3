@@ -34,7 +34,7 @@ Gradient <- R6Class(
       private$.params <- params
     },
     generate_task = function(tmle_task, node, include_outcome = T){
-      self$projection_task_generator(task, self$Likelihood, self$target_param, node, outcome = include_outcome)
+      self$projection_task_generator(tmle_task, self$Likelihood, self$target_param, node, outcome = include_outcome)
     },
     compute_EIC = function(tmle_task, node){
       fit_obj <- private$.component_fits[[node]]
@@ -44,40 +44,72 @@ Gradient <- R6Class(
 
     },
     set_basis = function(){
+      self$assert_trained()
       #Converts squashed basis to R functions of tmle3_tasks
       basis <- list()
       for(node in self$target_nodes){
         fit_obj <- private$.component_fits[[node]]
-        basis_list <- fit_obj
+        basis_list <- fit_obj$basis_list
         lst_to_func <- function(basis, node) {
           # Computes value of basis for 1 in task
+
           f <- function(task) {
+            vars <- task$npsem[[node]]$variables
             task <- self$generate_task(task, node, F)
-            index <- which(names(task$X) == self$Likelihood$npsem[[node]]$variables)
+            index <- which(names(task$X) == vars)
+            index <- which(basis$cols == index)
+
             value <- as.numeric(all(unlist(task$X[, basis$cols, with = F], use.names = F) > basis$cutoffs))
+
+
+
+            if(length(index)==0){
+              return(as.character(value==1))
+            }
             if(value == 0){ return(NULL)}
+
             return(basis$cutoffs[index])
             #return(as.vector(apply(task$X[, basis$cols, with = F], 1 , function(v){as.numeric(all(v > basis$cutoffs))})))
           }
           eval_lik <- function(y, fold_number = "full", task){
             #Generates likelihoods for outcome value y for task
+
             cf_data <- data.table(y)
-            names(cf_data) <- node
+            names(cf_data) <- c( node)
             cf_task <- task$generate_counterfactual_task(UUIDgenerate(), cf_data)
-            self$Likelihood$factor_list[[node]]$get_density(cf_task, fold_number, quick_pred = T, check_at_risk = F, expand = T)
+
+            val <- unlist(self$Likelihood$factor_list[[node]]$get_density(cf_task, fold_number, quick_pred = T, check_at_risk = F, expand = T), use.names = F)
+
+            return(val)
           }
           eval_lik <- Vectorize(eval_lik, vectorize.args = "y")
 
-          final_f <- function(task, fold_number){
+          final_f <- function(task, fold_number = "full"){
            cutoff <- f(task)
-           if(is.null(task)){
+           print(cutoff)
+           print(max(task$get_tmle_node(node)))
+
+           if(is.null(cutoff)){
              return(0)
            }
-           result <- 1 - integrate(eval_lik, lower = cutoff, upper = Inf, fold_number = fold_number, task = task)
-          }
+           if(cutoff == "TRUE"){
+             return(1)
+           }
+           if(cutoff == "FALSE"){
+             return(0)
+           }
+           lower = cutoff
+           upper =  3
+           return(plot(seq(lower, upper, length.out = 100), eval_lik(seq(lower, upper, length.out = 100), task = task)))
+            break
+           result <- 1 - integrate(eval_lik, lower = cutoff, upper = 3, fold_number = fold_number, task = task)$value
+           return(result)
+           }
           return(final_f)
         }
-        basis[node] <- lapply(basis_list, lst_to_func, node = node)
+        #TODO only do this for basis functions containing y
+        print(length(basis_list))
+        basis[[node]] <- lapply(basis_list, lst_to_func, node = node)
       }
       private$.basis <- basis
     },
@@ -107,6 +139,9 @@ Gradient <- R6Class(
     learner = function(){
       private$.learner
     },
+    basis = function(){
+      private$.basis
+    },
     hal_args = function(args_to_add = NULL){
       if(!is.null(args_to_add)){
         for(name in names(args_to_add)){
@@ -126,7 +161,7 @@ Gradient <- R6Class(
       projected_fits <- lapply(nodes, function(node){
         task <- self$generate_task(task, node)
         lrnr <- self$learner$clone()
-        return(lrnr$delayed_train(lrnr, task))
+        return(delayed_learner_train(lrnr, task))
       })
       projected_fits <- bundle_delayed(projected_fits)
       return(projected_fits)
@@ -134,11 +169,12 @@ Gradient <- R6Class(
     .train = function(tmle_task, projected_fits){
       #Store hal_fits
       component_fits <- lapply(projected_fits, `[[`, "fit_object")
-      component_fits <- lapply(component_fits, squash_hal_fit)
+      component_fits <- lapply(component_fits, hal9001::squash_hal_fit)
       names(component_fits) <- self$target_nodes
 
       private$.component_fits <- component_fits
-      self$set_basis()
+      return(component_fits)
+
     },
     .predict = function(tmle_task) {
       stop("This gradient has nothing to predict.")
@@ -155,4 +191,4 @@ Gradient <- R6Class(
 )
 
 
-Gradient_component =
+

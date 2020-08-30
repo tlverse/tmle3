@@ -68,13 +68,26 @@ Gradient <- R6Class(
       }))
       long_data$id <-  paste(long_data$trueid,long_data[, variables, with = F][[1]], sep = "_")
       long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid"))
+      setattr(long_task, "target_nodes", node)
 
       assign(key, long_task, self$cache)
-      setattr(long_task, "target_nodes", node)
       private$.uuid_expanded_history[[long_task$uiid]] <- node
       return(long_task)
     },
     compute_component = function(tmle_task, node, fold_number = "full"){
+      self$assert_trained()
+      #Converts squashed basis to R functions of tmle3_tasks
+
+      fit_obj <- private$.component_fits[[node]]
+      long_task <- self$expand_task(tmle_task, node)
+      IC_task <- self$generate_task(long_task, node, include_outcome = F)
+      col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
+      long_preds <- self$Likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
+
+      type <- tmle_task$npsem[[node]]$variable_type$type
+
+    },
+    compute_component_initial = function(tmle_task, node, fold_number = "full"){
       self$assert_trained()
       #Converts squashed basis to R functions of tmle3_tasks
 

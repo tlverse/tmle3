@@ -58,10 +58,11 @@ tmle3_Node <- R6Class(
     initialize = function(name, variables, parents = c(), time = NULL, summary_functions = NULL, risk_set_map = NULL, degeneracy_type = "last", missing_row_implies_not_at_risk = T,
                               variable_type = NULL, censoring_node = NULL, scale = FALSE) {
 
+
       if(is.null(time)){
         time <- 0
       }
-      if(!is.list(summary_functions)){
+      if(!is.null(summary_functions) & !is.list(summary_functions)){
         summary_functions <- list(summary_functions)
       }
       if (!is.null(risk_set_map)){
@@ -69,7 +70,7 @@ tmle3_Node <- R6Class(
           risk_set_map$set_name(paste(paste(variables, collapse = "_"), "at_risk", sep = "_") )
         }
       }
-      private$.ltmle_params = list(degeneracy_type = degeneracy_type, missing_row_implies_not_at_risk = missing_row_implies_not_at_risk, risk_set_map = risk_set_map, time = time, summary_functions = summary_functions)
+      private$.ltmle_params <- list(degeneracy_type = degeneracy_type, missing_row_implies_not_at_risk = missing_row_implies_not_at_risk, risk_set_map = risk_set_map, time = time, summary_functions = summary_functions)
 
       private$.name <- name
       private$.variables <- variables
@@ -146,13 +147,8 @@ tmle3_Node <- R6Class(
     parents = function() {
       return(private$.parents)
     },
-    summary_functions = function(summary_function = NULL){
-      if(!is.null(summary_function)) {
-        if(!is.list(summary_function)) summary_function <- list(summary_function)
-        private$.ltmle_params$summary_functions <- c(private$.ltmle_params$summary_functions, summary_function)
-      }
-
-      private$.ltmle_params$summary_functions
+    summary_functions = function(){
+      return(private$.ltmle_params$summary_functions)
     },
     missing_not_at_risk = function(){
       private$.ltmle_params$missing_row_implies_not_at_risk

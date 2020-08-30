@@ -40,6 +40,11 @@ LF_fit <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, learner, is_time_variant = FALSE, ..., type = "density") {
+      if(length(name) > 1){
+        is_time_variant <- TRUE
+        # Is time variant is needed to allow predictions for a single node (of pooled regression)
+        #by using the individual nodes rgeression task (with time).
+      }
       super$initialize(name, ..., type = type)
       private$.learner <- learner
       # TODO: add parameter is_time_variant
@@ -85,7 +90,7 @@ LF_fit <- R6Class(
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       #
       if(is.null(node)) node <- self$name
-      learner_task <- tmle_task$get_regression_task(node, expand =expand)
+      learner_task <- tmle_task$get_regression_task(node, expand =expand, is_time_variant = self$is_time_variant)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
 
@@ -124,7 +129,8 @@ LF_fit <- R6Class(
     get_density = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T, quick_pred = F) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       if(is.null(node)) node <- self$name
-      learner_task <- tmle_task$get_regression_task(node, expand = expand)
+
+      learner_task <- tmle_task$get_regression_task(node, expand = expand, is_time_variant = self$is_time_variant)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
       if(quick_pred){
@@ -166,7 +172,7 @@ LF_fit <- R6Class(
       likelihood$id <- learner_task$data$id
       likelihood$t <- learner_task$data$t
 
-      setnames(likelihood, c(node, "id", "t"))
+      setnames(likelihood, c(paste0(node, collapse = "%"), "id", "t"))
       if(to_wide){
         likelihood <- reshape(likelihood, idvar = "id", timevar = "t", direction = "wide")
         setnames(likelihood, c("id", node))

@@ -75,9 +75,15 @@ Likelihood <- R6Class(
       }
     },
     get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, drop = T, to_wide = F, expand = T) {
-      likelihood_factor <- self$factor_list[[node]]
+      if(length(node) > 1){
+        likelihood_factor <- self$factor_list_pooled[[paste0(node, collapse = "%")]]
+
+      } else {
+        likelihood_factor <- self$factor_list[[node]]
+
+      }
       # first check for cached values for this task
-      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = paste0(node, collapse = "%"))
       if(!is.null(likelihood_values) & length(likelihood_values)==0){
         return(likelihood_values)
       }
@@ -102,10 +108,13 @@ Likelihood <- R6Class(
 
         if(!is.data.table(likelihood_values)){
           likelihood_values <- as.data.table(likelihood_values)
-          setnames(likelihood_values, node)
+          if(!to_wide){
+            out_name <- paste0(node, collapse = "%")
+          }
+          setnames(likelihood_values, out_name)
         }
         if(expand){
-          self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values, node = node)
+          self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values, node = paste0(node, collapse = "%"))
         }
 
       }
@@ -125,6 +134,9 @@ Likelihood <- R6Class(
       }
       else if("t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values) & to_wide){
         likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
+        if(length(node) > 1){
+          setnames(likelihood_values, c("id", node))
+        }
       }
       if(drop_id & "id" %in% colnames(likelihood_values)) likelihood_values$id <- NULL
       if(drop_time & "t" %in% colnames(likelihood_values)) likelihood_values$t <- NULL

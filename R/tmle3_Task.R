@@ -331,7 +331,7 @@ tmle3_Task <- R6Class(
     get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = F, cache_task = T) {
 
       if(!is.numeric(force_time_value) & cache_task){
-        cache_key <- sprintf("%s_%s_%s_%s_%s", target_node, scale, drop_censored, is_time_variant, expand)
+        cache_key <- sprintf("%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand)
         cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
         if (!is.null(cached_data)) {
           return(cached_data)
@@ -342,12 +342,15 @@ tmle3_Task <- R6Class(
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         time_is_node <- sapply(all_nodes, function(node) !is.null(node$time))
         regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
-        setkey(pooled_data, id, t)
+        setkey(regression_data, id, t)
         nodes <- all_nodes[[1]]
         # Make sure time is included as covariate
         nodes$covariates <- union("t", nodes$covariates)
-
-
+         # DANGER!!! IT is essential that the pooled regression task
+        #and the individual unpooled regression tasks are the same in everyway
+        #They must have data order of columns for task$X, otherwise predictions might not make sense.
+        nodes$covariates <- sort(nodes$covariates)
+        setcolorder(regression_data)
 
         folds <- self$folds
         if (nrow(regression_data) < self$nrow) {
@@ -400,6 +403,7 @@ tmle3_Task <- R6Class(
         regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
         nodes <- all_nodes[[1]]
         nodes$covariates <- union("t", nodes$covariates)
+        nodes$covariates <- sort(nodes$covariates)
         setkey(regression_data, id, t)
 
         # censoring_node <- target_node_object$censoring_node
@@ -463,13 +467,18 @@ tmle3_Task <- R6Class(
 
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))[]
-          setnames(parent_data, make.unique(names(parent_data)))
+
+          #colnames_new <- unlist(lapply(parent_nodes, function(node){
+           # return(paste0(node$variables, "_", node$time[[1]]))
+         # }))
+          #setnames(parent_data, colnames_new)
+          setnames(parent_data, make.unique(colnames(parent_data)))
         } else {
           parent_data <- data.table(NULL)
         }
 
 
-        covariates <- unlist(lapply(parent_nodes, `[[`, "variables"))
+        covariates <- colnames(parent_data) #unlist(lapply(parent_nodes, `[[`, "variables"))
         outcome = setdiff(colnames(outcome_data), c("id", "t", grep("degeneracy_value", colnames(outcome_data), value = T), "at_risk"))
 
         outcome_index <-  1:length(outcome)
@@ -485,10 +494,13 @@ tmle3_Task <- R6Class(
         uniq_names <- make.unique(c(outcome,covariates))
         covariates <- uniq_names[cov_index]
         outcome <- uniq_names[outcome_index]
+        setnames(parent_data, covariates)
+
         if((length(time) >1)){
           covariates <- c(covariates, "t")
         }
         all_covariate_data <- parent_data
+
 
       } else {
 
@@ -568,7 +580,8 @@ tmle3_Task <- R6Class(
       set(regression_data, , "t" , time)
 
       setkey(regression_data, id, t)
-
+      # Necessary for pooled regression tasks and unpooled to be compatible.
+      setcolorder(regression_data, order(colnames(regression_data)))
 
       censoring_node <- target_node_object$censoring_node
 
@@ -603,10 +616,10 @@ tmle3_Task <- R6Class(
       setcolorder(regression_data)
       #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
-      if(F & is_time_variant){
+      if(is_time_variant){
         nodes$covariates <- union(nodes$covariates, "t")
       }
-
+      nodes$covariates <- sort(nodes$covariates)
       suppressWarnings({
         regression_task <- sl3_Task$new(
           regression_data,

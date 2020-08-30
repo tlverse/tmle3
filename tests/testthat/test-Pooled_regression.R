@@ -28,7 +28,7 @@ long_data <- rbindlist(lapply(0:2, function(i){
 setkey(long_data, id , t)
 
 
-# Longitudinal data with growing past
+# Longitudinal npsem with growing past
 npsem <- list(define_node("L0", c("L"),c(), time = 0), define_node("A0", c("A"), c("L0"), time = 0) ,
               define_node("L1", c("L"),c("A0", "L1"), time = 1), define_node("A1", c("A"), c("L0", "L1", "A0"), time = 1) ,
               define_node("L2", c("L"),c("L1", "L0", "A1", "A0"), time = 2), define_node("A2", c("A"), c("L0", "L1", "L2", "A0", "A1"), time = 2), define_node("Y", c("Y"), c("L0", "L1", "L2", "A0", "A1", "A2"), time = 2))
@@ -36,6 +36,7 @@ npsem <- list(define_node("L0", c("L"),c(), time = 0), define_node("A0", c("A"),
 task <- tmle3_Task$new(long_data, npsem, time = "t", id = "id")
 
 
+# Longitudinal npsem with fixed past to allow pooling
 npsem <- list(define_node("L0", c("L"),c(), time = 0), define_node("A0", c("A"), c("L0"), time = 0) ,
               define_node("L1", c("L"),c("A0", "L0"), time = 1), define_node("A1", c("A"), c("L1", "A0"), time = 1) ,
               define_node("L2", c("L"),c("L1", "A1"), time = 2), define_node("A2", c("A"), c( "L2","A1"), time = 2), define_node("Y", c("Y"), c("L0", "L1", "L2", "A0", "A1", "A2"), time = 2))
@@ -43,7 +44,7 @@ npsem <- list(define_node("L0", c("L"),c(), time = 0), define_node("A0", c("A"),
 task <- tmle3_Task$new(long_data, npsem, time = "t", id = "id")
 
 
-#Check names are equal up to order for pooling
+#Check names are equal up to order for pooling (though they should be the same including order)
 assertthat::assert_that(identical(sort(names(task$get_regression_task("L2")$data)), sort(names(task$get_regression_task("L1")$data))))
 assertthat::assert_that(identical(sort(names(task$get_regression_task("A2")$data)), sort(names(task$get_regression_task("A1")$data))))
 

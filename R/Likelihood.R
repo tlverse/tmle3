@@ -134,7 +134,7 @@ Likelihood <- R6Class(
       }
       else if("t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values) & to_wide){
         likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
-        if(length(node) > 1){
+        if(length(node) + 1 == ncol(likelihood_values)){
           setnames(likelihood_values, c("id", node))
         }
       }

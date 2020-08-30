@@ -44,7 +44,18 @@ Targeted_Likelihood <- R6Class(
       # todo: rethink which tasks need updates here
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks
-
+      # If task has attr target_nodes then only update these nodes.
+      to_update <- sapply(tasks_at_step, function(task) {
+        target_nodes <- attr(task, "target_nodes")
+        if(is.null(target_nodes)){
+          return(T)
+        }
+        if(update_node %in% c(target_nodes)){
+          return(T)
+        }
+        return(F)
+      })
+      tasks_at_step <- tasks_at_step[to_update]
       # first, calculate all updates
       task_updates <- lapply(tasks_at_step, self$updater$apply_update, self, fold_number, new_epsilon, update_node)
 
@@ -72,9 +83,14 @@ Targeted_Likelihood <- R6Class(
       # Checks if task is up to date
       # Might be useful to set check = F for efficiency ...
       # e.g. if you are montecarlo simulating from a targeted likelihood
+
       if(check){
         current_step <- self$updater$step_number
         nodes <- self$updater$update_nodes
+        target_nodes <- attr(tmle_task, "target_nodes")
+        if(!is.null(target_nodes)){
+          nodes <- target_nodes
+        }
         in_sync <- TRUE
         for(node in nodes){
           likelihood_factor <- self$factor_list[[node]]
@@ -95,7 +111,10 @@ Targeted_Likelihood <- R6Class(
       #TODO is this double for loop something to worry about?
       for(eps_step in epsilons){
         for(node in names(eps_step)){
-
+          target_nodes <- attr(tmle_task, "target_nodes")
+          if(!is.null(target_nodes) & !(node %in% c(target_nodes))){
+            next
+          }
           eps <- eps_step[[node]]
           likelihood_factor <- self$factor_list[[node]]
 

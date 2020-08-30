@@ -866,6 +866,12 @@ tmle3_Task <- R6Class(
       # I need self$data to give me t and id, so lets include nodes
       all_variables <- union(all_variables, c(unlist(self$nodes), private$.summary_measure_columns))
       self$get_data(columns = all_variables)
+    },
+    summary_measure_columns = function(){
+      private$.summary_measure_columns
+    },
+    force_at_risk = function(){
+      private$.force_at_risk
     }
   ),
   private = list(

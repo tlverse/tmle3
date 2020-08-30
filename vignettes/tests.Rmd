@@ -91,7 +91,7 @@ devtools::document()
 
 
 ```{r}
-n=5000
+n=500
 way = data.table(W = (rbinom(n, size = 50, 0.5)), A = (rbinom(n, size = 50, 0.5)), Y = (rbinom(n, size = 300, 0.5)))
 way
 generator <-function(task, Likelihood = NULL, target_param = NULL, node, outcome = T){
@@ -114,9 +114,60 @@ liks <- Likelihood$new(likelihood_factors)
 
 
 liks = liks$train(task)
+grad <- Gradient$new(liks, generator, list(update_nodes = "Y"))
 
+grad <- grad$train(task)
+grad$compute_component(task, "Y")
 
 ```
+
+```{r}
+setattr(task, "target_nodes", "Y")
+attr(task, "target_nodes")
+
+```
+```{r}
+levels = sort(unique(way$trueY))
+
+way$trueid <- seq_len(500)
+way$trueY <- way$Y
+w=rbindlist(lapply(levels, function(level) {
+  way <- copy(way)
+  set(way ,, "Y", level)
+  way
+}))
+w$id <- paste(w$trueid, w$Y, sep = "_")
+w
+expand_task = function(tmle_task, node){
+  variables <- tmle_task$npsem[[node]]$variables
+  if(length(variables) >1) stop("Multivariate nodes not supported")
+  data <- tmle_task$data
+  data$trueid <- data$id
+  levels <- sort(unique(unlist(data[, variables, with = F])))
+  long_data <- rbindlist(lapply(levels, function(level) {
+    data <- copy(data)
+    set(data ,, variables, level)
+    return(data)
+  }))
+  long_data$id <-  paste(long_data$trueid,long_data[, variables, with = F][[1]], sep = "_")
+  long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid"))
+  return(long_task)
+}
+expand_task(task, "Y")$data
+```
+
+```{r}
+task$force_at_risk
+```
+```{r}
+grad <- Gradient$new(liks, generator, list(update_nodes = "Y"))
+
+grad <- grad$train(task)
+out = (grad$compute_component(task, "Y"))
+lapply(out, as.data.table)
+```
+
+
 
 ```{r}
 
@@ -128,7 +179,7 @@ setnames(preds, as.character(seq_along(levels)))
 preds
 cdf <- data.table(t(apply(preds, 1, cumsum)))
 X = as.matrix(cbind(task$get_regression_task("Y")$X, as.numeric(as.character(task$get_regression_task("Y")$Y))))
-basis_list = hal9001::enumerate_basis(X, 2)
+basis_list = hal9001::enumerate_basis(X, 1)
 data.table(X)
 design1 <- as.data.table(as.matrix(hal9001::make_design_matrix(X, basis_list)))
 ```
@@ -175,19 +226,16 @@ dim(result)
 ```
 
 
-```{r}
-result
-```
 
 ```{r}
 grad <- Gradient$new(liks, generator, list(update_nodes = "Y"))
 
 grad <- grad$train(task)
-grad$set_basis()
+grad$compute_component(task, "Y")
 ```
 
 ```{r}
-basis_list = grad$fit_object$Y$basis_list
+grad$compute_component(task, "Y")
 
 ```
 

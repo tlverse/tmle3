@@ -73,6 +73,7 @@ Param_survival <- R6Class(
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
+      is_observed <- tmle_task$uuid ==  self$observed_likelihood$training_task$uuid
       # Intervene on censoring/riskset so that hazard probabilities are returned
       # In particular, set the counting processes to 1 and specify that risk set should not be checked
 
@@ -152,41 +153,38 @@ Param_survival <- R6Class(
       # Only those at risk have likelihood updated.
 
 
-      if(for_fitting){
+      if(is_observed){
+        #TODO check
         observed_N_wide <- reshape(observed_N, idvar = "id", timevar = "t", direction = "wide")
+        observed_N_wide$id <- NULL
+        # TODO this is crazy slow, code better and dont recompute
         to_dNt <- function(v){
 
-          dt = data.table(matrix(c(0,diff(unlist(v))), nrow = 1))
-          colnames(dt) <- paste0("d", colnames(v))
+          dt = c(0,diff((v)))
           return(dt)
         }
         # Converts to dNt format
-        observed_dN_wide <- observed_N_wide[, to_dNt(.SD), by = id]
-        observed_dN_wide$id <- NULL
+        observed_dN_wide <- t(apply(observed_N_wide, 1, to_dNt))
 
 
 
-        jump_time <- apply(observed_N_wide, 1, function(v){
-          time <- which(v==1)
-          if(length(time) ==0){
-            return(Inf)
-          }
-          return(min(time))
-        })
+
+        jump_time <- nrow(observed_N_wide) - apply(observed_N_wide, 1, sum) + 1
         t_mat <- matrix(1:ncol(observed_dN_wide), ncol = ncol(observed_dN_wide), nrow = nrow(observed_dN_wide), byrow = T )
         # TODO dont recompute this every time
-        ind = apply(((t_mat <= jump_time)),2,as.numeric)
+        ind = t_mat <= jump_time
+
 
 
         # compute scaled and zeroed residuals vector
 
 
-        residuals = as.vector((as.matrix(observed_dN_wide) - Q)*ind/nrow(observed_N_wide))
+        residuals = as.vector((as.matrix(observed_dN_wide) - Q)*ind)
 
         clever_dot_HA <- HA*residuals
 
 
-        private$.D_cache[[tmle_task$uuid]] <- list(processN = clever_dot_HA)
+        private$.D_cache[[tmle_task$uuid]] <-  clever_dot_HA
 
 
 
@@ -221,6 +219,10 @@ Param_survival <- R6Class(
       # liks_surv = liks[, cbind(t,cumprod(.SD)), by = id, .SDcols = "processN"]
       # liks_surv = liks_surv[, lapply(.SD, mean), by = t, .SDcols = c("processN")]
       liks_surv <- 0
+      IC =  private$.D_cache[[tmle_task$uuid]]
+      if(is.null(IC)){
+        self$clever_covariates(tmle_task = tmle_task, fold_number = "full")
+      }
       result <- list(psi = liks_surv, IC =  private$.D_cache[[tmle_task$uuid]])
       return(result)
       },

@@ -90,39 +90,43 @@ task <- tmle3_Task$new(long_data, npsem, t= "t", id = "id")
 lik <- Likelihood$new(factor_list)
 
 lik_trained <- lik$train(task)
-```
 
-
-
-
-```{r}
 cf_task <- task$clone()
 cf_task$force_at_risk <- T
 
 
 cf_task$get_regression_task("processN", expand = T)$get_data()
 task$get_regression_task("processN", expand = T)$get_data()
+task$get_tmle_node("processN", compute_risk_set = T)
 ```
 
-```{r}
-data.table(matrix(tlik$get_likelihood(cf_task, "processN"), nrow = 1000, byrow = T))
-lik_trained$get_likelihood(cf_task, "processN", drop_id = F, to_wide = T)
-task$get_tmle_node("processN", include_id = T)
-```
+
 
 ```{r}
-tlik <- Targeted_Likelihood$new(lik_trained)
+tlik <- Targeted_Likelihood$new(lik_trained, updater = list(one_dimensional=T, maxit = 50, convergence_type = "sample_size"))
 param_surv <- Param_survival$new(tlik, list("A" = LF_static$new("A", value = 1)), outcome_node = "processN")
-
-tlik$updater$update_step(tlik, task)
-tlik$get_likelihood(cf_task, "processN")
+tlik$updater$update(tlik, task)
+#tlik$get_likelihood(cf_task, "processN")
 ```
 
 ```{r}
-tlik$updater$generate_submodel_data(tlik, cf_task, update_node = "processN")$initial
-#tlik$updater$update_step(tlik, task)
+tlik$updater$step_number
+```
 
 
+```{r}
+observed_dN_wide <- t(apply(observed_N_wide, 1, to_dNt))
+print(data.table(observed_dN_wide))
+
+
+
+jump_time <- nrow(observed_N_wide) - apply(observed_N_wide, 1, sum) + 1
+t_mat <- matrix(1:ncol(observed_dN_wide), ncol = ncol(observed_dN_wide), nrow = nrow(observed_dN_wide), byrow = T )
+# TODO dont recompute this every time
+ind = (t_mat <= jump_time)
+
+
+data.table(observed_dN_wide)
 ```
 
 ```{r}

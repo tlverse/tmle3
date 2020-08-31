@@ -69,7 +69,9 @@ tmle3_Update <- R6Class(
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
+
       ED <- ED_from_estimates(estimates)
+
       EDnormed <- ED / norm(ED, type = "2")
       collapsed_covariate <- clever_covariates %*% EDnormed
 
@@ -154,6 +156,7 @@ tmle3_Update <- R6Class(
         if (!is.null(censoring_node)) {
           observed_node <- tmle_task$get_tmle_node(censoring_node)
           subset <- which(observed_node == 1)
+          subset <- intersect(subset, which(task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
           submodel_data <- list(
             observed = submodel_data$observed[subset],
             H = submodel_data$H[subset, , drop = FALSE],
@@ -291,6 +294,7 @@ tmle3_Update <- R6Class(
         # NOTE: the point of this criterion is to avoid targeting in an overly
         #       aggressive manner, as we simply need check that the following
         #       condition is met |P_n D*| / SE(D*) =< max(1/log(n), 1/10)
+        # TODO Use variance from first iteration as weights so criterion does not change
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)

@@ -103,31 +103,16 @@ task$get_tmle_node("processN", compute_risk_set = T)
 
 
 ```{r}
-tlik <- Targeted_Likelihood$new(lik_trained, updater = list(one_dimensional=T, maxit = 50, convergence_type = "sample_size"))
+tlik <- Targeted_Likelihood$new(lik_trained, updater = list(one_dimensional=T, maxit = 2, convergence_type = "sample_size"))
 param_surv <- Param_survival$new(tlik, list("A" = LF_static$new("A", value = 1)), outcome_node = "processN")
 tlik$updater$update(tlik, task)
 #tlik$get_likelihood(cf_task, "processN")
 ```
 
-```{r}
-tlik$updater$step_number
-```
-
-
-```{r}
-observed_dN_wide <- t(apply(observed_N_wide, 1, to_dNt))
-print(data.table(observed_dN_wide))
 
 
 
-jump_time <- nrow(observed_N_wide) - apply(observed_N_wide, 1, sum) + 1
-t_mat <- matrix(1:ncol(observed_dN_wide), ncol = ncol(observed_dN_wide), nrow = nrow(observed_dN_wide), byrow = T )
-# TODO dont recompute this every time
-ind = (t_mat <= jump_time)
 
-
-data.table(observed_dN_wide)
-```
 
 ```{r}
 task <- tmle3_Task$new(long_data, npsem, time = "t", id = "id")

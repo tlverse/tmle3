@@ -69,7 +69,7 @@ Param_survival <- R6Class(
       # sm <- cbind(1,sm[,-ncol(sm)])
       return(sm)
     },
-    clever_covariates_internal = function(tmle_task = NULL, fold_number = "full", subset_times = FALSE, for_fitting = T, compute_EIC_variance = F) {
+    clever_covariates_internal = function(tmle_task = NULL, fold_number = "full", subset_times = FALSE) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
@@ -196,7 +196,7 @@ Param_survival <- R6Class(
       return(list(processN =  HA))
     },
     get_EIC_var = function(tmle_task, fold_number = "full"){
-      self$clever_covariates_internal(tmle_task, fold_number, for_fitting = T, compute_EIC_variance = T)
+      self$clever_covariates_internal(tmle_task, fold_number)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
@@ -209,7 +209,7 @@ Param_survival <- R6Class(
       # setnames(data_cf, colnames(data))
       # data_cf$id = 1:10000
       # data_cf$t = 0
-      # task_cf = ltmle3_Task$new(data_cf, npsem, force_at_risk = T)
+      # task_cf = ltmle3_Task$new(data_cf, tmle_task$npsem, force_at_risk = T)
       # lik = self$cf_likelihood
       # sampler = Sampler$new(lik, c("W",  "A"), "W")
       # tsk = sampler$sample(task_cf, "W", "A")
@@ -226,8 +226,8 @@ Param_survival <- R6Class(
       result <- list(psi = liks_surv, IC =  private$.D_cache[[tmle_task$uuid]])
       return(result)
       },
-    clever_covariates = function(tmle_task, fold_number = "full", for_fitting = T){
-      self$clever_covariates_internal(tmle_task, fold_number, subset_times = TRUE, for_fitting = for_fitting)
+    clever_covariates = function(tmle_task, fold_number = "full"){
+      self$clever_covariates_internal(tmle_task, fold_number, subset_times = TRUE)
     },
     get_EIC_component = function(task, node) {
       return(private$.D_cache[[task$uuid]][[node]])

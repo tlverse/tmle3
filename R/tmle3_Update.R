@@ -125,6 +125,7 @@ tmle3_Update <- R6Class(
       covariates_dt <- do.call(cbind, node_covariates)
 
       if (self$one_dimensional) {
+        #TODO this should happen in fit_submodel so we can store epsiln
         observed_task <- likelihood$training_task
         covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       }
@@ -156,7 +157,7 @@ tmle3_Update <- R6Class(
         if (!is.null(censoring_node)) {
           observed_node <- tmle_task$get_tmle_node(censoring_node)
           subset <- which(observed_node == 1)
-          subset <- intersect(subset, which(task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
+          subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
           submodel_data <- list(
             observed = submodel_data$observed[subset],
             H = submodel_data$H[subset, , drop = FALSE],

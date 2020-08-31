@@ -292,7 +292,15 @@ tmle3_Update <- R6Class(
         #       aggressive manner, as we simply need check that the following
         #       condition is met |P_n D*| / SE(D*) =< max(1/log(n), 1/10)
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
-        se_Dstar <- sqrt(apply(IC, 2, var) / n)
+        # TODO colVars is wrong when using long format
+        # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
+        se_Dstar <- sqrt(apply(IC, 2, function(v){
+          # If long then make it a matrix
+          v <- matrix(v, nrow = n)
+          #Collapse EIC for each person by summing across time (this is correct for survival)
+          v <- rowSums(v)
+          return(var(v))
+        })/n)
         ED_threshold <- se_Dstar / min(log(n), 10)
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n

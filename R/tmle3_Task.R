@@ -473,7 +473,7 @@ tmle3_Task <- R6Class(
           #Id order should be same
 
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
-          parent_data <- setDT(unlist(parent_data, recursive = F))[]
+          parent_data <- setDT(unlist(parent_data, recursive = F))
 
           #colnames_new  <- unlist(lapply(parent_nodes, function(node){
            # return(paste0(node$variables, "_", node$time[[1]]))
@@ -541,7 +541,7 @@ tmle3_Task <- R6Class(
           )
           #all_covariate_data <- all_covariate_data %>% purrr::reduce(merge, by = "id")
           #all_covariate_data <- do.call(cbind, all_covariate_data)
-          all_covariate_data <- setDT(unlist(all_covariate_data, recursive = F))[]
+          all_covariate_data <- setDT(unlist(all_covariate_data, recursive = F))
 
           #set(all_covariate_data, , (which(duplicated(names(all_covariate_data)))), NULL)
           covariates <- setdiff(colnames(all_covariate_data), "id")
@@ -896,12 +896,12 @@ tmle3_Task <- R6Class(
     summary_measure_columns = function(){
       private$.summary_measure_columns
     },
-    force_at_risk = function(at_risk = NULL){
+    force_at_risk = function(force_at_risk = NULL){
       # By changing this value (after cloning original task)
       # The user can quickly construct a counterfactual version of task where everyone is at risk always
       # Useful when you want entire hazard function in one go (ignoring degeneracy).
-      if(!is.null(at_risk)){
-        private$.force_at_risk <- at_risk
+      if(!is.null(force_at_risk)){
+        private$.force_at_risk <- force_at_risk
         if(private$.force_at_risk){
           add <- "T"
         } else{

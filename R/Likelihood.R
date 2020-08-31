@@ -111,8 +111,9 @@ Likelihood <- R6Class(
           likelihood_values <- as.data.table(likelihood_values)
           if(!to_wide){
             out_name <- paste0(node, collapse = "%")
+            setnames(likelihood_values, out_name)
           }
-          setnames(likelihood_values, out_name)
+
         }
         if(expand){
           self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values, node = paste0(node, collapse = "%"))
@@ -129,19 +130,22 @@ Likelihood <- R6Class(
 
      # likelihood_values <- likelihood_values[,  keep_cols, with = F]
 
-      if("t" %in% colnames(likelihood_values) & to_wide & length(unique(likelihood_values$t))==1){
+      if(to_wide & "t" %in% colnames(likelihood_values)  & length(unique(likelihood_values$t))==1){
 
         likelihood_values$t <- NULL
       }
-      else if("t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values) & to_wide){
-        likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
+      else if(to_wide & "t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values)){
+        #likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
+        likelihood_values <- dcast(likelihood_values, id ~ t, value.var = setdiff(names(likelihood_values), c("t", "id")))
         if(length(node) + 1 == ncol(likelihood_values)){
           setnames(likelihood_values, c("id", node))
+        } else if (length(node)==1){
+          setnames(likelihood_values, c("id", paste0( node, "_", names(likelihood_values)[-1])))
         }
       }
       if(drop_id & "id" %in% colnames(likelihood_values)) likelihood_values$id <- NULL
       if(drop_time & "t" %in% colnames(likelihood_values)) likelihood_values$t <- NULL
-      if(drop == T & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
+      if(drop & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
       return(likelihood_values)
     },
     get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, drop = T, to_wide = ifelse(length(nodes) > 1, T, F), expand = T) {
@@ -203,7 +207,7 @@ Likelihood <- R6Class(
         if(drop_time & "t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
         return(likelihood_dt)
       } else {
-        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number, drop_id = drop_id, drop_time =drop_time, drop = drop, expand = expand ))
+        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number, drop_id = drop_id, drop_time =drop_time, drop = drop, expand = expand, to_wide = to_wide ))
       }
     },
     get_possible_counterfactuals = function(nodes = NULL) {

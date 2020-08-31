@@ -19,6 +19,7 @@ Other Parameters:
 \code{\link{Param_base}},
 \code{\link{Param_mean}},
 \code{\link{Param_stratified}},
+\code{\link{Param_survival_old}},
 \code{\link{Param_survival}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}

@@ -33,8 +33,8 @@
 #'     }
 #' }
 #' @export
-Param_survival <- R6Class(
-  classname = "Param_survival",
+Param_survival_old <- R6Class(
+  classname = "Param_survival_old",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,

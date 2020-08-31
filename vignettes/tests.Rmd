@@ -102,16 +102,28 @@ cf_task$force_at_risk <- T
 
 cf_task$get_regression_task("processN", expand = T)$get_data()
 task$get_regression_task("processN", expand = T)$get_data()
-lik_trained$get_likelihoods(cf_task, "processN",  to_wide = T)
-lik_trained$get_likelihoods(task, "processN",  to_wide =T, drop_id = T)
+```
+
+```{r}
+data.table(matrix(tlik$get_likelihood(cf_task, "processN"), nrow = 1000, byrow = T))
+lik_trained$get_likelihood(cf_task, "processN", drop_id = F, to_wide = T)
+task$get_tmle_node("processN", include_id = T)
 ```
 
 ```{r}
 tlik <- Targeted_Likelihood$new(lik_trained)
 param_surv <- Param_survival$new(tlik, list("A" = LF_static$new("A", value = 1)), outcome_node = "processN")
-lapply(param_surv$clever_covariates(task), as.data.table)
+
+tlik$updater$update_step(tlik, task)
+tlik$get_likelihood(cf_task, "processN")
 ```
 
+```{r}
+tlik$updater$generate_submodel_data(tlik, cf_task, update_node = "processN")$initial
+#tlik$updater$update_step(tlik, task)
+
+
+```
 
 ```{r}
 task <- tmle3_Task$new(long_data, npsem, time = "t", id = "id")

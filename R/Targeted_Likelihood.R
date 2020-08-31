@@ -146,7 +146,7 @@ Targeted_Likelihood <- R6Class(
           likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
         } else {
           # if not, generate new ones
-          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number, ...)
+          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number, to_wide = F)
           value_step <- 0
           self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values, node = node)
         }

@@ -94,17 +94,19 @@ Param_survival <- R6Class(
       #cf_pA <- tmle_task$get_tmle_node("A")[,A]
 
       #Should already be matrix. Assumed to be in order of time
-      Q <- self$observed_likelihood$get_likelihoods(cf_task, c("processN"), fold_number, drop_id = T, to_wide = T)
+      Q <- self$observed_likelihood$get_likelihoods(cf_task, c("processN"), fold_number)
       # TODO: make bound configurable
+      n = length(cf_pA)
 
+      Q <- matrix(Q, nrow = n, byrow = T)
 
-      Q <- as.matrix(Q)
       Q <- bound(Q, c(0.005,1))
 
 
-      G <- self$observed_likelihood$get_likelihoods(cf_task, c("processA"), fold_number, drop_id = T, to_wide = T)
+      G <- self$observed_likelihood$get_likelihoods(cf_task, c("processA"), fold_number)
 
-      G <- as.matrix(G)
+      G <- matrix(G, nrow = n, byrow = T)
+
       G <- bound(G, c(0.005,1))
 
       Q_surv <- as.matrix(self$hm_to_sm(Q))

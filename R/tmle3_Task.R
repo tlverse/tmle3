@@ -226,9 +226,17 @@ tmle3_Task <- R6Class(
           # The main issue is that computing the at_risk indicator requires applying a function to data[t <= time]
           # so there isn't any general shortcut exploiting the long format of the data
           data <- lapply(time, function(t) self$get_tmle_node( force_time_value = t,node_name= node_name, format = format, include_time = T, include_id = T, expand = expand, compute_risk_set = compute_risk_set))
-
-          #setkey(data, id , t)
-          return(rbindlist(data))
+          data <- rbindlist(data)
+          #Needed to ensure order matches regrression task outcome
+          setkey(data, id , t)
+          if(!include_time){
+            data <- data[, setdiff( names(data), c("t")), with = F]
+          }
+          if(!include_id){
+            data <- data[, setdiff( names(data), c("id")), with = F]
+          }
+          if(ncol(data) == 1 & !format) data <- unlist(data, use.names = F)
+          return(data)
         }
         else {
           data <-  self$get_data(self$row_index,  c("id", "t", node_var))

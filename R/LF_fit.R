@@ -61,8 +61,7 @@ LF_fit <- R6Class(
 
       # fit scaled task for bounded continuous
       learner_task <- tmle_task$get_regression_task(outcome_node,
-        scale = TRUE, drop_censored = TRUE, expand = F
-      )
+        scale = TRUE, drop_censored = TRUE, expand = F)
       learner_fit <- delayed_learner_train(self$learner, learner_task)
       return(learner_fit)
     },
@@ -86,16 +85,20 @@ LF_fit <- R6Class(
 
       return(values)
     },
-    get_mean = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T) {
+    get_mean = function(tmle_task, fold_number, node = NULL,  check_at_risk = T, to_wide = F, drop_id = F, drop_time = F, drop = T, expand = T, quick_pred = F) {
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       #
       if(is.null(node)) node <- self$name
       learner_task <- tmle_task$get_regression_task(node, expand =expand, is_time_variant = self$is_time_variant)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
-
+      if(quick_pred){
+        return(data.table(preds))
+      }
       # unscale preds (to handle bounded continuous)
       preds <- tmle_task$unscale(preds, node)
+      preds <- as.data.table(preds)
+
       data <-  learner_task$get_data()
 
       # For conditional means, degenerate value is exactly the value to be predicted
@@ -108,17 +111,20 @@ LF_fit <- R6Class(
         not_at_risk <- which(data$at_risk == 0)
         if(length(not_at_risk)>0){
           degen_val <- data[not_at_risk, names_degen_val, with = F]
-          preds[not_at_risk] <-  degen_val
+          set(preds, not_at_risk, names(preds) ,  degen_val)
         }
 
       }
-      preds <- data.table(preds)
+
       preds$id <- learner_task$data$id
       preds$t <- learner_task$data$t
       setnames(preds, c(node, "id", "t"))
       if(to_wide){
         preds <- reshape(preds, idvar = "id", timevar = "t", direction = "wide")
-        setnames(preds, c("id", node))
+        if(length(node) + 1  == ncol(preds)){
+          setnames(preds, c("id", node))
+        }
+
       }
       if(drop_id & "id" %in% colnames(preds)) preds$id <- NULL
       if(drop_time & "t" %in% colnames(preds)) preds$t <- NULL
@@ -175,7 +181,9 @@ LF_fit <- R6Class(
       setnames(likelihood, c(paste0(node, collapse = "%"), "id", "t"))
       if(to_wide){
         likelihood <- reshape(likelihood, idvar = "id", timevar = "t", direction = "wide")
-        setnames(likelihood, c("id", node))
+        if(length(node) + 1  == ncol(preds)){
+          setnames(preds, c("id", node))
+        }
       }
       if(drop_id & "id" %in% colnames(likelihood)) likelihood$id <- NULL
       if(drop_time & "t" %in% colnames(likelihood)) likelihood$t <- NULL

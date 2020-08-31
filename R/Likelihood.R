@@ -77,6 +77,7 @@ Likelihood <- R6Class(
     get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, drop = T, to_wide = F, expand = T) {
       if(length(node) > 1){
         likelihood_factor <- self$factor_list_pooled[[paste0(node, collapse = "%")]]
+        warning("You shouldn't be calling node likelihoods in a pooled way as these likelihoods don't get updated in targeting.")
 
       } else {
         likelihood_factor <- self$factor_list[[node]]
@@ -143,7 +144,7 @@ Likelihood <- R6Class(
       if(drop == T & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, drop = T, to_wide = T, expand = T) {
+    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, drop = T, to_wide = ifelse(length(nodes) > 1, T, F), expand = T) {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }

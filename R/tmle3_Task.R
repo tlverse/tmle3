@@ -177,12 +177,9 @@ tmle3_Task <- R6Class(
       private$.summary_measure_columns <- summary_measure_columns
       private$.uuid <- digest(self$data)
     },
-    get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = F, compute_risk_set = T) {
+    get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = T, compute_risk_set = F) {
       force_at_risk <- private$.force_at_risk
-      if(force_at_risk) {
-        expand <- T
-        compute_risk_set <- F
-      }
+
 
       if(is.null(force_time_value)) force_time_value <- F
       cache_key <- sprintf("%s_%s_%s_%s_%s_%s", node_name, format, impute_censoring, force_time_value, expand, compute_risk_set)
@@ -222,7 +219,7 @@ tmle3_Task <- R6Class(
           #TODO, when to get value at all times by repeeatedly calling get_tmle_node with force_time_value argument??
           # The main issue is that computing the at_risk indicator requires applying a function to data[t <= time]
           # so there isn't any general shortcut exploiting the long format of the data
-          data <- lapply(time, function(t) self$get_tmle_node( force_time_value = t,node_name= node_name, format = format, include_time = T, include_id = T, expand = expand))
+          data <- lapply(time, function(t) self$get_tmle_node( force_time_value = t,node_name= node_name, format = format, include_time = T, include_id = T, expand = expand, compute_risk_set = compute_risk_set))
 
           #setkey(data, id , t)
           return(rbindlist(data))
@@ -238,7 +235,9 @@ tmle3_Task <- R6Class(
         data <-  self$data
         data <- data[t <= time, ]
         if(compute_risk_set & !private$.force_at_risk){
+
           risk_set <- tmle_node$risk_set(data, time, subset_time = F)
+
         }
         data <- data[, c("id", "t", node_var), with = F]
 
@@ -246,6 +245,7 @@ tmle3_Task <- R6Class(
           # Get most recent value for all
           data <- data[, last(.SD), by = id]
           if(compute_risk_set){
+
             if(private$.force_at_risk) {
               set(data, , "at_risk", 1)
             } else {
@@ -328,7 +328,7 @@ tmle3_Task <- R6Class(
       return(data)
     },
     # TODO: add time_variance
-    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = F, cache_task = T) {
+    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = T, cache_task = T) {
 
       if(!is.numeric(force_time_value) & cache_task){
         cache_key <- sprintf("%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand)
@@ -450,7 +450,7 @@ tmle3_Task <- R6Class(
 
       if(is.null(unlist(target_node_object$summary_functions))){
         # No summary functions so simply stack node values of parents
-        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = expand, compute_risk_set = T)
+        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = T, force_time_value = force_time_value, expand = T, compute_risk_set = T)
         if(length(outcome_data)==0){
           suppressWarnings({
             regression_task <- sl3_Task$new(
@@ -468,7 +468,7 @@ tmle3_Task <- R6Class(
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))[]
 
-          #colnames_new <- unlist(lapply(parent_nodes, function(node){
+          #colnames_new  <- unlist(lapply(parent_nodes, function(node){
            # return(paste0(node$variables, "_", node$time[[1]]))
          # }))
           #setnames(parent_data, colnames_new)
@@ -512,7 +512,7 @@ tmle3_Task <- R6Class(
 
         # Note that those with missing rows will be included in outcome_data.
         # There value will be set to last measured value.
-        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = (time == "pooled"), force_time_value = force_time_value, expand = expand)
+        outcome_data <- self$get_tmle_node(target_node, format = TRUE, include_id = T, include_time = (time == "pooled"), force_time_value = force_time_value, expand = T, compute_risk_set = T)
         if(length(outcome_data)==0){
           suppressWarnings({
             regression_task <- sl3_Task$new(
@@ -564,8 +564,8 @@ tmle3_Task <- R6Class(
       nodes$outcome <- outcome
       nodes$covariates <- covariates
       if(ncol(all_covariate_data) == 0){
-        #regression_data <-  list(outcome_data, node_data) %>% purrr::reduce(merge, "id")
-        regression_data <- list(outcome_data, node_data)
+        regression_data <-  list(outcome_data, node_data)# %>% purrr::reduce(merge, "id")
+        #regression_data <- list(outcome_data, node_data)
         regression_data <- setDT(unlist(regression_data, recursive = F))
 
         #Handle id duplicates
@@ -574,9 +574,15 @@ tmle3_Task <- R6Class(
            else {
           #The ids should already be matched up in order so we can just cbind, and not merge
         regression_data <-   list(all_covariate_data, outcome_data, node_data) # %>% purrr::reduce(merge, "id")
+        #regression_data <-  regression_data %>% purrr::reduce(merge, "id")
+
+        #print(regression_data)
         regression_data <- setDT(unlist(regression_data, recursive = F))
         #set(regression_data, ,(which(duplicated(names(regression_data)))), NULL)
-        }
+           }
+      if(!expand){
+        regression_data <- regression_data[regression_data$at_risk ==1]
+      }
       set(regression_data, , "t" , time)
 
       setkey(regression_data, id, t)
@@ -883,7 +889,10 @@ tmle3_Task <- R6Class(
     summary_measure_columns = function(){
       private$.summary_measure_columns
     },
-    force_at_risk = function(){
+    force_at_risk = function(at_risk = NULL){
+      if(!is.null(at_risk)){
+        private$.force_at_risk <- at_risk
+      }
       private$.force_at_risk
     }
   ),

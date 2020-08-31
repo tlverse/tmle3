@@ -125,6 +125,7 @@ tmle3_Node <- R6Class(
       } else{
 
         risk_set <-at_risk_map$summarize(data,time)# [,at_risk_map$name, with = F, drop = T]
+
         risk_set <- risk_set$id[risk_set[[at_risk_map$name]]==1]
       }
       return(unlist(risk_set, use.names = F))

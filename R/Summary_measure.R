@@ -1,5 +1,6 @@
 #' @importFrom R6 R6Class
 #' @import data.table
+#' @importFrom stats coef lm
 
 # Summary measure object that collapses the past history into a finite dimensional vector for each person
 # Argument summary_function should be a function that takes a data.table representing the history of a single person,

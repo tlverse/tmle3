@@ -175,14 +175,20 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
       private$.force_at_risk <- force_at_risk
       private$.summary_measure_columns <- summary_measure_columns
-      private$.uuid <- digest(self$data)
+      if(private$.force_at_risk){
+        add <- "T"
+      } else{
+        add <- ""
+      }
+
+      private$.uuid <- paste0(add, digest(self$data))
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = T, compute_risk_set = F) {
       force_at_risk <- private$.force_at_risk
 
 
       if(is.null(force_time_value)) force_time_value <- F
-      cache_key <- sprintf("%s_%s_%s_%s_%s_%s", node_name, format, impute_censoring, force_time_value, expand, compute_risk_set)
+      cache_key <- sprintf("%s_%s_%s_%s_%s_%s_%s", node_name, format, impute_censoring, force_time_value, expand, compute_risk_set, force_at_risk)
 
       cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
       if (!is.null(cached_data)) {
@@ -331,7 +337,8 @@ tmle3_Task <- R6Class(
     get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = T, cache_task = T) {
 
       if(!is.numeric(force_time_value) & cache_task){
-        cache_key <- sprintf("%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand)
+        cache_key <- sprintf("%s_%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand, self$force_at_risk)
+
         cached_data <- get0(cache_key, private$.node_cache, inherits = FALSE)
         if (!is.null(cached_data)) {
           return(cached_data)
@@ -890,8 +897,19 @@ tmle3_Task <- R6Class(
       private$.summary_measure_columns
     },
     force_at_risk = function(at_risk = NULL){
+      # By changing this value (after cloning original task)
+      # The user can quickly construct a counterfactual version of task where everyone is at risk always
+      # Useful when you want entire hazard function in one go (ignoring degeneracy).
       if(!is.null(at_risk)){
         private$.force_at_risk <- at_risk
+        if(private$.force_at_risk){
+          add <- "T"
+        } else{
+          add <- ""
+        }
+
+        private$.uuid <- paste0(add, digest(self$data))
+
       }
       private$.force_at_risk
     }

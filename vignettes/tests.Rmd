@@ -92,25 +92,18 @@ lik <- Likelihood$new(factor_list)
 lik_trained <- lik$train(task)
 ```
 
-```{r}
-task <- tmle3_Task$new(long_data, npsem, t= "t", id = "id")
 
-
-#ctask$get_tmle_node("processN", compute_risk_set = T, expand = T)
-
-
-```
 
 
 ```{r}
 cf_task <- task$clone()
 cf_task$force_at_risk <- T
-cf_task$force_at_risk
-cf_task$get_tmle_node("processN", compute_risk_set = T, expand = T)
-cf_task$get_data()
-cf_task$get_regression_task("processN")$get_data()
-lik_trained$get_likelihood(cf_task, "processN",  to_wide = T)
 
+
+cf_task$get_regression_task("processN", expand = T)$get_data()
+task$get_regression_task("processN", expand = T)$get_data()
+lik_trained$get_likelihood(cf_task, "processN",  to_wide = T)
+lik_trained$get_likelihood(task, "processN",  to_wide = T)
 ```
 
 ```{r}

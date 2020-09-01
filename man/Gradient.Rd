@@ -8,7 +8,7 @@
 \code{\link{R6Class}} object.
 }
 \arguments{
-\item{Likelihood}{A trained likelihood object from which to compute the gradient from.}
+\item{likelihood}{A trained likelihood object from which to compute the gradient from.}
 
 \item{projection_task_generator}{A function that takes a task, likelihood, target parameter, and target_node
 and returns a task with the outcome being the evaluated gradient,

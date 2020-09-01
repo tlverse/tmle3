@@ -6,7 +6,8 @@
 #' @importFrom R6 R6Class
 #' @importFrom digest digest
 #' @import data.table
-#' @param Likelihood A trained likelihood object from which to compute the gradient from.
+#' @import sl3
+#' @param likelihood A trained likelihood object from which to compute the gradient from.
 #' @param projection_task_generator A function that takes a task, likelihood, target parameter, and target_node
 #' and returns a task with the outcome being the evaluated gradient,
 #' and covariates being whatever variables the conditional density of the target node likelihood factor depends on.
@@ -28,14 +29,15 @@ Gradient <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(Likelihood, projection_task_generator, target_param){
+    initialize = function(likelihood, projection_task_generator, target_param){
       params <- sl3::args_to_list()
       params$target_nodes <- target_param$update_nodes
       private$.params <- params
       private$.cache <- new.env()
+      private$.learner <- Lrnr_hal9001a$new(max_degree = 3, family = "gaussian")
     },
     generate_task = function(tmle_task, node, include_outcome = T){
-      self$projection_task_generator(tmle_task, self$Likelihood, self$target_param, node, outcome = include_outcome)
+      self$projection_task_generator(tmle_task, self$likelihood, self$target_param, node, outcome = include_outcome)
     },
     expand_task = function(tmle_task, node, force = F){
       #Computes expanded task where observations are repeated (with fake ids) for all levels of node
@@ -63,6 +65,7 @@ Gradient <- R6Class(
       if(!force & length(levels) > 100){
         stop("Too many levels in node.")
       }
+
       long_data <- rbindlist(lapply(levels, function(level) {
         data <- copy(data)
         set(data ,, variables, level)
@@ -70,10 +73,13 @@ Gradient <- R6Class(
       }))
 
       long_data$id <-  paste(long_data$trueid,long_data[, variables, with = F][[1]], sep = "_")
-      long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid"))
+
+      suppressWarnings(long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid")))
+
       setattr(long_task, "target_nodes", node)
 
       assign(key, long_task, self$cache)
+
       private$.uuid_expanded_history[[long_task$uuid]] <- node
       return(long_task)
     },
@@ -83,9 +89,12 @@ Gradient <- R6Class(
 
       fit_obj <- private$.component_fits[[node]]
       long_task <- self$expand_task(tmle_task, node)
+
       IC_task <- self$generate_task(tmle_task, node, include_outcome = F)
+
+
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
-      long_preds <- self$Likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
+      long_preds <- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
       data <- IC_task$data
 
       data <- data.table(cbind(long_task$data$trueid, long_task$get_tmle_node(node) , long_preds))
@@ -95,10 +104,11 @@ Gradient <- R6Class(
       setkeyv(data, cols = c("id", node))
       data <- dcast(data, as.formula(paste0("id ~ ", node)), value.var = "pred")
 
-      levels <- as.numeric(colnames(data)[-1])
+      data$id <- NULL
+      levels <- as.numeric(colnames(data))
 
-      cdf <- data[, as.data.table(matrix(apply(.SD, 1, cumsum), nrow = 1)), by = id]
-      cdf$id <- NULL
+      cdf <- as.data.table(t(apply(data, 1, cumsum)))
+
       setnames(cdf, as.character(levels))
 
 
@@ -130,7 +140,7 @@ Gradient <- R6Class(
         diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]]
         set(design, , as.integer(i), diff)
       })
-      min_val <- min(IC_task$X[[node]]) -1
+      min_val <- min(IC_task$X[[node]]) - 5
       clean_basis <- function(basis){
         index = which(basis$cols == col_index)
         basis$cutoffs[index] <- min_val
@@ -144,8 +154,8 @@ Gradient <- R6Class(
       #TODO only do this for basis functions containing y
 
       mid_result <- as.matrix(design * clean_design)
-      result = coefs[1] + mid_result %*% coefs[-1]
-      out = list(cdf = cdf,design = design,  mid_result = mid_result,  EIC = result)
+      result =  mid_result %*% coefs[-1]
+      out = list(cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
       return(out)
 
     },
@@ -156,7 +166,7 @@ Gradient <- R6Class(
       fit_obj <- private$.component_fits[[node]]
       task <- self$generate_task(tmle_task, node, include_outcome = F)
       col_index <- which(colnames(task$X) == tmle_task$npsem[[node]]$variables )
-      preds <- self$Likelihood$factor_list[[node]]$get_density(tmle_task, fold_number, quick_pred = T)
+      preds <- self$likelihood$factor_list[[node]]$get_density(tmle_task, fold_number, quick_pred = T)
       type <- tmle_task$npsem[[node]]$variable_type$type
       if(type == "binomial"){
         preds <- data.table(cbind(1-preds, preds))
@@ -216,18 +226,19 @@ Gradient <- R6Class(
     },
     base_train = function(task, pretrain) {
       fit_object <- private$.train(task, pretrain)
-      new_object <- self$clone() # copy parameters, and whatever else
-      new_object$set_train(fit_object, task)
+      #new_object <- self$clone() # copy parameters, and whatever else
+      self$set_train(fit_object, task)
       private$.training_task <- task
-      return(new_object)
+
+      return(self)
     }
   ),
   active = list(
     params = function(){
       private$.params
     },
-    Likelihood = function(){
-      private$.params$Likelihood
+    likelihood = function(){
+      private$.params$likelihood
     },
     target_param = function(){
       private$.params$target_param
@@ -260,8 +271,8 @@ Gradient <- R6Class(
           private$.learner_args[name] <- arg_value
         }
         args <- private$.learner_args
-        args$learner_class <- Lrnr_hal9001
-        private$.learner <- sl3:::call_with_args(make_learner, args)
+        #args$learner_class <- Lrnr_hal9001a
+        private$.learner <- do.call(Lrnr_hal9001a$new, args)
       }
       return(private$.learner_args)
     }
@@ -271,8 +282,9 @@ Gradient <- R6Class(
       nodes <- c(self$target_nodes)
 
       projected_fits <- lapply(nodes, function(node){
-        task <- self$generate_task(task, node)
+        task <- self$generate_task(tmle_task, node)
         lrnr <- self$learner$clone()
+
         return(delayed_learner_train(lrnr, task))
       })
 
@@ -281,12 +293,14 @@ Gradient <- R6Class(
     },
     .train = function(tmle_task, projected_fits){
       #Store hal_fits
+      names(projected_fits) <- self$target_nodes
+
       component_fits <- lapply(projected_fits, `[[`, "fit_object")
-      private$.fit_object <-component_fits
+      private$.fit_object <- projected_fits
+
       component_fits <- lapply(component_fits, function(fit){
 
         basis_list <- fit$basis_list[as.numeric(names(fit$copy_map))]
-
         coefs <- fit$coefs
 
         keep <- coefs[-1]!=0
@@ -299,7 +313,7 @@ Gradient <- R6Class(
       names(component_fits) <- self$target_nodes
 
       private$.component_fits <- component_fits
-      return(component_fits)
+      return(private$.fit_object)
 
     },
     .predict = function(tmle_task) {
@@ -309,7 +323,7 @@ Gradient <- R6Class(
       stop("This gradient has nothing to chain")
     },
     .params = NULL,
-    .learner = make_learner(Lrnr_hal9001, max_degree = 3, family = "gaussian"),
+    .learner = NULL,
     .learner_args = list(max_degree = 3, family = "gaussian"),
     .component_fits = list(),
     .basis = NULL,
@@ -318,6 +332,77 @@ Gradient <- R6Class(
     .uuid_expanded_history = list()
   )
 )
+
+
+
+
+#' @docType class
+#' @importFrom R6 R6Class
+#' @importFrom digest digest
+#' @import hal9001
+#' @import data.table
+#' @import sl3
+#' @export
+Lrnr_hal9001a <- R6::R6Class(
+  classname = "Lrnr_hal9001a", inherit = Lrnr_base,
+  portable = TRUE, class = TRUE,
+  public = list(
+    initialize = function(max_degree = 3,
+                          fit_type = "glmnet",
+                          n_folds = 10,
+                          use_min = TRUE,
+                          reduce_basis = NULL,
+                          return_lasso = TRUE,
+                          return_x_basis = FALSE,
+                          basis_list = NULL,
+                          cv_select = TRUE,
+                          ...) {
+      params <- args_to_list()
+      super$initialize(params = params, ...)
+    }
+  ),
+  private = list(
+    .properties = c("continuous", "binomial"),
+
+    .train = function(task) {
+      args <- self$params
+
+      outcome_type <- self$get_outcome_type(task)
+
+      if (is.null(args$family)) {
+        args$family <- args$family <- outcome_type$glm_family()
+      }
+
+      args$X <- as.matrix(task$X)
+      args$Y <- outcome_type$format(task$Y)
+      args$yolo <- FALSE
+
+      if (task$has_node("weights")) {
+        args$weights <- task$weights
+      }
+
+      if (task$has_node("offset")) {
+        args$offset <- task$offset
+      }
+      args$standardize <- F
+      fit_object <- sl3:::call_with_args(hal9001::fit_hal, args)
+      args$lambda <- fit_object$lambda_star
+      args$lambda <- args$lambda * 0.15
+      args$cv_select <- F
+      if(args$fit_type == "glmnet"){
+        fit_object <- sl3:::call_with_args(hal9001::fit_hal, args)
+      }
+
+      return(fit_object)
+    },
+    .predict = function(task = NULL) {
+      predictions <- predict(self$fit_object, new_data = as.matrix(task$X))
+      return(predictions)
+    },
+    .required_packages = c("hal9001")
+  )
+)
+
 
 
 

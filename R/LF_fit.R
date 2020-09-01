@@ -136,12 +136,16 @@ LF_fit <- R6Class(
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       if(is.null(node)) node <- self$name
 
+      learner_task <- tmle_task$get_regression_task(node, expand = expand)
+
       learner_task <- tmle_task$get_regression_task(node, expand = expand, is_time_variant = self$is_time_variant)
+
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
       if(quick_pred){
         return(preds)
       }
+
       outcome_type <- self$learner$training_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)
 

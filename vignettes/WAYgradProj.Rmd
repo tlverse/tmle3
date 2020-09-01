@@ -1,0 +1,158 @@
+---
+title: "WAY_gradient_projection"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::document()
+```
+
+
+
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+  node("W1", distr = "runif", min = 0, max = 100) +
+  node("W", distr = "rconst", const = round(W1)) +
+  node("A", distr = "rbinom", size = 1, prob =plogis( 0.4 + W/300) ) +
+  node("Y",  distr =  "rbinom", size = 1, prob = plogis(0.4 + A/4 - W/300) ) 
+ 
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 30000)
+dat$id <- dat$ID
+dat$ID <- NULL
+dat
+
+sum(dat$A * dat$Y)
+sum((1-dat$A) * dat$Y)
+```
+
+```{r}
+npsem <- list(define_node("W", "W", variable_type = variable_type("continuous")), 
+              define_node("A", "A", "W"),
+               define_node("Y", "Y", c("A", "W")))
+
+task <- tmle3_Task$new(dat, npsem)
+task$get_tmle_node("W", format = T)
+factor_list <- list(LF_emp$new("W"), 
+                    LF_fit$new("A", make_learner(Lrnr_glm)),
+                     LF_fit$new("Y", make_learner(Lrnr_glm)))
+
+lik <- Likelihood$new(factor_list)
+lik$train(task)
+```
+
+
+```{r}
+type = "both"
+ipw <- function(Y, A, g, W){
+  if(type == 1){
+      return(Y*A/(plogis(0.4+W/300)) )
+  } else if (type == 0){
+    return(Y*(1-A)/(1-plogis(0.4 + W/300)))
+  }
+  Y*A/(plogis(0.4+W/300))  - Y*(1-A)/(1-plogis(0.4 + W/300))
+}
+generator <-function(tmle_task, lik = NULL, target_param = NULL, node, outcome = T){
+  task <- tmle_task$get_regression_task(node)
+  A <- task$X$A
+  Y <- task$Y
+  W <- task$X$W
+
+  g <- lik$get_likelihood(tmle_task, "A")
+
+  IC <- ipw(Y,A,g, W)
+ 
+  cols <- task$add_columns(data.table(IC = IC))
+  task <- task$clone()
+  nodes <- task$nodes
+  nodes$outcome <- "IC"
+  nodes$covariates <- c(nodes$covariates, node)
+  task$initialize(
+        task$internal_data,
+        nodes = nodes,
+        folds = task$folds,
+        column_names = cols,
+        row_index = task$row_index,
+        outcome_type = "continuous"
+      )
+  return(task)
+  # task$next_in_chain(column_names = cols, covariates  = c(task$nodes$covariates, task$nodes$outcome), outcome = "IC")
+}
+
+
+grad <- Gradient$new(lik, generator, list(update_nodes = "Y"))
+
+#grad$expand_task(task, "Y")$data
+
+f=grad$train(task)
+```
+
+
+```{r}
+gen_task <- generator(task, grad$likelihood, node = "Y")
+ipw_pred <- grad$fit_object[[1]]$predict(gen_task)
+ipws <- gen_task$Y
+
+keep <- (ipws < 0)
+plot( ipws[keep], ipw_pred[keep])
+plot(gen_task$X$W[keep], ipws[keep])
+plot(gen_task$X$W[keep], ipw_pred[keep])
+keep <- (ipws > 0)
+plot( ipws[keep], ipw_pred[keep])
+plot(gen_task$X$W[keep], ipws[keep])
+plot(gen_task$X$W[keep], ipw_pred[keep])
+
+```
+
+
+
+```{r}
+pY = lik$get_likelihood(task, "Y")
+#pA = lik$get_likelihood(task, "A")
+
+A = task$get_tmle_node("A")
+W = task$get_tmle_node("W")
+Y = task$get_tmle_node("Y")
+
+pA = plogis(0.4 + W/300)
+EIC1 = (A/pA)*(Y - EY)
+
+pA = 1 - plogis(0.4 + W/300)
+EIC0 = ((1-A)/pA)*(Y - EY)
+
+
+
+
+#EY = Y * (pY) + (1-Y)* (1-pY)
+EY = plogis(0.4 + A/4 - W/300 )
+
+
+EIC = EIC1 - EIC0
+
+
+data <- grad$compute_component(task, "Y")
+
+true <- lapply(data[5], as.data.table)[[1]]
+truemat = cbind(true, EIC)
+truemat[[1]] <- (sapply(truemat[[1]], format, scientific = F))
+truemat
+keep <- truemat[[2]]!=0
+sqrt(mean((as.numeric(truemat[[1]][keep]) - truemat[[2]][keep])^2))
+```
+
+```{r}
+sqrt(mean((true[[1]] - EIC1)^2))
+
+
+```
+
+

@@ -1,4 +1,36 @@
-#' Class representing a (possibly non-canonical) gradient for some parameter
+
+#' @export
+generator_ate <-function(tmle_task, lik = NULL, target_param = NULL, node, outcome = T){
+  task <- tmle_task$get_regression_task(node)
+  A <- task$X$A
+  Y <- task$Y
+  W <- task$X$W
+
+  g <- lik$get_likelihood(tmle_task, "A")
+
+  IC <- ipw(Y,A,g, W)
+
+  cols <- task$add_columns(data.table(IC = IC))
+  task <- task$clone()
+  nodes <- task$nodes
+  nodes$outcome <- "IC"
+  nodes$covariates <- c(nodes$covariates, node)
+  task$initialize(
+    task$internal_data,
+    nodes = nodes,
+    folds = task$folds,
+    column_names = cols,
+    row_index = task$row_index,
+    outcome_type = "continuous"
+  )
+  return(task)
+  # task$next_in_chain(column_names = cols, covariates  = c(task$nodes$covariates, task$nodes$outcome), outcome = "IC")
+}
+
+
+#' Class representing a (possibly non-canonical) gradient for some parameter.
+#' Currently, this gradient object takes a IPW/unobserved model gradient
+#' and numerically projects it onto the tangent space.
 #'
 #'
 #' @docType class
@@ -29,7 +61,7 @@ Gradient <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(likelihood, projection_task_generator, target_param){
+    initialize = function(likelihood, projection_task_generator = generator_ate, target_param = list(update_nodes = "Y")){
       params <- sl3::args_to_list()
       params$target_nodes <- target_param$update_nodes
       private$.params <- params
@@ -155,14 +187,14 @@ Gradient <- R6Class(
 
       mid_result <- as.matrix(design * clean_design)
       result =  mid_result %*% coefs[-1]
-      out = list(cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
+      out = list(Y = IC_task$Y, cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
       return(out)
 
     },
     compute_component_initial = function(tmle_task, node, fold_number = "full"){
       self$assert_trained()
       #Converts squashed basis to R functions of tmle3_tasks
-
+      stop("no")
       fit_obj <- private$.component_fits[[node]]
       task <- self$generate_task(tmle_task, node, include_outcome = F)
       col_index <- which(colnames(task$X) == tmle_task$npsem[[node]]$variables )
@@ -218,7 +250,7 @@ Gradient <- R6Class(
       #TODO only do this for basis functions containing y
 
       mid_result <- as.matrix(design * clean_design)
-      result = coefs[1] + mid_result %*% coefs[-1]
+      result =  mid_result %*% coefs[-1]
       out = list(mat = mid_result, EIC = result)
       return(out)
 

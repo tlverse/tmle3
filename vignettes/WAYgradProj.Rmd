@@ -26,7 +26,7 @@ D <- D +
  
 
 setD <- set.DAG(D)
-dat <- sim(setD, n = 30000)
+dat <- sim(setD, n = 1000)
 dat$id <- dat$ID
 dat$ID <- NULL
 dat
@@ -43,11 +43,11 @@ npsem <- list(define_node("W", "W", variable_type = variable_type("continuous"))
 task <- tmle3_Task$new(dat, npsem)
 task$get_tmle_node("W", format = T)
 factor_list <- list(LF_emp$new("W"), 
-                    LF_fit$new("A", make_learner(Lrnr_glm)),
-                     LF_fit$new("Y", make_learner(Lrnr_glm)))
+                    LF_fit$new("A", make_learner(Lrnr_hal9001)),
+                     LF_fit$new("Y", make_learner(Lrnr_hal9001)))
 
 lik <- Likelihood$new(factor_list)
-lik$train(task)
+lik<-lik$train(task)
 ```
 
 
@@ -59,7 +59,7 @@ ipw <- function(Y, A, g, W){
   } else if (type == 0){
     return(Y*(1-A)/(1-plogis(0.4 + W/300)))
   }
-  Y*A/(plogis(0.4+W/300))  - Y*(1-A)/(1-plogis(0.4 + W/300))
+  Y*A/(plogis(0.4 + W/300))  - Y*(1-A)/(1-plogis(0.4 + W/300))
 }
 generator <-function(tmle_task, lik = NULL, target_param = NULL, node, outcome = T){
   task <- tmle_task$get_regression_task(node)
@@ -89,7 +89,7 @@ generator <-function(tmle_task, lik = NULL, target_param = NULL, node, outcome =
 }
 
 
-grad <- Gradient$new(lik, generator, list(update_nodes = "Y"))
+grad <- Gradient$new(lik)
 
 #grad$expand_task(task, "Y")$data
 
@@ -104,15 +104,16 @@ ipws <- gen_task$Y
 
 keep <- (ipws < 0)
 plot( ipws[keep], ipw_pred[keep])
-plot(gen_task$X$W[keep], ipws[keep])
-plot(gen_task$X$W[keep], ipw_pred[keep])
+
 keep <- (ipws > 0)
 plot( ipws[keep], ipw_pred[keep])
-plot(gen_task$X$W[keep], ipws[keep])
-plot(gen_task$X$W[keep], ipw_pred[keep])
+
 
 ```
+```{r}
+mean((Y - EY))
 
+```
 
 
 ```{r}
@@ -122,6 +123,7 @@ pY = lik$get_likelihood(task, "Y")
 A = task$get_tmle_node("A")
 W = task$get_tmle_node("W")
 Y = task$get_tmle_node("Y")
+EY = plogis(0.4 + A/4 - W/300 )
 
 pA = plogis(0.4 + W/300)
 EIC1 = (A/pA)*(Y - EY)
@@ -141,7 +143,7 @@ EIC = EIC1 - EIC0
 
 data <- grad$compute_component(task, "Y")
 
-true <- lapply(data[5], as.data.table)[[1]]
+true <- lapply(list(data$EIC), as.data.table)[[1]]
 truemat = cbind(true, EIC)
 truemat[[1]] <- (sapply(truemat[[1]], format, scientific = F))
 truemat
@@ -149,10 +151,7 @@ keep <- truemat[[2]]!=0
 sqrt(mean((as.numeric(truemat[[1]][keep]) - truemat[[2]][keep])^2))
 ```
 
-```{r}
-sqrt(mean((true[[1]] - EIC1)^2))
 
 
-```
 
 

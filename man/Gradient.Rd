@@ -3,7 +3,9 @@
 \docType{class}
 \name{Gradient}
 \alias{Gradient}
-\title{Class representing a (possibly non-canonical) gradient for some parameter}
+\title{Class representing a (possibly non-canonical) gradient for some parameter.
+Currently, this gradient object takes a IPW/unobserved model gradient
+and numerically projects it onto the tangent space.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -19,6 +21,8 @@ and covariates being whatever variables the conditional density of the target no
 \code{Gradient} object
 }
 \description{
-Class representing a (possibly non-canonical) gradient for some parameter
+Class representing a (possibly non-canonical) gradient for some parameter.
+Currently, this gradient object takes a IPW/unobserved model gradient
+and numerically projects it onto the tangent space.
 }
 \keyword{data}

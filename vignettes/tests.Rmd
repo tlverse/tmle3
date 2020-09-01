@@ -8,7 +8,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-
 ```{r, include = F}
 
 devtools::document()
@@ -89,7 +88,7 @@ task <- tmle3_Task$new(long_data, npsem, t= "t", id = "id")
 
 lik <- Likelihood$new(factor_list)
 
-lik_trained <- lik$train(task)
+lik <- lik$train(task)
 
 cf_task <- task$clone()
 cf_task$force_at_risk <- T
@@ -103,7 +102,7 @@ task$get_tmle_node("processN", compute_risk_set = T)
 
 
 ```{r}
-tlik <- Targeted_Likelihood$new(lik_trained, updater = list(one_dimensional=T, maxit = 2, convergence_type = "sample_size"))
+tlik <- Targeted_Likelihood$new(lik, updater = list(one_dimensional=T, maxit = 2, convergence_type = "sample_size"))
 param_surv <- Param_survival$new(tlik, list("A" = LF_static$new("A", value = 1)), outcome_node = "processN")
 tlik$updater$update(tlik, task)
 #tlik$get_likelihood(cf_task, "processN")
@@ -111,7 +110,10 @@ tlik$updater$update(tlik, task)
 
 
 
+```{r}
 
+Gradient$new()
+```
 
 
 ```{r}
@@ -353,6 +355,7 @@ dim(result)
 grad <- Gradient$new(liks, generator, list(update_nodes = "Y"))
 
 grad <- grad$train(task)
+grad$learner
 grad$compute_component(task, "Y")
 ```
 

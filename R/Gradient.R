@@ -54,9 +54,11 @@ Gradient <- R6Class(
         return(cached_task)
       }
       variables <- tmle_task$npsem[[node]]$variables
+
       if(length(variables) >1) stop("Multivariate nodes not supported")
       data <- tmle_task$data
       data$trueid <- data$id
+
       levels <- sort(unique(unlist(data[, variables, with = F])))
       if(!force & length(levels) > 100){
         stop("Too many levels in node.")
@@ -66,12 +68,13 @@ Gradient <- R6Class(
         set(data ,, variables, level)
         return(data)
       }))
+
       long_data$id <-  paste(long_data$trueid,long_data[, variables, with = F][[1]], sep = "_")
       long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid"))
       setattr(long_task, "target_nodes", node)
 
       assign(key, long_task, self$cache)
-      private$.uuid_expanded_history[[long_task$uiid]] <- node
+      private$.uuid_expanded_history[[long_task$uuid]] <- node
       return(long_task)
     },
     compute_component = function(tmle_task, node, fold_number = "full"){
@@ -80,11 +83,70 @@ Gradient <- R6Class(
 
       fit_obj <- private$.component_fits[[node]]
       long_task <- self$expand_task(tmle_task, node)
-      IC_task <- self$generate_task(long_task, node, include_outcome = F)
+      IC_task <- self$generate_task(tmle_task, node, include_outcome = F)
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
       long_preds <- self$Likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
+      data <- IC_task$data
 
-      type <- tmle_task$npsem[[node]]$variable_type$type
+      data <- data.table(cbind(long_task$data$trueid, long_task$get_tmle_node(node) , long_preds))
+
+      setnames(data, c("id", node, "pred"))
+
+      setkeyv(data, cols = c("id", node))
+      data <- dcast(data, as.formula(paste0("id ~ ", node)), value.var = "pred")
+
+      levels <- as.numeric(colnames(data)[-1])
+
+      cdf <- data[, as.data.table(matrix(apply(.SD, 1, cumsum), nrow = 1)), by = id]
+      cdf$id <- NULL
+      setnames(cdf, as.character(levels))
+
+
+      fit_obj <- private$.component_fits[[node]]
+      basis_list <- fit_obj$basis_list
+      coefs <- fit_obj$coefs
+      col_index <- which(colnames(IC_task$X) == tmle_task$npsem[[node]]$variables )
+
+      keep <- sapply(basis_list, function(b){
+        col_index %in% b$cols
+      })
+
+      basis_list <- basis_list[keep]
+      coefs <- coefs[c(T, keep)]
+
+      #Should already be sorted
+      X <- as.matrix(IC_task$X)
+      design <- as.data.table(as.matrix(hal9001::make_design_matrix(X, basis_list)))
+
+      diff_map <- sapply(seq_along(basis_list), function(i) {
+        basis <- basis_list[[i]]
+        result <- (list(which(levels == basis$cutoffs[which(basis$cols == col_index)])))
+
+        return(result)
+      })
+
+      center_basis <- lapply(seq_along(diff_map), function(i){
+        col_index <- diff_map[[i]]
+        diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]]
+        set(design, , as.integer(i), diff)
+      })
+      min_val <- min(IC_task$X[[node]]) -1
+      clean_basis <- function(basis){
+        index = which(basis$cols == col_index)
+        basis$cutoffs[index] <- min_val
+        return(basis)
+      }
+      clean_list = lapply(basis_list, clean_basis)
+
+      clean_design <- hal9001::make_design_matrix(X, clean_list)
+      clean_design <- data.table(as.matrix(clean_design))
+
+      #TODO only do this for basis functions containing y
+
+      mid_result <- as.matrix(design * clean_design)
+      result = coefs[1] + mid_result %*% coefs[-1]
+      out = list(cdf = cdf,design = design,  mid_result = mid_result,  EIC = result)
+      return(out)
 
     },
     compute_component_initial = function(tmle_task, node, fold_number = "full"){
@@ -188,6 +250,9 @@ Gradient <- R6Class(
     cache = function(){
       private$.cache
     },
+    component_fits = function(){
+      private$.component_fits
+    },
     hal_args = function(args_to_add = NULL){
       if(!is.null(args_to_add)){
         for(name in names(args_to_add)){
@@ -203,19 +268,34 @@ Gradient <- R6Class(
   ),
   private = list(
     .train_sublearners = function(tmle_task){
-      nodes <- self$target_nodes
+      nodes <- c(self$target_nodes)
+
       projected_fits <- lapply(nodes, function(node){
         task <- self$generate_task(task, node)
         lrnr <- self$learner$clone()
         return(delayed_learner_train(lrnr, task))
       })
+
       projected_fits <- bundle_delayed(projected_fits)
       return(projected_fits)
     },
     .train = function(tmle_task, projected_fits){
       #Store hal_fits
       component_fits <- lapply(projected_fits, `[[`, "fit_object")
-      component_fits <- lapply(component_fits, hal9001::squash_hal_fit)
+      private$.fit_object <-component_fits
+      component_fits <- lapply(component_fits, function(fit){
+
+        basis_list <- fit$basis_list[as.numeric(names(fit$copy_map))]
+
+        coefs <- fit$coefs
+
+        keep <- coefs[-1]!=0
+        basis_list <- basis_list[keep]
+        coefs_new <- coefs[c(T, keep)]
+        if(sum(coefs_new) != sum(coefs)) stop("squash went wrong")
+        if(length(coefs_new) != length(basis_list)+1) stop("squash went wrong")
+        return(list(basis_list = basis_list, coefs = coefs_new))
+      })
       names(component_fits) <- self$target_nodes
 
       private$.component_fits <- component_fits
@@ -229,8 +309,8 @@ Gradient <- R6Class(
       stop("This gradient has nothing to chain")
     },
     .params = NULL,
-    .learner = make_learner(Lrnr_hal9001, max_degree = 1, family = "gaussian"),
-    .learner_args = list(max_degree = 1, family = "gaussian"),
+    .learner = make_learner(Lrnr_hal9001, max_degree = 3, family = "gaussian"),
+    .learner_args = list(max_degree = 3, family = "gaussian"),
     .component_fits = list(),
     .basis = NULL,
     .training_task = NULL,

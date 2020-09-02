@@ -62,7 +62,7 @@ tmle3_Task <- R6Class(
           data$t <- data[,time, with = F]
           time <- "t"
         }
-        # Ensure sorting is preserved if id is cast to factor
+        # Ensure sorting is preserved if id is cast to factor later down line
         #TODO think about this
         data[, id := as.factor(id)]
         data <- setkey(data, id, t)
@@ -345,7 +345,7 @@ tmle3_Task <- R6Class(
       return(data)
     },
     # TODO: add time_variance
-    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = T, cache_task = T) {
+    get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = T, cache_task = T, include_bins = F, bin_num = NULL) {
 
       if(!is.numeric(force_time_value) & cache_task){
         cache_key <- sprintf("%s_%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand, self$force_at_risk)
@@ -356,14 +356,29 @@ tmle3_Task <- R6Class(
         }
       }
       if(length(target_node)>1){
-        all_tasks <- lapply(target_node, self$get_regression_task, scale, drop_censored , is_time_variant, expand = expand)
+        all_tasks <- lapply(seq_along(target_node), function(i){
+          self$get_regression_task(target_node[[i]] , scale, drop_censored , is_time_variant, expand = expand, include_bins = include_bins, bin_num = i)
+        })
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         time_is_node <- sapply(all_nodes, function(node) !is.null(node$time))
-        regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
+        regression_data <- rbindlist(lapply(seq_along(all_tasks), function(i) {
+          task <- all_tasks[[i]]
+          data <- task$get_data()
+          data$bin_num <- i
+          return(data)
+          }))
+
         setkey(regression_data, id, t)
         nodes <- all_nodes[[1]]
         # Make sure time is included as covariate
-        nodes$covariates <- union("t", nodes$covariates)
+        if(is_time_variant){
+          nodes$covariates <- union("t", nodes$covariates)
+        }
+        if(include_bins) {
+          #Otherwise add bin number
+          nodes$covariates <- union(nodes$covariates, "bin_num")
+        }
+
          # DANGER!!! IT is essential that the pooled regression task
         #and the individual unpooled regression tasks are the same in everyway
         #They must have data order of columns for task$X, otherwise predictions might not make sense.
@@ -637,12 +652,23 @@ tmle3_Task <- R6Class(
         folds <- sl3::subset_folds(folds, indices)
       }
 
-      setcolorder(regression_data)
+
       #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
       if(is_time_variant){
         nodes$covariates <- union(nodes$covariates, "t")
+      } else {
+        nodes$covariates <- setdiff(nodes$covariates, "t")
       }
+
+      if(is.numeric(bin_num) & include_bins){
+        #TODO collision variables?
+        regression_data$bin_num <- bin_num
+        nodes$covariates <- union(nodes$covariates, "bin_num")
+      }
+
+      setcolorder(regression_data)
+
       nodes$covariates <- sort(nodes$covariates)
       suppressWarnings({
         regression_task <- sl3_Task$new(

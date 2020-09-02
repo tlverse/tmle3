@@ -10,6 +10,33 @@ devtools::document()
 ```
 
 
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+findInterval(1, seq(0,100,3))
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+  node("L0", distr = "runif", min = 0, max = 100) +
+  
+  node("A0", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0/300) ) +
+  node("L1", distr = "rbinom", size = 1, prob = plogis( 0.4 + A0/3 -L0/300 )) +
+  node("A1", distr = "rbinom", size = 1, prob =plogis( 0.2 + L0/200 - A0/3 + L1/300) ) +
+  node("Y",  distr =  "rbinom", size = 1, prob = plogis(0.2 + L0/200 + A1/3 - A0/5 + L1/300) ) 
+ 
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 3000)
+dat$id <- dat$ID
+dat$ID <- NULL
+dat
+dat$L0 <- seq(0,100,4)[findInterval(dat$L0, seq(0,100,5))]
+dat
+
+
+```
+
 
 ```{r}
 library(simcausal)

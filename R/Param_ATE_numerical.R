@@ -72,7 +72,7 @@ Param_ATE_numerical <- R6Class(
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       EIC <- self$gradient$compute_component(task, "Y")
 
-      return(list(Y = EIC))
+      return(list(L1 = D1, L2 = D2, A1 = D3, Y = EIC))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {

@@ -1,0 +1,167 @@
+---
+title: "PoolingNodesAtSameTime"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+n= 1000
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+ 
+  node("L0", distr = "rbinom", size = 1, prob =plogis( 0.4)) +
+  node("A0", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0/300) ) +
+  node("M0", distr = "rbinom", size = 1, prob =plogis( 0.4 + A0/300) ) +
+  node("L1", distr = "rbinom", size = 1, prob =plogis( 0.4 + M0/300) ) +
+  node("A1", distr = "rbinom", size = 1, prob =plogis( 0.4 + L1/300) ) +
+  node("M1", distr = "rbinom", size = 1, prob =plogis( 0.4 + A1/300) ) +
+  node("L2", distr = "rbinom", size = 1, prob =plogis( 0.4 + M1/300) ) +
+  node("A2", distr = "rbinom", size = 1, prob =plogis( 0.4 + L2/300) ) +
+  node("M2", distr = "rbinom", size = 1, prob =plogis( 0.4 + A2/300) ) +
+  node("Y", distr = "rbinom", size = 1, prob =plogis( 0.4 + M2/300) )
+ 
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = n)
+dat$id <- dat$ID
+dat$ID <- NULL
+id <- dat$id
+dat
+
+Lnames <- c(grep("L", colnames(dat), value = T))
+Anames <- c(grep("A", colnames(dat), value = T))
+Mnames <- c(grep("M", colnames(dat), value = T))
+dat <- data.table(dat)
+#get long data
+long_data <- data.table(id = rep(id, 3), 
+      L = unlist(dat[,Lnames, with = F]),
+      A = unlist(dat[,Anames, with = F]),
+      M = unlist( dat[,Mnames, with = F]),
+      Y = dat$Y, t = c(rep(0,n), rep(1,n), rep(2, n)))
+```
+
+```{r}
+list_of_poss <- lapply(1:10, function(i){
+  c(1,0)
+})
+expanded_data <- data.table(expand.grid(list_of_poss))
+
+setnames(expanded_data, setdiff(names(dat), "id"))
+setorder(expanded_data)
+expanded_data
+
+Lnames <- c(grep("L", colnames(expanded_data), value = T))
+Anames <- c(grep("A", colnames(expanded_data), value = T))
+Mnames <- c(grep("M", colnames(expanded_data), value = T))
+n = nrow(expanded_data)
+#get long data
+id <- 1:n
+
+long_data_expanded <- data.table(id = rep(id, 3), 
+      L = unlist(dat[,Lnames, with = F]),
+      A = unlist(dat[,Anames, with = F]),
+      M = unlist( dat[,Mnames, with = F]),
+      Y = dat$Y, t = c(rep(0,n), rep(1,n), rep(2, n)))
+long_data_expanded
+
+# Lets say our past for a single observation is given by the below data.table
+observed <- data.table(L = c(0,1,0), A = c(1,1,0), t = c(0,1,2))
+# I can find all rows matching this observation via the below line of code
+long_data_expanded[observed, on = c("L", "A", "t")]
+```
+```{r}
+
+```
+
+```{r}
+is.numeric(NULL)
+
+```
+
+```{r}
+npsem <- list(define_node("L0", "L", time = 0),
+              define_node("A0", "A", c("L0"), time = 0),
+              define_node("M0", "M", c("L0", "A0"), time = 0),
+              define_node("L1", "L",c( "L0", "A0", "M0"), time = 1),
+              define_node("A1", "A", c( "L0", "A0", "M0", "L1"), time = 1),
+              define_node("M1", "M", c( "L0", "A0", "M0","L1", "A1"), time = 1), 
+              define_node("L2", "L", c( "L0", "A0", "M0","L1",  "A1", "M1"), time = 2),
+              define_node("A2", "A", c("L0", "A0", "M0", "L1", "A1", "M1", "L2"), time = 2),
+              define_node("M2", "M", c( "L0", "A0", "M0", "L1",  "A1", "M1", "A2", "L2"), time = 2),
+              define_node("Y", "Y", c( "L0", "A0", "M0", "L1",  "A1", "M1", "A2", "L2", "M2"), time = 2))
+
+long_data
+task <- tmle3_Task$new(long_data, npsem, id = "id", t= "t")
+task$data
+task$get_tmle_node("Y", include_time = T, include_id = T)
+reg_task <- task$get_regression_task("Y")
+# Get covariate names
+reg_task$nodes$covariates
+# Get outcome names
+reg_task$nodes$outcome
+# Get X/covariate matrix of regression task
+reg_task$X
+# Get outcome 
+data.table(Y = reg_task$Y)
+# Note that the column names of the regression data are generally the column names in long_data. If there are repeats they are made unique by adding .1, .2, etc.
+```
+
+
+
+```{r}
+factor_list <- list(LF_emp$new("L0"),
+                    LF_fit$new("A0", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("M0", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("L1", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("A1", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("M1", make_learner(Lrnr_glm), type = "density"),
+                   LF_fit$new("L2", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("A2", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("M2", make_learner(Lrnr_glm), type = "density"),
+                    LF_fit$new("Y", make_learner(Lrnr_glm), type = "density"))
+
+likelihood <- Likelihood$new(factor_list)
+likelihood
+```
+
+
+```{r}
+likelihood$train(task)
+# Get all likelihoods
+likelihood$get_likelihoods(task)
+# just get Y
+likelihood$get_likelihood(task, "Y", drop_id = F, drop_time = F)
+```
+
+
+
+
+```{r}
+
+
+npsem <- list(define_node("L0", "L", time = 0),
+              define_node("A0", "A", c("L0"), time = 0),
+              define_node("M0", "M", c("L0", "A0"), time = 0),
+              define_node("L1", "L",c( "L0", "A0", "M0"), time = 1),
+              define_node("A1", "A", c( "L0", "A0", "M0"), time = 1),
+              define_node("M1", "M", c( "L0", "A0", "M0"), time = 1))
+             
+
+long_data
+task <- tmle3_Task$new(long_data, npsem, id = "id", t= "t")
+task$get_regression_task(c("L1", "A1"), include_bins = T)$data
+task$get_regression_task(c("L1", "A1"), include_bins = T)$X
+
+```
+
+
+
+

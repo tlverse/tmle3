@@ -22,11 +22,11 @@ Targeted_Likelihood <- R6Class(
   class = TRUE,
   inherit = Likelihood,
   public = list(
-    initialize = function(initial_likelihood, updater = NULL, ...) {
+    initialize = function(initial_likelihood, updater = NULL, submodel_type_by_node = "logistic", ...) {
       params <- args_to_list()
 
       private$.initial_likelihood <- initial_likelihood
-
+      private$.submodel_type_by_node <- submodel_type_by_node
       # handle updater arguments
       if (is.null(updater)) {
         updater <- tmle3_Update$new()
@@ -171,6 +171,13 @@ Targeted_Likelihood <- R6Class(
     },
     add_factors = function(factor_list) {
       self$initial_likelihood$add_factors(factor_list)
+    },
+    submodel_type = function(node){
+      if(is.character(private$.submodel_type_by_node)){
+        return(private$.submodel_type_by_node)
+      } else {
+        return(private$.submodel_type_by_node[[node]])
+      }
     }
   ),
   active = list(
@@ -198,6 +205,7 @@ Targeted_Likelihood <- R6Class(
   ),
   private = list(
     .initial_likelihood = NULL,
-    .updater = NULL
+    .updater = NULL,
+    .submodel_type_by_node = NULL
   )
 )

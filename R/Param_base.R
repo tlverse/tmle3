@@ -42,24 +42,20 @@ Param_base <- R6Class(
         stop("Invalid Likelihood class: ", class(observed_likelihood))
       }
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full", optim_type = "logistic") {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", submodel_type = "logistic") {
       stop("Param_base is a base class")
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       stop("Param_base is a base class")
     },
-    submodel_spec = function(optim_type = c("logistic", "EIC")){
-      type <- match.arg(type)
-      plug_f <- function(x, ...){ stop("GLM based optimization does not work for this submodel.")}
-      if(type == "logistic"){
-        spec <- list(submodel = submodel_logit, loss_function = logistic_loss, family = binomial(), offset_tranform = stats::qlogis)
-      } else if(type == "EIC") {
-        spec <- list(submodel = submodel_density, loss_function = loglik_loss, family = plug_f, offset_tranform = plug_f)
-      }
-      return(spec)
-    },
+
     print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
+    },
+    supports_submodel_type = function(submodel_type){
+      if(!(submodel_type %in% private$.submodel_type)){
+        stop(sprintf("This Param does not support the optimization strategy: %s", submodel_type))
+      }
     }
   ),
   active = list(
@@ -88,7 +84,8 @@ Param_base <- R6Class(
     .observed_likelihood = NULL,
     .outcome_node = NULL,
     .targeted = TRUE,
-    .supports_outcome_censoring = FALSE
+    .supports_outcome_censoring = FALSE,
+    .submodel_type_supported = c("logistic")
   )
 )
 

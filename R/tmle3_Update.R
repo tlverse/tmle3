@@ -116,9 +116,19 @@ tmle3_Update <- R6Class(
                                           update_node = "Y",
                                           drop_censored = FALSE) {
 
+      submodel_type <- likelihood$submodel_type(update_node)
+      submodel_info <- submodel_spec(submodel_type)
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
-        tmle_param$clever_covariates(tmle_task, fold_number)
+        # Assert that it supports the submodel type
+        tmle_param$supports_submodel_type(submodel_type)
+        formal_args <- formals(tmle_param$clever_covariates)
+        # For backwards compatibility:
+        if("submodel_type" %in% formal_args){
+          tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type)
+        } else {
+          tmle_param$clever_covariates(tmle_task, fold_number)
+        }
       })
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
@@ -147,7 +157,8 @@ tmle3_Update <- R6Class(
       submodel_data <- list(
         observed = observed,
         H = covariates_dt,
-        initial = initial
+        initial = initial,
+        submodel_info = submodel_info
       )
 
 
@@ -169,6 +180,9 @@ tmle3_Update <- R6Class(
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
+
+      submodel_info <- submodel_data$submodel_info
+
       if (self$constrain_step) {
         ncol_H <- ncol(submodel_data$H)
         if (!(is.null(ncol_H) || (ncol_H == 1))) {
@@ -181,7 +195,8 @@ tmle3_Update <- R6Class(
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
-          loss <- self$loss_function(submodel_estimate, submodel_data$observed)
+          loss <- submodel_info$loss_function
+            #self$loss_function(submodel_estimate, submodel_data$observed)
           mean(loss)
         }
 
@@ -212,8 +227,8 @@ tmle3_Update <- R6Class(
         if (self$fluctuation_type == "standard") {
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
-              offset = qlogis(submodel_data$initial),
-              family = binomial(),
+              offset = submodel_info$offset_tranform(submodel_data$initial),
+              family = submodel_info$family,
               start = rep(0, ncol(submodel_data$H))
             )
           })
@@ -221,8 +236,8 @@ tmle3_Update <- R6Class(
           if (self$one_dimensional) {
             suppressWarnings({
               submodel_fit <- glm(observed ~ -1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
+                offset =  submodel_info$offset_tranform(submodel_data$initial),
+                family = submodel_info$family,
                 weights = as.numeric(H),
                 start = rep(0, ncol(submodel_data$H))
               )
@@ -234,8 +249,8 @@ tmle3_Update <- R6Class(
             )
             suppressWarnings({
               submodel_fit <- glm(observed ~ H - 1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
+                offset =  submodel_info$offset_tranform(submodel_data$initial),
+                family = submodel_info$family,
                 start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -262,7 +277,7 @@ tmle3_Update <- R6Class(
       -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
     },
     apply_submodel = function(submodel_data, epsilon) {
-      self$submodel(epsilon, submodel_data$initial, submodel_data$H)
+      submodel_data$sub_model_info$submodel(epsilon, submodel_data$initial, submodel_data$H)
     },
     apply_update = function(tmle_task, likelihood, fold_number, new_epsilon, update_node) {
 

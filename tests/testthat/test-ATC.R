@@ -71,7 +71,8 @@ tmle_fit <- fit_tmle3(
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
-
+ print(updater$epsilons[[1]]$Y)
+ print(tmle_fit$summary$tmle_est)
 #################################################
 # compare with the tmle package
 library(tmle)

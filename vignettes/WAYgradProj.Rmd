@@ -26,7 +26,7 @@ D <- D +
  
 
 setD <- set.DAG(D)
-dat <- sim(setD, n = 1000)
+dat <- sim(setD, n = 30000)
 dat$id <- dat$ID
 dat$ID <- NULL
 dat
@@ -43,8 +43,8 @@ npsem <- list(define_node("W", "W", variable_type = variable_type("continuous"))
 task <- tmle3_Task$new(dat, npsem)
 task$get_tmle_node("W", format = T)
 factor_list <- list(LF_emp$new("W"), 
-                    LF_fit$new("A", make_learner(Lrnr_hal9001)),
-                     LF_fit$new("Y", make_learner(Lrnr_hal9001)))
+                    LF_fit$new("A", make_learner(Lrnr_glm)),
+                     LF_fit$new("Y", make_learner(Lrnr_glm)))
 
 lik <- Likelihood$new(factor_list)
 lik<-lik$train(task)
@@ -108,12 +108,11 @@ plot( ipws[keep], ipw_pred[keep])
 keep <- (ipws > 0)
 plot( ipws[keep], ipw_pred[keep])
 
-
+residual <- ipw_pred - ipws
+mean(residual^2)
+mean(residual^2)
 ```
-```{r}
-mean((Y - EY))
 
-```
 
 
 ```{r}
@@ -149,6 +148,16 @@ truemat[[1]] <- (sapply(truemat[[1]], format, scientific = F))
 truemat
 keep <- truemat[[2]]!=0
 sqrt(mean((as.numeric(truemat[[1]][keep]) - truemat[[2]][keep])^2))
+```
+
+```{r}
+
+longtask <- data
+
+print(data.table(longtask$data$trueid))
+print(data.table((as.character(longtask$data$id))))
+      print(data.table((longtask$get_regression_task("Y")$id)))
+      print( longtask$get_tmle_node("Y", include_id = T))
 ```
 
 

@@ -8,7 +8,9 @@
 #'
 #' @export
 #
-submodel_logit <- function(eps, X, offset) {
+submodel_logit <- function(eps, offset, X) {
+
+
   preds <- stats::plogis(stats::qlogis(offset) + X %*% eps)
   return(preds)
 }
@@ -36,7 +38,7 @@ logistic_loss <- function(estimate, observed) {
 #'
 #' @export
 #
-submodel_density <- function(eps, X, offset) {
+submodel_density <- function(eps, offset, X) {
   preds <- (1 + X %*% eps) * offset
   return(preds)
 }
@@ -65,7 +67,7 @@ loglik_loss <- function(estimate, observed) {
 #' @export
 #
 submodel_spec = function(optim_type = c("logistic", "EIC")){
-  type <- match.arg(type)
+  type <- match.arg(optim_type)
   plug_f <- function(x, ...){ stop("GLM based optimization does not work for this submodel.")}
   if(type == "logistic"){
     spec <- list(submodel = submodel_logit, loss_function = logistic_loss, family = binomial(), offset_tranform = stats::qlogis)

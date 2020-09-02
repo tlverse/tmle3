@@ -24,7 +24,7 @@ Targeted_Likelihood <- R6Class(
   public = list(
     initialize = function(initial_likelihood, updater = NULL, submodel_type_by_node = "logistic", ...) {
       params <- args_to_list()
-
+      params$submodel_type_by_node <- NULL
       private$.initial_likelihood <- initial_likelihood
       private$.submodel_type_by_node <- submodel_type_by_node
       # handle updater arguments
@@ -41,6 +41,7 @@ Targeted_Likelihood <- R6Class(
       super$initialize(params)
     },
     update = function(new_epsilon, step_number, fold_number = "full", update_node) {
+
       # todo: rethink which tasks need updates here
       # tasks_at_step <- self$cache$tasks_at_step(step_number)
       tasks_at_step <- self$cache$tasks

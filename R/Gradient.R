@@ -128,8 +128,14 @@ Gradient <- R6Class(
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
       long_preds <- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
       data <- IC_task$data
+      # TODO
+      #print(data.table(long_task$data$trueid))
+      #print(long_task$get_regression_task(node)$data)
+      #print( long_task$get_tmle_node(node, include_id = T))
 
-      data <- data.table(cbind(long_task$data$trueid, long_task$get_tmle_node(node) , long_preds))
+      variables <- long_task$npsem[[node]]$variables
+      #TODO check id order
+      data <- data.table(cbind(long_task$data$trueid, long_task$get_tmle_node(node, format = T) , long_preds))
 
       setnames(data, c("id", node, "pred"))
 

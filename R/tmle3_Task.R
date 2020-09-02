@@ -62,6 +62,9 @@ tmle3_Task <- R6Class(
           data$t <- data[,time, with = F]
           time <- "t"
         }
+        # Ensure sorting is preserved if id is cast to factor
+        #TODO think about this
+        data[, id := as.factor(id)]
         data <- setkey(data, id, t)
         shared_data <- data
       } else{

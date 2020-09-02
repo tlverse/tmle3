@@ -6,7 +6,7 @@ library(uuid)
 library(assertthat)
 library(data.table)
 library(future)
-
+options(warn=1)
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)

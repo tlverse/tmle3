@@ -5,14 +5,14 @@
 \title{Density Submodel Fluctuation
 Standard (1+ eps D)P submodel through densities}
 \usage{
-submodel_density(eps, X, offset)
+submodel_density(eps, offset, X)
 }
 \arguments{
 \item{eps}{...}
 
-\item{X}{...}
-
 \item{offset}{...}
+
+\item{X}{...}
 }
 \description{
 Density Submodel Fluctuation

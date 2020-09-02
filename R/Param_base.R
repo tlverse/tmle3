@@ -53,7 +53,7 @@ Param_base <- R6Class(
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     },
     supports_submodel_type = function(submodel_type){
-      if(!(submodel_type %in% private$.submodel_type)){
+      if(!(submodel_type %in% self$submodel_type_supported)){
         stop(sprintf("This Param does not support the optimization strategy: %s", submodel_type))
       }
     }
@@ -77,7 +77,10 @@ Param_base <- R6Class(
     },
     targeted = function() {
       return(private$.targeted)
-    }
+    },
+  submodel_type_supported = function() {
+    return(private$.submodel_type_supported)
+  }
   ),
   private = list(
     .type = "undefined",

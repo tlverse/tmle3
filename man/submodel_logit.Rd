@@ -4,14 +4,14 @@
 \alias{submodel_logit}
 \title{Logistic Submodel Fluctuation}
 \usage{
-submodel_logit(eps, X, offset)
+submodel_logit(eps, offset, X)
 }
 \arguments{
 \item{eps}{...}
 
-\item{X}{...}
-
 \item{offset}{...}
+
+\item{X}{...}
 }
 \description{
 Logistic Submodel Fluctuation

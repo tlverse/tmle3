@@ -1,4 +1,8 @@
 
+ipw_gen <- function(Y, A, g){
+  Y*A/g  - Y*(1-A)/g
+}
+
 #' @export
 generator_ate <-function(tmle_task, lik = NULL, target_param = NULL, node, outcome = T){
   task <- tmle_task$get_regression_task(node)
@@ -140,14 +144,23 @@ Gradient <- R6Class(
       setnames(data, c("id", node, "pred"))
 
       setkeyv(data, cols = c("id", node))
+      #TODO handle updating of expanded task
+      #This is done by stacking copies of the cdf
       data <- dcast(data, as.formula(paste0("id ~ ", node)), value.var = "pred")
-
+      id <- data$id
       data$id <- NULL
       levels <- as.numeric(colnames(data))
 
       cdf <- as.data.table(t(apply(data, 1, cumsum)))
-
       setnames(cdf, as.character(levels))
+
+
+      if(long_task$uuid == tmle_task$uuid){
+        #if expanded task is tmle_task then obtain then expand cdf to match
+        #This ensures we dont have any recursion errors by expanding an expanded task
+        match_index <- match(long_task$data$trueid, id)
+        cdf <- cdf[match_index]
+      }
 
 
       fit_obj <- private$.component_fits[[node]]
@@ -189,7 +202,6 @@ Gradient <- R6Class(
       clean_design <- hal9001::make_design_matrix(X, clean_list)
       clean_design <- data.table(as.matrix(clean_design))
 
-      #TODO only do this for basis functions containing y
 
       mid_result <- as.matrix(design * clean_design)
       result =  mid_result %*% coefs[-1]

@@ -142,7 +142,11 @@ likelihood$get_likelihood(task, "Y", drop_id = F, drop_time = F)
 ```
 
 
-
+```{r}
+lst = list(a = 1, b= 2)
+lst
+transpose(lst)
+```
 
 ```{r}
 
@@ -150,15 +154,15 @@ likelihood$get_likelihood(task, "Y", drop_id = F, drop_time = F)
 npsem <- list(define_node("L0", "L", time = 0),
               define_node("A0", "A", c("L0"), time = 0),
               define_node("M0", "M", c("L0", "A0"), time = 0),
-              define_node("L1", "L",c( "L0", "A0", "M0"), time = 1),
-              define_node("A1", "A", c( "L0", "A0", "M0"), time = 1),
-              define_node("M1", "M", c( "L0", "A0", "M0"), time = 1))
+              define_node("L1", "L",c( "L0", "A0", "M0"), time = 1:2),
+              define_node("A1", "A", c( "L0", "A0", "M0"), time = 1:2),
+              define_node("M1", "M", c( "L0", "A0", "M0"), time = 1:2))
              
 
-long_data
+
 task <- tmle3_Task$new(long_data, npsem, id = "id", t= "t")
-task$get_regression_task(c("L1", "A1"), include_bins = T)$data
-task$get_regression_task(c("L1", "A1"), include_bins = T)$X
+task$get_regression_task(c("L1"), include_bins = T)$data
+
 
 ```
 

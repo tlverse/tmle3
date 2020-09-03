@@ -360,16 +360,35 @@ tmle3_Task <- R6Class(
           self$get_regression_task(target_node[[i]] , scale, drop_censored , is_time_variant, expand = expand, include_bins = include_bins, bin_num = i)
         })
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
-        time_is_node <- sapply(all_nodes, function(node) !is.null(node$time))
-        regression_data <- rbindlist(lapply(seq_along(all_tasks), function(i) {
-          task <- all_tasks[[i]]
-          data <- task$get_data()
-          data$bin_num <- i
-          return(data)
-          }))
+        # Checks that names are compatible
+        regression_X <- rbindlist(lapply(seq_along(all_tasks), function(i) {
 
+          task <- all_tasks[[i]]
+          #TODO all this sorting to ensure matching regression tasks for pooling seems inconvenient.
+          vars <- sort(unique(c(task$nodes$covariates, task$nodes$id, task$nodes$t, task$nodes$weights)))
+
+          data <- task$get_data(,vars)
+
+          return(data)
+          }), use.names = T)
+
+        outcomes <- list()
+        regression_Y <- rbindlist(lapply(seq_along(all_tasks), function(i) {
+          task <- all_tasks[[i]]
+          Y <- data.table(task$Y)
+          outcomes[[i]] <<- task$nodes$outcome
+          return(Y)
+        }))
+        outcomes <- transpose(outcomes)
+
+        new_names <- unlist(sapply(outcomes, function(outcome) {paste(unique(outcome), collapse = "%")}))
+        setnames(regression_Y, new_names)
+
+        regression_data <- cbind(regression_X, regression_Y)
         setkey(regression_data, id, t)
         nodes <- all_nodes[[1]]
+
+        nodes$outcome <-  colnames(regression_Y)
         # Make sure time is included as covariate
         if(is_time_variant){
           nodes$covariates <- union("t", nodes$covariates)
@@ -379,24 +398,16 @@ tmle3_Task <- R6Class(
           nodes$covariates <- union(nodes$covariates, "bin_num")
         }
 
-         # DANGER!!! IT is essential that the pooled regression task
-        #and the individual unpooled regression tasks are the same in everyway
-        #They must have data order of columns for task$X, otherwise predictions might not make sense.
         nodes$covariates <- sort(nodes$covariates)
-        setcolorder(regression_data)
+        setcolorder(regression_data, order(colnames(regression_data)))
+
 
         folds <- self$folds
         if (nrow(regression_data) < self$nrow) {
-          #regression_data <- regression_data[indices, ]
           data_id_t <- self$data[, c("id", "t"), with = F]
-          #This should
           indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
           folds <- sl3::subset_folds(folds, indices)
         }
-
-
-        #regression_data <- Shared_Data$new(regression_data, force_copy = F)
-
 
         pooled_regression_task <- sl3_Task$new(
           regression_data,
@@ -406,7 +417,6 @@ tmle3_Task <- R6Class(
         )
 
         if(!is.numeric(force_time_value)){
-          #Store tasks
           assign(cache_key, pooled_regression_task, private$.node_cache)
         }
         return(pooled_regression_task)
@@ -431,7 +441,7 @@ tmle3_Task <- R6Class(
 
         # If node is pooled across time then get pooled regression task
 
-        all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand ))
+        all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = T, expand = expand, include_bins = include_bins, bin_num = bin_num ))
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
         nodes <- all_nodes[[1]]
@@ -439,30 +449,12 @@ tmle3_Task <- R6Class(
         nodes$covariates <- sort(nodes$covariates)
         setkey(regression_data, id, t)
 
-        # censoring_node <- target_node_object$censoring_node
-        # if (is(censoring_node, "tmle3_Node")) {
-        #   observed <- self$get_tmle_node(censoring_node$name, expand = T, include_id = T, include_time = T, force_time_value = force_time_value, compute_risk_set = F)
-        #   censoring_ids <- observed[observed[[censoring_node$name]] == 1, c("id", "t"), with = F]
-        #   #Subset to (id, t) key pairs that are not censored.
-        #   if(drop_censored) {
-        #     regression_data <- regression_data[!.(censoring_ids$id, censoring_ids$t) ]
-        #   } else {
-        #     #Impute to 0
-        #     regression_data[.(censoring_ids$id, censoring_ids$t), .(outcome) := 0 ]
-        #
-        #   }
-        # }
-
         folds <- self$folds
         if (nrow(regression_data) < self$nrow) {
-          #regression_data <- regression_data[indices, ]
           data_id_t <- self$data[, c("id", "t"), with = F]
-          #This should
           indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
           folds <- sl3::subset_folds(folds, indices)
         }
-
-        #regression_data <- Shared_Data$new(regression_data, force_copy = F)
 
         pooled_regression_task <- sl3_Task$new(
           regression_data,
@@ -496,15 +488,13 @@ tmle3_Task <- R6Class(
           return(regression_task)
         }
         if(length(parent_names) >0){
-          #Id order should be same
 
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))
 
-          #colnames_new  <- unlist(lapply(parent_nodes, function(node){
-           # return(paste0(node$variables, "_", node$time[[1]]))
-         # }))
-          #setnames(parent_data, colnames_new)
+          # This should ensure column names are unique
+          setnames(parent_data, paste0(colnames(parent_data), "%", seq_along(colnames(parent_data))))
+          # TODO this should no longer be needed
           setnames(parent_data, make.unique(colnames(parent_data)))
         } else {
           parent_data <- data.table(NULL)
@@ -598,20 +588,11 @@ tmle3_Task <- R6Class(
       nodes$covariates <- covariates
       if(ncol(all_covariate_data) == 0){
         regression_data <-  list(outcome_data, node_data)# %>% purrr::reduce(merge, "id")
-        #regression_data <- list(outcome_data, node_data)
         regression_data <- setDT(unlist(regression_data, recursive = F))
-
-        #Handle id duplicates
-        #set(regression_data, , (which(duplicated(names(regression_data)))), NULL)
       }
-           else {
-          #The ids should already be matched up in order so we can just cbind, and not merge
-        regression_data <-   list(all_covariate_data, outcome_data, node_data) # %>% purrr::reduce(merge, "id")
-        #regression_data <-  regression_data %>% purrr::reduce(merge, "id")
-
-        #print(regression_data)
+      else {
+        regression_data <-   list(all_covariate_data, outcome_data, node_data)
         regression_data <- setDT(unlist(regression_data, recursive = F))
-        #set(regression_data, ,(which(duplicated(names(regression_data)))), NULL)
            }
       if(!expand){
         regression_data <- regression_data[regression_data$at_risk ==1]
@@ -662,12 +643,13 @@ tmle3_Task <- R6Class(
       }
 
       if(is.numeric(bin_num) & include_bins){
+
         #TODO collision variables?
         regression_data$bin_num <- bin_num
         nodes$covariates <- union(nodes$covariates, "bin_num")
       }
 
-      setcolorder(regression_data)
+      setcolorder(regression_data, order(colnames(regression_data)))
 
       nodes$covariates <- sort(nodes$covariates)
       suppressWarnings({

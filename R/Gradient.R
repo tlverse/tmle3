@@ -124,6 +124,7 @@ Gradient <- R6Class(
       #Converts squashed basis to R functions of tmle3_tasks
 
       fit_obj <- private$.component_fits[[node]]
+
       long_task <- self$expand_task(tmle_task, node)
 
       IC_task <- self$generate_task(tmle_task, node, include_outcome = F)
@@ -132,6 +133,7 @@ Gradient <- R6Class(
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
       long_preds <- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
       data <- IC_task$data
+
       # TODO
       #print(data.table(long_task$data$trueid))
       #print(long_task$get_regression_task(node)$data)

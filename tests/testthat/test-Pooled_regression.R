@@ -50,8 +50,8 @@ assertthat::assert_that(identical(sort(names(task$get_regression_task("A2")$data
 
 factor_list <- list(LF_emp$new("L0"),
                     LF_fit$new("A0", make_learner(Lrnr_glm_fast)),
-                    LF_fit$new(c("L1", "L2"), make_learner(Lrnr_glm_fast)),
-                    LF_fit$new(c("A1", "A2"), make_learner(Lrnr_glm_fast)),
+                    LF_fit$new(c("L1", "L2"), make_learner(Lrnr_glm_fast), is_time_variant = T),
+                    LF_fit$new(c("A1", "A2"), make_learner(Lrnr_glm_fast), is_time_variant = T),
                     LF_fit$new("Y", make_learner(Lrnr_glm_fast))
 )
 
@@ -64,13 +64,27 @@ lik_trained <- lik$train(task)
 task <- tmle3_Task$new(long_data, npsem, time = "t", id = "id")
 
 # Check pooled regression tasks coincide (up to order of rows due to id and time)
-pooled = task$get_regression_task(c("L1", "L2"), expand = T)$data
+pooled = task$get_regression_task(c("L1", "L2"), is_time_variant = T, expand = T)$data
 stacked = rbindlist(list(task$get_regression_task(c("L1"), expand = T, is_time_variant =  T)$data,
                          task$get_regression_task(c("L2"), expand = T, is_time_variant = T)$data), use.names = F)
+print(head(stacked))
+print(head(pooled))
+
+
 setkey(stacked, id , t)
 setkey(pooled, id , t)
 assertthat::assert_that(all(stacked == pooled, use.names = T))
 
+pooled = task$get_regression_task(c("L1", "L2"),is_time_variant = T, expand = T)$X
+stacked = rbindlist(list(task$get_regression_task(c("L1"), expand = T, is_time_variant =  T)$X,
+                         task$get_regression_task(c("L2"), expand = T, is_time_variant = T)$X), use.names = F)
+print(head(stacked))
+print(head(pooled))
+
+
+setkey(stacked , t)
+setkey(pooled, t)
+assertthat::assert_that(all(stacked == pooled, use.names = T))
 
 # Check likelihoods
 l1 <- lik$get_likelihood(task, "L1", drop_id = F, drop_time = T, to_wide = F)

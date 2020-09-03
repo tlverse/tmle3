@@ -40,39 +40,42 @@
 #'     }
 #' }
 #' @export
-Param_ATE_numerical <- R6Class(
-  classname = "Param_ATE_numerical",
+Param_LATE <- R6Class(
+  classname = "Param_LATE",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
-      if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
-        # add delta_Y=0 to intervention lists
-        outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
-        censoring_intervention <- define_lf(LF_static, outcome_censoring_node, value = 1)
-        intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
-        intervention_list_control <- c(intervention_list_control, censoring_intervention)
-      }
-
+      all_nodes <- names(observed_likelihood$training_task$npsem)
+      A_nodes <- grep("A", all_nodes, value = T)
+      L_nodes <- grep("L", all_nodes, value = T)
+      private$.update_nodes <- c(L_nodes, outcome_node)
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
       # Train the gradient
-      private$.gradient <- Gradient$new(observed_likelihood, generator_ate, self)
-      private$.gradient$train(self$observed_likelihood$training_task)
+      private$.gradient <- Gradient$new(observed_likelihood,
+                                        ipw_args = list(cf_likelihood_treatment = self$cf_likelihood_treatment, cf_likelihood_control = self$cf_likelihood_control),
+                                        projection_task_generator = gradient_generator_late,
+                                        target_nodes =  self$update_nodes)
+
+      if(inherits(observed_likelihood, "Targeted_Likelihood")){
+        fold_number <- observed_likelihood$updater$update_fold
+      } else {
+        fold_number <- "full"
+      }
+      private$.gradient$train_projections(self$observed_likelihood$training_task, fold_number = fold_number)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
-
-      intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
-
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      EIC <- self$gradient$compute_component(task, "Y")
-
-      return(list(L1 = D1, L2 = D2, A1 = D3, Y = EIC))
+      EICs <- lapply(self$update_nodes, function(node){
+        return(self$gradient$compute_component(tmle_task, node, fold_number = fold_number)$EIC)
+      })
+      names(EICs) <- self$update_nodes
+      return(EICs)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
@@ -82,28 +85,31 @@ Param_ATE_numerical <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
+      EIC <- rowSums(as.matrix(self$clever_covariates(tmle_task, fold_number)))
 
+      #TODO need to montecarlo simulate from likleihood to eval parameter.
 
       # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      # pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      # cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      # cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      #
+      # # todo: extend for stochastic
+      # cf_task_treatment <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      # cf_task_control <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
+      #
+      # Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring = TRUE)
+      #
+      # EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
+      # EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
+      # EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
+      #
+      # psi <- mean(EY1 - EY0)
+      #
+      # IC <- EIC + (EY1 - EY0) - psi
 
-      # todo: extend for stochastic
-      cf_task_treatment <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
-      cf_task_control <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
-
-      Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring = TRUE)
-
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
-      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
-      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
-
-      psi <- mean(EY1 - EY0)
-
-      IC <- HA * (Y - EY) + (EY1 - EY0) - psi
-
+      psi = rep(0, length(EIC))
+      IC <- EIC
       result <- list(psi = psi, IC = IC)
       return(result)
     }
@@ -126,7 +132,7 @@ Param_ATE_numerical <- R6Class(
       return(self$cf_likelihood_control$intervention_list)
     },
     update_nodes = function() {
-      return(c(self$outcome_node))
+      return(c(private$.update_nodes))
     },
     gradient = function(){
       private$.gradient
@@ -136,7 +142,9 @@ Param_ATE_numerical <- R6Class(
     .type = "ATE",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
-    .supports_outcome_censoring = TRUE,
-    .gradient = NULL
+    .supports_outcome_censoring = FALSE,
+    .gradient = NULL,
+    .submodel_type_supported = c("EIC"),
+    .update_nodes = NULL
   )
 )

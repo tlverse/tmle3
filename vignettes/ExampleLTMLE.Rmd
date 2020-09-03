@@ -5,6 +5,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+devtools::document()
 ```
 
 
@@ -12,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(simcausal)
 library(sl3)
 library(tmle3)
+library(data.table)
 n= 1000
 # Generate long format data
 D <- DAG.empty()
@@ -47,6 +49,11 @@ long_data <- data.table(id = rep(id, 3),
       M = unlist( dat[,Mnames, with = F]),
       Y = dat$Y, t = c(rep(0,n), rep(1,n), rep(2, n)))
 ```
+```{r}
+rank(c("hi", "Bye"))
+
+```
+
 
 ```{r}
 list_of_poss <- lapply(1:10, function(i){
@@ -66,10 +73,11 @@ n = nrow(expanded_data)
 id <- 1:n
 
 long_data_expanded <- data.table(id = rep(id, 3), 
-      L = unlist(dat[,Lnames, with = F]),
-      A = unlist(dat[,Anames, with = F]),
-      M = unlist( dat[,Mnames, with = F]),
-      Y = dat$Y, t = c(rep(0,n), rep(1,n), rep(2, n)))
+      L = unlist(expanded_data[,Lnames, with = F]),
+      A = unlist(expanded_data[,Anames, with = F]),
+      M = unlist( expanded_data[,Mnames, with = F]),
+      Y = expanded_data$Y, t = c(rep(0,n), rep(1,n), rep(2, n)))
+print("k")
 long_data_expanded
 
 # Lets say our past for a single observation is given by the below data.table
@@ -77,14 +85,8 @@ observed <- data.table(L = c(0,1,0), A = c(1,1,0), t = c(0,1,2))
 # I can find all rows matching this observation via the below line of code
 long_data_expanded[observed, on = c("L", "A", "t")]
 ```
-```{r}
 
-```
 
-```{r}
-is.numeric(NULL)
-
-```
 
 ```{r}
 npsem <- list(define_node("L0", "L", time = 0),
@@ -142,11 +144,8 @@ likelihood$get_likelihood(task, "Y", drop_id = F, drop_time = F)
 ```
 
 
-```{r}
-lst = list(a = 1, b= 2)
-lst
-transpose(lst)
-```
+
+
 
 ```{r}
 
@@ -161,7 +160,7 @@ npsem <- list(define_node("L0", "L", time = 0),
 
 
 task <- tmle3_Task$new(long_data, npsem, id = "id", t= "t")
-task$get_regression_task(c("L1"), include_bins = T)$data
+ task$get_regression_task(c("L1", "A1", "M1"), include_bins = T)$data
 
 
 ```

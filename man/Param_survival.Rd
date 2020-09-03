@@ -41,9 +41,9 @@ Survival Curve
 \seealso{
 Other Parameters: 
 \code{\link{Param_ATC}},
-\code{\link{Param_ATE_numerical}},
 \code{\link{Param_ATE}},
 \code{\link{Param_ATT}},
+\code{\link{Param_LATE}},
 \code{\link{Param_MSM}},
 \code{\link{Param_TSM}},
 \code{\link{Param_base2}},

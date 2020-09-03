@@ -39,9 +39,11 @@ LF_fit <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, is_time_variant = FALSE, ..., type = "density") {
+    initialize = function(name, learner, is_time_variant = FALSE, is_level_variant = F,  ..., type = "density") {
       if(length(name) > 1){
-        is_time_variant <- TRUE
+        if(!(is_time_variant | is_level_variant)) {
+          warning("You have specified that this a pooled regression but did not specify time or level variance.")
+        }
         # Is time variant is needed to allow predictions for a single node (of pooled regression)
         #by using the individual nodes rgeression task (with time).
       }
@@ -49,6 +51,7 @@ LF_fit <- R6Class(
       private$.learner <- learner
       # TODO: add parameter is_time_variant
       private$.is_time_variant <- is_time_variant
+      private$.is_level_variant <- is_level_variant
     },
     delayed_train = function(tmle_task) {
       # just return prefit learner if that's what we have
@@ -89,7 +92,7 @@ LF_fit <- R6Class(
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       #
       if(is.null(node)) node <- self$name
-      learner_task <- tmle_task$get_regression_task(node, expand =expand, is_time_variant = self$is_time_variant)
+      learner_task <- tmle_task$get_regression_task(node, expand = expand, include_bins = self$is_level_variant, bin_num = match(node, self$name), is_time_variant = self$is_time_variant)
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
       if(quick_pred){
@@ -136,9 +139,8 @@ LF_fit <- R6Class(
       # TODO: prediction is made on all data, so is_time_variant is set to TRUE
       if(is.null(node)) node <- self$name
 
-      learner_task <- tmle_task$get_regression_task(node, expand = expand)
 
-      learner_task <- tmle_task$get_regression_task(node, expand = expand, is_time_variant = self$is_time_variant)
+      learner_task <- tmle_task$get_regression_task(node, expand = expand, include_bins = self$is_level_variant, bin_num = match(node, self$name), is_time_variant = self$is_time_variant)
 
       learner <- self$learner
       preds <- learner$predict_fold(learner_task, fold_number)
@@ -269,11 +271,15 @@ LF_fit <- R6Class(
     },
     is_time_variant = function() {
       return(private$.is_time_variant)
+    },
+    is_level_variant = function(){
+      return(private$.is_level_variant)
     }
   ),
   private = list(
     .name = NULL,
     .learner = NULL,
-    .is_time_variant = NULL
+    .is_time_variant = NULL,
+    .is_level_variant = NULL
   )
 )

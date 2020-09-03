@@ -149,8 +149,7 @@ tmle3_Update <- R6Class(
       observed <- tmle_task$get_tmle_node(update_node)
       initial <- likelihood$get_likelihood(
         tmle_task, update_node,
-        fold_number
-      )
+        fold_number)
 
       # scale observed and predicted values for bounded continuous
       observed <- tmle_task$scale(observed, update_node)

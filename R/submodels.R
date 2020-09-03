@@ -53,6 +53,7 @@ submodel_density <- function(eps, offset, X) {
 #' @export
 #
 loglik_loss <- function(estimate, observed) {
+  estimate <- bound(estimate, c(0.0005))
   preds <- -1 * log(estimate)
   return(preds)
 }

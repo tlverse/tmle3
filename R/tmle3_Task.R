@@ -30,8 +30,12 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, ...) {
-
+    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F,  ...) {
+      if(!is.null(time)) {
+        long_format <- T
+      } else {
+        long_format <- F
+      }
       dot_args <- list(...)
       if(is.null(id)){
         id <- dot_args$nodes$id
@@ -42,16 +46,29 @@ tmle3_Task <- R6Class(
       if(!inherits(data, "Shared_Data")){
         # For ease of coding and cleanness of code (and working with data.tables)
         # I assume that the id and time columns are "id" and "t" respectively.
+
         if(!is.data.table(data)) data <- as.data.table(data)
         #TODO if passed through nodes arg
-        if(is.null(id)){
 
-          set(data, , "id", 1:nrow(data))
-          id <- "id"
+        if(is.null(id)){
+          if("id" %in% colnames(data)){
+            warning("id argument not specified but id column found in data. Using this as id.")
+            id <- "id"
+          } else {
+            set(data, , "id", 1:nrow(data))
+            id <- "id"
+          }
+
         }
         if(is.null(time)){
-          set(data, , "t", rep(0,nrow(data)))
-          time <- "t"
+          if("t" %in% colnames(data)){
+            warning("time argument not specified but column labeled t found in data. Using this as time")
+            time <- "t"
+          } else {
+            set(data, , "t", rep(0,nrow(data)))
+            time <- "t"
+          }
+
         }
 
         if(id!="id"){
@@ -178,6 +195,7 @@ tmle3_Task <- R6Class(
       private$.node_cache <- new.env()
       private$.force_at_risk <- force_at_risk
       private$.summary_measure_columns <- summary_measure_columns
+      private$.long_format <- long_format
       if(private$.force_at_risk){
         add <- "T"
       } else{
@@ -185,6 +203,7 @@ tmle3_Task <- R6Class(
       }
 
       private$.uuid <- paste0(add, digest(self$data))
+
     },
     get_tmle_node = function(node_name, format = FALSE, impute_censoring = FALSE, include_time = F, include_id = F, force_time_value = NULL, expand = T, compute_risk_set = F) {
       force_at_risk <- private$.force_at_risk
@@ -346,7 +365,7 @@ tmle3_Task <- R6Class(
     },
     # TODO: add time_variance
     get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE,  force_time_value = NULL, expand = T, cache_task = T, include_bins = F, bin_num = NULL) {
-
+      long_format <- private$.long_format
       if(!is.numeric(force_time_value) & cache_task){
         cache_key <- sprintf("%s_%s_%s_%s_%s_%s", paste0(target_node, collapse = "%"), scale, drop_censored, is_time_variant, expand, self$force_at_risk)
 
@@ -398,8 +417,11 @@ tmle3_Task <- R6Class(
           nodes$covariates <- union(nodes$covariates, "bin_num")
         }
 
-        nodes$covariates <- sort(nodes$covariates)
-        setcolorder(regression_data, order(colnames(regression_data)))
+        if(long_format){
+          nodes$covariates <- sort(nodes$covariates)
+          setcolorder(regression_data, order(colnames(regression_data)))
+
+        }
 
 
         folds <- self$folds
@@ -443,10 +465,14 @@ tmle3_Task <- R6Class(
 
         all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = T, expand = expand, include_bins = include_bins, bin_num = bin_num ))
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
-        regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()))
+        regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()), use.names = T)
         nodes <- all_nodes[[1]]
         nodes$covariates <- union("t", nodes$covariates)
-        nodes$covariates <- sort(nodes$covariates)
+        if(long_format){
+          setcolorder(regression_data, order(colnames(regression_data)))
+          nodes$covariates <- sort(nodes$covariates)
+        }
+
         setkey(regression_data, id, t)
 
         folds <- self$folds
@@ -471,6 +497,8 @@ tmle3_Task <- R6Class(
       }
 
       parent_names <- target_node_object$parents
+      #Ensure that output is independent of order of parent_names
+      parent_names <- sort(parent_names)
       parent_nodes <- npsem[parent_names]
 
       if(is.null(unlist(target_node_object$summary_functions))){
@@ -488,14 +516,24 @@ tmle3_Task <- R6Class(
           return(regression_task)
         }
         if(length(parent_names) >0){
-
+          parent_times <- lapply(parent_nodes, `[[`, "time")
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))
 
+
           # This should ensure column names are unique
-          setnames(parent_data, paste0(colnames(parent_data), "%", seq_along(colnames(parent_data))))
-          # TODO this should no longer be needed
-          setnames(parent_data, make.unique(colnames(parent_data)))
+          if(long_format){
+            safe_names <- paste0(colnames(parent_data), "%", seq_along(colnames(parent_data)))
+            setnames(parent_data, safe_names)#paste0(colnames(parent_data), "%", seq_along(colnames(parent_data))))
+            # TODO this should no longer be needed
+            setnames(parent_data, make.unique(colnames(parent_data)))
+          }
+
+          if(any(duplicated(colnames(parent_data)))) {
+            stop("Duplicate names found in parent data.")
+          }
+          #By adding times to column names they become unique
+
         } else {
           parent_data <- data.table(NULL)
         }
@@ -514,6 +552,7 @@ tmle3_Task <- R6Class(
         #Due to time indexing, we do not have unique column names.
         #In order to support pooling across time, we shouldn't use node names as column names
         #important that outcome variable name doesnt change
+
         uniq_names <- make.unique(c(outcome,covariates))
         covariates <- uniq_names[cov_index]
         outcome <- uniq_names[outcome_index]
@@ -601,7 +640,9 @@ tmle3_Task <- R6Class(
 
       setkey(regression_data, id, t)
       # Necessary for pooled regression tasks and unpooled to be compatible.
-      setcolorder(regression_data, order(colnames(regression_data)))
+      if(long_format){
+        setcolorder(regression_data, order(colnames(regression_data)))
+      }
 
       censoring_node <- target_node_object$censoring_node
 
@@ -648,10 +689,12 @@ tmle3_Task <- R6Class(
         regression_data$bin_num <- bin_num
         nodes$covariates <- union(nodes$covariates, "bin_num")
       }
+      # Not needed if rbindlist uses names
+      if(long_format) {
+        setcolorder(regression_data, order(colnames(regression_data)))
+        nodes$covariates <- sort(nodes$covariates)
+      }
 
-      setcolorder(regression_data, order(colnames(regression_data)))
-
-      nodes$covariates <- sort(nodes$covariates)
       suppressWarnings({
         regression_task <- sl3_Task$new(
           regression_data,
@@ -754,9 +797,8 @@ tmle3_Task <- R6Class(
         if(nrow(append_row_data) > 0){
           data <- rbind(data, append_row_data, fill = T)
           setkey(data, id, t)
-          setnafill(data, "locf")
         }
-
+        setnafill(data, "locf")
         new_task <- self$clone()
 
         #TODO regenerate folds?? But preserve id division? We are adding rows of time
@@ -937,7 +979,8 @@ tmle3_Task <- R6Class(
     .npsem = NULL,
     .node_cache = NULL,
     .force_at_risk = F,
-    .summary_measure_columns = NULL
+    .summary_measure_columns = NULL,
+    .long_format = NULL
   )
 )
 

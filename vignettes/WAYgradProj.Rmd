@@ -100,7 +100,7 @@ f<-grad$train(task)
 
 ```{r}
 
-res <- lapply(grad$compute_component(task, "Y1"), as.data.table)
+res <- lapply(grad$compute_component(task, "Y"), as.data.table)
 res$EIC
 
 A0 <- task$get_tmle_node("A0", format = T)[[1]]

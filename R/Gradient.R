@@ -1,5 +1,5 @@
-
-ipw_gen <- function(Y, A, g){
+#' @export
+ipw_gen <- function(Y, A, g, W){
   Y*A/g  - Y*(1-A)/g
 }
 
@@ -12,7 +12,7 @@ generator_ate <-function(tmle_task, lik = NULL, target_param = NULL, node, outco
 
   g <- lik$get_likelihood(tmle_task, "A")
 
-  IC <- ipw(Y,A,g, W)
+  IC <- ipw_gen(Y,A,g, W)
 
   cols <- task$add_columns(data.table(IC = IC))
   task <- task$clone()
@@ -65,15 +65,19 @@ Gradient <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(likelihood, projection_task_generator = generator_ate, target_param = list(update_nodes = "Y")){
+    initialize = function(likelihood, ipw_args = NULL, projection_task_generator = generator_ate, target_nodes = "Y"){
       params <- sl3::args_to_list()
-      params$target_nodes <- target_param$update_nodes
+      params$target_nodes <- target_nodes
       private$.params <- params
       private$.cache <- new.env()
       private$.learner <- Lrnr_hal9001a$new(max_degree = 3, family = "gaussian")
     },
-    generate_task = function(tmle_task, node, include_outcome = T){
-      self$projection_task_generator(tmle_task, self$likelihood, self$target_param, node, outcome = include_outcome)
+    train_projections = function(tmle_task, fold_number = private$.fold_number){
+      private$.fold_number <- fold_number
+      self$train(tmle_task)
+    },
+    generate_task = function(tmle_task, node, include_outcome = T, fold_number){
+      self$projection_task_generator(tmle_task, self$likelihood, node, include_outcome = include_outcome, self$params$ipw_args, fold_number = fold_number)
     },
     expand_task = function(tmle_task, node, force = F){
       #Computes expanded task where observations are repeated (with fake ids) for all levels of node
@@ -127,11 +131,43 @@ Gradient <- R6Class(
 
       long_task <- self$expand_task(tmle_task, node)
 
-      IC_task <- self$generate_task(tmle_task, node, include_outcome = F)
+      IC_task <- self$generate_task(tmle_task, node, include_outcome = F, fold_number = fold_number)
 
 
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
-      long_preds <- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )
+      long_preds <- NULL
+      tryCatch({
+        value_step1 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
+        value_step2 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], long_task, fold_number, node = node)
+        if(is.null(value_step1)){
+          value_step1 <- 0
+        }
+        if(is.null(value_step2)){
+          value_step2 <- 0
+        }
+        if(value_step1!=value_step2) {
+          stop("Long_task and tmle_task out of sync.")
+        }
+        long_preds <- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T  )},
+      error = function(e){
+        #long_task is probably out of sync with tmle_task
+        #Update it to the same level
+        value_step <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
+        sync_task(long_task, fold_number = fold_number, check = F, max_step = value_step)
+        value_step1 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
+        value_step2 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], long_task, fold_number, node = node)
+        if(is.null(value_step1)){
+          value_step1 <- 0
+        }
+        if(is.null(value_step2)){
+          value_step2 <- 0
+        }
+        if(value_step1!=value_step2) {
+          stop("Long_task and tmle_task out of sync.")
+        }
+        long_preds <<- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T, check_sync = F  )
+
+      })
       data <- IC_task$data
 
       # TODO
@@ -313,6 +349,9 @@ Gradient <- R6Class(
     cache = function(){
       private$.cache
     },
+    fold_number = function(){
+      private$.fold_number
+    },
     component_fits = function(){
       private$.component_fits
     },
@@ -334,7 +373,7 @@ Gradient <- R6Class(
       nodes <- c(self$target_nodes)
 
       projected_fits <- lapply(nodes, function(node){
-        task <- self$generate_task(tmle_task, node)
+        task <- self$generate_task(tmle_task, node, fold_number = self$fold_number)
         lrnr <- self$learner$clone()
 
         return(delayed_learner_train(lrnr, task))
@@ -381,7 +420,8 @@ Gradient <- R6Class(
     .basis = NULL,
     .training_task = NULL,
     .cache = NULL,
-    .uuid_expanded_history = list()
+    .uuid_expanded_history = list(),
+    .fold_number = "full"
   )
 )
 

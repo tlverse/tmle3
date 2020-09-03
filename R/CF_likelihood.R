@@ -56,6 +56,7 @@ CF_Likelihood <- R6Class(
       })
 
       cf_data <- as.data.table(all_values)
+
       cf_task <- tmle_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       cf_tasks <- list(cf_task)
       return(cf_tasks)

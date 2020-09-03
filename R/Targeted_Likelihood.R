@@ -22,11 +22,13 @@ Targeted_Likelihood <- R6Class(
   class = TRUE,
   inherit = Likelihood,
   public = list(
-    initialize = function(initial_likelihood, updater = NULL, submodel_type_by_node = "logistic", ...) {
+    initialize = function(initial_likelihood, updater = NULL, submodel_type_by_node = "logistic", check_sync = T, ...) {
       params <- args_to_list()
       params$submodel_type_by_node <- NULL
+      params$check_sync <- NULL
       private$.initial_likelihood <- initial_likelihood
       private$.submodel_type_by_node <- submodel_type_by_node
+      private$.check_sync <- check_sync
       # handle updater arguments
       if (is.null(updater)) {
         updater <- tmle3_Update$new()
@@ -77,7 +79,7 @@ Targeted_Likelihood <- R6Class(
       #   }
       # }
     },
-    sync_task = function(tmle_task, fold_number = "full", check = T){
+    sync_task = function(tmle_task, fold_number = "full", check = T, max_step = NULL){
       # Takes a task and syncs it with current update status of likelihood
       # Returns task invisibly.
 
@@ -106,11 +108,15 @@ Targeted_Likelihood <- R6Class(
       }
 
 
-
+      private$.check_sync <- F
       epsilons <- self$updater$epsilons
       step_count <- 0
+      if(is.null(max_step)) max_step <- length(epsilons)
       #TODO is this double for loop something to worry about?
       for(eps_step in epsilons){
+        if(step_count >= max_step){
+          break
+        }
         for(node in names(eps_step)){
           target_nodes <- attr(tmle_task, "target_nodes")
           if(!is.null(target_nodes) & !(node %in% c(target_nodes))){
@@ -135,7 +141,10 @@ Targeted_Likelihood <- R6Class(
       }
       return(invisible(tmle_task))
     },
-    get_likelihood = function(tmle_task, node, fold_number = "full", ...) {
+    get_likelihood = function(tmle_task, node, fold_number = "full",  check_sync = NULL, ...) {
+      if(is.null(check_sync)){
+        check_sync <- private$.check_sync
+      }
       if (node %in% self$updater$update_nodes) {
         # self$updater$get_updated_likelihood(self, tmle_task, node)
         likelihood_factor <- self$factor_list[[node]]
@@ -152,8 +161,17 @@ Targeted_Likelihood <- R6Class(
           self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values, node = node)
         }
 
-        if (value_step < self$updater$step_number) {
+        if (value_step < self$updater$step_number & check_sync) {
           stop(
+            "cached likelihood value is out of sync with updates\n",
+            "lf_uuid: ", likelihood_factor$uuid, "\n",
+            "task_uuid: ", tmle_task$uuid, "\n",
+            "node: ", node, " fold_number: ", fold_number, "\n",
+            "cached_step: ", value_step, "\n",
+            "update_step: ", self$updater$step_number, "\n"
+          )
+        } else if(value_step < self$updater$step_number){
+          warning(
             "cached likelihood value is out of sync with updates\n",
             "lf_uuid: ", likelihood_factor$uuid, "\n",
             "task_uuid: ", tmle_task$uuid, "\n",
@@ -207,6 +225,7 @@ Targeted_Likelihood <- R6Class(
   private = list(
     .initial_likelihood = NULL,
     .updater = NULL,
-    .submodel_type_by_node = NULL
+    .submodel_type_by_node = NULL,
+    .check_sync = NULL
   )
 )

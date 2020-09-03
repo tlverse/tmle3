@@ -1,0 +1,176 @@
+---
+title: "ATENumeric"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::document()
+```
+
+
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("L0a", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("L0b", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("A0", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0a/4 - L0b/5 + W/4 ) ) +
+  node("L1a", distr = "rbinom",  size = 1, prob = plogis(0.3 + L0b/2 + L0a/2 - A0/2)) +
+  node("L1b", distr = "rbinom",  size = 1, prob = plogis(0.3 + L0a/2 + L0a/2 - A0/2 + W/4)) +
+  node("A1", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0a/4 - L0b/5 + W/3 ) ) +
+  node("Y",  distr =  "rbinom", size = 1, prob = plogis(W/4 + L1b/200 + A1/3 - A0/5 + L1a/300) ) 
+ 
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 3000)
+dat$id <- dat$ID
+dat$ID <- NULL
+times <- 1
+dat <- data.table(dat)
+dat
+t0 <- c("W", "L0a", "L0b", "A0", "Y", "id")
+d0 <- dat[, t0, with = F]
+d0$t <- 0
+setnames(d0, c("W", "La", "Lb", "A", "Y", "id", "t"))
+
+t1 <- c("W", "L1a", "L1b", "A1", "Y", "id")
+d1 <- dat[, t1, with = F]
+d1$t <- 1
+setnames(d1, c("W", "La", "Lb", "A", "Y", "id", "t"))
+long_data <- rbind(d0,d1)
+```
+
+
+```{r}
+
+letters
+```
+
+```{r}
+baseline_covariates <- "W"
+time_dependent_covariates <- c("La", "Lb")
+time_dependent_treatments <- "A"
+outcome <- "Y"
+times <- sort(unique(long_data$t))
+npsem <- generate_npsem_late(baseline_covariates, time_dependent_covariates, time_dependent_treatments,outcome, times )
+task <- tmle3_Task$new(long_data, npsem, id  ="id", t= "t")
+likelihood <- generate_likelihood_late(npsem)
+likelihood <-likelihood$train(task)
+intervention_control <- list()
+intervention_trt <- list()
+#Basic intervention
+for( node in A_nodes){
+  intervention_control[[node]] <- LF_static$new(node, value = 0)
+  intervention_trt[[node]] <- LF_static$new(node, value = 1)
+}
+
+
+```
+
+```{r}
+param <- Param_LATE$new(likelihood, intervention_trt, intervention_control)
+```
+
+
+```{r}
+
+
+```
+
+
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+  node("W1", distr = "runif", min = 0, max = 100) +
+  node("W", distr = "rconst", const = round(W1)) +
+  node("A", distr = "rbinom", size = 1, prob = ( 0.4 + W/300) ) +
+  node("Y",  distr =  "rbinom", size = 1, prob = (0.4 + A/4 - W/300 ) ) 
+ 
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 3000)
+dat$id <- dat$ID
+dat$ID <- NULL
+dat <- data.table(dat)
+dat
+```
+
+
+
+```{r}
+npsem <- list(define_node("W", "W", variable_type = variable_type("continuous")), 
+              define_node("A", "A", "W"),
+               define_node("Y", "Y", c("A", "W")))
+
+task <- tmle3_Task$new(dat, npsem, id = "id")
+
+
+task$get_tmle_node("W", format = T)
+factor_list <- list(LF_emp$new("W"), 
+                    LF_fit$new("A", make_learner(Lrnr_glm)),
+                     LF_fit$new("Y", make_learner(Lrnr_glm)))
+
+lik <- Likelihood$new(factor_list)
+lik<-lik$train(task)
+tlik <- Targeted_Likelihood$new(lik, updater = list(constrain_step = T, delta_epsilon = 0.1), submodel_type_by_node = "EIC")
+```
+
+
+
+```{r}
+intervention_trt <- list(LF_static$new("A", value = 1))
+intervention_control <- list(LF_static$new("A", value = 0))
+
+param <- Param_ATE_numerical$new(tlik,intervention_trt, intervention_control)
+
+
+```
+
+```{r}
+param1 <- Param_ATE$new(tlik,intervention_trt, intervention_control)
+Y <- task$get_tmle_node("Y", impute_censoring = TRUE)
+
+pY <- tlik$get_likelihood(task, "Y")
+EY <- ifelse(Y==1, pY, 1 - pY)
+mean(param$clever_covariates(task)$Y)
+mean(param1$clever_covariates(task)$Y * (Y - EY))
+```
+
+```{r}
+task$data
+data.table(param$gradient$compute_component(task, "Y")$EIC, param1$clever_covariates(task)$Y * (Y - EY))
+mean((param$gradient$compute_component(task, "Y")$EIC - param1$clever_covariates(task)$Y * (Y - EY))^2)
+
+
+```
+
+```{r}
+old = data.table(tlik$get_likelihood(task, "Y"))
+quantile(unlist(old - tlik$get_likelihood(task, "Y")))
+
+```
+
+```{r}
+mean(param$clever_covariates(task)$Y)
+
+```
+```{r}
+tlik$updater$EDs
+```
+
+```{r}
+
+tlik$updater$update(tlik, task)
+
+```

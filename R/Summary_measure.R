@@ -21,7 +21,7 @@ Summary_measure <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(column_names, summary_function, name = "Summary", strict_past = F, args_to_pass = NULL){
+    initialize = function(column_names, summary_function, name = "Summary", strict_past = F, args_to_pass = NULL, group_by_id = T){
         # Summary function must return data.table with nrow = 1 ...
       # TODO caution output must be of right format for this to work
       # The above wrapper slows things down a lot s ois ignored.
@@ -64,9 +64,12 @@ Summary_measure <- R6Class(
       # Needed since pass by promise would break next line apparently
 
 
-
+      if(self$params$group_by_id){
       reduced_data <- data[,func(.SD, time, self$params$args_to_pass), by = id,
                            .SDcols = self$params$column_names]
+      } else {
+        reduced_data <- func(data, time,  self$params$args_to_pass, self$params$column_names )
+      }
 
     # This code isn't needed unless func does not return a data.table, which can't happen.
      #  num_sample <- length(unique(reduced_data$id))

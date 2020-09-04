@@ -165,7 +165,7 @@ Likelihood <- R6Class(
           "t" %in% colnames(lik)
         })))
         if(contains_t){
-          likelihood_dt <- all_likelihoods %>% reduce(full_join, c("id", "t"))#as.data.table(all_likelihoods)
+          likelihood_dt <- all_likelihoods %>% purrr::reduce(merge, c("id", "t"))#as.data.table(all_likelihoods)
         } else{
 
           all_likelihoods <- lapply(all_likelihoods, function(lik){

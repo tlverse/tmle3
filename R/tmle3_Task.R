@@ -250,6 +250,7 @@ tmle3_Task <- R6Class(
 
       if(length(time) > 1){
         at_risk_map <- tmle_node$at_risk_map
+
         if(expand  | !is.null(tmle_node$at_risk_map) | !tmle_node$missing_not_at_risk){
           #TODO, when to get value at all times by repeeatedly calling get_tmle_node with force_time_value argument??
           # The main issue is that computing the at_risk indicator requires applying a function to data[t <= time]

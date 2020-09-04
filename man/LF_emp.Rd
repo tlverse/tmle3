@@ -31,6 +31,7 @@ The \code{type} argument will be ignored if specified.
 Other Likelihood objects: 
 \code{\link{CF_Likelihood}},
 \code{\link{LF_base}},
+\code{\link{LF_binomial_collapsed}},
 \code{\link{LF_derived}},
 \code{\link{LF_fit}},
 \code{\link{LF_known}},

@@ -61,7 +61,13 @@ times <- sort(unique(long_data$t))
 npsem <- generate_npsem_late(baseline_covariates, time_dependent_covariates, time_dependent_treatments,outcome, times )
 task <- tmle3_Task$new(long_data, npsem, id  ="id", t= "t")
 likelihood <- generate_likelihood_late(npsem)
+```
+
+
+
+```{r}
 likelihood <-likelihood$train(task)
+A_nodes <- grep("A", names(task$npsem), value = T)
 intervention_control <- list()
 intervention_trt <- list()
 #Basic intervention

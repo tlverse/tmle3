@@ -122,11 +122,13 @@ tmle3_Node <- R6Class(
           data <- data[, last(.SD), by = id, .SDcols = at_risk_map]
           risk_set <- data$id[data[[at_risk_map]] ==1]
         }
-      } else{
+      } else if (inherits(at_risk_map, "Summary_measure")){
 
         risk_set <-at_risk_map$summarize(data,time)# [,at_risk_map$name, with = F, drop = T]
 
         risk_set <- risk_set$id[risk_set[[at_risk_map$name]]==1]
+      } else {
+        risk_set <- risk_set(data, time)
       }
       return(unlist(risk_set, use.names = F))
 

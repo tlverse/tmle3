@@ -8,9 +8,9 @@ ipw_late <- function(task, lik, ipw_args, fold_number){
   L_nodes <- grep("L", names(task$npsem), value = T)
   A_nodes <- grep("A", names(task$npsem), value = T)
 
-  nodes <- c(L_nodes, A_nodes)
+  nodes <- c(A_nodes)
   #TODO should do divisions component-wise for large t?
-  g <- as.vector(apply(lik$get_likelihoods(task, nodes, fold_number = fold_number), 1, prod))
+  g <- as.vector(apply(lik$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
   cf_g_trt <- as.vector(apply(cf_likelihood_treatment$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
   cf_g_control <- as.vector(apply(cf_likelihood_control$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
   Y*cf_g_trt/g  - Y*cf_g_control/g

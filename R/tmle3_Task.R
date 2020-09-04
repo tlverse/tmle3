@@ -31,11 +31,7 @@ tmle3_Task <- R6Class(
   inherit = sl3_Task,
   public = list(
     initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F,  ...) {
-      if(!is.null(time)) {
-        long_format <- T
-      } else {
-        long_format <- F
-      }
+
       dot_args <- list(...)
       if(is.null(id)){
         id <- dot_args$nodes$id
@@ -84,11 +80,22 @@ tmle3_Task <- R6Class(
         data[, id := as.factor(id)]
         data <- setkey(data, id, t)
         shared_data <- data
+        if(length(unique(data$t)) > 1){
+          long_format <- T
+        } else {
+          long_format <- F
+        }
+
       } else{
         # This assumes preprocessing has been done (e.g. sorting by id and t)
         shared_data <- data
         id <- "id"
         time <- "t"
+        if(length(unique(shared_data$raw_data$t)) > 1){
+          long_format <- T
+        } else {
+          long_format <- F
+        }
         if(!all(key(shared_data$raw_data) == c("id", "t"))){
           setkey(shared_data$raw_data, "id", "t")
           stop("Shared_Data object passed does not have a (id, t) key set.")
@@ -945,6 +952,9 @@ tmle3_Task <- R6Class(
     }
   ),
   active = list(
+    long_format = function(){
+      private$.long_format
+    },
     npsem = function() {
       return(private$.npsem)
     },

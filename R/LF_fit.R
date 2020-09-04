@@ -214,6 +214,7 @@ LF_fit <- R6Class(
       learner_task <- tmle_task$get_regression_task(node, expand = expand)
       learner <- self$learner
 
+
       outcome_type <- learner$training_task$outcome_type
 
       if (outcome_type$type == "binomial") {
@@ -222,6 +223,7 @@ LF_fit <- R6Class(
         # need to keep ids the same
         # probably also predict using training set fits
         preds <- learner$predict_fold(learner_task, "full")
+
         values <- sapply(preds, function(p) rbinom(n_samples, 1, p))
       } else if (outcome_type$type == "categorical") {
         preds <- learner$predict_fold(learner_task, "full")

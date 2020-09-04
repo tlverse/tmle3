@@ -65,7 +65,7 @@ Gradient <- R6Class(
   class = TRUE,
   inherit = Lrnr_base,
   public = list(
-    initialize = function(likelihood, ipw_args = NULL, projection_task_generator = generator_ate, target_nodes = "Y"){
+    initialize = function(likelihood, ipw_args = NULL, projection_task_generator, target_nodes = "Y"){
       params <- sl3::args_to_list()
       params$target_nodes <- target_nodes
       private$.params <- params

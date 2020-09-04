@@ -58,6 +58,7 @@ Targeted_Likelihood <- R6Class(
         }
         return(F)
       })
+
       tasks_at_step <- tasks_at_step[to_update]
       # first, calculate all updates
       task_updates <- lapply(tasks_at_step, self$updater$apply_update, self, fold_number, new_epsilon, update_node)
@@ -220,6 +221,12 @@ Targeted_Likelihood <- R6Class(
     },
     censoring_nodes = function() {
       return(self$initial_likelihood$censoring_nodes)
+    },
+    check_sync = function(check_sync = NULL){
+      if(!is.null(check_sync)){
+        private$.check_sync <- check_sync
+      }
+      return(private$.check_sync)
     }
   ),
   private = list(

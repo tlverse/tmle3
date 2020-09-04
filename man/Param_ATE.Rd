@@ -48,6 +48,7 @@ Parameter definition for the Average Treatment Effect (ATE).
 Other Parameters: 
 \code{\link{Param_ATC}},
 \code{\link{Param_ATT}},
+\code{\link{Param_CR}},
 \code{\link{Param_LATE}},
 \code{\link{Param_MSM}},
 \code{\link{Param_TSM}},

@@ -51,12 +51,12 @@ tmle3_Update <- R6Class(
   public = list(
     # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
-                              constrain_step = FALSE, delta_epsilon = 1e-4,
-                              convergence_type = c("scaled_var", "sample_size"),
-                              fluctuation_type = c("standard", "weighted"),
-                              optim_delta_epsilon = TRUE,
-                              use_best = FALSE,
-                              verbose = FALSE) {
+                          constrain_step = FALSE, delta_epsilon = 1e-4,
+                          convergence_type = c("scaled_var", "sample_size"),
+                          fluctuation_type = c("standard", "weighted"),
+                          optim_delta_epsilon = TRUE,
+                          use_best = FALSE,
+                          verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -112,9 +112,9 @@ tmle3_Update <- R6Class(
       private$.step_number <- current_step
     },
     generate_submodel_data = function(likelihood, tmle_task,
-                                          fold_number = "full",
-                                          update_node = "Y",
-                                          drop_censored = FALSE) {
+                                      fold_number = "full",
+                                      update_node = "Y",
+                                      drop_censored = FALSE) {
       if(!(inherits(likelihood, "Targeted_Likelihood"))) {
         submodel_type <- "logistic"
       } else {
@@ -137,14 +137,17 @@ tmle3_Update <- R6Class(
       })
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
+      # Get EDs if present. Only for training task
+      EDs <- lapply(clever_covariates, `[[`, "ED")
+      ED <- as.vector(unlist(lapply(EDs, `[[`, update_node) ))
       covariates_dt <- do.call(cbind, node_covariates)
 
-      if (self$one_dimensional) {
-        #TODO this should happen in fit_submodel so we can store epsiln
-        observed_task <- likelihood$training_task
-        covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
-
-        }
+      # if (self$one_dimensional) {
+      #   #TODO this should happen in fit_submodel so we can store epsiln
+      #   observed_task <- likelihood$training_task
+      #   covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+      #
+      #   }
 
       observed <- tmle_task$get_tmle_node(update_node)
       initial <- likelihood$get_likelihood(
@@ -163,7 +166,8 @@ tmle3_Update <- R6Class(
         observed = observed,
         H = covariates_dt,
         initial = initial,
-        submodel_info = submodel_info
+        submodel_info = submodel_info,
+        ED = ED
       )
 
 
@@ -178,7 +182,8 @@ tmle3_Update <- R6Class(
             observed = submodel_data$observed[subset],
             H = submodel_data$H[subset, , drop = FALSE],
             initial = submodel_data$initial[subset],
-            submodel_info = submodel_info
+            submodel_info = submodel_info,
+            ED = ED
           )
         }
       }
@@ -186,6 +191,29 @@ tmle3_Update <- R6Class(
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
+
+      if(self$one_dimensional){
+        # Will break if not called by original training task
+
+        if(is.null(submodel_data$ED)) {
+          #warning("No ED given in clever covariates. Defaulting to full EIC ED, which is incorrect.")
+          submodel_data$H <- self$collapse_covariates(self$current_estimates, submodel_data$H)
+          ED <- ED_from_estimates(self$current_estimates)
+          EDnormed <- ED / norm(ED, type = "2")
+          ED <- EDnormed
+
+
+        } else {
+          ED <- submodel_data$ED
+          EDnormed <- ED / norm(ED, type = "2")
+          submodel_data$H <- submodel_data$H %*% EDnormed
+
+          ED <- EDnormed
+
+        }
+      }
+
+      submodel_data["ED"] <- NULL
 
       submodel_info <- submodel_data$submodel_info
       sub_index <- which(names(submodel_data) == "submodel_info")
@@ -195,7 +223,7 @@ tmle3_Update <- R6Class(
         if (!(is.null(ncol_H) || (ncol_H == 1))) {
           stop(
             "Updater detected `constrain_step=TRUE` but multi-epsilon submodel.\n",
-            "Consider setting `collapse_covariates=TRUE`"
+            "Consider setting `one_dimensional=TRUE`"
           )
         }
 
@@ -238,19 +266,19 @@ tmle3_Update <- R6Class(
         if (self$fluctuation_type == "standard") {
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
-              offset = submodel_info$offset_tranform(submodel_data$initial),
-              family = submodel_info$family,
-              start = rep(0, ncol(submodel_data$H))
+                                offset = submodel_info$offset_tranform(submodel_data$initial),
+                                family = submodel_info$family,
+                                start = rep(0, ncol(submodel_data$H))
             )
           })
         } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
               submodel_fit <- glm(observed ~ -1, submodel_data[-sub_index],
-                offset =  submodel_info$offset_tranform(submodel_data$initial),
-                family = submodel_info$family,
-                weights = as.numeric(H),
-                start = rep(0, ncol(submodel_data$H))
+                                  offset =  submodel_info$offset_tranform(submodel_data$initial),
+                                  family = submodel_info$family,
+                                  weights = as.numeric(H),
+                                  start = rep(0, ncol(submodel_data$H))
               )
             })
           } else {
@@ -260,9 +288,9 @@ tmle3_Update <- R6Class(
             )
             suppressWarnings({
               submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
-                offset =  submodel_info$offset_tranform(submodel_data$initial),
-                family = submodel_info$family,
-                start = rep(0, ncol(submodel_data$H))
+                                  offset =  submodel_info$offset_tranform(submodel_data$initial),
+                                  family = submodel_info$family,
+                                  start = rep(0, ncol(submodel_data$H))
               )
             })
           }
@@ -279,6 +307,10 @@ tmle3_Update <- R6Class(
         cat(sprintf("(max) epsilon: %e ", max_eps))
       }
 
+      if(self$one_dimensional){
+
+        epsilon <- epsilon * ED
+      }
       return(epsilon)
     },
     submodel = function(epsilon, initial, H) {

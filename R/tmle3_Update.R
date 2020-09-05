@@ -359,9 +359,12 @@ tmle3_Update <- R6Class(
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
         se_Dstar <- sqrt(apply(IC, 2, function(v){
           # If long then make it a matrix
-          v <- matrix(v, nrow = n)
-          #Collapse EIC for each person by summing across time (this is correct for survival)
-          v <- rowSums(v)
+          if(length(v)!=n){
+            v <- matrix(v, nrow = n, byrow = T)
+            #Collapse EIC for each person by summing across time (this is correct for survival)
+            v <- rowSums(v)
+          }
+
           return(var(v))
         })/n)
         ED_threshold <- se_Dstar / min(log(n), 10)

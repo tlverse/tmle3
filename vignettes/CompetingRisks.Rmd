@@ -158,7 +158,7 @@ likelihood <- make_competing_risk_likelihood("W", "A", "processA", c("processN1"
 
 ```{r}
 task <- tmle3_Task$new(long_data, npsem,  t="t",id = "id")
-likelihood$train(task)
+likelihood <- likelihood$train(task)
 ```
 
 
@@ -176,13 +176,25 @@ likelihood$add_factors(added_factors)
 
 ```
 
+```{r}
+param = Param_CR$new(likelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1")
+param$name
+
+```
+
 
 
 
 ```{r}
-task$force_at_risk <- T
-(likelihood$get_likelihood(task, "processN2", drop_id = F, drop_time = F))
-(likelihood$get_likelihood(task, "processN1", drop_id = F, drop_time = F))
+
+H = param$clever_covariates(task, "full")
+```
+
+```{r}
+cf_task <- task$clone()
+cf_task$force_at_risk <- T
+H = param$clever_covariates(cf_task, "full")
+
 ```
 
 

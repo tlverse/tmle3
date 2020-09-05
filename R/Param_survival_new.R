@@ -138,7 +138,7 @@ Param_survival <- R6Class(
           clever_cov[,index_set_to_zero] <- 0
         }
 
-        return(as.vector(clever_cov))
+        return(as.vector(t(clever_cov)))
       }
       target_times <- self$target_times
       # bind the clever covariates for each tgt time by columns
@@ -179,7 +179,7 @@ Param_survival <- R6Class(
         # compute scaled and zeroed residuals vector
 
 
-        residuals = as.vector((as.matrix(observed_dN_wide) - Q)*ind)
+        residuals = as.vector(t((as.matrix(observed_dN_wide) - Q)*ind))
 
         clever_dot_HA <- HA*residuals
 

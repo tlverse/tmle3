@@ -8,7 +8,6 @@
 #' @importFrom R6 R6Class
 #' @importFrom sl3 sl3_Task
 #' @importFrom sl3 Shared_Data
-#' @importFrom sl3 Lrnr_hal9001
 #' @importFrom digest digest
 #' @import data.table
 #'

@@ -28,7 +28,7 @@ D <- D +
  
 
 setD <- set.DAG(D)
-dat <- sim(setD, n = 3000)
+dat <- sim(setD, n = 200)
 dat$id <- dat$ID
 dat$ID <- NULL
 times <- 1
@@ -80,13 +80,18 @@ for( node in A_nodes){
 ```
 
 ```{r}
-param <- Param_LATE$new(likelihood, intervention_trt, intervention_control)
+tlik <- Targeted_Likelihood$new(likelihood,submodel_type_by_node = "EIC" , updater = list(convergence_type = "sample_size", constrain_step = T))
+param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 ```
 
 
+
+
 ```{r}
-
-
+mean(param$estimates(task)$IC)
+tlik$updater$update_step(tlik,task)
+as.data.table(tlik$get_likelihood(task, "Y"))
+mean(param$estimates(task)$IC)
 ```
 
 

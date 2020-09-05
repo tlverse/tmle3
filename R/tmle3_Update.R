@@ -138,8 +138,8 @@ tmle3_Update <- R6Class(
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
       # Get EDs if present. Only for training task
-      EDs <- lapply(clever_covariates, `[[`, "ED")
-      ED <- as.vector(unlist(lapply(EDs, `[[`, update_node) ))
+      ED <- lapply(clever_covariates, `[[`, "ED")
+      ED <- as.vector(unlist(lapply(ED, `[[`, update_node) ))
       covariates_dt <- do.call(cbind, node_covariates)
 
       # if (self$one_dimensional) {
@@ -214,7 +214,6 @@ tmle3_Update <- R6Class(
       }
 
       submodel_data["ED"] <- NULL
-
       submodel_info <- submodel_data$submodel_info
       sub_index <- which(names(submodel_data) == "submodel_info")
 

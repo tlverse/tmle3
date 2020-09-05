@@ -47,11 +47,15 @@ Param_LATE <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node)
       all_nodes <- names(observed_likelihood$training_task$npsem)
       A_nodes <- grep("A", all_nodes, value = T)
       L_nodes <- grep("L", all_nodes, value = T)
       private$.update_nodes <- c(L_nodes, outcome_node)
+
+      super$initialize(observed_likelihood, list(), outcome_node)
+
+      print(L_nodes)
+
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
       # Train the gradient
@@ -71,10 +75,21 @@ Param_LATE <- R6Class(
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
-      EICs <- lapply(self$update_nodes, function(node){
+      update_nodes <- intersect(self$update_nodes, attr(tmle_task, "target_nodes"))
+      islong = F
+      if(is.null(update_nodes)){
+        update_nodes <- self$update_nodes
+      } else {
+      islong= T
+      }
+      EICs <- lapply(update_nodes, function(node){
         return(self$gradient$compute_component(tmle_task, node, fold_number = fold_number)$EIC)
       })
-      names(EICs) <- self$update_nodes
+      if(islong){
+        print(lapply(EICs, as.data.table))
+
+      }
+      names(EICs) <- update_nodes
       return(EICs)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
@@ -85,7 +100,7 @@ Param_LATE <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIC <- rowSums(as.matrix(self$clever_covariates(tmle_task, fold_number)))
+      EIC <- rowSums(do.call(cbind, self$clever_covariates(tmle_task, fold_number)))
 
       #TODO need to montecarlo simulate from likleihood to eval parameter.
 
@@ -148,3 +163,4 @@ Param_LATE <- R6Class(
     .update_nodes = NULL
   )
 )
+

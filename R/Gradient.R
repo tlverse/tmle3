@@ -76,13 +76,21 @@ Gradient <- R6Class(
       private$.fold_number <- fold_number
       self$train(tmle_task)
     },
-    generate_task = function(tmle_task, node, include_outcome = T, fold_number){
+    generate_task = function(tmle_task, node, include_outcome = T, fold_number = "full"){
       self$projection_task_generator(tmle_task, self$likelihood, node, include_outcome = include_outcome, self$params$ipw_args, fold_number = fold_number)
     },
     expand_task = function(tmle_task, node, force = F){
       #Computes expanded task where observations are repeated (with fake ids) for all levels of node
       # TODO these expanded tasks should only be targetted for this node.
+
+
       if(tmle_task$uuid %in% names(private$.uuid_expanded_history)){
+
+        print("111long task returned111111")
+        print(node)
+        print(attr(tmle_task, "target_nodes"))
+        print(private$.uuid_expanded_history[[tmle_task$uuid]])
+        print("222long task returned2222")
         if(private$.uuid_expanded_history[[tmle_task$uuid]] != node){
           stop("This expanded task does not match its node. You shouldn't be targeting this node for this task ")
         }
@@ -100,19 +108,20 @@ Gradient <- R6Class(
       if(length(variables) >1) stop("Multivariate nodes not supported")
       data <- tmle_task$data
       data$trueid <- data$id
+      time <- tmle_task$npsem[[node]]$time
+      levels <- sort(unique(unlist(tmle_task$get_tmle_node(node))))  #data[, variables, with = F])))
 
-      levels <- sort(unique(unlist(data[, variables, with = F])))
       if(!force & length(levels) > 100){
         stop("Too many levels in node.")
       }
-
       long_data <- rbindlist(lapply(levels, function(level) {
         data <- copy(data)
-        set(data ,, variables, level)
+        set(data , which(data$t == time), variables, level)
+        data$levelcopy <- level
         return(data)
       }))
 
-      long_data$id <-  paste(long_data$trueid,long_data[, variables, with = F][[1]], sep = "_")
+      long_data$id <-  paste(long_data$trueid,long_data$levelcopy, sep = "_")
 
       suppressWarnings(long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid")))
 
@@ -124,6 +133,9 @@ Gradient <- R6Class(
       return(long_task)
     },
     compute_component = function(tmle_task, node, fold_number = "full"){
+      print(node)
+      time <- tmle_task$npsem[[node]]$time
+
       self$assert_trained()
       #Converts squashed basis to R functions of tmle3_tasks
 
@@ -136,6 +148,8 @@ Gradient <- R6Class(
 
       col_index <- which(colnames(IC_task$X) == long_task$npsem[[node]]$variables )
       long_preds <- NULL
+
+
       tryCatch({
         value_step1 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
         value_step2 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], long_task, fold_number, node = node)
@@ -153,7 +167,7 @@ Gradient <- R6Class(
         #long_task is probably out of sync with tmle_task
         #Update it to the same level
         value_step <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
-        sync_task(long_task, fold_number = fold_number, check = F, max_step = value_step)
+        self$likelihood$sync_task(long_task, fold_number = fold_number, check = F, max_step = value_step)
         value_step1 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
         value_step2 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], long_task, fold_number, node = node)
         if(is.null(value_step1)){
@@ -168,22 +182,29 @@ Gradient <- R6Class(
         long_preds <<- self$likelihood$get_likelihood(long_task, node, fold_number = fold_number, drop_id = T, drop_time = T, drop = T, check_sync = F  )
 
       })
+
+
       data <- IC_task$data
 
       # TODO
-      #print(data.table(long_task$data$trueid))
-      #print(long_task$get_regression_task(node)$data)
-      #print( long_task$get_tmle_node(node, include_id = T))
 
       variables <- long_task$npsem[[node]]$variables
       #TODO check id order
-      data <- data.table(cbind(long_task$data$trueid, long_task$get_tmle_node(node, format = T) , long_preds))
+
+      data <- data.table(cbind(merge(long_task$data[,c("id", "trueid", "t")], cbind(long_task$get_tmle_node(node, format = T, include_id = T, include_time = T), long_preds), by = c("id", "t"))
+                               ))
+
+      idkey <- data$trueid
+      data$t <- NULL
+      data$id <- NULL
 
       setnames(data, c("id", node, "pred"))
 
       setkeyv(data, cols = c("id", node))
+
       #TODO handle updating of expanded task
       #This is done by stacking copies of the cdf
+
       data <- dcast(data, as.formula(paste0("id ~ ", node)), value.var = "pred")
       id <- data$id
       data$id <- NULL
@@ -196,7 +217,8 @@ Gradient <- R6Class(
       if(long_task$uuid == tmle_task$uuid){
         #if expanded task is tmle_task then obtain then expand cdf to match
         #This ensures we dont have any recursion errors by expanding an expanded task
-        match_index <- match(long_task$data$trueid, id)
+
+        match_index <- match(idkey, id)
         cdf <- cdf[match_index]
       }
 
@@ -209,7 +231,6 @@ Gradient <- R6Class(
       keep <- sapply(basis_list, function(b){
         col_index %in% b$cols
       })
-
       basis_list <- basis_list[keep]
       coefs <- coefs[c(T, keep)]
 
@@ -224,12 +245,13 @@ Gradient <- R6Class(
         return(result)
       })
 
+
       center_basis <- lapply(seq_along(diff_map), function(i){
         col_index <- diff_map[[i]]
         diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]]
         set(design, , as.integer(i), diff)
       })
-      min_val <- min(IC_task$X[[node]]) - 5
+      min_val <- min(IC_task$X[[variables]]) - 5
       clean_basis <- function(basis){
         index = which(basis$cols == col_index)
         basis$cutoffs[index] <- min_val
@@ -243,7 +265,7 @@ Gradient <- R6Class(
 
       mid_result <- as.matrix(design * clean_design)
       result =  mid_result %*% coefs[-1]
-      out = list(Y = IC_task$Y, cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
+      out = list(col_index = col_index,Y = IC_task$Y, cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
       return(out)
 
     },

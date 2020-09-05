@@ -177,7 +177,7 @@ likelihood$add_factors(added_factors)
 ```
 
 ```{r}
-param = Param_CR$new(likelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1")
+param = Param_CR$new(likelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T)
 param$name
 
 ```
@@ -187,13 +187,16 @@ param$name
 
 ```{r}
 
-H = param$clever_covariates(task, "full")
+sum(long_data$Delta==1)
+sum(long_data$Delta==2)
+
 ```
 
 ```{r}
 cf_task <- task$clone()
 cf_task$force_at_risk <- T
-H = param$clever_covariates(cf_task, "full")
+lapply(param$clever_covariates(task, "full", for_estimates = T), as.data.frame)
+
 
 ```
 

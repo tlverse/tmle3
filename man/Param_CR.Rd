@@ -14,34 +14,23 @@ Parameter definition for the Average Treatment Effect (ATE).
 }
 \section{Constructor}{
 
-\code{define_param(Param_ATT, observed_likelihood, intervention_list, ..., outcome_node)}
+\code{define_param(Param_CR, observed_likelihood, intervention_list, marginalized = F, censoring_node = "processA", competing_risk_nodes, target_risk_node, target_times = NULL, node_time_ordering = NULL)}
 
 \describe{
 \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 }
-\item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
+\item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
 }
-\item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.
+\item{\code{marginalized}}{ Whether the initial estimation was and thus the targeting should be through the marginalized cause specific hazards
+or the conditional (time-ordered) cause specific hazards.
 }
-\item{\code{...}}{Not currently used.
+\item{\code{censoring_node}} {The name of the censoring node
 }
-\item{\code{outcome_node}}{character, the name of the node that should be treated as the outcome
-}
-}
-}
-
-\section{Fields}{
-
-\describe{
-\item{\code{cf_likelihood_treatment}}{the counterfactual likelihood for the treatment
-}
-\item{\code{cf_likelihood_control}}{the counterfactual likelihood for the control
-}
-\item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention
-}
-\item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention
-}
-}
+\item{\code{competing_risk_nodes}} {The name of the competing risk nodes (excluding the count process node of interest)}
+\item{\code{target_risk_node}} {The counting process node of interest.}
+\item{\code{target_times}} {The times to target}
+\item{\code{node_time_ordering}} {The time ordering of the competing risk nodes. Only applicable if marginalized == F.}
+\item{\code{...}}{Not currently used.}
 }
 
 \seealso{

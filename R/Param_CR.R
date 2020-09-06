@@ -41,11 +41,12 @@ Param_CR <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list, marginalized = F, censoring_node = "processA", competing_risk_nodes, target_risk_node, target_times = NULL, node_time_ordering = NULL) {
-      super$initialize(observed_likelihood, list(), outcome_node = target_risk_node)
       if(!marginalized & is.null(node_time_ordering)) {
         stop("You specified to target via the non-marginalized cause specific hazards but did provide the time ordering of the regression.")
       }
       private$.update_nodes <- union(competing_risk_nodes, target_risk_node)
+      super$initialize(observed_likelihood, list(), outcome_node = target_risk_node)
+
       private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
       private$.cf_tasks <- private$.cf_likelihood$cf_tasks
       private$.target_times <- target_times
@@ -160,7 +161,7 @@ Param_CR <- R6Class(
         EIC_list <- list()
         obs_vals <- unlist(tmle_task$get_tmle_node(target_node, format = T, expand = T, compute_risk_set = F), use.names = F)
         Qvals <- Qtarget
-        residuals <- (obs_vals - Qvals)
+        residuals <- as.vector(obs_vals - Qvals)
 
         EIC_tgt <- H_list[[target_node]]*residuals
 
@@ -173,7 +174,7 @@ Param_CR <- R6Class(
         for(node in competing_risk_nodes) {
           obs_vals <- unlist(tmle_task$get_tmle_node(node, format = T, expand = T, compute_risk_set = F), use.names = F)
           Qvals <- Qcompeting[,node]
-          residuals <- (obs_vals - Qvals)
+          residuals <- as.vector(obs_vals - Qvals)
           EIC_comp <- H_list[[node]]*residuals
           if(for_estimates) {
             EIC_list[[node]] <- EIC_comp
@@ -251,12 +252,18 @@ Param_CR <- R6Class(
       cum_survival <- self$hazard_to_survival(cum_hazard_mat)
 
       cum_inc_mat <- self$conditional_cumulative_indicence_mat(cum_survival, Qtarget_mat)
-      target_times <- self$target_times
 
       clevs <- self$clever_covariates(tmle_task, fold_number, for_estimates = T)
-      EIC <- matrix(rowSums(do.call(cbind, clevs$EIC)),  nrow = nrow(cum_hazard_mat), byrow = T) +
-        t(t(cum_inc_mat[, target_times]) - colMeans(cum_inc_mat[, target_times]))
-      return(list(EIC = EIC,surv = cum_survival, psi = colMeans(cum_inc_mat[, target_times])))
+      target_times <- self$target_times
+
+      EIC <- lapply(clevs$EIC, function(X) {
+          apply(X,2, function(v) {
+        rowSums(matrix(v, nrow = nrow(cum_inc_mat), byrow = T))
+      } ) })
+      var_comps <- lapply(EIC, resample::colVars)
+      names(var_comps) <- names(clevs$EIC)
+      EIC <- Reduce('+', EIC) + t(t(cum_inc_mat[, target_times]) - as.vector(colMeans(cum_inc_mat[, target_times])))
+      return(list(EIC = EIC, var_comps = var_comps, psi = colMeans(cum_inc_mat[, target_times])))
     }
   ),
   active = list(

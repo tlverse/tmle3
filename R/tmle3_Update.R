@@ -72,7 +72,7 @@ tmle3_Update <- R6Class(
 
       ED <- ED_from_estimates(estimates)
 
-      EDnormed <- ED / norm(ED, type = "2")
+      EDnormed <- ED / norm(ED, type = "2")/ sqrt(length(ED))
       collapsed_covariate <- clever_covariates %*% EDnormed
 
       return(collapsed_covariate)
@@ -167,7 +167,8 @@ tmle3_Update <- R6Class(
         H = covariates_dt,
         initial = initial,
         submodel_info = submodel_info,
-        ED = ED
+        ED = ED,
+        update_node = update_node
       )
 
 
@@ -183,7 +184,8 @@ tmle3_Update <- R6Class(
             H = submodel_data$H[subset, , drop = FALSE],
             initial = submodel_data$initial[subset],
             submodel_info = submodel_info,
-            ED = ED
+            ED = ED,
+            update_node = update_node
           )
         }
       }
@@ -191,24 +193,37 @@ tmle3_Update <- R6Class(
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
-
+      update_node <- submodel_data$update_node
+      submodel_data["update_node"] <- NULL
       if(self$one_dimensional){
         # Will break if not called by original training task
 
         if(is.null(submodel_data$ED)) {
-          #warning("No ED given in clever covariates. Defaulting to full EIC ED, which is incorrect.")
+          warning("No ED given in clever covariates. Defaulting to full EIC ED, which is incorrect.")
           submodel_data$H <- self$collapse_covariates(self$current_estimates, submodel_data$H)
           ED <- ED_from_estimates(self$current_estimates)
-          EDnormed <- ED / norm(ED, type = "2")
+          EDnormed <- ED / (norm(ED, type = "2") / sqrt(length(ED)))
           ED <- EDnormed
 
 
         } else {
           ED <- submodel_data$ED
-          EDnormed <- ED / norm(ED, type = "2")
+          initial_variances <- private$.initial_variances
+
+          vars <- unlist(lapply(initial_variances, `[[`, update_node))
+          if(!is.null(vars)){
+
+            zero <- vars < 1e-4
+            vars[zero] <- 1e-4
+
+            ED <- ED / sqrt(vars)
+          }
+
+          EDnormed <- ED / (norm(ED, type = "2") / sqrt(length(ED)))
           submodel_data$H <- submodel_data$H %*% EDnormed
 
           ED <- EDnormed
+
 
         }
       }
@@ -253,10 +268,11 @@ tmle3_Update <- R6Class(
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
 
-        # # TODO: consider if we should do this
-        # if(risk_zero<risk_val){
-        #   epsilon <- 0
-        # }
+         #TODO: consider if we should do this
+        if(risk_zero<risk_val){
+          epsilon <- 0
+          private$.delta_epsilon <- private$.delta_epsilon/2
+        }
 
         if (self$verbose) {
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
@@ -407,6 +423,8 @@ tmle3_Update <- R6Class(
         tmle_param$estimates(tmle_task, update_fold)
       })
 
+      private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
+
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)
 
@@ -440,6 +458,12 @@ tmle3_Update <- R6Class(
         private$.update_nodes,
         new_update_nodes
       ))
+    },
+    set_estimates = function(tmle_task, update_fold = "full"){
+      private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
+        tmle_param$estimates(tmle_task, update_fold)
+      })
+      private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
     }
   ),
   active = list(
@@ -509,6 +533,9 @@ tmle3_Update <- R6Class(
     },
     current_estimates = function() {
       return(private$.current_estimates)
+    },
+    initial_variances = function(){
+      return(private$.initial_variances)
     }
   ),
   private = list(
@@ -530,6 +557,7 @@ tmle3_Update <- R6Class(
     .use_best = NULL,
     .verbose = FALSE,
     .targeted_components = NULL,
-    .current_estimates = NULL
+    .current_estimates = NULL,
+    .initial_variances = NULL
   )
 )

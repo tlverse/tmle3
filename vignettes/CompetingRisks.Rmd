@@ -177,9 +177,13 @@ likelihood$add_factors(added_factors)
 ```
 
 ```{r}
-param = Param_CR$new(likelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T)
+tlikelihood <- Targeted_Likelihood$new(likelihood, updater = list(one_dimensional = T, constrain_step = T, delta_epsilon = 0.001))
+param = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T, target_times = 1:9)
 param$name
-
+est = param$estimates(task)
+est$var_comps
+tlikelihood$updater$set_estimates(task, "full")
+tlikelihood$updater$initial_variances
 ```
 
 
@@ -187,9 +191,13 @@ param$name
 
 ```{r}
 
-sum(long_data$Delta==1)
-sum(long_data$Delta==2)
-
+v= colMeans(param$estimates(task)$EIC)
+v
+norm(v, "2")/length(v)
+tlikelihood$updater$update_step(tlikelihood, task)
+v= colMeans(param$estimates(task)$EIC)
+v
+norm(v, "2")/length(v)
 ```
 
 ```{r}

@@ -90,6 +90,7 @@ Targeted_Likelihood <- R6Class(
 
       if(check){
         current_step <- self$updater$step_number
+
         nodes <- self$updater$update_nodes
         target_nodes <- attr(tmle_task, "target_nodes")
         if(!is.null(target_nodes)){
@@ -99,6 +100,7 @@ Targeted_Likelihood <- R6Class(
         for(node in nodes){
           likelihood_factor <- self$factor_list[[node]]
           step_number <- self$cache$get_update_step(likelihood_factor, tmle_task, fold_number, node = node)
+          if(is.null(step_number)) step_number <- 0
           if(step_number != current_step) {
             in_sync <- FALSE
           }

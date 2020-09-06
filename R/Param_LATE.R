@@ -54,7 +54,7 @@ Param_LATE <- R6Class(
 
       super$initialize(observed_likelihood, list(), outcome_node)
 
-      print(L_nodes)
+
 
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
@@ -85,10 +85,7 @@ Param_LATE <- R6Class(
       EICs <- lapply(update_nodes, function(node){
         return(self$gradient$compute_component(tmle_task, node, fold_number = fold_number)$EIC)
       })
-      if(islong){
-        print(lapply(EICs, as.data.table))
 
-      }
       names(EICs) <- update_nodes
       return(EICs)
     },
@@ -100,7 +97,7 @@ Param_LATE <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIC <- rowSums(do.call(cbind, self$clever_covariates(tmle_task, fold_number)))
+      EIC <- (do.call(cbind, self$clever_covariates(tmle_task, fold_number)))
 
       #TODO need to montecarlo simulate from likleihood to eval parameter.
 
@@ -124,8 +121,8 @@ Param_LATE <- R6Class(
       # IC <- EIC + (EY1 - EY0) - psi
 
       psi = rep(0, length(EIC))
-      IC <- EIC
-      result <- list(psi = psi, IC = IC)
+      IC <- rowSums(EIC)
+      result <- list(psi = psi, IC = IC, EIC = colMeans(EIC))
       return(result)
     }
   ),

@@ -20,15 +20,15 @@ D <- D +
   node("W", distr = "rbinom",  size = 1, prob = 0.5) +
   node("L0a", distr = "rbinom",  size = 1, prob = 0.5) +
   node("L0b", distr = "rbinom",  size = 1, prob = 0.5) +
-  node("A0", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0a/4 - L0b/5 + W/4 ) ) +
-  node("L1a", distr = "rbinom",  size = 1, prob = plogis(0.3 + L0b/2 + L0a/2 - A0/2)) +
-  node("L1b", distr = "rbinom",  size = 1, prob = plogis(0.3 + L0a/2 + L0a/2 - A0/2 + W/4)) +
-  node("A1", distr = "rbinom", size = 1, prob =plogis( 0.4 + L0a/4 - L0b/5 + W/3 ) ) +
-  node("Y",  distr =  "rbinom", size = 1, prob = plogis(W/4 + L1b/200 + A1/3 - A0/5 + L1a/300) ) 
+  node("A0", distr = "rbinom", size = 1, prob = plogis( ( 0.4 + L0a/4 - L0b/5 + W/4 )^2) ) +
+  node("L1a", distr = "rbinom",  size = 1, prob = plogis((0.3 + L0b/2 + L0a/2 - A0/2)^2)) +
+  node("L1b", distr = "rbinom",  size = 1, prob = plogis((0.3 + L0a/2 + L0a/2 - A0/2 + W/4)^2)) +
+  node("A1", distr = "rbinom", size = 1, prob = plogis (( 0.4 + L0a/4 - L0b/5 + W/3 )^2 ) )+
+  node("Y",  distr =  "rbinom", size = 1, prob = plogis( (W/4 + L1b/200 + A1/3 - A0/5 + L1a/300)^2 ) )
  
 
 setD <- set.DAG(D)
-dat <- sim(setD, n = 200)
+dat <- sim(setD, n = 2000)
 dat$id <- dat$ID
 dat$ID <- NULL
 times <- 1
@@ -80,7 +80,7 @@ for( node in A_nodes){
 ```
 
 ```{r}
-tlik <- Targeted_Likelihood$new(likelihood,submodel_type_by_node = "EIC" , updater = list(convergence_type = "sample_size", constrain_step = T))
+tlik <- Targeted_Likelihood$new(likelihood,submodel_type_by_node = "EIC" , updater = list(convergence_type = "sample_size", constrain_step = T, delta_epsilon = 0.01))
 param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 ```
 
@@ -89,9 +89,26 @@ param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 
 ```{r}
 mean(param$estimates(task)$IC)
+
+(param$estimates(task)$EIC)
 tlik$updater$update_step(tlik,task)
-as.data.table(tlik$get_likelihood(task, "Y"))
 mean(param$estimates(task)$IC)
+
+(param$estimates(task)$EIC)
+```
+
+```{r}
+task1 <- task$clone()
+task1$force_at_risk <- T
+tlik$sync_task(task1)
+data.table(tlik$get_likelihood(task1, "Y"))
+data.table(tlik$get_likelihood(task, "Y"))
+
+data.table(likelihood$get_likelihood(task1, "Y"))
+data.table(likelihood$get_likelihood(task, "Y"))
+param$gradient$expand_task(task, "Y")$uuid
+param$gradient$expand_task(task1, "Y")$uuid
+
 ```
 
 

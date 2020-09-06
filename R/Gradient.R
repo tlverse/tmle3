@@ -86,11 +86,7 @@ Gradient <- R6Class(
 
       if(tmle_task$uuid %in% names(private$.uuid_expanded_history)){
 
-        print("111long task returned111111")
-        print(node)
-        print(attr(tmle_task, "target_nodes"))
-        print(private$.uuid_expanded_history[[tmle_task$uuid]])
-        print("222long task returned2222")
+
         if(private$.uuid_expanded_history[[tmle_task$uuid]] != node){
           stop("This expanded task does not match its node. You shouldn't be targeting this node for this task ")
         }
@@ -133,7 +129,7 @@ Gradient <- R6Class(
       return(long_task)
     },
     compute_component = function(tmle_task, node, fold_number = "full"){
-      print(node)
+
       time <- tmle_task$npsem[[node]]$time
 
       self$assert_trained()

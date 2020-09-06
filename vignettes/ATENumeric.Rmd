@@ -84,13 +84,15 @@ tlik <- Targeted_Likelihood$new(likelihood,submodel_type_by_node = "EIC" , updat
 param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 ```
 
-
-
+```{r}
+grep("a", "a")
+```
 
 ```{r}
 mean(param$estimates(task)$IC)
 
 (param$estimates(task)$EIC)
+tlik$check_sync <- T
 tlik$updater$update_step(tlik,task)
 mean(param$estimates(task)$IC)
 
@@ -98,16 +100,17 @@ mean(param$estimates(task)$IC)
 ```
 
 ```{r}
+
 task1 <- task$clone()
 task1$force_at_risk <- T
 tlik$sync_task(task1)
-data.table(tlik$get_likelihood(task1, "Y"))
-data.table(tlik$get_likelihood(task, "Y"))
+```
 
-data.table(likelihood$get_likelihood(task1, "Y"))
-data.table(likelihood$get_likelihood(task, "Y"))
-param$gradient$expand_task(task, "Y")$uuid
-param$gradient$expand_task(task1, "Y")$uuid
+```{r}
+data.table(tlik$get_likelihood(task1, "Y"))
+
+data.table(tlik$get_likelihood(task1, "L1a"))
+v=tlik$get_likelihood(param$gradient$expand_task(task1, "Y"), "Y")
 
 ```
 

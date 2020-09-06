@@ -71,11 +71,14 @@ Param_LATE <- R6Class(
       }
       private$.gradient$train_projections(self$observed_likelihood$training_task, fold_number = fold_number)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", node = NULL) {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
       update_nodes <- intersect(self$update_nodes, attr(tmle_task, "target_nodes"))
+      if(!is.null(node)){
+        update_nodes <- c(node)
+      }
       islong = F
       if(is.null(update_nodes)){
         update_nodes <- self$update_nodes

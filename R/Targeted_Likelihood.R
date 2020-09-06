@@ -121,10 +121,12 @@ Targeted_Likelihood <- R6Class(
           break
         }
         for(node in names(eps_step)){
+
           target_nodes <- attr(tmle_task, "target_nodes")
           if(!is.null(target_nodes) & !(node %in% c(target_nodes))){
             next
           }
+
           eps <- eps_step[[node]]
           likelihood_factor <- self$factor_list[[node]]
 

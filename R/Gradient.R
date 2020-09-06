@@ -163,6 +163,7 @@ Gradient <- R6Class(
         #long_task is probably out of sync with tmle_task
         #Update it to the same level
         value_step <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
+
         self$likelihood$sync_task(long_task, fold_number = fold_number, check = F, max_step = value_step)
         value_step1 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], tmle_task, fold_number, node = node)
         value_step2 <- self$likelihood$cache$get_update_step(self$likelihood$factor_list[[node]], long_task, fold_number, node = node)

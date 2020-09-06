@@ -115,6 +115,8 @@ tmle3_Update <- R6Class(
                                       fold_number = "full",
                                       update_node = "Y",
                                       drop_censored = FALSE) {
+
+
       if(!(inherits(likelihood, "Targeted_Likelihood"))) {
         submodel_type <- "logistic"
       } else {
@@ -129,9 +131,17 @@ tmle3_Update <- R6Class(
         formal_args <- names(formals(tmle_param$clever_covariates))
 
         # For backwards compatibility:
-        if("submodel_type" %in% formal_args){
-          return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type))
-        } else {
+        # In future, clever covariate functions should accept a "node" and "submodel_type" argument.
+        if(all(c("submodel_type", "node") %in% formal_args)){
+          return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type, node = update_node))
+        }
+        else if("submodel_type" %in% formal_args){
+          return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_typee))
+        }
+        else if("node" %in% formal_args){
+          return(tmle_param$clever_covariates(tmle_task, fold_number, node = update_node))
+        }
+         else {
           return(tmle_param$clever_covariates(tmle_task, fold_number))
         }
       })

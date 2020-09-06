@@ -5,15 +5,18 @@ ipw_late <- function(task, lik, ipw_args, fold_number){
   cf_likelihood_control = ipw_args$cf_likelihood_control
   cf_likelihood_treatment = ipw_args$cf_likelihood_treatment
   Y <- task$get_tmle_node("Y", format = T)[[1]]
-  L_nodes <- grep("L", names(task$npsem), value = T)
   A_nodes <- grep("A", names(task$npsem), value = T)
 
+
   nodes <- c(A_nodes)
+
   #TODO should do divisions component-wise for large t?
   g <- as.vector(apply(lik$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
   cf_g_trt <- as.vector(apply(cf_likelihood_treatment$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
   cf_g_control <- as.vector(apply(cf_likelihood_control$get_likelihoods(task, A_nodes, fold_number = fold_number), 1, prod))
-  Y*cf_g_trt/g  - Y*cf_g_control/g
+
+  return(Y*cf_g_trt/g  - Y*cf_g_control/g)
+
 }
 #' @export
 gradient_generator_late <- function(tmle_task, lik,  node, include_outcome = T, ipw_args = NULL, fold_number){

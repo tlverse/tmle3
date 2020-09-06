@@ -47,10 +47,7 @@ long_data <- rbind(d0,d1)
 ```
 
 
-```{r}
 
-letters
-```
 
 ```{r}
 baseline_covariates <- "W"
@@ -100,18 +97,146 @@ mean(param$estimates(task)$IC)
 ```
 
 ```{r}
+k = 1000
+tlik$factor_list$W$empirical_fit
+mc_data <- as.data.table(tlik$factor_list$W$sample(, k))
+set(mc_data, , setdiff(names(task$data), "W"), (0))
+mc_data$t <- 0 
+mc_data$id <- 1:nrow(mc_data)
+node = "L0a"
+var = "La"
+time = 0
+levels <- sort(unique(task$get_tmle_node(node)))
+levels
+expanded_data <- rbindlist(lapply(levels, function(level) {
+  mc_data <- copy(mc_data)
+  mc_data$level <- level
+  mc_data$trueid <- mc_data$id
+  set(mc_data, which(mc_data$t == time), var, level)
+  return(mc_data)
+}))
 
-task1 <- task$clone()
-task1$force_at_risk <- T
-tlik$sync_task(task1)
+
 ```
 
 ```{r}
-data.table(tlik$get_likelihood(task1, "Y"))
+table(task$data[t==1]$Y)
+mc_task1$data
+table(new_task$data[t==1]$Y)
+```
 
-data.table(tlik$get_likelihood(task1, "L1a"))
-v=tlik$get_likelihood(param$gradient$expand_task(task1, "Y"), "Y")
+```{r}
 
+new_task <- sample_from_node(mc_task1, tlik, "L0a", task)
+
+new_task <- sample_from_node(new_task, tlik, "L0b", task)
+
+
+new_task <- sample_from_node(new_task, tlik, "A0a", task)
+new_task <- sample_from_node(new_task, tlik, "L1a", task)
+new_task$data
+
+new_task <- sample_from_node(new_task, tlik, "L1b", task)
+new_task$data
+
+
+new_task <- sample_from_node(new_task, tlik, "A1a", task)
+new_task$data
+
+new_task <- sample_from_node(new_task, tlik, "Y", task)
+new_task$data
+```
+
+```{r}
+
+mc_task1 <- tmle3_Task$new(mc_data, task$npsem, id = "id", t = "t", long_format  = T)
+
+sample_from_node <- function(mc_task, tlik, node, observed_task) {
+  data <- mc_task$data
+  var <- observed_task$npsem[[node]]$variables
+  time <- observed_task$npsem[[node]]$time
+  levels <- sort(unique(observed_task$get_tmle_node(node)))
+
+  if(!(time %in% unique(data$t))){
+    data1 <- data[data$t==0]
+    data2<- copy(data1)
+    set(data2, , setdiff(colnames(data2), "id"),  0)
+    data2$t <- time
+    data <- rbind(data, data2)
+   
+  }
+  expand_data <- function(data, levels, time, var){
+    expanded_data <- rbindlist(lapply(levels, function(level) {
+      data <- copy(data)
+      data$level <- level
+      data$trueid <- data$id
+      set(data, which(data$t == time), var, level)
+      
+      return(data)
+    }))
+    expanded_data$id <- paste0(expanded_data$trueid, "_", expanded_data$level)
+    setkey(expanded_data, id, t)
+    return(expanded_data)
+  }
+  
+  expanded_data <- expand_data(data, levels, time, var)
+  expanded_task <- tmle3_Task$new(expanded_data, observed_task$npsem, id = "id", t = "t", long_format  = observed_task$long_format, summary_measure_columns = c("trueid", observed_task$summary_measure_columns))
+  
+  setattr(expanded_task, "target_nodes", c(node))
+  print(expanded_task$data)
+  tlik$sync_task(expanded_task, check = F)
+  
+  node_liks <- data.table(trueid = expanded_task$data$trueid, expanded_task$get_tmle_node(node, include_id = T)
+, lik  = as.vector(tlik$get_likelihood(expanded_task, node) ))
+
+  if(node ==  "Y") {
+    print(node_liks)
+  }
+  sampled <- node_liks[, sample(.SD[[1]], 1, prob = lik) , by = "trueid", .SDcols = var]
+  setnames(sampled, c("id", node))
+  setkey(sampled, id)
+  sampled$t <- time
+  sampled$id <- as.factor(sampled$id)
+
+  mc_task_new <- mc_task$generate_counterfactual_task(UUIDgenerate(), sampled)
+  return(mc_task_new)
+}
+
+```
+
+```{r}
+expand_data
+
+mc_task <- tmle3_Task$new(expand_data, task$npsem, id = "id", t = "t", long_format  = T, summary_measure_columns = "trueid")
+setattr(mc_task, "target_nodes", "L0a")
+task$get_regression_task(node)$data
+tlik$sync_task(mc_task, check = F)
+```
+
+
+```{r}
+task$data[, lapply(.SD, is.numeric)]
+is.numeric(c(1,2,3.4))
+```
+```{r}
+
+mc_task1 <- tmle3_Task$new(mc_data, task$npsem, id = "id", t = "t", long_format  = T)
+
+
+node_liks <- data.table(trueid = mc_task$data$trueid, mc_task$get_tmle_node(node, include_id = T)
+, lik  = as.vector(tlik$get_likelihood(mc_task, node) ))
+
+sampled <- node_liks[, sample(La, 1, prob = lik) , by = "trueid"]
+setnames(sampled, c("id", node))
+setkey(sampled, id)
+sampled$t <- 0
+sampled$id <- as.factor(sampled$id)
+sampled
+mc_task2 <- mc_task1$generate_counterfactual_task(UUIDgenerate(), sampled)
+setattr(mc_task2 , "target_nodes", "L0a")
+mc_task2$get_data()
+mc_task2$get_regression_task("L0a")$data
+tlik$sync_task(mc_task2,  check = F)
 ```
 
 

@@ -29,7 +29,8 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F,  ...) {
+    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, long_format = NULL, ...) {
+
 
       dot_args <- list(...)
       if(is.null(id)){
@@ -38,9 +39,21 @@ tmle3_Task <- R6Class(
       if(is.null(time)){
         time <- dot_args$nodes$time
       }
+
+
       if(!inherits(data, "Shared_Data")){
         # For ease of coding and cleanness of code (and working with data.tables)
         # I assume that the id and time columns are "id" and "t" respectively.
+
+        if(!is.null(long_format)){
+          long_format <- long_format
+        }
+        else if(!is.null(time) | "t" %in% colnames(data)) {
+          long_format <- T
+        } else {
+          long_format <- F
+        }
+
 
         if(!is.data.table(data)) data <- as.data.table(data)
         #TODO if passed through nodes arg
@@ -79,11 +92,7 @@ tmle3_Task <- R6Class(
         data[, id := as.factor(id)]
         data <- setkey(data, id, t)
         shared_data <- data
-        if(length(unique(data$t)) > 1){
-          long_format <- T
-        } else {
-          long_format <- F
-        }
+
 
       } else{
         # This assumes preprocessing has been done (e.g. sorting by id and t)
@@ -716,7 +725,7 @@ tmle3_Task <- R6Class(
 
       return(regression_task)
     },
-    generate_counterfactual_task = function(uuid, new_data,  force_at_risk = NULL, through_data =  F , remove_rows = F) {
+    generate_counterfactual_task = function(uuid, new_data,  force_at_risk = NULL, through_data =  F , remove_rows = F, long_format = self$long_format) {
       # for current_factor, generate counterfactual values
 
       if(is.null(force_at_risk)){
@@ -742,7 +751,8 @@ tmle3_Task <- R6Class(
           folds = self$folds,
           row_index = self$row_index,
           force_at_risk = force_at_risk,
-          summary_measure_columns = private$.summary_measure_columns
+          summary_measure_columns = private$.summary_measure_columns,
+          long_format = long_format
         )
         return(new_task)
 
@@ -773,7 +783,8 @@ tmle3_Task <- R6Class(
             folds = self$folds,
             row_index = self$row_index,
             force_at_risk = force_at_risk,
-            summary_measure_columns = private$.summary_measure_columns
+            summary_measure_columns = private$.summary_measure_columns,
+            long_format = self$long_format
           )
           return(new_task)
         } else {
@@ -790,22 +801,43 @@ tmle3_Task <- R6Class(
 
         data <- data.table::copy(self$get_data(self$row_index,))
         node <-  setdiff(colnames(new_data), c("id", "t"))
+        vars <- unlist(lapply(node, function(node){
+          self$npsem[[node]]$variables
+        }))
+
         if(remove_rows){
           id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
           data <- data[!.(id_t_ex$id, id_t_ex$t), node, with = F]
         } else {
           id_t_ex <- fsetdiff(data[t %in% unique(new_data$t), c("id", "t"), with = F], new_data[, c("id", "t"), with = F])
-          data <- data[.(id_t_ex$id, id_t_ex$t), (node) := NA]
+
+          data <- data[.(id_t_ex$id, id_t_ex$t), (vars) := NA]
         }
-        has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(node[[1]]), with = F], use.names = F))
-        append_row_data <- new_data[-has_row]
-        alter_row_data <- new_data[has_row]
-        data[.(alter_row_data$id, alter_row_data$t), (node) :=  alter_row_data[, node, with = F]]
+
+
+        has_row <- which(unlist(data[.(new_data$id, new_data$t), !is.na(.SD), .SDcols = vars], use.names = F))
+
+        if(length(has_row) == 0){
+          append_row_data <- new_data
+          alter_row_data <- data.table(NULL)
+        } else {
+          append_row_data <- new_data[-has_row]
+          alter_row_data <- new_data[has_row]
+          data[.(alter_row_data$id, alter_row_data$t), (vars) :=  unlist(alter_row_data[, node, with = F])]
+        }
+
+
+
         if(nrow(append_row_data) > 0){
+          setnames(append_row_data, node, vars)
           data <- rbind(data, append_row_data, fill = T)
           setkey(data, id, t)
         }
-        setnafill(data, "locf")
+        if(any(is.na(data))) {
+          numeric_cols <- unlist(data[, lapply(.SD, is.numeric)], use.names = F)
+          setnafill(data, "locf", cols = which(numeric_cols))
+        }
+
         new_task <- self$clone()
 
         #TODO regenerate folds?? But preserve id division? We are adding rows of time
@@ -818,7 +850,8 @@ tmle3_Task <- R6Class(
           id = "id",
           nodes = self$nodes,
           force_at_risk = force_at_risk,
-          summary_measure_columns = private$.summary_measure_columns
+          summary_measure_columns = private$.summary_measure_columns,
+          long_format = self$long_format
 
         )
         return(new_task)
@@ -875,7 +908,8 @@ tmle3_Task <- R6Class(
         folds = self$folds,
         row_index = self$row_index,
         force_at_risk = force_at_risk,
-        summary_measure_columns = private$.summary_measure_columns
+        summary_measure_columns = private$.summary_measure_columns,
+        long_format = self$long_format
       )
 
       return(new_task)
@@ -946,7 +980,8 @@ tmle3_Task <- R6Class(
         id = "id",
         time = "t",
         force_at_risk = private$.force_at_risk,
-        summary_measure_columns = private$.summary_measure_columns
+        summary_measure_columns = private$.summary_measure_columns,
+        long_format = self$long_format
       )
       return(new_task)
     }

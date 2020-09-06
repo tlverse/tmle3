@@ -2,7 +2,9 @@
 % Please edit documentation in R/Param_CR.R
 \name{Param_CR}
 \alias{Param_CR}
-\title{Average Treatment Effect}
+\title{Competing Risks cause-specific cumulative incidence (no ties)
+Supports multiple intervention nodes, and multiple competing risks + censoring.
+Parameter definition for the CR cumulative incidence.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +12,9 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Competing Risks cause-specific cumulative incidence (no ties)
+Supports multiple intervention nodes, and multiple competing risks + censoring.
+Parameter definition for the CR cumulative incidence.
 }
 \section{Constructor}{
 

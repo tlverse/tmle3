@@ -1,6 +1,7 @@
-#' Average Treatment Effect
-#'
-#' Parameter definition for the Average Treatment Effect (ATE).
+#' Longitudinal Average Treatment Effect
+#' Parameter for ATE in (L0 A0 L1 A1 ... Y) data structure with any number of time dependent covariates and treatments.
+#' Supports arbitrarily many time points.
+#' Parameter definition for the Longitudinal Average Treatment Effect (LATE).
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is

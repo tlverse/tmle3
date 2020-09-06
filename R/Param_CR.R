@@ -1,6 +1,6 @@
-#' Average Treatment Effect
-#'
-#' Parameter definition for the Average Treatment Effect (ATE).
+#' Competing Risks cause-specific cumulative incidence (no ties)
+#' Supports multiple intervention nodes, and multiple competing risks + censoring.
+#' Parameter definition for the CR cumulative incidence.
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is

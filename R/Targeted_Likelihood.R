@@ -147,6 +147,7 @@ Targeted_Likelihood <- R6Class(
       return(invisible(tmle_task))
     },
     get_likelihood = function(tmle_task, node, fold_number = "full",  check_sync = NULL, ...) {
+
       if(is.null(check_sync)){
         check_sync <- private$.check_sync
       }
@@ -161,6 +162,10 @@ Targeted_Likelihood <- R6Class(
           likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = node)
         } else {
           # if not, generate new ones
+          if(inherits(self$initial_likelihood, "Targeted_Likelihood")){
+            #This allows an initial likelihood to be a targeted likelihood.
+            suppressWarnings(self$initial_likelihood$sync_task(tmle_task, fold_number = fold_number))
+          }
           likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number, to_wide = F)
           value_step <- 0
           self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values, node = node)
@@ -188,6 +193,9 @@ Targeted_Likelihood <- R6Class(
         # todo: maybe update here, or error if not already updated
       } else {
         # not a node that updates, so we can just use initial likelihood
+        if(inherits(self$initial_likelihood, "Targeted_Likelihood")){
+          suppressWarnings(self$initial_likelihood$sync_task(tmle_task, fold_number = fold_number))
+        }
         likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number, ...)
       }
 

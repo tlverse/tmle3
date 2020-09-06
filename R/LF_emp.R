@@ -105,12 +105,16 @@ LF_emp <- R6Class(
     },
     sample = function(tmle_task = NULL, n_samples = NULL, fold_number = "full") {
       #TODO No conditioning variables so dont need task
-      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
-
+      if(is.null(tmle_task)) {
+        num <- 1
+      } else {
+        observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
+        num <- 1:nrow(observedfull)
+      }
       emp_probs <-  private$.empirical_fit$emp_probs
       uniq_obs <-  private$.empirical_fit$uniq_obs
 
-      values <- as.matrix(do.call(rbind, lapply(1:nrow(observedfull), function(i) uniq_obs[base::sample(seq_along(uniq_obs), n_samples, prob = emp_probs, replace = T)])))
+      values <- as.matrix(do.call(rbind, lapply(1:num, function(i) uniq_obs[base::sample(nrow(uniq_obs), n_samples, prob = emp_probs, replace = T)])))
       return(values)
     }
   ),

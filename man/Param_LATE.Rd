@@ -2,7 +2,10 @@
 % Please edit documentation in R/Param_LATE.R
 \name{Param_LATE}
 \alias{Param_LATE}
-\title{Average Treatment Effect}
+\title{Longitudinal Average Treatment Effect
+Parameter for ATE in (L0 A0 L1 A1 ... Y) data structure with any number of time dependent covariates and treatments.
+Supports arbitrarily many time points.
+Parameter definition for the Longitudinal Average Treatment Effect (LATE).}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +13,10 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Longitudinal Average Treatment Effect
+Parameter for ATE in (L0 A0 L1 A1 ... Y) data structure with any number of time dependent covariates and treatments.
+Supports arbitrarily many time points.
+Parameter definition for the Longitudinal Average Treatment Effect (LATE).
 }
 \section{Constructor}{
 

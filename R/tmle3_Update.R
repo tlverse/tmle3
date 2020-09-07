@@ -271,9 +271,7 @@ tmle3_Update <- R6Class(
             method = "Brent"
           )
           epsilon <- optim_fit$par
-          if(epsilon > 0.9 * self$delta_epsilon) {
-            private$.delta_epsilon <- self$delta_epsilon * 1.5
-          }
+
         } else {
           epsilon <- self$delta_epsilon
         }

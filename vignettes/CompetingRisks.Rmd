@@ -34,7 +34,7 @@ D <- D +
   # Observed random variable (censoring indicator, 1 - failure event, 0 - censored):
   node("Delta", distr = "rconst", const = whichK(C,T1,T2))
 setD <- set.DAG(D, vecfun = c("pmin", "whichK"))
-dat <- sim(setD, n = 1000)
+dat <- sim(setD, n = 2000)
 dat
 # only grab ID, W's, A, T.tilde, Delta
 Wname <- grep("W", colnames(dat), value = TRUE)
@@ -177,8 +177,8 @@ likelihood$add_factors(added_factors)
 ```
 
 ```{r}
-tlikelihood <- Targeted_Likelihood$new(likelihood, updater = list(one_dimensional = T, constrain_step = T, delta_epsilon = 0.001))
-param = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T, target_times = 1:9)
+tlikelihood <- Targeted_Likelihood$new(likelihood, updater = list(one_dimensional = T, constrain_step = T, delta_epsilon = 0.0005, optim_delta_epsilon = T, convergence_type = "sample_size"))
+param = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T, target_times = 1:6)
 param$name
 est = param$estimates(task)
 est$var_comps
@@ -190,7 +190,8 @@ tlikelihood$updater$initial_variances
 
 
 ```{r}
-
+tlikelihood$updater$delta_epsilon
+table(long_data$t)
 v= colMeans(param$estimates(task)$EIC)
 v
 norm(v, "2")/length(v)
@@ -198,14 +199,13 @@ tlikelihood$updater$update_step(tlikelihood, task)
 v= colMeans(param$estimates(task)$EIC)
 v
 norm(v, "2")/length(v)
+tlikelihood$updater$delta_epsilon
 ```
 
 ```{r}
-cf_task <- task$clone()
-cf_task$force_at_risk <- T
-lapply(param$clever_covariates(task, "full", for_estimates = T), as.data.frame)
-
-
+est <- param$estimates(task)
+library(ggplot2)
+ggplot(data.frame(psi = est$psi, t = seq_along(est$psi)), aes(x = t, y = psi))  + geom_smooth(se = F)
 ```
 
 

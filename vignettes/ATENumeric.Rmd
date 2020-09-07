@@ -82,7 +82,9 @@ param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 ```
 
 ```{r}
-grep("a", "a")
+cftask <- task$clone()
+cftask$force_at_risk <- T
+tlik$sync_task(cftask)
 ```
 
 ```{r}
@@ -96,55 +98,13 @@ mean(param$estimates(task)$IC)
 (param$estimates(task)$EIC)
 ```
 
-```{r}
-k = 1000
-tlik$factor_list$W$empirical_fit
-mc_data <- as.data.table(tlik$factor_list$W$sample(, k))
-set(mc_data, , setdiff(names(task$data), "W"), (0))
-mc_data$t <- 0 
-mc_data$id <- 1:nrow(mc_data)
-node = "L0a"
-var = "La"
-time = 0
-levels <- sort(unique(task$get_tmle_node(node)))
-levels
-expanded_data <- rbindlist(lapply(levels, function(level) {
-  mc_data <- copy(mc_data)
-  mc_data$level <- level
-  mc_data$trueid <- mc_data$id
-  set(mc_data, which(mc_data$t == time), var, level)
-  return(mc_data)
-}))
 
 
-```
 
 ```{r}
-table(task$data[t==1]$Y)
-mc_task1$data
-table(new_task$data[t==1]$Y)
-```
-
-```{r}
-
-new_task <- sample_from_node(mc_task1, tlik, "L0a", task)
-
-new_task <- sample_from_node(new_task, tlik, "L0b", task)
-
-
-new_task <- sample_from_node(new_task, tlik, "A0a", task)
-new_task <- sample_from_node(new_task, tlik, "L1a", task)
-new_task$data
-
-new_task <- sample_from_node(new_task, tlik, "L1b", task)
-new_task$data
-
-
-new_task <- sample_from_node(new_task, tlik, "A1a", task)
-new_task$data
-
-new_task <- sample_from_node(new_task, tlik, "Y", task)
-new_task$data
+t = proc.time()
+sample_all(task, likelihood, num_samples = 5000, baseline_var = "W", c("L0a", "L0b", "A0a", "L1a", "L1b", "A1a", "Y"))$data
+ proc.time()  - t
 ```
 
 ```{r}

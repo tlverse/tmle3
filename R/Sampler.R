@@ -6,7 +6,18 @@
 
 
 
-
+sample_all <- function(observed_task, tlik, num_samples = 5000, baseline_var = "W", time_ordering) {
+  mc_data <- as.data.table(tlik$factor_list[[baseline_var]]$sample(, num_samples))
+  set(mc_data, , setdiff(names(observed_task$data), "W"), (0))
+  mc_data$t <- 0
+  mc_data$id <- 1:nrow(mc_data)
+  mc_task <- tmle3_Task$new(mc_data, observed_task$npsem, id = "id", t = "t", long_format  = observed_task$long_format)
+  time_ordering <- setdiff(time_ordering, baseline_var)
+  for(node in time_ordering) {
+    mc_task <- sample_from_node(mc_task, tlik, node, observed_task)
+  }
+  return(mc_task)
+}
 
 
 # Function that samples from a single node of a targeted likelihood
@@ -43,15 +54,22 @@ sample_from_node <- function(mc_task, tlik, node, observed_task) {
   expanded_task <- tmle3_Task$new(expanded_data, observed_task$npsem, id = "id", t = "t", long_format  = observed_task$long_format, summary_measure_columns = c("trueid", observed_task$summary_measure_columns))
 
   setattr(expanded_task, "target_nodes", c(node))
-  print(expanded_task$data)
-  tlik$sync_task(expanded_task, check = F)
+  if(inherits(tlik, "Targeted_Likelihood")) {
+    tlik$sync_task(expanded_task, check = F)
+  }
+
 
   node_liks <- data.table(trueid = expanded_task$data$trueid, expanded_task$get_tmle_node(node, include_id = T)
                           , lik  = as.vector(tlik$get_likelihood(expanded_task, node) ))
 
-  if(node ==  "Y") {
-    print(node_liks)
-  }
+  #wide_liks <- (dcast(node_liks, as.formula(paste0("trueid ~ ", var)), , value.var = "lik"))
+
+
+  #sampled <- (as.data.table(t(apply(wide_liks, 1, function(v, levels){
+   # c(v[1], sample(levels, 1, prob = v[-1]))
+  #}, levels = levels))))
+  #setnames(sampled, c("id", node))
+
   sampled <- node_liks[, sample(.SD[[1]], 1, prob = lik) , by = "trueid", .SDcols = var]
   setnames(sampled, c("id", node))
   setkey(sampled, id)

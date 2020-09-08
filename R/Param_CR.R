@@ -10,29 +10,6 @@
 #' @return \code{Param_base} object
 #'
 #' @format \code{\link{R6Class}} object.
-#'
-#' @section Constructor:
-#'   \code{define_param(Param_CR, observed_likelihood, intervention_list, marginalized = F, censoring_node = "processA", competing_risk_nodes, target_risk_node, target_times = NULL, node_time_ordering = NULL)}
-#'
-#'   \describe{
-#'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
-#'     }
-#'     \item{\code{intervention_list}}{A list of objects inheriting from \code{\link{LF_base}}, representing the intervention.
-#'     }
-#'     \item{\code{marginalized}}{ Whether the initial estimation was and thus the targeting should be through the marginalized cause specific hazards
-#'     or the conditional (time-ordered) cause specific hazards.
-#'     }
-#'     \item{\code{censoring_node}} {The name of the censoring node
-#'     }
-#'     \item{\code{competing_risk_nodes}} {The name of the competing risk nodes (excluding the count process node of interest)}
-#'     \item{\code{target_risk_node}} {The counting process node of interest.}
-#'     \item{\code{target_times}} {The times to target}
-#'     \item{\code{node_time_ordering}} {The time ordering of the competing risk nodes. Only applicable if marginalized == F.}
-#'     \item{\code{...}}{Not currently used.}
-#'
-#'
-
-#'
 #' @export
 Param_CR <- R6Class(
   classname = "Param_CR",

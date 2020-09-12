@@ -47,6 +47,7 @@ Param_CR <- R6Class(
       # collapse across multiple intervention nodes
       if (!is.null(ncol(g)) && ncol(g) > 1) {
         g <- apply(g,1, prod)
+        g <- bound(g, c(0.005,1))
       }
       # collapse across multiple intervention nodes
       if (!is.null(ncol(g_cf)) && ncol(g_cf) > 1) {
@@ -71,13 +72,16 @@ Param_CR <- R6Class(
       #Ensures we get actual survival/hazard probabilities for each time (conditional that they are at risk) and not the degenerate values
       cf_task$force_at_risk <- T
       G <- self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$censoring_node, fold_number = fold_number)
+      G <- bound(G, c(0.005,1))
       Gmat <- self$long_to_wide(G, num_times)
       Gmat <- self$hazard_to_survival(Gmat)
       Gmat <- cbind(rep(1, nrow(Gmat)), Gmat[,-ncol(Gmat)])
       # Get competing risk hazards
       Qcompeting <- as.matrix(self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$competing_risk_nodes, fold_number = fold_number))
+      Qcompeting <- bound(Qcompeting, c(0.005,1))
       colnames(Qcompeting) <- competing_risk_nodes
       Qtarget <- unlist(self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$target_risk_node, fold_number = fold_number))
+      Qtarget <- bound(Qtarget, c(0.005,1))
       Qtarget_mat <- self$long_to_wide((Qtarget), num_times)
 
       #get cumulative hazard
@@ -88,11 +92,14 @@ Param_CR <- R6Class(
         #If targetting is not through marginalized hazards then compute marginalized hazard
         ordering <- unlist(self$competing_nodes$node_time_ordering)
         hazard_dt <- hazard_dt[, ordering]
-        expand_dt <- t(apply(1 - hazard_dt, 1 , prod))
+        expand_dt <- t(apply(1 - hazard_dt, 1 , cumprod))
+
         expand_dt <- cbind(rep(1, nrow(expand_dt)), expand_dt[, -ncol(expand_dt)])
+
         hazard_dt <- expand_dt * hazard_dt
-        marginal_Qtgt_mat <- self$long_to_wide(hazard_dt[, target_node], num_times)
         colnames(hazard_dt) <- ordering
+        marginal_Qtgt_mat <- self$long_to_wide(hazard_dt[, target_node], num_times)
+
       } else {
         marginal_Qtgt_mat <- Qtarget_mat
       }
@@ -115,12 +122,12 @@ Param_CR <- R6Class(
       H_target <- do.call(cbind, lapply(target_times, function(t_tgt) {
         res <- Hg*(1-(cum_inc_mat[,t_tgt] - cum_inc_mat))/cum_survival
         res[, seq_len(ncol(res)) > t_tgt] <- 0
-        return(as.vector(t(res)))
+        return(bound(as.vector(t(res)), c(-40,40)))
       }))
       H_competitors <- do.call(cbind, lapply(target_times, function(t_tgt) {
         res <- -1 * Hg*(cum_inc_mat[,t_tgt] - cum_inc_mat)/cum_survival
         res[, seq_len(ncol(res)) >= t_tgt] <- 0
-        return(as.vector(t(res)))
+        return(bound(as.vector(t(res)), c(-40,40)))
       }))
       H_list <- list()
       H_list[[target_node]] <- H_target *as.vector(at_risk_indicator)
@@ -193,8 +200,6 @@ Param_CR <- R6Class(
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       # Get observed g likelihoods
-      g <- self$observed_likelihood$get_likelihoods(tmle_task, names(self$intervention_list), fold_number = fold_number)
-      g_cf <- self$cf_likelihood$get_likelihoods(tmle_task, names(self$intervention_list), fold_number = fold_number)
       target_node <- self$competing_nodes$target_risk_node
       competing_risk_nodes <- self$competing_nodes$competing_risk_nodes
       censoring_node <-  self$competing_nodes$censoring_node
@@ -213,22 +218,44 @@ Param_CR <- R6Class(
       #Ensures we get actual survival/hazard probabilities for each time (conditional that they are at risk) and not the degenerate values
       cf_task$force_at_risk <- T
       G <- self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$censoring_node, fold_number = fold_number)
+      G <- bound(G, c(0.005,1))
       Gmat <- self$long_to_wide(G, num_times)
       Gmat <- self$hazard_to_survival(Gmat)
       Gmat <- cbind(rep(1, nrow(Gmat)), Gmat[,-ncol(Gmat)])
       # Get competing risk hazards
       Qcompeting <- self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$competing_risk_nodes, fold_number = fold_number)
+      Qcompeting <- bound(Qcompeting, c(0.005,1))
       Qtarget <- self$observed_likelihood$get_likelihoods(cf_task, self$competing_nodes$target_risk_node, fold_number = fold_number)
+      Qtarget <- bound(Qtarget, c(0.005,1))
+
       Qtarget_mat <- self$long_to_wide(Qtarget, num_times)
 
       #get cumulative hazard
-      hazard_dt <- as.data.table(cbind(Qcompeting, Qtarget))
-      setnames(hazard_dt, c(self$competing_nodes$competing_risk_node,  self$competing_nodes$target_risk_node))
-      cum_hazard <- self$cumulative_hazard(hazard_dt)
-      cum_hazard_mat <- self$long_to_wide(cum_hazard, num_times)
-      cum_survival <- self$hazard_to_survival(cum_hazard_mat)
+      hazard_dt <- as.matrix(cbind(Qcompeting, Qtarget))
+      colnames(hazard_dt) <-  c(self$competing_nodes$competing_risk_node,  self$competing_nodes$target_risk_node)
 
-      cum_inc_mat <- self$conditional_cumulative_indicence_mat(cum_survival, Qtarget_mat)
+      if(!self$marginalized) {
+        #If targetting is not through marginalized hazards then compute marginalized hazard
+        ordering <- unlist(self$competing_nodes$node_time_ordering)
+        hazard_dt <- hazard_dt[, ordering]
+        expand_dt <- t(apply(1 - hazard_dt, 1 , cumprod))
+
+        expand_dt <- cbind(rep(1, nrow(expand_dt)), expand_dt[, -ncol(expand_dt)])
+
+        hazard_dt <- expand_dt * hazard_dt
+        colnames(hazard_dt) <- ordering
+        marginal_Qtgt_mat <- self$long_to_wide(hazard_dt[, target_node], num_times)
+
+      } else {
+        marginal_Qtgt_mat <- Qtarget_mat
+      }
+
+      cum_hazard <- self$cumulative_hazard(hazard_dt)
+
+      cum_hazard_mat <- self$long_to_wide(cum_hazard, num_times)
+
+      cum_survival <- self$hazard_to_survival(cum_hazard_mat)
+      cum_inc_mat <- self$conditional_cumulative_indicence_mat(cum_survival, marginal_Qtgt_mat)
 
       clevs <- self$clever_covariates(tmle_task, fold_number, for_estimates = T)
       target_times <- self$target_times

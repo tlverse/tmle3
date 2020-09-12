@@ -479,11 +479,13 @@ tmle3_Task <- R6Class(
 
         # If node is pooled across time then get pooled regression task
 
-        all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = T, expand = expand, include_bins = include_bins, bin_num = bin_num ))
+        all_tasks <- lapply(time, function(t) self$get_regression_task(force_time_value = t, target_node = target_node, scale = scale, drop_censored = drop_censored, is_time_variant = is_time_variant, expand = expand, include_bins = include_bins, bin_num = bin_num ))
         all_nodes <- lapply(all_tasks, function(task) task$nodes)
         regression_data <- rbindlist(lapply(all_tasks, function(task) task$get_data()), use.names = T)
         nodes <- all_nodes[[1]]
-        nodes$covariates <- union("t", nodes$covariates)
+        if(is_time_variant) {
+          nodes$covariates <- union("t", nodes$covariates)
+        }
         if(long_format){
           setcolorder(regression_data, order(colnames(regression_data)))
           nodes$covariates <- sort(nodes$covariates)
@@ -531,14 +533,14 @@ tmle3_Task <- R6Class(
           })
           return(regression_task)
         }
-        if(length(parent_names) >0){
+        if(length(parent_names) > 0){
           parent_times <- lapply(parent_nodes, `[[`, "time")
           parent_data <-   lapply(parent_names, self$get_tmle_node, include_id = F, include_time = F, format = T, expand = T, compute_risk_set = F) #%>% purrr::reduce(merge, "id")
           parent_data <- setDT(unlist(parent_data, recursive = F))
 
 
           # This should ensure column names are unique
-          if(long_format){
+          if(include_bins){
             safe_names <- paste0(colnames(parent_data), "%", seq_along(colnames(parent_data)))
             setnames(parent_data, safe_names)#paste0(colnames(parent_data), "%", seq_along(colnames(parent_data))))
             # TODO this should no longer be needed

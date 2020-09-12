@@ -92,7 +92,8 @@ tmle3_Update <- R6Class(
         submodel_data <- self$generate_submodel_data(
           likelihood, tmle_task,
           fold_number, update_node,
-          drop_censored = TRUE
+          drop_censored = TRUE,
+          for_fitting = T
         )
 
         new_epsilon <- self$fit_submodel(submodel_data)
@@ -114,7 +115,7 @@ tmle3_Update <- R6Class(
     generate_submodel_data = function(likelihood, tmle_task,
                                       fold_number = "full",
                                       update_node = "Y",
-                                      drop_censored = FALSE) {
+                                      drop_censored = FALSE, for_fitting = F) {
 
 
       if(!(inherits(likelihood, "Targeted_Likelihood"))) {
@@ -132,7 +133,10 @@ tmle3_Update <- R6Class(
 
         # For backwards compatibility:
         # In future, clever covariate functions should accept a "node" and "submodel_type" argument.
-        if(all(c("submodel_type", "node") %in% formal_args)){
+        if("for_fitting" %in% formal_args) {
+          return(tmle_param$clever_covariates(tmle_task, fold_number, for_fitting = for_fitting))
+        }
+        else if(all(c("submodel_type", "node") %in% formal_args)){
           return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type, node = update_node))
         }
         else if("submodel_type" %in% formal_args){
@@ -221,8 +225,8 @@ tmle3_Update <- R6Class(
           initial_variances <- private$.initial_variances
 
           vars <- unlist(lapply(initial_variances, `[[`, update_node))
-          if(!is.null(vars)){
-
+          if(self$convergence_type == "scaled_var" & !is.null(vars)){
+            print("k")
             zero <- vars < 1e-4
             vars[zero] <- 1e-4
 

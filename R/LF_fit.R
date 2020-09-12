@@ -119,8 +119,8 @@ LF_fit <- R6Class(
 
       }
 
-      preds$id <- learner_task$data$id
-      preds$t <- learner_task$data$t
+      preds$id <- rep(learner_task$id, nrow(preds)/length(learner_task$id))
+      preds$t <- rep(learner_task$time, nrow(preds)/length(learner_task$time))
       setnames(preds, c(node, "id", "t"))
       if(to_wide){
         preds <- reshape(preds, idvar = "id", timevar = "t", direction = "wide")
@@ -181,7 +181,9 @@ LF_fit <- R6Class(
 
       }
       likelihood <- data.table(likelihood)
-      likelihood$id <- learner_task$data$id
+      likelihood$id <- rep(learner_task$data$id, length(preds)/length(learner_task$data$id))
+
+
       likelihood$t <- learner_task$data$t
 
       setnames(likelihood, c(paste0(node, collapse = "%"), "id", "t"))

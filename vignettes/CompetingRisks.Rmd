@@ -8,36 +8,46 @@ knitr::opts_chunk$set(echo = TRUE)
 devtools::document()
 ```
 
+```{r}
+whichK(c(1,1,2))
+```
 
 
 ```{r}
 
 whichK <- function(...){
   mat <- setDT(list(...))
-  as.vector(apply(mat, 1, which.min)) - 1
+
+  best <- as.vector(apply(mat, 1, which.min)) 
+  as.numeric(best) - 1
 }
 
 
 library(simcausal)
 D <- DAG.empty()
 D <- D +
-  node("W", distr = "runif", min = 0, max = 1.5) +
-  node("A", distr = "rbinom", size = 1, prob = .15 + .5 * as.numeric(W > .75)) +
-  node("Trexp1", distr = "rweibull", shape = 1 + .5 * W, scale = 6) +
-  node("Trexp2", distr = "rweibull", shape = 1 + .5 * W, scale = 6) +
-  node("Cweib", distr = "rweibull", shape = 1 + .5 * W, scale = 15) +
-  node("T1", distr = "rconst", const = min(ceiling(Trexp1 ), 12)) +
-    node("T2", distr = "rconst", const = min(ceiling(Trexp2 ), 12)) +
-  node("C", distr = "rconst", const = ceiling(Cweib )) +
+  node("W1", distr = "rbinom", size = 15, prob = rep(1/15,15)) +
+  node("W", distr = "rconst", const = W1 + 1) +
+  node("A", distr = "rbinom", size = 1, prob = .15 + .5 * as.numeric(W >7)) +
+  node("Trexp1", distr = "rexp", rate =   min(abs(1 + 0.5*W*A + W - A), 8)) +
+  node("Trexp2", distr = "rexp", rate = min(abs(1 + 0.5*W*A + W - A), 8)) +
+  node("Cweib", distr = "rexp",  rate =   min(abs(1 + 0.5*W*A + W - A), 8)) +
+  node("noise1", distr = "runif", min = 0, max = 3) +
+   node("noise2", distr = "runif", min = 0, max = 3) +
+   node("noise3", distr = "runif", min = 0, max = 3) +
+
+  node("T1", distr = "rconst", const = min(ceiling(Trexp1 * 5 + noise1 ),8)) +
+    node("T2", distr = "rconst", const = min(ceiling(Trexp1 * 5 + noise2 ),8)) +
+  node("C", distr = "rconst", const = ceiling(Cweib * 15 + noise3)) +
   # Observed random variable (follow-up time):
-  node("T.tilde", distr = "rconst", const = pmin(C,T1,T2)) +
-  # Observed random variable (censoring indicator, 1 - failure event, 0 - censored):
-  node("Delta", distr = "rconst", const = whichK(C,T1,T2))
+  node("T.tilde", distr = "rconst", const = pmin(C,T1,T2)) + 
+   node("Delta", distr = "rconst", const = whichK(C,T1,T2))
 setD <- set.DAG(D, vecfun = c("pmin", "whichK"))
 dat <- sim(setD, n = 2000)
 dat
 # only grab ID, W's, A, T.tilde, Delta
 Wname <- grep("W", colnames(dat), value = TRUE)
+dat
 dat <- dat[, c("ID", Wname, "A", "T.tilde", "Delta")]
 dat
 dat$id <- dat$ID
@@ -62,7 +72,10 @@ long_data
 ```
 
 
-
+```{r}
+table(long_data$Delta)
+table(long_data$t[long_data$Delta==1])
+```
 
 
 ```{r}
@@ -177,35 +190,60 @@ likelihood$add_factors(added_factors)
 ```
 
 ```{r}
-tlikelihood <- Targeted_Likelihood$new(likelihood, updater = list(one_dimensional = T, constrain_step = T, delta_epsilon = 0.0005, optim_delta_epsilon = T, convergence_type = "sample_size"))
-param = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T, target_times = 1:6)
-param$name
-est = param$estimates(task)
-est$var_comps
-tlikelihood$updater$set_estimates(task, "full")
-tlikelihood$updater$initial_variances
+apply(est$EIC, 2, quantile)
+
+
+```
+```{r}
+task$force_at_risk <- T
+
+tlikelihood <- Targeted_Likelihood$new(likelihood, updater = list(one_dimensional = T, constrain_step = T, delta_epsilon = 0.0005, optim_delta_epsilon = T, convergence_type = "scaled_var"))
+param = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2"), target_risk_node = "processN1", marginalized = T, target_times = 1:5)
+
+param2 = Param_CR$new(tlikelihood, list("A" = LF_static$new("A", value = 1)), competing_risk_nodes = c("processN2_quasi"), target_risk_node = "processN1", marginalized = F, target_times = 1:5, node_time_ordering = c("processN1", "processN2_quasi"))
+
+param$estimates(task)$psi
+param2$estimates(task)$psi
 ```
 
 
 
 
 ```{r}
-tlikelihood$updater$delta_epsilon
-table(long_data$t)
-v= colMeans(param$estimates(task)$EIC)
-v
-norm(v, "2")/length(v)
+clev = param$clever_covariates(task)
+a=clev$ED$processN1/sqrt(est$var_comps$processN1)
+b=clev$ED$processN2/max(sqrt(est$var_comps$processN1),1e-4)
+a
+b
+norm(a, type = "2")
+norm(b, type = "2")
+a=clev$ED$processN1
+b=clev$ED$processN2
+a
+b
+norm(a, type = "2")
+norm(b, type = "2")
 tlikelihood$updater$update_step(tlikelihood, task)
-v= colMeans(param$estimates(task)$EIC)
-v
-norm(v, "2")/length(v)
-tlikelihood$updater$delta_epsilon
+clev = param$clever_covariates(task)
+a=clev$ED$processN1/sqrt(est$var_comps$processN1)
+b=clev$ED$processN2/max(sqrt(est$var_comps$processN1),1e-4)
+a
+b
+norm(a, type = "2")
+norm(b, type = "2")
+a=clev$ED$processN1
+b=clev$ED$processN2
+a
+b
+norm(a, type = "2")
+norm(b, type = "2")
+
 ```
 
 ```{r}
 est <- param$estimates(task)
 library(ggplot2)
-ggplot(data.frame(psi = est$psi, t = seq_along(est$psi)), aes(x = t, y = psi))  + geom_smooth(se = F)
+ggplot(data.frame(psi = est$psi, t = seq_along(est$psi)), aes(x = t, y = psi))  + geom_point() + geom_smooth(se = F)
 ```
 
 

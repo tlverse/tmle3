@@ -1,0 +1,132 @@
+---
+title: "thresholdTMLE"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::document()
+```
+
+
+```{r}
+
+#rmultinom(n = 2, c(1,2,3,4,5), rep(1/5,5))
+rmults <- function(n, size, prob) {
+  size = size[1]
+  prob = prob[1]
+  apply(rmultinom(n = n, 1:size, rep(prob, size))==1, 2, which)
+
+}
+rmults(2, c(5,5), c(1/5,1/5))
+```
+
+```{r}
+
+
+library(simcausal)
+D <- DAG.empty()
+D <- D +
+  node("W1", distr = "rmults", size = 15 , prob = 1/15) +
+  node("W", distr = "rconst", const = W1 + 1) +
+  node("S", distr = "rnorm",  mean =   sqrt(8), sd = 1) +
+  node("Y", distr = "rbinom", size =1 , prob = plogis((S^2 + W) /30))
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 2000)
+dat
+
+```
+
+```{r}
+findInterval(1.6,c(1,2,3))
+
+```
+
+
+
+```{r}
+dat <- as.data.table(dat)
+cutoffs <- quantile(dat$S, seq(0.02, .98, .05))
+listofdata <- list()
+cutoffs
+t = 0
+for (cutoff in cutoffs){
+  dat1 <- copy(dat)
+  dat1$v <- cutoff
+  dat1$A <- as.numeric(dat1$S >= cutoff)
+  dat1$t <- 0
+  listofdata[[as.character(cutoff)]] <- dat1
+   dat1$t <- 0
+}
+
+data <- rbindlist(listofdata)
+data$id <- data$ID
+data$ID <- NULL
+```
+
+```{r}
+
+data
+```
+
+```{r}
+
+npsem <- list(define_node("W", "W", c()),
+              define_node("A", "A", c("W")),
+               define_node("v", "v", c(), time = unique(data$t)),
+              define_node("Y", "Y", c("A", "W", "v"), time = unique(data$t))
+              )
+task <- tmle3_Task$new(data, npsem, id = "id", time = "t" )
+```
+
+
+```{r}
+task$get_regression_task("Y")$data
+```
+
+
+```{r}
+cutoffs <- quantile(dat$S, seq(0.05,1,length.out=15))
+dat
+tsk <- sl3_Task$new(dat, covariates = "W", outcome = "S")
+lrnr <- Lrnr_CDF$new(make_learner(Lrnr_glm, family = binomial()), 10, cutoffs)
+
+
+lrnr <- lrnr$train(tsk)
+length(lrnr$predict(tsk))
+```
+
+
+```{r}
+dat
+tsk <- sl3_Task$new(dat, covariates = c("W", "S"), outcome = "Y")
+
+lrnr <- Lrnr_thresh$new(make_learner(Lrnr_glm, family = binomial()), "S", cutoffs =cutoffs )
+
+lrnr <- lrnr$train(tsk)
+as.data.table(matrix(lrnr$predict(tsk), nrow = 2000))
+```
+
+```{r}
+dat
+cutoffs <- quantile(dat$S, seq(0.3,.4,length.out=4))
+npsem <- list(define_node("W", "W", c()),
+              define_node("S", "S", c("W")),
+              define_node("Y", "Y", c("S", "W"))
+              )
+task <- tmle3_Task$new(dat, npsem)
+task$data
+factor_list <- list(LF_emp$new("W"), LF_fit$new("S", Lrnr_CDF$new(make_learner(Lrnr_glm, family = binomial()), 10, cutoffs), type = "mean"), LF_fit$new("Y", Lrnr_thresh$new(make_learner(Lrnr_glm, family = binomial()), "S", cutoffs =cutoffs ), type = "mean"))
+likelihood <- Likelihood$new(factor_list)
+likelihood <- likelihood$train(task)
+```
+
+```{r}
+param <- Param_thresh$new(likelihood, cutoffs)
+as.data.table(param$clever_covariates(task)$Y)
+```
+
+
+
+

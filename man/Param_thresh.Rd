@@ -2,7 +2,7 @@
 % Please edit documentation in R/Param_thresh.R
 \name{Param_thresh}
 \alias{Param_thresh}
-\title{Estimates the threshold function E_W E\link{Y | S >=c, W} for a range of given values threshold values c}
+\title{Estimates the threshold function E_W E\link{Y | A >=c, W} for a range of given values threshold values c}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +10,7 @@
 \code{Param_base} object
 }
 \description{
-Estimates the threshold function E_W E\link{Y | S >=c, W} for a range of given values threshold values c
+Estimates the threshold function E_W E\link{Y | A >=c, W} for a range of given values threshold values c
 }
 \section{Constructor}{
 

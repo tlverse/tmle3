@@ -3,6 +3,7 @@
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
+#' @importFrom dplyr near
 #' @family Parameters
 #' @keywords data
 #'
@@ -107,7 +108,7 @@ Param_thresh <- R6Class(
         H[first:last,i] <- HA[first:last]
       }
 
-      if(any(!near(rowSums(H),HA))){
+      if(any(!dplyr::near(rowSums(H),HA))){
         stop("oops")
       }
       if(length(indS)!= length(cdfS)) {

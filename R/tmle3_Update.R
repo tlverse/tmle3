@@ -176,6 +176,14 @@ tmle3_Update <- R6Class(
       # protect against qlogis(1)=Inf
       initial <- bound(initial, 0.005)
 
+      if(length(observed) != length(initial)) {
+        ratio <- length(initial) / length(observed)
+        if(ratio%%1 == 0){
+          warning("Observed and initial length do not match but are multiples of each other. Recycling values...")
+          observed <- rep(observed, ratio)
+        }
+      }
+
       submodel_data <- list(
         observed = observed,
         H = covariates_dt,
@@ -226,7 +234,7 @@ tmle3_Update <- R6Class(
 
           vars <- unlist(lapply(initial_variances, `[[`, update_node))
           if(self$convergence_type == "scaled_var" & !is.null(vars)){
-            print("k")
+
             zero <- vars < 1e-4
             vars[zero] <- 1e-4
 

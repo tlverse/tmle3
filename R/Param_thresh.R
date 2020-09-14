@@ -1,4 +1,4 @@
-#' Estimates the threshold function E_W E[Y | S >=c, W] for a range of given values threshold values c
+#' Estimates the threshold function E_W E[Y | A >=c, W] for a range of given values threshold values c
 #'
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
@@ -45,18 +45,19 @@ Param_thresh <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, cutoffs, thresh_node = "S", outcome_node = "Y", strict_threshold = F) {
-      super$initialize(observed_likelihood, list(), outcome_node)
+    initialize = function(observed_likelihood, cutoffs, thresh_node = "A", outcome_node = "Y") {
+      super$initialize(observed_likelihood, list(), outcome_node = outcome_node)
       cf_task <- observed_likelihood$training_task
       # cf_data where everyone is the maximum level of of the node so that they are above threshhold in every group
       cf_task$data
       cf_data <- data.table(rep(2*max(cutoffs), cf_task$nrow))
 
       setnames(cf_data, thresh_node)
+      print(cf_data)
       cf_data$id <- cf_task$id
       cf_data$t <- cf_task$time
 
-      cf_task <- cf_task$generate_counterfactual_task(UUIDgenerate(), cf_data, through_data = F)
+      cf_task <- cf_task$generate_counterfactual_task(UUIDgenerate(), cf_data)
       #cache task
 
 
@@ -65,7 +66,7 @@ Param_thresh <- R6Class(
       private$.censoring_node <- (observed_likelihood$censoring_nodes[[outcome_node]])
       private$.thresh_node <- thresh_node
       private$.cutoffs <- cutoffs
-      private$.strict_threshold <- strict_threshold
+      private$.strict_threshold <- F
       private$.cf_task <- cf_task
 
     },
@@ -78,8 +79,8 @@ Param_thresh <- R6Class(
       cutoffs <- private$.cutoffs
 
       cdfS <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, thresh_node, fold_number))
-      print(quantile(cdfS))
-      cdfS <- bound(cdfS, c(0.005, .995))
+
+      cdfS <- bound(cdfS, c(0.0005, .9995))
       S <- tmle_task$get_tmle_node(thresh_node)
 
       if(!is.null(censoring_node)) {
@@ -95,6 +96,7 @@ Param_thresh <- R6Class(
         indS <- as.vector(unlist(lapply(cutoffs, function(cutoff) {as.numeric(S >= cutoff)})))
       }
       #Uses
+
       HA <- indS * uncensored / (pCensoring * (1-cdfS))
       n = tmle_task$nrow
       k = length(cutoffs)
@@ -135,8 +137,11 @@ Param_thresh <- R6Class(
       EY1 <- matrix(self$observed_likelihood$get_likelihood(cf_task, self$outcome_node, fold_number), nrow = tmle_task$nrow)
 
       psi <- colMeans(EY1)
+      print(as.data.table((as.vector(Y) - EY) ))
+      print(as.data.table(psi))
+      print(as.data.table(EY1))
 
-      IC <- HA * (as.vector(Y) - EY)  + (EY1  - psi)
+      IC <- HA * (as.vector(Y) - EY)  + t((t(EY1)  - psi))
 
       result <- list(psi = psi, IC = IC)
       return(result)
@@ -147,24 +152,16 @@ Param_thresh <- R6Class(
       param_form <- sprintf("ATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
       return(param_form)
     },
-    cf_likelihood_treatment = function() {
-      return(private$.cf_likelihood_treatment)
+    cf_task = function() {
+      return(private$.cf_task)
     },
-    cf_likelihood_control = function() {
-      return(private$.cf_likelihood_control)
-    },
-    intervention_list_treatment = function() {
-      return(self$cf_likelihood_treatment$intervention_list)
-    },
-    intervention_list_control = function() {
-      return(self$cf_likelihood_control$intervention_list)
-    },
+
     update_nodes = function() {
       return(c(self$outcome_node))
     }
   ),
   private = list(
-    .type = "ATE",
+    .type = "Threshold",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,

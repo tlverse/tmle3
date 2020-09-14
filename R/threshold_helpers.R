@@ -1,4 +1,54 @@
 
+
+threshold_likelihood <- function(tmle_task, learner_list, cutoffs, bins = 10) {
+  # covariates
+  W_factor <- define_lf(LF_emp, "W")
+
+  # treatment (bound likelihood away from 0 (and 1 if binary))
+  A_type <- tmle_task$npsem[["A"]]$variable_type
+  if (A_type$type == "continous") {
+    A_bound <- c(1 / tmle_task$nrow, Inf)
+  } else if (A_type$type %in% c("binomial", "categorical")) {
+    A_bound <- 0.025
+  } else {
+    A_bound <- NULL
+  }
+
+
+  A_factor <- define_lf(LF_fit, "A", learner = Lrnr_CDF$new(learner_list[["A"]], bins, cutoffs), type = "mean", bound = A_bound)
+
+  # outcome
+  Y_factor <- LF_fit$new("Y", Lrnr_thresh$new(learner_list[["Y"]], tmle_task$npsem[["A"]]$variables, cutoffs =cutoffs ), type = "mean")
+
+
+  # construct and train likelihood
+  factor_list <- list(W_factor, A_factor, Y_factor)
+
+  # add outcome censoring factor if necessary
+  if (!is.null(tmle_task$npsem[["Y"]]$censoring_node)) {
+    if (is.null(learner_list[["delta_Y"]])) {
+      stop("Y is subject to censoring, but no learner was specified for censoring mechanism delta_Y")
+    }
+
+    delta_Y_factor <- define_lf(LF_fit, "delta_Y", learner = learner_list[["delta_Y"]], type = "mean", bound = c(0.025, 1))
+    factor_list <- c(factor_list, delta_Y_factor)
+  }
+
+  if (!is.null(tmle_task$npsem[["A"]]$censoring_node)) {
+    stop("A is subject to censoring, this isn't supported yet")
+  }
+
+  if (!is.null(tmle_task$npsem[["W"]]$censoring_node)) {
+    stop("W is subject to censoring, this isn't supported yet")
+  }
+
+  likelihood_def <- Likelihood$new(factor_list)
+  likelihood <- likelihood_def$train(tmle_task)
+  return(likelihood)
+}
+
+
+
 Lrnr_thresh <- R6::R6Class(
   classname = "Lrnr_thresh", inherit = Lrnr_base,
   portable = TRUE, class = TRUE,
@@ -13,10 +63,11 @@ Lrnr_thresh <- R6::R6Class(
     .properties = c("continuous", "binomial"),
 
     .train = function(task) {
+      print("here")
       args <- self$params
       strata_variable <- args$strata_variable
       lrnr <- args$lrnr
-      outcome_type <- self$get_outcome_type(task)
+
       data <- task$data
       cutoffs <- args$cutoffs
       data_list <- list()
@@ -33,18 +84,18 @@ Lrnr_thresh <- R6::R6Class(
       nodes <- task$nodes
       nodes$covariates <- union(setdiff(task$nodes$covariates, strata_variable), c("Ind", "bin"))
       task <- sl3_Task$new(data, nodes = nodes)
+      print(task$data)
       lrnr <- lrnr$train(task)
-
+      print("ok")
       return(list(lrnr = lrnr, task = task))
     },
     .predict = function(task = NULL) {
-
       args <- self$params
       cutoffs <- args$cutoffs
 
       strata_variable <- args$strata_variable
 
-      outcome_type <- self$get_outcome_type(task)
+
       data <- task$data
 
       data_list <- list()
@@ -59,6 +110,7 @@ Lrnr_thresh <- R6::R6Class(
       data <- rbindlist(data_list)
       nodes <- task$nodes
       nodes$covariates <- union(setdiff(task$nodes$covariates, strata_variable), c("Ind", "bin"))
+
       task <- sl3_Task$new(data, nodes = nodes)
       predictions <- self$fit_object$lrnr$predict(task)
       return(as.vector(predictions))
@@ -86,14 +138,14 @@ Lrnr_CDF <- R6::R6Class(
       lrnr <- args$lrnr
       num_bins <- args$num_bins
 
-      outcome_type <- self$get_outcome_type(task)
+
       data <- task$data
       Y <- task$Y
       cutoffs <- as.vector(quantile(Y, seq(0, 1, length.out = num_bins)))
       print(length(cutoffs))
       Y <- as.factor(cutoffs[findInterval(Y, cutoffs, left.open = self$params$type != "left-continuous", all.inside
  = T)])
-      print(length(unique(Y)))
+
       column_names <- task$add_columns(data.table(Y = Y))
       task <- task$next_in_chain(outcome = "Y", column_names = column_names)
 
@@ -108,21 +160,36 @@ Lrnr_CDF <- R6::R6Class(
       #cutoffs <- c(-Inf,cutoffs)
       threshs <- args$threshs
       lrnr <- self$fit_object$lrnr
-      outcome_type <- self$get_outcome_type(task)
+
       data <- task$data
       Y <- task$Y
+
       Y <- as.factor(cutoffs[findInterval(Y, cutoffs,
                                           left.open = self$params$type != "left-continuous",
                                           all.inside = T)])
 
       column_names <- task$add_columns(data.table(Y = Y))
-      task <- task$next_in_chain(outcome = "Y", column_names = column_names)
+
+      task <- task$clone()
+      nodes <- task$nodes
+      nodes$outcome <- "Y"
+      task$initialize(
+        task$internal_data,
+        nodes = nodes,
+        folds = task$folds,
+        column_names = column_names,
+        row_index = task$row_index,
+        outcome_type = "categorical",
+        outcome_levels = as.factor(cutoffs[-1]))
+
+      #task <- task$next_in_chain(outcome = "Y", column_names = column_names, outcome_type = "categorical", outcome_levels = as.factor(cutoffs))
+
       pooled_task <- pooled_hazard_task(task, trim = F)
 
       predictions <- matrix(lrnr$predict(pooled_task), nrow = task$nrow)
+
       predictions <- cbind(rep(0, task$nrow), 1 - t(apply(1-predictions, 1, cumprod)))
-      print(dim(predictions))
-      print(length(cutoffs))
+
       #Interpolate to get values at desired cutoffs
       predictions <- rbindlist(lapply(1:nrow(predictions), function(i){
         approx(orig_cutoffs,predictions[i,], xout = threshs, rule = 2, yright = 1, yleft = 0 )

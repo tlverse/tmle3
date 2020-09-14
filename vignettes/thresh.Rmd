@@ -29,11 +29,13 @@ D <- DAG.empty()
 D <- D +
   node("W1", distr = "rmults", size = 15 , prob = 1/15) +
   node("W", distr = "rconst", const = W1 + 1) +
-  node("S", distr = "rnorm",  mean =   sqrt(8), sd = 1) +
-  node("Y", distr = "rbinom", size =1 , prob = plogis((S^2 + W) /30))
+  node("S", distr = "runif",  min = -5, max = 5) +
+  node("Y", distr = "rbinom", size =1 , prob = plogis((S ))) + 
+    node("pY", distr = "rconst",const = plogis((S )))
+
 
 setD <- set.DAG(D)
-dat <- sim(setD, n = 2000)
+dat <- sim(setD, n = 1500)
 dat
 
 ```
@@ -46,28 +48,9 @@ findInterval(1.6,c(1,2,3))
 
 
 ```{r}
-dat <- as.data.table(dat)
-cutoffs <- quantile(dat$S, seq(0.02, .98, .05))
-listofdata <- list()
-cutoffs
-t = 0
-for (cutoff in cutoffs){
-  dat1 <- copy(dat)
-  dat1$v <- cutoff
-  dat1$A <- as.numeric(dat1$S >= cutoff)
-  dat1$t <- 0
-  listofdata[[as.character(cutoff)]] <- dat1
-   dat1$t <- 0
-}
+data <- as.data.table(dat)
 
-data <- rbindlist(listofdata)
-data$id <- data$ID
-data$ID <- NULL
-```
 
-```{r}
-
-data
 ```
 
 ```{r}
@@ -94,7 +77,7 @@ lrnr <- Lrnr_CDF$new(make_learner(Lrnr_glm, family = binomial()), 10, cutoffs)
 
 
 lrnr <- lrnr$train(tsk)
-length(lrnr$predict(tsk))
+data.table(lrnr$predict(tsk))
 ```
 
 
@@ -110,21 +93,70 @@ as.data.table(matrix(lrnr$predict(tsk), nrow = 2000))
 
 ```{r}
 dat
-cutoffs <- quantile(dat$S, seq(0.3,.4,length.out=4))
+cutoffs <- quantile(dat$S, seq(0.1,.9,length.out=8))
 npsem <- list(define_node("W", "W", c()),
               define_node("S", "S", c("W")),
               define_node("Y", "Y", c("S", "W"))
               )
 task <- tmle3_Task$new(dat, npsem)
 task$data
-factor_list <- list(LF_emp$new("W"), LF_fit$new("S", Lrnr_CDF$new(make_learner(Lrnr_glm, family = binomial()), 10, cutoffs), type = "mean"), LF_fit$new("Y", Lrnr_thresh$new(make_learner(Lrnr_glm, family = binomial()), "S", cutoffs =cutoffs ), type = "mean"))
+factor_list <- list(LF_emp$new("W"), LF_fit$new("S", Lrnr_CDF$new(make_learner(Lrnr_hal9001, family = "binomial"), 10, cutoffs), type = "mean"), LF_fit$new("Y", Lrnr_thresh$new(make_learner(Lrnr_hal9001, family = "binomial"), "S", cutoffs =cutoffs ), type = "mean"))
 likelihood <- Likelihood$new(factor_list)
 likelihood <- likelihood$train(task)
 ```
 
 ```{r}
-param <- Param_thresh$new(likelihood, cutoffs)
+tlik <- Targeted_Likelihood$new(likelihood)
+param <- Param_thresh$new(tlik, cutoffs)
 as.data.table(param$clever_covariates(task)$Y)
+lapply(param$estimates(task), as.data.table)
+```
+
+```{r}
+mean(dat$Y[dat$S >= -3.96407782	])
+
+```
+```{r}
+out <- param$estimates(task)
+out$psi
+colMeans(out$IC)
+
+summary_from_estimates(task, list(out), simultaneous_ci = F , param_types = "threshold", param_names = as.vector(cutoffs))
+```
+
+```{r}
+
+tlik$updater$update_step(tlik, task)
+lapply(param$estimates(task), as.data.table)
+```
+
+
+```{r}
+spec <- tmle3_Spec_Threshold$new()
+dat
+```
+
+```{r}
+task <- spec$make_tmle_task(dat, list("W" = "W", "A" = "S", "Y" = "Y"))
+task$get_regression_task("A")$data
+task$get_regression_task("Y")$data
+lik <- spec$make_initial_likelihood(task, list("A" = make_learner(Lrnr_glm, family = binomial()), "Y" = make_learner(Lrnr_glm, family = binomial())))
+updater <- spec$make_updater()
+tlik <- spec$make_targeted_likelihood(lik, updater)
+spec$make_params(task, tlik)
+```
+
+```{r}
+
+tlik$updater$set_estimates(task)
+tlik$updater$update_step(tlik, task)
+```
+
+```{r}
+param <- tlik$updater$tmle_params[[1]]
+est <- (param$estimates(task))
+colMeans(est$IC)
+est$psi
 ```
 
 

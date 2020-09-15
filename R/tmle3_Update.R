@@ -419,7 +419,8 @@ tmle3_Update <- R6Class(
 
           return(var(v))
         })/n)
-        ED_threshold <- se_Dstar / min(log(n), 10)
+        # Handle case where variance is 0 for whatever reason
+        ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1e-7)
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n
       }

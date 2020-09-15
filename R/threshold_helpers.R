@@ -1,5 +1,5 @@
 
-
+#' @export
 threshold_likelihood <- function(tmle_task, learner_list, cutoffs, bins = 10) {
   # covariates
   W_factor <- define_lf(LF_emp, "W")
@@ -49,6 +49,8 @@ threshold_likelihood <- function(tmle_task, learner_list, cutoffs, bins = 10) {
 
 
 
+#Construct lrnr that chains the S column
+#' @export
 Lrnr_thresh <- R6::R6Class(
   classname = "Lrnr_thresh", inherit = Lrnr_base,
   portable = TRUE, class = TRUE,
@@ -117,7 +119,7 @@ Lrnr_thresh <- R6::R6Class(
     }
   )
 )
-
+#' @export
 Lrnr_CDF <- R6::R6Class(
   classname = "Lrnr_CDF", inherit = Lrnr_base,
   portable = TRUE, class = TRUE,

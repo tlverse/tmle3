@@ -63,7 +63,7 @@ Lrnr_thresh <- R6::R6Class(
     .properties = c("continuous", "binomial"),
 
     .train = function(task) {
-      print("here")
+
       args <- self$params
       strata_variable <- args$strata_variable
       lrnr <- args$lrnr
@@ -84,9 +84,9 @@ Lrnr_thresh <- R6::R6Class(
       nodes <- task$nodes
       nodes$covariates <- union(setdiff(task$nodes$covariates, strata_variable), c("Ind", "bin"))
       task <- sl3_Task$new(data, nodes = nodes)
-      print(task$data)
+
       lrnr <- lrnr$train(task)
-      print("ok")
+
       return(list(lrnr = lrnr, task = task))
     },
     .predict = function(task = NULL) {
@@ -142,7 +142,7 @@ Lrnr_CDF <- R6::R6Class(
       data <- task$data
       Y <- task$Y
       cutoffs <- as.vector(quantile(Y, seq(0, 1, length.out = num_bins)))
-      print(length(cutoffs))
+
       Y <- as.factor(cutoffs[findInterval(Y, cutoffs, left.open = self$params$type != "left-continuous", all.inside
  = T)])
 

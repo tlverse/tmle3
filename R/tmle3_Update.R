@@ -175,6 +175,7 @@ tmle3_Update <- R6Class(
 
       # protect against qlogis(1)=Inf
       initial <- bound(initial, 0.005)
+      weights <- tmle_task$get_regression_task(update_node)$weights
 
       if(length(observed) != length(initial)) {
         ratio <- length(initial) / length(observed)
@@ -184,13 +185,22 @@ tmle3_Update <- R6Class(
         }
       }
 
+      if(length(weights) != length(initial)) {
+        ratio <- length(initial) / length(weights)
+        if(ratio%%1 == 0){
+          warning("Weights and initial length do not match but are multiples of each other. Recycling values...")
+          weights <- rep(weights, ratio)
+        }
+      }
+
       submodel_data <- list(
         observed = observed,
         H = covariates_dt,
         initial = initial,
         submodel_info = submodel_info,
         ED = ED,
-        update_node = update_node
+        update_node = update_node,
+        weights = weights
       )
 
 
@@ -207,7 +217,8 @@ tmle3_Update <- R6Class(
             initial = submodel_data$initial[subset],
             submodel_info = submodel_info,
             ED = ED,
-            update_node = update_node
+            update_node = update_node,
+            weights = submodel_data$weights[subset]
           )
         }
       }
@@ -217,6 +228,7 @@ tmle3_Update <- R6Class(
     fit_submodel = function(submodel_data) {
       update_node <- submodel_data$update_node
       submodel_data["update_node"] <- NULL
+      weights <- submodel_data$weights
       if(self$one_dimensional){
         # Will break if not called by original training task
 
@@ -270,7 +282,7 @@ tmle3_Update <- R6Class(
 
           loss_function <- submodel_info$loss_function
 
-          loss <- loss_function(submodel_estimate, submodel_data$observed)
+          loss <- loss_function(submodel_estimate, submodel_data$observed) * weights
           mean(loss)
 
         }
@@ -306,6 +318,7 @@ tmle3_Update <- R6Class(
             submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
                                 offset = submodel_info$offset_tranform(submodel_data$initial),
                                 family = submodel_info$family,
+                                weights = weights,
                                 start = rep(0, ncol(submodel_data$H))
             )
           })
@@ -315,7 +328,7 @@ tmle3_Update <- R6Class(
               submodel_fit <- glm(observed ~ -1, submodel_data[-sub_index],
                                   offset =  submodel_info$offset_tranform(submodel_data$initial),
                                   family = submodel_info$family,
-                                  weights = as.numeric(H),
+                                  weights = as.numeric(H) * weights,
                                   start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -328,6 +341,7 @@ tmle3_Update <- R6Class(
               submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
                                   offset =  submodel_info$offset_tranform(submodel_data$initial),
                                   family = submodel_info$family,
+                                  weights = weights,
                                   start = rep(0, ncol(submodel_data$H))
               )
             })

@@ -147,7 +147,7 @@ Param_CR <- R6Class(
         Qvals <- Qtarget
         residuals <- as.vector(obs_vals - Qvals)
 
-        EIC_tgt <- H_list[[target_node]]*residuals
+        EIC_tgt <- H_list[[target_node]]*residuals*tmle_task$get_regression_task(target_node)$weights
 
         if(for_estimates) {
           EIC_list[[target_node]] <- EIC_tgt
@@ -159,7 +159,7 @@ Param_CR <- R6Class(
           obs_vals <- unlist(tmle_task$get_tmle_node(node, format = T, expand = T, compute_risk_set = F), use.names = F)
           Qvals <- Qcompeting[,node]
           residuals <- as.vector(obs_vals - Qvals)
-          EIC_comp <- H_list[[node]]*residuals
+          EIC_comp <- H_list[[node]]*residuals*tmle_task$get_regression_task(node)$weights
           if(for_estimates) {
             EIC_list[[node]] <- EIC_comp
           }

@@ -152,6 +152,13 @@ tlik$updater$set_estimates(task)
 tlik$updater$update_step(tlik, task)
 ```
 
+
+```{r}
+
+task$get_regression_task("Y")
+```
+
+
 ```{r}
 param <- tlik$updater$tmle_params[[1]]
 est <- (param$estimates(task))

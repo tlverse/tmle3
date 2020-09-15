@@ -54,7 +54,7 @@ Param_thresh <- R6Class(
       cf_data <- data.table(rep(2*max(cutoffs), cf_task$nrow))
 
       setnames(cf_data, thresh_node)
-      print(cf_data)
+
       cf_data$id <- cf_task$id
       cf_data$t <- cf_task$time
 
@@ -138,13 +138,11 @@ Param_thresh <- R6Class(
       EY1 <- matrix(self$observed_likelihood$get_likelihood(cf_task, self$outcome_node, fold_number), nrow = tmle_task$nrow)
 
       psi <- colMeans(EY1)
-      print(as.data.table((as.vector(Y) - EY) ))
-      print(as.data.table(psi))
-      print(as.data.table(EY1))
+
 
       IC <- HA * (as.vector(Y) - EY)  + t((t(EY1)  - psi))
-
-      result <- list(psi = psi, IC = IC)
+      weights <- tmle_task$get_regression_task(self$outcome_node)$weights
+      result <- list(psi = psi, IC = IC * weights)
       return(result)
     }
   ),
@@ -167,7 +165,7 @@ Param_thresh <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .submodel_type_supported = c("logistic"),
-
+    .supports_weights = T,
     .censoring_node = NULL,
     .thresh_node = NULL,
     .cutoffs = NULL,

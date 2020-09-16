@@ -55,7 +55,7 @@ Lrnr_thresh <- R6::R6Class(
   classname = "Lrnr_thresh", inherit = Lrnr_base,
   portable = TRUE, class = TRUE,
   public = list(
-    initialize = function(lrnr, strata_variable, cutoffs,
+    initialize = function(lrnr = make_learner(Lrnr_glm), strata_variable, cutoffs,
                           ...) {
       params <- args_to_list()
       super$initialize(params = params, ...)

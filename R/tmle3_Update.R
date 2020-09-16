@@ -72,7 +72,7 @@ tmle3_Update <- R6Class(
 
       ED <- ED_from_estimates(estimates)
 
-      EDnormed <- ED / norm(ED, type = "2")/ sqrt(length(ED))
+      EDnormed <- ED / norm(ED, type = "2")
       collapsed_covariate <- clever_covariates %*% EDnormed
 
       return(collapsed_covariate)
@@ -229,14 +229,16 @@ tmle3_Update <- R6Class(
       update_node <- submodel_data$update_node
       submodel_data["update_node"] <- NULL
       weights <- submodel_data$weights
+      # TODO
+      weights <- 1
       if(self$one_dimensional){
         # Will break if not called by original training task
 
         if(is.null(submodel_data$ED)) {
-          warning("No ED given in clever covariates. Defaulting to full EIC ED, which is incorrect.")
+          #warning("No ED given in clever covariates. Defaulting to full EIC ED, which is incorrect.")
           submodel_data$H <- self$collapse_covariates(self$current_estimates, submodel_data$H)
           ED <- ED_from_estimates(self$current_estimates)
-          EDnormed <- ED / (norm(ED, type = "2") / sqrt(length(ED)))
+          EDnormed <- ED / (norm(ED, type = "2") )
           ED <- EDnormed
 
 
@@ -282,7 +284,7 @@ tmle3_Update <- R6Class(
 
           loss_function <- submodel_info$loss_function
 
-          loss <- loss_function(submodel_estimate, submodel_data$observed) * weights
+          loss <- loss_function(submodel_estimate, submodel_data$observed)# * weights
           mean(loss)
 
         }
@@ -306,7 +308,7 @@ tmle3_Update <- R6Class(
          #TODO: consider if we should do this
         if(risk_zero<risk_val){
           epsilon <- 0
-          private$.delta_epsilon <- private$.delta_epsilon/2
+          #private$.delta_epsilon <- private$.delta_epsilon/2
         }
 
         if (self$verbose) {
@@ -318,7 +320,7 @@ tmle3_Update <- R6Class(
             submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
                                 offset = submodel_info$offset_tranform(submodel_data$initial),
                                 family = submodel_info$family,
-                                weights = weights,
+
                                 start = rep(0, ncol(submodel_data$H))
             )
           })

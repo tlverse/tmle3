@@ -548,14 +548,18 @@ tmle3_Task <- R6Class(
           }
 
           if(any(duplicated(colnames(parent_data)))) {
-            stop("Duplicate names found in parent data.")
+
+            warning("Duplicate names found in parent data. Making unique.")
+            safe_names <- paste0(colnames(parent_data), "f", seq_along(colnames(parent_data)))
+            setnames(parent_data, safe_names)#paste0(colnames(parent_data), "%", seq_along(colnames(parent_data))))
+            # TODO this should no longer be needed
+            setnames(parent_data, make.unique(colnames(parent_data)))
           }
           #By adding times to column names they become unique
 
         } else {
           parent_data <- data.table(NULL)
         }
-
 
         covariates <- colnames(parent_data) #unlist(lapply(parent_nodes, `[[`, "variables"))
         outcome = setdiff(colnames(outcome_data), c("id", "t", grep("degeneracy_value", colnames(outcome_data), value = T), "at_risk"))

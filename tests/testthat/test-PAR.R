@@ -14,6 +14,7 @@ data$parity01 <- as.numeric(data$parity > 0)
 data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
+
 node_list <- list(
   W = c(
     "apgar1", "apgar5", "gagebrth", "mage",
@@ -41,11 +42,13 @@ tmle_spec <- tmle_PAR(baseline_level = 1)
 
 set.seed(1234)
 # define data
-tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+
+
+# If I dont copy data this breaks. Not sure why.
+tmle_task <- tmle_spec$make_tmle_task(copy(data), node_list)
 
 # define likelihood
 likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
-
 # define update method (submodel + loss function)
 updater <- tmle_spec$make_updater(convergence_type = "sample_size")
 
@@ -55,25 +58,30 @@ targeted_likelihood <- Targeted_Likelihood$new(likelihood, updater)
 # define param
 tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
-tmle_params[[1]]$estimates(tmle_task)
+(tmle_params[[1]]$estimates(tmle_task))
+
 tmle_params[[1]]
 # fit tmle update
 tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, tmle_params, updater)
-
+v1 = ((tmle_fit$likelihood$get_likelihood(tmle_task, "Y")))
 # extract results
 summary <- tmle_fit$summary
 
 set.seed(1234)
 data2 <- data.table::copy(data) # for data.table weirdness
 spec <- tmle_PAR(baseline_level = 1)
-
+print(head(data2))
 tmle_fit_from_spec <- tmle3(
   spec, data2, node_list,
   learner_list
 )
-
+v2 = ((tmle_fit_from_spec$likelihood$get_likelihood(tmle_task, "Y")))
+print(quantile(v1-v2))
 spec_summary <- tmle_fit_from_spec$summary
+print(summary[,1])
 
+print(summary[,3])
+print(spec_summary[,3])
 test_that("PAR manually and from Spec return the same results", {
   expect_equal(summary, spec_summary, tol = 1e-3)
 })

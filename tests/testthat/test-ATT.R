@@ -109,6 +109,7 @@ tmle_classic_fit <- tmle(
 
 # extract estimates
 classic_psi <- tmle_classic_fit$estimates$ATT$psi
+print( tmle3_psi)
 classic_se <- sqrt(tmle_classic_fit$estimates$ATT$var.psi)
 tol <- 1 / sqrt(tmle_task$nrow)
 test_that("psi matches result from classic package", {

@@ -29,7 +29,7 @@ tmle3_Task <- R6Class(
   class = TRUE,
   inherit = sl3_Task,
   public = list(
-    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, long_format = NULL, ...) {
+    initialize = function(data, npsem, summary_measure_columns = NULL, id = NULL, time = NULL, force_at_risk = F, long_format = NULL, folds_for_ids = NULL, ...) {
 
 
       dot_args <- list(...)
@@ -111,7 +111,9 @@ tmle3_Task <- R6Class(
       }
 
       super$initialize(shared_data, covariates = c(), outcome = NULL, id = id, time  = time,  ...)
-
+      if(!is.null(folds_for_ids)){
+        private$.folds <- folds_for_ids
+      }
       node_names <- sapply(npsem, `[[`, "name")
       names(npsem) <- node_names
 
@@ -441,7 +443,8 @@ tmle3_Task <- R6Class(
 
 
         folds <- self$folds
-        if (nrow(regression_data) < self$nrow) {
+        folds <- origami::id_folds_to_folds(folds, match(regression_data$id, unique(self$id)))
+        if (FALSE & nrow(regression_data) < self$nrow) {
           data_id_t <- self$data[, c("id", "t"), with = F]
           indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
           folds <- sl3::subset_folds(folds, indices)
@@ -494,7 +497,8 @@ tmle3_Task <- R6Class(
         setkey(regression_data, id, t)
 
         folds <- self$folds
-        if (nrow(regression_data) < self$nrow) {
+        folds <- origami::id_folds_to_folds(folds, match(regression_data$id, unique(self$id)))
+        if (FALSE & nrow(regression_data) < self$nrow) {
           data_id_t <- self$data[, c("id", "t"), with = F]
           indices <- data_id_t[regression_data[, c("id", "t"), with = F],  which =  T]
           folds <- sl3::subset_folds(folds, indices)
@@ -688,7 +692,9 @@ tmle3_Task <- R6Class(
 
 
       folds <- self$folds
-      if (nrow(regression_data) < self$nrow) {
+      #convert folds for ids to rows
+      folds <- origami::id_folds_to_folds(folds, match(regression_data$id, unique(self$id)))
+      if (FALSE & nrow(regression_data) < self$nrow) {
         #regression_data <- regression_data[indices, ]
         data_id_t <- self$data[, c("id", "t"), with = F]
         #This should
@@ -850,7 +856,7 @@ tmle3_Task <- R6Class(
 
         new_task$initialize(
           data, self$npsem,
-          #folds = self$folds,
+          folds = self$folds,
           #row_index = self$row_index,
           t = "t",
           id = "id",
@@ -922,7 +928,9 @@ tmle3_Task <- R6Class(
 
     },
     next_in_chain = function(...) {
-      return(super$next_in_chain(npsem = self$npsem, ...))
+      return(super$next_in_chain(npsem = self$npsem, force_at_risk = self$force_at_risk,
+                                 summary_measure_columns = self$summary_measure_columns,
+                                 long_format = self$long_format, ...))
     },
     print = function() {
       cat(sprintf("A sl3 Task with %d obs and these nodes:\n", self$nrow))
@@ -975,7 +983,10 @@ tmle3_Task <- R6Class(
       if (drop_folds) {
         new_folds <- NULL
       } else {
-        new_folds <- sl3::subset_folds(self$folds, row_index)
+        #Only worry about removing unque ids, not rows
+        new_ids <- self$id[row_index]
+        new_fold_index <- match(unique(new_ids), unique(self$id))
+        new_folds <- sl3::subset_folds(self$folds, new_fold_index)
       }
 
       new_task$initialize(
@@ -993,6 +1004,38 @@ tmle3_Task <- R6Class(
     }
   ),
   active = list(
+    folds = function(new_folds) {
+      if (!missing(new_folds)) {
+        private$.folds <- new_folds
+      } else if (is.numeric(private$.folds)) {
+
+        # if an integer, create new_folds object but pass integer to V argument
+        if(TRUE) {
+          new_folds <- origami::make_folds(length(unique(self$id)), V = private$.folds)
+        }
+        else if (self$has_node("id")) {
+          new_folds <- origami::make_folds(
+            cluster_ids = self$id,
+            V = private$.folds
+          )
+        } else {
+          new_folds <- origami::make_folds(n = self$nrow, V = private$.folds)
+        }
+        private$.folds <- new_folds
+      } else if (is.null(private$.folds)) {
+        # generate folds now if never specified
+        if(TRUE) {
+          new_folds <- origami::make_folds(length(unique(self$id)))
+        }
+        else if (self$has_node("id")) {
+          new_folds <- origami::make_folds(cluster_ids = self$id)
+        } else {
+          new_folds <- origami::make_folds(n = self$nrow)
+        }
+        private$.folds <- new_folds
+      }
+      return(private$.folds)
+    },
     long_format = function(){
       private$.long_format
     },

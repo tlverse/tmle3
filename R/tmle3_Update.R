@@ -152,8 +152,15 @@ tmle3_Update <- R6Class(
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
       # Get EDs if present. Only for training task
-      ED <- lapply(clever_covariates, `[[`, "ED")
-      ED <- as.vector(unlist(lapply(ED, `[[`, update_node) ))
+      if(self$one_dimensional) {
+        IC <- lapply(clever_covariates, `[[`, "IC")
+        IC <- do.call(cbind, lapply(IC, `[[`, update_node) )
+        if(is.null(IC)) {
+          IC <- lapply(private$.current_estimates, `[[`, "IC")
+          IC <- do.call(cbind, IC)
+        }
+      }
+
       covariates_dt <- do.call(cbind, node_covariates)
 
       # if (self$one_dimensional) {
@@ -176,6 +183,13 @@ tmle3_Update <- R6Class(
       # protect against qlogis(1)=Inf
       initial <- bound(initial, 0.005)
       weights <- tmle_task$get_regression_task(update_node)$weights
+      n <- length(unique(tmle_task$id))
+      if(self$one_dimensional){
+        # This computes (possibly weighted) ED and handles long case
+        ED <- colSums(IC * weights)/n #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
+      } else {
+        ED <- NULL
+      }
 
       if(length(observed) != length(initial)) {
         ratio <- length(initial) / length(observed)
@@ -188,6 +202,7 @@ tmle3_Update <- R6Class(
       if(length(weights) != length(initial)) {
         ratio <- length(initial) / length(weights)
         if(ratio%%1 == 0){
+          # This is for likelihood factors that output long_format predictions that dont match nrow of input task
           warning("Weights and initial length do not match but are multiples of each other. Recycling values...")
           weights <- rep(weights, ratio)
         }
@@ -464,7 +479,39 @@ tmle3_Update <- R6Class(
         tmle_param$estimates(tmle_task, update_fold)
       })
 
-      private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
+      if(FALSE) {
+        clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
+          tmle_param$clever_covariates(tmle_task, update_fold)})
+        IC <- lapply(clever_covariates, `[[`, "IC")
+        if(!is.null(IC[[1]])){
+          n <- length(unique(tmle_task$id))
+          IC_vars <- lapply(IC, function(IC) {
+            out <- lapply(self$update_nodes, function(node) {
+              weights <- tmle_task$get_regression_task(node)$weights
+              apply(IC[[node]] * weights,2, function(v) {var(rowSums(matrix(v, nrow = n, byrow = T)))})
+            } )
+            names(out) <- self$update_nodes
+            return(out)
+          })
+          private$.initial_variances <- IC_vars
+
+
+        } else {
+          n <- length(unique(tmle_task$id))
+          IC <- lapply(private$.current_estimates, `[[`, "IC")
+          IC_vars <- lapply(IC, function(IC) {
+            weights <- tmle_task$get_regression_task(node)$weights
+            IC_var <- apply(IC[[node]] * weights,2, function(v) {var(rowSums(matrix(v, nrow = n, byrow = T)))})
+            IC_var <- lapply(self$update_nodes, function(node) {IC_var})
+            names(IC_var) <- self$update_nodes
+            return(IC_var)
+          })
+          private$.initial_variances <- IC_vars
+        }
+      }
+
+
+      #private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
 
       for (steps in seq_len(maxit)) {
         self$update_step(likelihood, tmle_task, update_fold)

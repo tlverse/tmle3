@@ -230,7 +230,7 @@ tmle3_Update <- R6Class(
       submodel_data["update_node"] <- NULL
       weights <- submodel_data$weights
       # TODO
-      weights <- 1
+
       if(self$one_dimensional){
         # Will break if not called by original training task
 
@@ -284,7 +284,7 @@ tmle3_Update <- R6Class(
 
           loss_function <- submodel_info$loss_function
 
-          loss <- loss_function(submodel_estimate, submodel_data$observed)# * weights
+          loss <- loss_function(submodel_estimate, submodel_data$observed) * weights
           mean(loss)
 
         }
@@ -320,6 +320,7 @@ tmle3_Update <- R6Class(
             submodel_fit <- glm(observed ~ H - 1, submodel_data[-sub_index],
                                 offset = submodel_info$offset_tranform(submodel_data$initial),
                                 family = submodel_info$family,
+                                weights = weights,
 
                                 start = rep(0, ncol(submodel_data$H))
             )
@@ -503,6 +504,11 @@ tmle3_Update <- R6Class(
       private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$estimates(tmle_task, update_fold)
       })
+      #TODO Variance weights should be based on each component separately.
+      # Might be better to have estimates return IC and IC-components.
+      # private$.initial_variances <- lapply(private$.current_estimates, function(ests) {
+      #   resample::colVars(matrix(ests$IC, nrow = length(unique(tmle_task$id))))
+      # })
       private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
     }
   ),

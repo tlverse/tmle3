@@ -267,7 +267,7 @@ Param_CR <- R6Class(
       var_comps <- lapply(EIC, resample::colVars)
       names(var_comps) <- names(clevs$EIC)
       EIC <- Reduce('+', EIC) + t(t(cum_inc_mat[, target_times]) - as.vector(colMeans(cum_inc_mat[, target_times])))
-      return(list(EIC = EIC, var_comps = var_comps, psi = colMeans(cum_inc_mat[, target_times])))
+      return(list(IC = EIC, var_comps = var_comps, psi = colMeans(cum_inc_mat[, target_times])))
     }
   ),
   active = list(

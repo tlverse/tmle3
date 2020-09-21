@@ -43,9 +43,11 @@ Param_base <- R6Class(
       }
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full", submodel_type = "logistic") {
+      # TODO Returns clever covariates and component-specific ICs ?
       stop("Param_base is a base class")
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
+      #Returns full IC and estimate
       stop("Param_base is a base class")
     },
 

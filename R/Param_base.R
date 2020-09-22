@@ -78,7 +78,7 @@ Param_base <- R6Class(
       return(private$.supports_outcome_censoring)
     },
     supports_weights = function() {
-      return(private$.supports_weights)
+      return(TRUE)
     },
     targeted = function() {
       return(private$.targeted)
@@ -94,7 +94,7 @@ Param_base <- R6Class(
     .targeted = TRUE,
     .supports_outcome_censoring = FALSE,
     .submodel_type_supported = c("logistic"),
-    .supports_weights = F
+    .supports_weights = T
   )
 )
 

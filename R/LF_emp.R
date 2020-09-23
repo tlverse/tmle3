@@ -41,11 +41,21 @@ LF_emp <- R6Class(
       super$train(tmle_task)
       weights <- tmle_task$get_regression_task(self$name)$weights
 
+      # TODO weights
       observed <- (tmle_task$get_tmle_node(self$name, format = T, include_id = F))
       uniq_obs <- unique(observed)
-      emp_probs <- table(uniq_obs[observed, which = T, on = colnames(uniq_obs)]) /nrow(observed)
 
-      #SUPER SLOW
+      match_index <- uniq_obs[observed, which = T, on = colnames(uniq_obs)]
+      weights_mat <- data.table(weights = weights, grp = match_index)
+      emp_probs <- weights_mat[, sum(weights), by = grp]
+      emp_probs$grp <- NULL
+      emp_probs <- unlist(emp_probs) / sum(weights)
+      if(length(emp_probs) != nrow(uniq_obs)) {
+        stop("LF_emp error")
+      }
+      #emp_probs <- table(match_index) /nrow(observed)
+
+      #SUPER SLOW. Thank you data.table
       # counts <- unlist(apply(uniq_obs, 1, function(obs){ sum(weights * as.numeric(apply(observed, 1, function(new_obs){
       #
       #   all(new_obs == obs)})))}))
@@ -78,6 +88,7 @@ LF_emp <- R6Class(
       match_index <- uniq_obs[observed]
       probs <- emp_probs[match_index]
       probs[is.na(probs)] <- 0
+      # TODO THe above might be wrong.
       # matched_obs <- apply(observed, 1, function(obs){
       #   index <- which(unlist(apply(uniq_obs, 1, function(uniq) {
       #     all(uniq == obs)

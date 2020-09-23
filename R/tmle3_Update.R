@@ -309,9 +309,14 @@ tmle3_Update <- R6Class(
 
 
         if (self$optim_delta_epsilon) {
+          delta_epsilon <- c(0,self$delta_epsilon)
+
+          min_eps = min(delta_epsilon)
+          max_eps = max(delta_epsilon)
+
           optim_fit <- optim(
-            par = list(epsilon = self$delta_epsilon), fn = risk,
-            lower = 0, upper = self$delta_epsilon,
+            par = list(epsilon = max_eps), fn = risk,
+            lower = min_eps, upper = max_eps,
             method = "Brent"
           )
           epsilon <- optim_fit$par

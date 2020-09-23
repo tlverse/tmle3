@@ -43,12 +43,14 @@ LF_emp <- R6Class(
 
       observed <- (tmle_task$get_tmle_node(self$name, format = T, include_id = F))
       uniq_obs <- unique(observed)
+      emp_probs <- table(uniq_obs[observed, which = T, on = colnames(uniq_obs)]) /nrow(observed)
 
-      counts <- unlist(apply(uniq_obs, 1, function(obs){ sum(weights * as.numeric(apply(observed, 1, function(new_obs){
-
-        all(new_obs == obs)})))}))
-
-      emp_probs <- counts/sum(counts)
+      #SUPER SLOW
+      # counts <- unlist(apply(uniq_obs, 1, function(obs){ sum(weights * as.numeric(apply(observed, 1, function(new_obs){
+      #
+      #   all(new_obs == obs)})))}))
+      #
+      # emp_probs <- counts/sum(counts)
 
 
       private$.empirical_fit <- list(emp_probs = emp_probs, uniq_obs = uniq_obs )
@@ -73,29 +75,25 @@ LF_emp <- R6Class(
       #weights <- tmle_task$get_regression_task(self$name)$weights
       emp_probs <-  private$.empirical_fit$emp_probs
       uniq_obs <-  private$.empirical_fit$uniq_obs
-
-
-      matched_obs <- apply(observed, 1, function(obs){
-        index <- which(unlist(apply(uniq_obs, 1, function(uniq) {
-          all(uniq == obs)
-        })))
-        if(length(index) == 0){
-          return(NA)
-        }
-        return(index)
-      })
+      match_index <- uniq_obs[observed]
+      probs <- emp_probs[match_index]
+      probs[is.na(probs)] <- 0
+      # matched_obs <- apply(observed, 1, function(obs){
+      #   index <- which(unlist(apply(uniq_obs, 1, function(uniq) {
+      #     all(uniq == obs)
+      #   })))
+      #   if(length(index) == 0){
+      #     return(NA)
+      #   }
+      #   return(index)
+      # })
        # match(observed, uniq_obs)
       #Match observations to empirical probs obtained from training set
-      probs <- as.vector(sapply(matched_obs, function(i) {
-        if(is.na(i)) {
-          return(0)
-        }
-        return(emp_probs[i])
-      }))
+
 
       #probs <- weights*probs
       #weights <- tmle_task$get_regression_task(self$name)$weights
-      probs <- data.table(probs )
+      probs <- as.data.table(probs )
       setnames(probs, self$name)
       probs$id = observedfull$id
       probs$t = observedfull$t

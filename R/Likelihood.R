@@ -75,6 +75,9 @@ Likelihood <- R6Class(
       }
     },
     get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, drop = T, to_wide = F, expand = T) {
+      # TODO
+      # Likelihood factors just compute likelihoods
+      # Risk sets are computed here?
       if(length(node) > 1){
         likelihood_factor <- self$factor_list_pooled[[paste0(node, collapse = "%")]]
         warning("You shouldn't be calling node likelihoods in a pooled way as these likelihoods don't get updated in targeting.")

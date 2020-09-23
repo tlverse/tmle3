@@ -76,6 +76,8 @@ Param_LATE <- R6Class(
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
+      print(tmle_task$uuid)
+      print(node)
       update_nodes <- intersect(self$update_nodes, attr(tmle_task, "target_nodes"))
       if(!is.null(node)){
         update_nodes <- c(node)
@@ -86,6 +88,7 @@ Param_LATE <- R6Class(
       } else {
       islong= T
       }
+      print(update_nodes)
       EICs <- lapply(update_nodes, function(node){
         return(self$gradient$compute_component(tmle_task, node, fold_number = fold_number)$EIC)
       })

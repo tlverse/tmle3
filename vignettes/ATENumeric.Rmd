@@ -82,30 +82,14 @@ param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
 ```
 
 ```{r}
-cftask <- task$clone()
-cftask$force_at_risk <- T
-tlik$sync_task(cftask)
-```
 
-```{r}
-mean(param$estimates(task)$IC)
-
-(param$estimates(task)$EIC)
-tlik$check_sync <- T
-tlik$updater$update_step(tlik,task)
-mean(param$estimates(task)$IC)
-
-(param$estimates(task)$EIC)
 ```
 
 
 
 
-```{r}
-t = proc.time()
-sample_all(task, likelihood, num_samples = 5000, baseline_var = "W", c("L0a", "L0b", "A0a", "L1a", "L1b", "A1a", "Y"))$data
- proc.time()  - t
-```
+
+
 
 ```{r}
 

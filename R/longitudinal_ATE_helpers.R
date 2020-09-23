@@ -23,11 +23,13 @@ gradient_generator_late <- function(tmle_task, lik,  node, include_outcome = T, 
 
   task <- tmle_task$get_regression_task(node)
   IC <- ipw_late(tmle_task, lik,  ipw_args, fold_number)
-  cols <- task$add_columns(data.table(IC = IC))
+  new_data <- data.table(IC = IC )
+  set(new_data, , node, task$Y)
+  cols <- task$add_columns(new_data)
   task <- task$clone()
   nodes <- task$nodes
   nodes$outcome <- "IC"
-  nodes$covariates <- c(nodes$covariates, tmle_task$npsem[[node]]$variables)
+  nodes$covariates <- c(nodes$covariates, node)
 
   task$initialize(
     task$internal_data,

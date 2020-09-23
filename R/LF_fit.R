@@ -39,7 +39,7 @@ LF_fit <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, is_time_variant = FALSE, is_level_variant = F,  ..., type = "density") {
+    initialize = function(name, learner, is_time_variant = FALSE, is_level_variant = F, include_degeneracy = T,  ..., type = "density") {
       if(length(name) > 1){
         if(!(is_time_variant | is_level_variant)) {
           warning("You have specified that this a pooled regression but did not specify time or level variance.")
@@ -52,6 +52,7 @@ LF_fit <- R6Class(
       # TODO: add parameter is_time_variant
       private$.is_time_variant <- is_time_variant
       private$.is_level_variant <- is_level_variant
+      private$.include_degeneracy <- include_degeneracy
     },
     delayed_train = function(tmle_task) {
       # just return prefit learner if that's what we have
@@ -105,7 +106,7 @@ LF_fit <- R6Class(
       data <-  learner_task$get_data()
 
       # For conditional means, degenerate value is exactly the value to be predicted
-      if(check_at_risk & "at_risk" %in% colnames(data) ) {
+      if(check_at_risk & "at_risk" %in% colnames(data) & self$include_degeneracy) {
         # By setting check_at_risk = F then one can obtain the counterfactual predictions
         # conditioned on everyone being at risk.
         names_degen_val <- paste0("degeneracy_value_", learner_task$nodes$outcome)
@@ -164,7 +165,7 @@ LF_fit <- R6Class(
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
-      if(check_at_risk & "at_risk" %in% colnames(data) ) {
+      if(check_at_risk & "at_risk" %in% colnames(data) & self$include_degeneracy ) {
         # By setting check_at_risk = F then one can obtain the counterfactual predictions
         # conditioned on everyone being at risk.
         names_degen_val <- paste0("degeneracy_value_", learner_task$nodes$outcome)
@@ -278,12 +279,16 @@ LF_fit <- R6Class(
     },
     is_level_variant = function(){
       return(private$.is_level_variant)
+    },
+    include_degeneracy = function() {
+      return(private$.include_degeneracy)
     }
   ),
   private = list(
     .name = NULL,
     .learner = NULL,
     .is_time_variant = NULL,
-    .is_level_variant = NULL
+    .is_level_variant = NULL,
+    .include_degeneracy = NULL
   )
 )

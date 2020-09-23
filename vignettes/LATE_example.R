@@ -1,0 +1,87 @@
+---
+  title: "ATENumeric"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::document()
+```
+
+
+```{r}
+library(simcausal)
+library(sl3)
+library(tmle3)
+
+# Generate long format data
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("L0a", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("L0b", distr = "rbinom",  size = 1, prob = 0.5) +
+  node("A0", distr = "rbinom", size = 1, prob = plogis( ( 0.4 + L0a/4 - L0b/5 + W/4 )^2) ) +
+  node("L1a", distr = "rbinom",  size = 1, prob = plogis((0.3 + L0b/2 + L0a/2 - A0/2)^2)) +
+  node("L1b", distr = "rbinom",  size = 1, prob = plogis((0.3 + L0a/2 + L0a/2 - A0/2 + W/4)^2)) +
+  node("A1", distr = "rbinom", size = 1, prob = plogis (( 0.4 + L0a/4 - L0b/5 + W/3 )^2 ) )+
+  node("Y",  distr =  "rbinom", size = 1, prob = plogis( (W/4 + L1b/200 + A1/3 - A0/5 + L1a/300)^2 ) )
+
+
+setD <- set.DAG(D)
+dat <- sim(setD, n = 2000)
+dat$id <- dat$ID
+dat$ID <- NULL
+times <- 1
+dat <- data.table(dat)
+dat
+t0 <- c("W", "L0a", "L0b", "A0", "Y", "id")
+d0 <- dat[, t0, with = F]
+d0$t <- 0
+setnames(d0, c("W", "La", "Lb", "A", "Y", "id", "t"))
+
+t1 <- c("W", "L1a", "L1b", "A1", "Y", "id")
+d1 <- dat[, t1, with = F]
+d1$t <- 1
+setnames(d1, c("W", "La", "Lb", "A", "Y", "id", "t"))
+long_data <- rbind(d0,d1)
+```
+
+
+
+
+```{r}
+baseline_covariates <- "W"
+time_dependent_covariates <- c("La", "Lb")
+time_dependent_treatments <- "A"
+outcome <- "Y"
+times <- sort(unique(long_data$t))
+npsem <- generate_npsem_late(baseline_covariates, time_dependent_covariates, time_dependent_treatments,outcome, times )
+task <- tmle3_Task$new(long_data, npsem, id  ="id", t= "t")
+likelihood <- generate_likelihood_late(npsem)
+```
+
+
+
+```{r}
+likelihood <-likelihood$train(task)
+A_nodes <- grep("A", names(task$npsem), value = T)
+intervention_control <- list()
+intervention_trt <- list()
+#Basic intervention
+for( node in A_nodes){
+  intervention_control[[node]] <- LF_static$new(node, value = 0)
+  intervention_trt[[node]] <- LF_static$new(node, value = 1)
+}
+
+
+```
+
+```{r}
+tlik <- Targeted_Likelihood$new(likelihood,submodel_type_by_node = "EIC" , updater = list(convergence_type = "sample_size", constrain_step = T, delta_epsilon = 0.01))
+param <- Param_LATE$new(tlik, intervention_trt, intervention_control)
+```
+
+```{r}
+
+```
+

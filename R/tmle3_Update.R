@@ -129,25 +129,28 @@ tmle3_Update <- R6Class(
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         # Assert that it supports the submodel type
         tmle_param$supports_submodel_type(submodel_type)
-        formal_args <- names(formals(tmle_param$clever_covariates))
+        #formal_args <- names(formals(tmle_param$clever_covariates))
 
         # For backwards compatibility:
         # In future, clever covariate functions should accept a "node" and "submodel_type" argument.
-        if("for_fitting" %in% formal_args) {
-          return(tmle_param$clever_covariates(tmle_task, fold_number, for_fitting = for_fitting))
-        }
-        else if(all(c("submodel_type", "node") %in% formal_args)){
-          return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type, node = update_node))
-        }
-        else if("submodel_type" %in% formal_args){
-          return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_typee))
-        }
-        else if("node" %in% formal_args){
-          return(tmle_param$clever_covariates(tmle_task, fold_number, node = update_node))
-        }
-         else {
-          return(tmle_param$clever_covariates(tmle_task, fold_number))
-        }
+        args <- list(for_fitting = for_fitting, submodel_type = submodel_type, fold_number = fold_number, tmle_task = tmle_task
+             ,node = update_node)
+        return(sl3:::call_with_args(tmle_param$clever_covariates, args))
+        # if("for_fitting" %in% formal_args) {
+        #   return(tmle_param$clever_covariates(tmle_task, fold_number, for_fitting = for_fitting))
+        # }
+        # else if(all(c("submodel_type", "node") %in% formal_args)){
+        #   return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type, node = update_node))
+        # }
+        # else if("submodel_type" %in% formal_args){
+        #   return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_typee))
+        # }
+        # else if("node" %in% formal_args){
+        #   return(tmle_param$clever_covariates(tmle_task, fold_number, node = update_node))
+        # }
+        #  else {
+        #   return(tmle_param$clever_covariates(tmle_task, fold_number))
+        # }
       })
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
@@ -319,9 +322,11 @@ tmle3_Update <- R6Class(
 
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
-
+        print(epsilon)
          #TODO: consider if we should do this
-        if(risk_zero<risk_val){
+        if(risk_zero<=risk_val){
+          print(risk_zero)
+          print(risk_val)
           epsilon <- 0
           #private$.delta_epsilon <- private$.delta_epsilon/2
         }

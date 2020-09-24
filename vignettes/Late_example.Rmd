@@ -44,12 +44,7 @@ d1 <- dat[, t1, with = F]
 d1$t <- 1
 setnames(d1, c("W", "La", "Lb", "A", "Y", "id", "t"))
 long_data <- rbind(d0,d1)
-```
 
-
-
-
-```{r}
 baseline_covariates <- "W"
 time_dependent_covariates <- c("La", "Lb")
 time_dependent_treatments <- "A"
@@ -58,12 +53,17 @@ times <- sort(unique(long_data$t))
 npsem <- generate_npsem_late(baseline_covariates, time_dependent_covariates, time_dependent_treatments,outcome, times )
 task <- tmle3_Task$new(long_data, npsem, id  ="id", t= "t")
 likelihood <- generate_likelihood_late(npsem)
+
+likelihood <-likelihood$train(task)
 ```
 
+```{r}
+(likelihood$get_likelihood(task, "L1a", drop_id = F))
+(likelihood$get_likelihoods(task, c("L0a", "L1a"), drop_id = F))
 
+```
 
 ```{r}
-likelihood <-likelihood$train(task)
 A_nodes <- grep("A", names(task$npsem), value = T)
 intervention_control <- list()
 intervention_trt <- list()

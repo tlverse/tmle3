@@ -48,19 +48,22 @@ LF_static <- R6Class(
     get_mean = function(tmle_task, fold_number, ...) {
       observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = T, compute_risk_set = F)
       node_vars <- tmle_task$npsem[[self$name]]$variables
-      observed <- observed[, c("id", "t", node_vars), with = F]
-      set(observed, , node_vars, self$value)
-      pred <- observed
-      setnames(pred, node_vars, self$name )
+      #observed <- observed[, c("id", "t", node_vars), with = F]
+      observed <- observed[,node_vars, with = F]
+
+      #set(observed, , node_vars, self$value)
+      pred <- unlist(observed)
+      #setnames(pred, node_vars, self$name )
       return(pred)
     },
     get_density = function(tmle_task, fold_number, expand = T, ...) {
       observed <- tmle_task$get_tmle_node(self$name, include_time = T, include_id = T, expand = expand, compute_risk_set = F)
       node_vars <- tmle_task$npsem[[self$name]]$variables
-      observed <- observed[, c("id", "t", node_vars), with = F]
+      #observed <- observed[, c("id", "t", node_vars), with = F]
+      observed <- observed[, node_vars, with = F]
       set(observed, , node_vars, data.table(as.numeric(self$value == unlist(observed[,node_vars, with = F ]))))
-      likelihood <- observed
-      setnames(likelihood,node_vars, self$name)
+      likelihood <- unlist(observed)
+      #setnames(likelihood,node_vars, self$name)
       return(likelihood)
     },
     cf_values = function(tmle_task) {

@@ -28,7 +28,7 @@ sim_data <- function(n_obs = 1e3, n_w = 1, tx_mult = 2) {
 }
 
 tx_mult <- 2
-sim_obj <- sim_data(1e6, tx_mult = tx_mult)
+sim_obj <- sim_data(1e5, tx_mult = tx_mult)
 node_list <- sim_obj$nodes
 
 g_mean <- function(g_task) {

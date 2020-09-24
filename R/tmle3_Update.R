@@ -327,11 +327,10 @@ tmle3_Update <- R6Class(
 
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
-        print(epsilon)
+
          #TODO: consider if we should do this
         if(risk_zero<=risk_val){
-          print(risk_zero)
-          print(risk_val)
+
           epsilon <- 0
           #private$.delta_epsilon <- private$.delta_epsilon/2
         }

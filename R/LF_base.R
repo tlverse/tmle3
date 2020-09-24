@@ -55,7 +55,11 @@ LF_base <- R6Class(
       }
       if (!is.null(self$bound)) {
         #values <- bound(values, self$bound)
-        values[, (node) := bound(values[[node]], self$bound)]
+        if(is.data.table(values)){
+          values[, (node) := bound(values[[node]], self$bound)]
+        } else {
+          values <- bound(values, self$bound)
+        }
       }
 
       return(values)

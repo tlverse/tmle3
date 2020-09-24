@@ -49,7 +49,8 @@ LF_known <- R6Class(
     get_mean = function(tmle_task, fold_number, ...) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE, ...)
       preds <- as.data.table(self$mean_fun(learner_task))
-      setnames(preds, self$name)
+      preds <- unlist(preds)
+      #setnames(preds, self$name)
 
       return(preds)
     },
@@ -71,8 +72,8 @@ LF_known <- R6Class(
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       likelihood <- as.data.table(likelihood)
-      setnames(likelihood, self$name)
-
+      #setnames(likelihood, self$name)
+      likelihood <- unlist(likelihood)
       return(likelihood)
     }
   ),

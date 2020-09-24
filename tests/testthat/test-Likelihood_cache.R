@@ -55,8 +55,8 @@ likelihood <- likelihood_def$train(tmle_task)
 likelihood_values <- likelihood$get_likelihoods(tmle_task)
 # node argument now necessary
 #Cache stored id and t
-A_values <- likelihood$cache$get_values(A_factor, tmle_task, "full", node = "A")[, "A", with = F][[1]]
-Y_values <- likelihood$cache$get_values(Y_factor, tmle_task, "full", node = "Y")[, "Y", with = F][[1]]
+A_values <- likelihood$cache$get_values(A_factor, tmle_task, "full", node = "A") #[, "A", with = F][[1]]
+Y_values <- likelihood$cache$get_values(Y_factor, tmle_task, "full", node = "Y") #[, "Y", with = F][[1]]
 
 test_that("caching works", expect_length(Y_values, tmle_task$nrow))
 test_that("disabling caching works", expect_null(A_values))

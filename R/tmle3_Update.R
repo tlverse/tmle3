@@ -128,7 +128,7 @@ tmle3_Update <- R6Class(
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         # Assert that it supports the submodel type
-        tmle_param$supports_submodel_type(submodel_type)
+        tmle_param$supports_submodel_type(submodel_type, update_node)
         #formal_args <- names(formals(tmle_param$clever_covariates))
 
         # For backwards compatibility:
@@ -155,7 +155,7 @@ tmle3_Update <- R6Class(
 
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
       # Get EDs if present. Only for training task
-      if(self$one_dimensional) {
+      if(self$one_dimensional & for_fitting) {
         IC <- lapply(clever_covariates, `[[`, "IC")
         IC <- do.call(cbind, lapply(IC, `[[`, update_node) )
         if(is.null(IC)) {
@@ -187,7 +187,7 @@ tmle3_Update <- R6Class(
       initial <- bound(initial, 0.005)
       weights <- tmle_task$get_regression_task(update_node)$weights
       n <- length(unique(tmle_task$id))
-      if(self$one_dimensional){
+      if(self$one_dimensional & for_fitting){
         # This computes (possibly weighted) ED and handles long case
         ED <- colSums(IC * weights)/n #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
       } else {

@@ -273,7 +273,7 @@ tmle3_Update <- R6Class(
             ED <- ED / sqrt(vars)
           }
 
-          EDnormed <- ED / (norm(ED, type = "2") / sqrt(length(ED)))
+          EDnormed <- ED / norm(ED, type = "2")# / sqrt(length(ED))))
           submodel_data$H <- submodel_data$H %*% EDnormed
 
           ED <- EDnormed

@@ -55,12 +55,17 @@ Param_base <- R6Class(
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     },
     supports_submodel_type = function(submodel_type, node){
-      if(is.list(self$submodel_type_supported) & !is.null(self$submodel_type_supported[[node]]) & self$submodel_type_supported[[node]]!=submodel_type) {
-        stop(sprintf("This Param does not support the optimization strategy: %s", submodel_type))
+
+      if(is.list(self$submodel_type_supported)) {
+        if( !is.null(self$submodel_type_supported[[node]]) & self$submodel_type_supported[[node]]!=submodel_type) {
+          stop(sprintf("This Param does not support the optimization strategy: %s", submodel_type))
+
+        }
       }
       else if(!(submodel_type %in% self$submodel_type_supported)){
         stop(sprintf("This Param does not support the optimization strategy: %s", submodel_type))
       }
+
     }
   ),
   active = list(

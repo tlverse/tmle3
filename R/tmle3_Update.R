@@ -267,8 +267,8 @@ tmle3_Update <- R6Class(
           vars <- unlist(lapply(initial_variances, `[[`, update_node))
           if(self$convergence_type == "scaled_var" & !is.null(vars)){
 
-            zero <- vars < 1e-4
-            vars[zero] <- 1e-4
+            zero <- vars < 1e-3
+            vars[zero] <- 1e-3
 
             ED <- ED / sqrt(vars)
           }
@@ -456,8 +456,8 @@ tmle3_Update <- R6Class(
 
           return(var(v))
         })/n)
-        # Handle case where variance is 0 for whatever reason
-        ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1e-7)
+        # Handle case where variance is 0 or very small for whatever reason
+        ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1/n)
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n
       }

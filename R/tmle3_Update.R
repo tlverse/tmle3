@@ -314,7 +314,7 @@ tmle3_Update <- R6Class(
             delta_epsilon <- delta_epsilon[[update_node]]
           }
           if(is.function(delta_epsilon)) {
-            delta_epsilon <- delta_epsilon(submodel_data$initial)
+            delta_epsilon <- delta_epsilon(submodel_data$H)
           }
           delta_epsilon <- c(0,delta_epsilon)
 

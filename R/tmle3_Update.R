@@ -312,6 +312,9 @@ tmle3_Update <- R6Class(
           if(is.list(delta_epsilon)) {
             delta_epsilon <- delta_epsilon[[update_node]]
           }
+          if(is.function(delta_epsilon)) {
+            delta_epsilon <- delta_epsilon(submodel_data$initial)
+          }
           delta_epsilon <- c(0,self$delta_epsilon)
 
           min_eps = min(delta_epsilon)

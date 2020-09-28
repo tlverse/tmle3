@@ -309,6 +309,9 @@ tmle3_Update <- R6Class(
 
 
         if (self$optim_delta_epsilon) {
+          if(is.list(delta_epsilon)) {
+            delta_epsilon <- delta_epsilon[[update_node]]
+          }
           delta_epsilon <- c(0,self$delta_epsilon)
 
           min_eps = min(delta_epsilon)
@@ -323,6 +326,9 @@ tmle3_Update <- R6Class(
 
         } else {
           epsilon <- self$delta_epsilon
+          if(is.list(epsilon)) {
+            epsilon <- epsilon[[update_node]]
+          }
         }
 
         risk_val <- risk(epsilon)

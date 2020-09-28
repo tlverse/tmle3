@@ -266,10 +266,12 @@ tmle3_Update <- R6Class(
 
           vars <- unlist(lapply(initial_variances, `[[`, update_node))
           if(self$convergence_type == "scaled_var" & !is.null(vars)){
-
-            zero <- vars < 1e-3
-            vars[zero] <- 1e-3
-
+            #max_var <- max(vars)
+            #Ensure that params with very small variances dont get too much weight
+            median_var <- median(vars)
+            min_var_allowed <- max(median_var/100,1e-3)
+            zero <- vars < min_var_allowed
+            vars[zero] <- min_var_allowed
             ED <- ED / sqrt(vars)
           }
 

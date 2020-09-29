@@ -51,7 +51,13 @@ time_dependent_treatments <- "A"
 outcome <- "Y"
 times <- sort(unique(long_data$t))
 npsem <- generate_npsem_late(baseline_covariates, time_dependent_covariates, time_dependent_treatments,outcome, times )
-task <- tmle3_Task$new(long_data, npsem, id  ="id", t= "t")
+task <- tmle3_Task$new(long_data, npsem, id  ="id", time= "t", weights = "W")
+data.table(task$get_node("weights"))
+task$nodes
+```
+
+
+```{r}
 likelihood <- generate_likelihood_late(npsem)
 
 likelihood <-likelihood$train(task)

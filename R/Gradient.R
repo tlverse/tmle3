@@ -97,6 +97,10 @@ Gradient <- R6Class(
 
       cached_task <- get0(key, self$cache, inherits = FALSE)
       if(!is.null(cached_task)){
+        if(is.null(attr(cached_task, "target_nodes"))) {
+          print(node)
+          stop("wrong")
+        }
         return(cached_task)
       }
       variables <- tmle_task$npsem[[node]]$variables
@@ -122,14 +126,19 @@ Gradient <- R6Class(
       suppressWarnings(long_task <- tmle3_Task$new(long_data, tmle_task$npsem, id = "id", time = "t", force_at_risk = tmle_task$force_at_risk, summary_measure_columns = c(tmle_task$summary_measure_columns, "trueid")))
 
       setattr(long_task, "target_nodes", node)
-
+      if(is.null(attr(long_task, "target_nodes"))) {
+        print(node)
+        stop("wrong")
+      }
       assign(key, long_task, self$cache)
 
       private$.uuid_expanded_history[[long_task$uuid]] <- node
       return(long_task)
     },
     compute_component = function(tmle_task, node, fold_number = "full"){
+      print("Gradient")
       print(node)
+      print(fold_number)
       time <- tmle_task$npsem[[node]]$time
 
       self$assert_trained()
@@ -225,6 +234,7 @@ Gradient <- R6Class(
       basis_list <- fit_obj$basis_list
       coefs <- fit_obj$coefs
       col_index <- which(colnames(IC_task$X) == node )
+
 
       keep <- sapply(basis_list, function(b){
         col_index %in% b$cols
@@ -418,6 +428,7 @@ Gradient <- R6Class(
         coefs <- fit$coefs
 
         keep <- coefs[-1]!=0
+
         basis_list <- basis_list[keep]
         coefs_new <- coefs[c(T, keep)]
         if(sum(coefs_new) != sum(coefs)) stop("squash went wrong")

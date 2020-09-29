@@ -1,0 +1,207 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+expit = plogis
+library(dplyr)
+library(purrr)
+
+# B <- 100  # n
+# tau <- 4  # last time point
+# seed <- 202008  # random seed
+
+generate_Zheng_data <- function(B, tau, seed = NULL, setAM = NULL, if_LY_misspec = F) {
+  if (is.null(seed)) {} else set.seed(seed)
+
+  # time point 0
+  t <- 0
+  L01 <- rbinom(n = B, size = 1, prob = 0.4)
+  L02 <- rbinom(n = B, size = 1, prob = 0.6)
+  temp_data <- list()
+  temp_data[[1]] <- data.frame(L1 = L01, L2 = L02)
+  t <- t + 1
+
+  if(is.null(setAM)) {
+    # time point 1~tau
+    # t = 1, ..., tau; to update the t-th time point in the t+1 slot
+    while(t <= tau) {
+      # omit censoring for now
+      temp_A <- map_dbl(.x = expit(- 0.1 + 1.2*L02 + 0.7*ifelse_vec(t > 1, temp_data[[t]]$L1, L01) - 0.1*ifelse_vec(t>1, temp_data[[t]]$A, 0)),
+                        .f = ~ rbinom(n = 1, size = 1, prob = .x)
+      )
+      temp_R <- map_dbl(.x = expit(- 0.8 + temp_A + 0.1*ifelse_vec(t > 1, temp_data[[t]]$L1, L01) + 0.3*ifelse_vec(t>1, temp_data[[t]]$R, L02)),
+                        .f = ~ rbinom(n = 1, size = 1, prob = .x)
+      )
+      temp_Z <- map_dbl(.x = expit(- 0.5 + 0.8*L02 + 0.8*temp_A + temp_R),
+                        .f = ~ rbinom(n = 1, size = 1, prob = .x)
+      )
+      if (!if_LY_misspec) {
+        # default, correct data
+        temp_L <- map_dbl(.x = expit(- 1 + 0.3*L02 + temp_A + 0.7*temp_Z - 0.2*ifelse_vec(t>1, temp_data[[t]]$L1, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+        temp_Y <- map_dbl(.x = expit(0.2 + 1.5*L02 + temp_R + 0.2*temp_L - 0.3*temp_A - 0.3*temp_Z - 0.2*temp_A*temp_Z -
+                                       0.1*ifelse_vec(t>1, temp_data[[t]]$R, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+      } else {
+        # LY misspec with squares
+        temp_L <- map_dbl(.x = scale_01(- 1 + 0.3*L02 + temp_A^2 + 0.7*temp_Z^2 - 0.2*ifelse_vec(t>1, temp_data[[t]]$L1, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+        temp_Y <- map_dbl(.x = scale_01(0.2 + 1.5*L02^2 + temp_R + 0.2*temp_L^2 - 0.3*temp_A - 0.3*temp_Z - 0.2*temp_A*temp_Z -
+                                          0.1*ifelse_vec(t>1, temp_data[[t]]$R, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+      }
+
+      temp_data[[t + 1]] <- data.frame(A = temp_A,
+                                       R = temp_R,
+                                       Z = temp_Z,
+                                       L1 = temp_L,
+                                       Y = temp_Y
+      )
+      t <- t + 1
+    }
+  } else {
+    # for mediation targets
+    # time point 1~tau
+    # t = 1, ..., tau; to update the t-th time point in the t+1 slot
+    while(t <= tau) {
+      # omit censoring for now
+      temp_A <- rep(setAM[1], B)
+      temp_R <- map_dbl(.x = expit(- 0.8 + temp_A + 0.1*ifelse_vec(t > 1, temp_data[[t]]$L1, L01) + 0.3*ifelse_vec(t>1, temp_data[[t]]$R, L02)),
+                        .f = ~ rbinom(n = 1, size = 1, prob = .x)
+      )
+      # replace with mediator level
+      temp_Z <- map_dbl(.x = expit(- 0.5 + 0.8*L02 +
+                                     # 0.8*temp_A +
+                                     0.8*rep(setAM[2], B) +
+                                     temp_R),
+                        .f = ~ rbinom(n = 1, size = 1, prob = .x)
+      )
+      if (!if_LY_misspec) {
+        # default, correct data
+        temp_L <- map_dbl(.x = expit(- 1 + 0.3*L02 + temp_A + 0.7*temp_Z - 0.2*ifelse_vec(t>1, temp_data[[t]]$L1, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+        temp_Y <- map_dbl(.x = expit(0.2 + 1.5*L02 + temp_R + 0.2*temp_L - 0.3*temp_A - 0.3*temp_Z - 0.2*temp_A*temp_Z -
+                                       0.1*ifelse_vec(t>1, temp_data[[t]]$R, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+      } else {
+        # LY misspec
+        temp_L <- map_dbl(.x = scale_01(- 1 + 0.3*L02 + temp_A^2 + 0.7*temp_Z^2 - 0.2*ifelse_vec(t>1, temp_data[[t]]$L1, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+        temp_Y <- map_dbl(.x = scale_01(0.2 + 1.5*L02^2 + temp_R + 0.2*temp_L^2 - 0.3*temp_A - 0.3*temp_Z - 0.2*temp_A*temp_Z -
+                                          0.1*ifelse_vec(t>1, temp_data[[t]]$R, 0)),
+                          .f = ~ rbinom(n = 1, size = 1, prob = .x)
+        )
+      }
+
+      temp_data[[t + 1]] <- data.frame(A = temp_A,
+                                       R = temp_R,
+                                       Z = temp_Z,
+                                       L1 = temp_L,
+                                       Y = temp_Y
+      )
+      t <- t + 1
+    }
+  }
+
+  for (s in 1:(tau + 1)) {
+    colnames(temp_data[[s]]) <- paste0(colnames(temp_data[[s]]), "_", s-1)
+  }
+
+  return(temp_data)
+}
+
+
+
+
+
+
+```
+
+```{r}
+library(R6)  # R6class
+library(data.table)  # setDT
+library(sl3)
+library(digest)
+library(uuid)  # UUIDgenerate
+library(delayed)  # bundle_delayed
+library(assertthat)  # assert_that
+# library(methods)  # is
+
+#code_list <- list.files("./R", full.names = T)
+#for (code in code_list) source(code)
+#source("./temp_code/generate_data.R")
+
+set.seed(1234)
+
+data_sim <- generate_Zheng_data(B = 2000, tau = 2, if_LY_misspec = F)
+data_wide <- data.frame(data_sim)
+
+node_list <- list(L_0 = c("L1_0", "L2_0"),
+                  A_1 = "A_1",
+                  R_1 = "R_1",
+                  Z_1 = "Z_1",
+                  L_1 = "L1_1",
+                  Y_1 = "Y_1"
+                  ,
+                  A_2 = "A_2",
+                  R_2 = "R_2",
+                  Z_2 = "Z_2",
+                  L_2 = "L1_2",
+                  Y_2 = "Y_2"
+)
+
+middle_spec <- tmle_middle(
+  treatment_level = 1,
+  control_level = 0
+)
+
+tmle_task <- middle_spec$make_tmle_task(data_wide, node_list)
+
+# choose base learners
+  lrnr_glm_fast <- Lrnr_glm_fast$new(outcome_type = "binomial")
+  learner_list <- lapply(1:length(tmle_task$npsem), function(s) lrnr_glm_fast
+  )
+  names(learner_list) <- names(tmle_task$npsem)  # the first will be ignored; empirical dist. will be used for covariates
+
+  
+initial_likelihood <- middle_spec$make_initial_likelihood(
+  tmle_task,
+  learner_list
+)
+
+tlik <- Targeted_Likelihood$new(initial_likelihood,
+                                submodel_type_by_node = "EIC" ,
+                                updater = list(convergence_type = "sample_size", cvtmle = F, constrain_step = T, delta_epsilon = 0.001))
+
+```
+
+```{r, include = F}
+
+
+tmle_params <- middle_spec$make_params(tmle_task, tlik, if_projection = T)
+```
+
+
+```{r}
+tmle_params[[1]]$gradient$generate_task(tmle_task, "L_1")$data
+
+```
+```{r}
+
+tlik$updater$update_step(tlik, tmle_task)
+
+
+```

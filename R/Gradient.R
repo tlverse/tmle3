@@ -262,18 +262,18 @@ Gradient <- R6Class(
       # For all levels of the node, we need to know what cutoff value for the node is used for each bsis function.
       # E.g if basis is 1(node > v) then this will give the index in "levels" which has the value v.
 
-      diff_map <- sapply(seq_along(basis_list), function(i) {
+      basis_node_cutoff_map <- sapply(seq_along(basis_list), function(i) {
         basis <- basis_list[[i]]
         result <- (list(which(levels == basis$cutoffs[which(basis$cols == col_index)])))
 
         return(result)
       })
 
-      # Based on the diff_map index, for each basis function, we center it by subtracting its mean.
+      # Based on the basis_node_cutoff_map index, for each basis function, we center it by subtracting its mean.
       # In the simple case of 1(node>v), we just need to do 1(node > v) - P(node > v), which is just the CDF.
       # This centers the design matrix in place.
-      center_basis <- lapply(seq_along(diff_map), function(i){
-        col_index <- diff_map[[i]]
+      center_basis <- lapply(seq_along(basis_node_cutoff_map), function(i){
+        col_index <- basis_node_cutoff_map[[i]]
         diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]]
         set(design, , as.integer(i), diff)
       })
@@ -281,26 +281,26 @@ Gradient <- R6Class(
       # For example 1(a > v) 1(node >v) is centered as 1(a >v) ( 1 (node >v) - P(node >v|...)).
       # The center_basis actually computes 1(a >v)1 (node >v) - P(node >v|...), which is not correct.
       #We therefore need to multiply 1(a >v)1 (node >v) - P(node >v|...) by 1(a >v) to get 1(a >v) ( 1 (node >v) - P(node >v|...))
-      # This is done by doing design * clean_design
+      # This is done by doing design * design_without_node
 
       min_val <- min(IC_task$X[[node]]) - 5
-      clean_basis <- function(basis){
+      get_basis_without_node <- function(basis){
         index = which(basis$cols == col_index)
         basis$cutoffs[index] <- min_val
         return(basis)
       }
-      clean_list = lapply(basis_list, clean_basis)
+      clean_list = lapply(basis_list, get_basis_without_node)
       #print(table(unlist( lapply(basis_list, `[[`, "cols"))))
-      clean_design <- hal9001::make_design_matrix(X, clean_list)
-      clean_design <- data.table(as.matrix(clean_design))
+      design_without_node <- hal9001::make_design_matrix(X, clean_list)
+      design_without_node <- data.table(as.matrix(design_without_node))
 
-      #print(as.data.table(clean_design))
+      #print(as.data.table(design_without_node))
       #print(as.data.table(coefs))
 
-      mid_result <- as.matrix(design * clean_design)
-      # Once we have our centered design matrix (mid_result), we can just multiply this by the hal basis coefficients.
-      result =  mid_result %*% coefs[-1]
-      out = list(col_index = col_index,Y = IC_task$Y, cdf = cdf,design = design,  mid_result = mid_result, coefs = coefs[-1], EIC = result)
+      centered_design <- as.matrix(design * design_without_node)
+      # Once we have our centered design matrix (centered_design), we can just multiply this by the hal basis coefficients.
+      result =  centered_design %*% coefs[-1]
+      out = list(col_index = col_index,Y = IC_task$Y, cdf = cdf,design = design,  centered_design = centered_design, coefs = coefs[-1], EIC = result)
       return(out)
 
     },
@@ -331,7 +331,7 @@ Gradient <- R6Class(
       X <- as.matrix(task$X)
       design <- as.data.table(as.matrix(hal9001::make_design_matrix(X, basis_list)))
 
-      diff_map <- unlist(lapply(seq_along(basis_list), function(i) {
+      basis_node_cutoff_map <- unlist(lapply(seq_along(basis_list), function(i) {
         basis <- basis_list[[i]]
         if(!(col_index %in% basis$cols)){
           return(NULL)
@@ -341,13 +341,13 @@ Gradient <- R6Class(
         return(result)
       }))
 
-      center_basis <- lapply((names(diff_map)), function(i){
-        col_index <- diff_map[[i]]
+      center_basis <- lapply((names(basis_node_cutoff_map)), function(i){
+        col_index <- basis_node_cutoff_map[[i]]
         diff <- design[[as.integer(i)]] - 1 + cdf[[col_index]]
         set(design, , as.integer(i), diff)
       })
 
-      clean_basis <- function(basis){
+      get_basis_without_node <- function(basis){
         if(!(col_index %in% basis$cols)){
           return(basis)
         }
@@ -355,16 +355,16 @@ Gradient <- R6Class(
         basis$cutoffs[index] <- min(task$X[[node]]) - 1
         return(basis)
       }
-      clean_list = lapply(basis_list, clean_basis)
+      clean_list = lapply(basis_list, get_basis_without_node)
 
-      clean_design <- hal9001::make_design_matrix(X, clean_list)
-      clean_design <- data.table(as.matrix(clean_design))
+      design_without_node <- hal9001::make_design_matrix(X, clean_list)
+      design_without_node <- data.table(as.matrix(design_without_node))
 
       #TODO only do this for basis functions containing y
 
-      mid_result <- as.matrix(design * clean_design)
-      result =  mid_result %*% coefs[-1]
-      out = list(mat = mid_result, EIC = result)
+      centered_design <- as.matrix(design * design_without_node)
+      result =  centered_design %*% coefs[-1]
+      out = list(mat = centered_design, EIC = result)
       return(out)
 
 

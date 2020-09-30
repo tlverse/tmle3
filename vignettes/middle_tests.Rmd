@@ -226,7 +226,7 @@ tlik$updater$update_step(tlik, tmle_task)
 tlik$cache$tasks %>% length
 tmle_params[[1]]$gradient$compute_component(tmle_task, "L_1", fold_number = "full")
 
-
+#tlik$updater$update_step(tlik, tmle_task)
 # tlik$updater$update(tlik, tmle_task)
 
 

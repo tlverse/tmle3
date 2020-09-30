@@ -592,7 +592,6 @@ scale_01 <- function(x) scale(x, center = min(x), scale = max(x) - min(x))
 
 
 
-
 #' @export
 ipw_middle <- function(task, lik, ipw_args, fold_number){
 
@@ -600,9 +599,11 @@ ipw_middle <- function(task, lik, ipw_args, fold_number){
   cf_likelihood_treatment = ipw_args$cf_likelihood_treatment
   intervention_list_treatment <- ipw_args$intervention_list_treatment
   intervention_list_control <- ipw_args$intervention_list_control
-  # todo: extend for stochastic
-  cf_task_treatment <- cf_likelihood_treatment$enumerate_cf_tasks(task)[[1]]
-  cf_task_control <- cf_likelihood_control$enumerate_cf_tasks(task)[[1]]
+  cf_task_treatment <- ipw_args$cf_task_treatment
+  cf_task_control <- ipw_args$cf_task_control
+  # # todo: extend for stochastic
+  # cf_task_treatment <- cf_likelihood_treatment$enumerate_cf_tasks(task)[[1]]
+  # cf_task_control <- cf_likelihood_control$enumerate_cf_tasks(task)[[1]]
 
   intervention_nodes <- union(names(intervention_list_treatment), names(intervention_list_control))
 
@@ -650,13 +651,11 @@ gradient_generator_middle <- function(tmle_task, lik,  node, include_outcome = T
 
   task <- tmle_task$get_regression_task(node)
   IC <- ipw_middle(tmle_task, lik,  ipw_args, fold_number)[[node]] %>% as.vector
-  new_data <- data.table(IC = IC)
-  set(new_data, , node, task$Y)
-  cols <- task$add_columns(new_data)
+  cols <- task$add_columns(data.table(IC = IC))
   task <- task$clone()
   nodes <- task$nodes
   nodes$outcome <- "IC"
-  nodes$covariates <- c(nodes$covariates, node)
+  nodes$covariates <- c(nodes$covariates, tmle_task$npsem[[node]]$variables)
 
   task$initialize(
     task$internal_data,

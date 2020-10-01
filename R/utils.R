@@ -40,7 +40,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   psi <- unlist(lapply(estimates, `[[`, "psi"))
   psi_Ws <- lapply(estimates, `[[`, "psi_W")
   weights <- task$weights[!duplicated(task$id)]
-  if(!is.null(psi_W[[1]])) {
+  if(!is.null(psi_Ws[[1]])) {
     psi <- unlist(lapply(psi_Ws, function(psi_W) {sum(psi_W*weights)/sum(weights)}))
   }
   IC <- lapply(estimates, `[[`, "IC")

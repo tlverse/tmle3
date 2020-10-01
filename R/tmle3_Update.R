@@ -503,16 +503,23 @@ tmle3_Update <- R6Class(
         tmle_param$estimates(tmle_task, update_fold)
       })
 
-      if(FALSE) {
+      # Initial variances to use for one_dimensional when scaled_var method used
+      #TODO check
+      if(T) {
+        #TODO weights correctly
         clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
           tmle_param$clever_covariates(tmle_task, update_fold)})
         IC <- lapply(clever_covariates, `[[`, "IC")
         if(!is.null(IC[[1]])){
           n <- length(unique(tmle_task$id))
+          weights <- tmle_task$weights[!duplicated(tmle_task$id)]
+          weights <- weights/sum(weights)
           IC_vars <- lapply(IC, function(IC) {
+            IC <- as.matrix(IC)
             out <- lapply(self$update_nodes, function(node) {
-              weights <- tmle_task$get_regression_task(node)$weights
-              apply(IC[[node]] * weights,2, function(v) {var(rowSums(matrix(v, nrow = n, byrow = T)))})
+
+              as.vector(apply(IC[[node]] ,2, function(v) {
+                diag(cov.wt(matrix(v, nrow = n, byrow = T),weights)$cov)}))
             } )
             names(out) <- self$update_nodes
             return(out)
@@ -521,11 +528,15 @@ tmle3_Update <- R6Class(
 
 
         } else {
+
           n <- length(unique(tmle_task$id))
+          weights <- tmle_task$weights[!duplicated(tmle_task$id)]
+          weights <- weights/sum(weights)
           IC <- lapply(private$.current_estimates, `[[`, "IC")
           IC_vars <- lapply(IC, function(IC) {
-            weights <- tmle_task$get_regression_task(node)$weights
-            IC_var <- apply(IC[[node]] * weights,2, function(v) {var(rowSums(matrix(v, nrow = n, byrow = T)))})
+            IC <- as.matrix(IC)
+
+            IC_var <- diag(cov.wt(IC, weights)$cov)
             IC_var <- lapply(self$update_nodes, function(node) {IC_var})
             names(IC_var) <- self$update_nodes
             return(IC_var)
@@ -580,7 +591,7 @@ tmle3_Update <- R6Class(
       # private$.initial_variances <- lapply(private$.current_estimates, function(ests) {
       #   resample::colVars(matrix(ests$IC, nrow = length(unique(tmle_task$id))))
       # })
-      private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
+      #private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
     }
   ),
   active = list(

@@ -38,16 +38,20 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
                                    param_names = NULL, init_psi = NULL,
                                    simultaneous_ci = FALSE) {
   psi <- unlist(lapply(estimates, `[[`, "psi"))
-
+  psi_Ws <- lapply(estimates, `[[`, "psi_W")
+  weights <- task$weights[!duplicated(task$id)]
+  if(!is.null(psi_W[[1]])) {
+    psi <- unlist(lapply(psi_Ws, function(psi_W) {sum(psi_W*weights)/sum(weights)}))
+  }
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
-    combined <- (by(IC, as.numeric(task$id), colMeans, simplify = FALSE))
+    combined <- (by(IC, as.numeric(as.character(task$id)), colMeans, simplify = FALSE))
     IC <- do.call(rbind, combined)
   }
-
-  var_D <- cov(IC)
+  var_D <- cov.wt(IC, weights/sum(weights))$cov
+  #var_D <- cov(IC)
   n <- nrow(IC)
   se <- sqrt(diag(var_D) / n)
   level <- 0.95

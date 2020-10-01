@@ -189,7 +189,8 @@ tmle3_Update <- R6Class(
       n <- length(unique(tmle_task$id))
       if(self$one_dimensional & for_fitting){
         # This computes (possibly weighted) ED and handles long case
-        ED <- colSums(IC * weights)/n #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
+
+        ED <- colSums(IC * weights)/sum(weights) #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
       } else {
         ED <- NULL
       }
@@ -448,6 +449,7 @@ tmle3_Update <- R6Class(
         IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
+        weights <- tmle_task$weights[!duplicated(tmle_task$id)]
         se_Dstar <- sqrt(apply(IC, 2, function(v){
           # If long then make it a matrix
           if(length(v)!=n){
@@ -455,8 +457,9 @@ tmle3_Update <- R6Class(
             #Collapse EIC for each person by summing across time (this is correct for survival)
             v <- rowSums(v)
           }
-
-          return(var(v))
+          mean_v <- weighted.mean(v, weights)
+          var_v <- sum(weights * (v - mean_v)^2)/sum(weights)
+          return(var_v)
         })/n)
         # Handle case where variance is 0 or very small for whatever reason
         ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1/n)

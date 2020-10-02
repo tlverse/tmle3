@@ -184,7 +184,6 @@ Param_survival <- R6Class(
         clever_dot_HA <- HA*residuals
 
 
-        private$.D_cache[[tmle_task$uuid]] <-  clever_dot_HA
 
 
 
@@ -193,11 +192,9 @@ Param_survival <- R6Class(
       # TODO dont compute HA for all people
       HA[zero_rows,] <- 0
 
-      return(list(processN =  HA))
+      return(list(processN =  HA, IC = list(processN = clever_dot_HA)))
     },
-    get_EIC_var = function(tmle_task, fold_number = "full"){
-      self$clever_covariates_internal(tmle_task, fold_number)
-    },
+
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
@@ -219,18 +216,14 @@ Param_survival <- R6Class(
       # liks_surv = liks[, cbind(t,cumprod(.SD)), by = id, .SDcols = "processN"]
       # liks_surv = liks_surv[, lapply(.SD, mean), by = t, .SDcols = c("processN")]
       liks_surv <- 0
-      IC =  private$.D_cache[[tmle_task$uuid]]
-      if(is.null(IC)){
-        self$clever_covariates(tmle_task = tmle_task, fold_number = "full")
-      }
-      result <- list(psi = liks_surv, IC =  private$.D_cache[[tmle_task$uuid]])
+
+      IC <- self$clever_covariates(tmle_task = tmle_task, fold_number = "full")$IC
+
+      result <- list(psi = liks_surv, IC =  IC)
       return(result)
       },
     clever_covariates = function(tmle_task, fold_number = "full"){
       self$clever_covariates_internal(tmle_task, fold_number, subset_times = TRUE)
-    },
-    get_EIC_component = function(task, node) {
-      return(private$.D_cache[[task$uuid]][[node]])
     }
 
   ),

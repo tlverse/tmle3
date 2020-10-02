@@ -141,35 +141,31 @@ Param_CR <- R6Class(
 
       if(tmle_task$uuid == self$observed_likelihood$training_task$uuid){
         #If training task then compute and add the EIC mean for one-step
-        D_list <- list()
         EIC_list <- list()
         obs_vals <- unlist(tmle_task$get_tmle_node(target_node, format = T, expand = T, compute_risk_set = F), use.names = F)
         Qvals <- Qtarget
         residuals <- as.vector(obs_vals - Qvals)
 
-        EIC_tgt <- H_list[[target_node]]*residuals*tmle_task$get_regression_task(target_node)$weights
+        EIC_tgt <- H_list[[target_node]]*residuals
 
         if(for_estimates) {
           EIC_list[[target_node]] <- EIC_tgt
         }
 
-        D_list[[target_node]] <- colSums(EIC_tgt)/nrow(cum_hazard_mat)
 
         for(node in competing_risk_nodes) {
           obs_vals <- unlist(tmle_task$get_tmle_node(node, format = T, expand = T, compute_risk_set = F), use.names = F)
           Qvals <- Qcompeting[,node]
           residuals <- as.vector(obs_vals - Qvals)
-          EIC_comp <- H_list[[node]]*residuals*tmle_task$get_regression_task(node)$weights
+          EIC_comp <- H_list[[node]]*residuals
           if(for_estimates) {
             EIC_list[[node]] <- EIC_comp
           }
 
-          D_list[[node]] <- colSums(EIC_comp)/nrow(cum_hazard_mat)
         }
-        H_list[["ED"]] <- D_list
 
         if(for_estimates) {
-          H_list[["EIC"]] <- EIC_list
+          H_list[["IC"]] <- EIC_list
         }
 
       }

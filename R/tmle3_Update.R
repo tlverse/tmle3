@@ -56,6 +56,7 @@ tmle3_Update <- R6Class(
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
+                          lower_bound = 0.005,
                           verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -66,6 +67,7 @@ tmle3_Update <- R6Class(
       private$.fluctuation_type <- match.arg(fluctuation_type)
       private$.optim_delta_epsilon <- optim_delta_epsilon
       private$.use_best <- use_best
+      private$.lower_bound <- lower_bound
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -184,7 +186,7 @@ tmle3_Update <- R6Class(
 
 
       # protect against qlogis(1)=Inf
-      initial <- bound(initial, 0.005)
+      initial <- bound(initial, private$.lower_bound)
       weights <- tmle_task$get_regression_task(update_node)$weights
       n <- length(unique(tmle_task$id))
       if(self$one_dimensional & for_fitting){
@@ -686,6 +688,7 @@ tmle3_Update <- R6Class(
     .verbose = FALSE,
     .targeted_components = NULL,
     .current_estimates = NULL,
-    .initial_variances = NULL
+    .initial_variances = NULL,
+    .lower_bound = NULL
   )
 )

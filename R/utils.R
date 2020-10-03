@@ -41,7 +41,14 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   psi_Ws <- lapply(estimates, `[[`, "psi_W")
   weights <- task$weights[!duplicated(task$id)]
   if(!is.null(psi_Ws[[1]])) {
-    psi <- unlist(lapply(psi_Ws, function(psi_W) {sum(psi_W*weights)/sum(weights)}))
+    psi <- unlist(lapply(psi_Ws, function(psi_W) {
+      if(is.matrix(psi_W)) {
+        apply(psi_W, 2, weighted.mean, weights/sum(weights))
+      }
+      else {
+        weighted.mean(psi_W, weights/sum(weights))
+        }
+    }))
   }
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)

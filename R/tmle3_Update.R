@@ -515,7 +515,9 @@ tmle3_Update <- R6Class(
       if(T) {
         #TODO weights correctly
         clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
-          tmle_param$clever_covariates(tmle_task, update_fold)})
+          args <- list(tmle_task = tmle_task, update_fold = update_fold, for_fitting = T)
+          return(sl3:::call_with_args(tmle_param$clever_covariates, args))
+         })
         IC <- lapply(clever_covariates, `[[`, "IC")
         if(!is.null(IC[[1]])){
           n <- length(unique(tmle_task$id))

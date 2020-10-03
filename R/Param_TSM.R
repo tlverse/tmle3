@@ -103,7 +103,9 @@ Param_TSM <- R6Class(
 
       # todo: separate out psi
       # todo: make this a function of f(W)
-      psi <- mean(EY1)
+      #psi <- mean(EY1)
+      psi <- self$empirical_mean(tmle_task, EY1)
+
       IC <- HA * (Y - EYA) + EY1 - psi
 
       result <- list(psi = psi, IC = IC)

@@ -136,6 +136,16 @@ LF_emp <- R6Class(
 
       values <- as.matrix(do.call(rbind, lapply(1:num, function(i) uniq_obs[base::sample(nrow(uniq_obs), n_samples, prob = emp_probs, replace = T)])))
       return(values)
+    },
+    empirical_mean = function(tmle_task, observations) {
+      weights <- tmle_task$weights
+      weights <- weights / sum(weights)
+      if(is.matrix(observations)) {
+        result <- apply(observations, 2, weighted.mean, weights)
+      } else {
+        result <- weighted.mean(observations, weights)
+      }
+      return(result)
     }
   ),
   active = list(

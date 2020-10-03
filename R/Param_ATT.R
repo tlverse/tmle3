@@ -85,7 +85,9 @@ Param_ATT <- R6Class(
       EY1 <- self$observed_likelihood$get_likelihoods(cf_task_treatment, self$outcome_node, fold_number)
       EY0 <- self$observed_likelihood$get_likelihoods(cf_task_control, self$outcome_node, fold_number)
 
-      psi <- mean((EY1 - EY0) * (pA1 / pA1_overall))
+      #psi <- mean((EY1 - EY0) * (pA1 / pA1_overall))
+      psi <- self$empirical_mean(tmle_task, (EY1 - EY0) * (pA1 / pA1_overall))
+
       CY <- (EY1 - EY0) - psi
 
       return(list(A = CY, Y = HA))

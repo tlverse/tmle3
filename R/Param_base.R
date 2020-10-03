@@ -50,7 +50,9 @@ Param_base <- R6Class(
       #Returns full IC and estimate
       stop("Param_base is a base class")
     },
-
+    empirical_mean = function(tmle_task, observed, baseline_node = "W") {
+      self$observed_likelihood$factor_list[[baseline_node]]$empirical_mean(tmle_task, observed)
+    },
     print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     },

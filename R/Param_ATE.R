@@ -113,8 +113,8 @@ Param_ATE <- R6Class(
       EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
       EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
       EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
-
-      psi <- mean(EY1 - EY0)
+      psi <- self$empirical_mean(tmle_task, EY1 - EY0)
+      #psi <- mean(EY1 - EY0)
 
       IC <- HA * (Y - EY) + (EY1 - EY0) - psi
 

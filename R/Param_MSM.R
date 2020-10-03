@@ -1,3 +1,7 @@
+
+#TODO support weighted observations
+
+
 #' Stratified Parameter Estimates via MSM
 #'
 #' @section Current Issues:

@@ -512,7 +512,7 @@ tmle3_Update <- R6Class(
 
       # Initial variances to use for one_dimensional when scaled_var method used
       #TODO check
-      if(T) {
+      if(self$convergence_type == "scaled_var") {
         #TODO weights correctly
         clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
           args <- list(tmle_task = tmle_task, update_fold = update_fold, for_fitting = T)
@@ -524,10 +524,11 @@ tmle3_Update <- R6Class(
           weights <- tmle_task$weights[!duplicated(tmle_task$id)]
           weights <- weights/sum(weights)
           IC_vars <- lapply(IC, function(IC) {
-            IC <- as.matrix(IC)
-            out <- lapply(self$update_nodes, function(node) {
 
-              as.vector(apply(IC[[node]] ,2, function(v) {
+            out <- lapply(self$update_nodes, function(node) {
+              IC_node <- IC[[node]]
+              IC_node <- as.matrix(IC_node)
+              as.vector(apply(IC_node ,2, function(v) {
                 diag(cov.wt(matrix(v, nrow = n, byrow = T),weights)$cov)}))
             } )
             names(out) <- self$update_nodes

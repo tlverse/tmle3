@@ -452,6 +452,7 @@ tmle3_Update <- R6Class(
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
         weights <- tmle_task$weights[!duplicated(tmle_task$id)]
+        weights <- weights /sum(weights)
         se_Dstar <- sqrt(apply(IC, 2, function(v){
           # If long then make it a matrix
           if(length(v)!=n){
@@ -460,7 +461,7 @@ tmle3_Update <- R6Class(
             v <- rowSums(v)
           }
           mean_v <- weighted.mean(v, weights)
-          var_v <- sum(weights * (v - mean_v)^2)/sum(weights)
+          var_v <- sum(weights * (v - mean_v)^2)
           return(var_v)
         })/n)
         # Handle case where variance is 0 or very small for whatever reason

@@ -53,7 +53,7 @@ tmle_task2$uuid
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "sample_size")
+updater <- tmle3_Update$new(cvtmle = FALSE, convergence_type = "scaled_var")
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
 # define parameter
@@ -73,7 +73,6 @@ tmle_fit <- fit_tmle3(
   tmle_task, targeted_likelihood, list(ate), updater,
   max_it
 )
-
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est

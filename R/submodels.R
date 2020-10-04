@@ -40,6 +40,7 @@ logistic_loss <- function(estimate, observed) {
 #
 submodel_density <- function(eps, offset, X) {
   preds <- (1 + X %*% eps) * offset
+
   return(preds)
 }
 

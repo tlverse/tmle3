@@ -10,19 +10,15 @@ library(future)
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)
-data$parity01 <- as.numeric(data$parity > 2)
+data$parity01 <- as.numeric(data$parity > 0)
 data$parity01_fac <- factor(data$parity01)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
-
 node_list <- list(
-  W = c("sexn", "agedays", "mrace", "feeding" ),
+  W = c("sexn"),
   A = "parity01",
   Y = "haz01"
 )
-
-print(table(data$parity01))
-print(quantile(data$parity))
 
 qlib <- make_learner_stack(
   "Lrnr_mean",
@@ -51,13 +47,6 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
-A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], type = "mean")
-initial_likelihood$add_factors(list(A_factor))
-
-lik((initial_likelihood$get_likelihood(tmle_task, "A")))
-
-
-
 updater <- tmle3_Update$new(
   cvtmle = FALSE, convergence_type = "sample_size",
   constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 0.001,
@@ -84,9 +73,6 @@ tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
-print("here")
-
-print(mean(unlist(tmle_fit$estimates[[1]]$IC)))
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -107,7 +93,6 @@ Q <- cbind(EY0, EY1)
 
 # get G
 pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
-print(head(pA1))
 
 # debugonce(oneStepATT)
 tmle_classic_fit <- tmle(
@@ -126,7 +111,7 @@ tmle_classic_fit <- tmle(
 classic_psi <- tmle_classic_fit$estimates$ATT$psi
 print( tmle3_psi)
 classic_se <- sqrt(tmle_classic_fit$estimates$ATT$var.psi)
-tol <- 1 / (tmle_task$nrow)
+tol <- 1 / sqrt(tmle_task$nrow)
 test_that("psi matches result from classic package", {
   expect_equal(tmle3_psi, classic_psi, tol)
 })

@@ -166,7 +166,7 @@ Targeted_Likelihood <- R6Class(
             #This allows an initial likelihood to be a targeted likelihood.
             suppressWarnings(self$initial_likelihood$sync_task(tmle_task, fold_number = fold_number))
           }
-          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number, to_wide = F)
+          likelihood_values <- self$initial_likelihood$get_likelihood(tmle_task, node, fold_number)
           value_step <- 0
           self$cache$set_values(likelihood_factor, tmle_task, value_step, fold_number, likelihood_values, node = node)
         }

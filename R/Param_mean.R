@@ -52,7 +52,7 @@ Param_mean <- R6Class(
       Y <- tmle_task$get_tmle_node(self$outcome_node)
       # todo: separate out psi
       # todo: make this a function of f(W)
-      psi <- self$empirical_mean(EY)
+      psi <- self$empirical_mean(tmle_task, EY)
       IC <- Y - psi
 
 

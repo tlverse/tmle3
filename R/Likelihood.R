@@ -74,7 +74,7 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_likelihood = function(tmle_task, node, fold_number = "full",  drop_id = T, drop_time = T, drop = T, to_wide = F, expand = T) {
+    get_likelihood = function(tmle_task, node, fold_number = "full", expand = T) {
       # TODO from regression task extract risk_set and handle this if degeneracy option is set.
 
 
@@ -153,7 +153,7 @@ Likelihood <- R6Class(
       #if(drop & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", drop_id = T, drop_time = T, drop = T, expand = T) {
+    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", expand = T) {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
@@ -161,59 +161,12 @@ Likelihood <- R6Class(
       if (length(nodes) > 1) {
 
         all_likelihoods <- lapply(nodes, function(node) {
-          self$get_likelihood(tmle_task, node = node, fold_number = fold_number, drop_id = F, drop_time = F, to_wide = to_wide, expand =  expand, drop=F)
+          self$get_likelihood(tmle_task, node = node, fold_number = fold_number, expand = expand)
         })
         likelihood_dt <- as.data.table(all_likelihoods)
-
-        # keep <- unlist(lapply(all_likelihoods, function(lik) length(lik) != 0))
-        # all_likelihoods <- all_likelihoods[keep]
-        # contains_t <- all(unlist(lapply(all_likelihoods, function(lik){
-        #   "t" %in% colnames(lik)
-        # })))
-        # if(contains_t){
-        #   likelihood_dt <- all_likelihoods %>% purrr::reduce(merge, c("id", "t"))#as.data.table(all_likelihoods)
-        # } else{
-        #
-        #   all_likelihoods <- lapply(all_likelihoods, function(lik){
-        #     if(!(all(c("id", "t") %in% colnames(lik)))){
-        #       if("t" %in% colnames(lik)) lik$t <- NULL
-        #       return(lik)
-        #     }
-        #     if(length(unique(lik$t))==1){
-        #       if("t" %in% colnames(lik)) lik$t <- NULL
-        #       return(lik)
-        #     }
-        #     if(all(c("id", "t")) %in% colnames(lik)){
-        #       return(reshape(lik, idvar = "id", timevar = "t", direction = "wide"))
-        #     }
-        #     lik
-        #   })
-        #
-        #   likelihood_dt <- NULL
-        #   tryCatch(
-        #     {
-        #       likelihood_dt <- all_likelihoods %>% purrr::reduce(merge, by = "id")
-        #     }, error = function(cond) {
-        #       # Handle case when one of predictions doesn't include ID.
-        #       # This is mainly for backwards compatibility pre-ltmle changes
-        #
-        #       likelihood_dt <- setDT(unlist(all_likelihoods, recursive = F))[]
-        #       # Need to change likelihood_dt object in parent frame
-        #       likelihood_dt <<- likelihood_dt[, which(!duplicated(names(likelihood_dt))), with = F]
-        #
-        #     }
-        #   )
-        #
-        #   #as.data.table(all_likelihoods)
-        #   if("t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
-        # }
-        # TODO Already has names
-        #setnames(likelihood_dt, nodes)
-        #if(drop_id) likelihood_dt$id <- NULL
-        #if(drop_time & "t" %in% colnames(likelihood_dt)) likelihood_dt$t <- NULL
         return(likelihood_dt)
       } else {
-        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number, drop_id = drop_id, drop_time =drop_time, drop = drop, expand = expand, to_wide = to_wide ))
+        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number,  expand = expand))
       }
     },
     get_possible_counterfactuals = function(nodes = NULL) {

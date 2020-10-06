@@ -42,6 +42,7 @@ tmle3_Task <- R6Class(
 
 
       if(!inherits(data, "Shared_Data")){
+        data <- as.data.table(data)
         # For ease of coding and cleanness of code (and working with data.tables)
         # I assume that the id and time columns are "id" and "t" respectively.
 
@@ -54,8 +55,6 @@ tmle3_Task <- R6Class(
           long_format <- F
         }
 
-
-        if(!is.data.table(data)) data <- as.data.table(data)
         #TODO if passed through nodes arg
 
         if(is.null(id)){

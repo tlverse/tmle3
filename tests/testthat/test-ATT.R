@@ -10,32 +10,63 @@ library(future)
 # setup data for test
 data(cpp)
 data <- as.data.table(cpp)
-data$parity01 <- as.numeric(data$parity > 0)
-data$parity01_fac <- factor(data$parity01)
+data$parity01 <- as.numeric(data$parity > 1)
+data$parity <- data$sexn + data$parity  * (1-data$smoked)
 data$haz01 <- as.numeric(data$haz > 0)
 data[is.na(data)] <- 0
+
+
+
+library(simcausal)
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "runif", min = -0.8, max = 0.8) +
+  node("W1", distr = "runif", min = -1, max = 1) +
+  node("A", distr = "rbinom", size = 1,  prob = plogis(W1)) +
+  node("g1", distr = "rconst", const = plogis(W1)) +
+  node("Y", distr = "rbinom", size =1 , prob = plogis(( -1.5 + 1 + A + W - W1/2 ))) +
+  node ("EY1", distr = "rconst", const = plogis(( -1.5 + 1 + 1 + W - W1/2 ))) +
+node ("EY0", distr = "rconst", const = plogis(( -1.5 + 1 + 0 + W - W1/2 )))
+setD <- set.DAG(D)
+data <- sim(setD, n = 10000)
+data <- as.data.table(data)
+print(sum((data$EY1 - data$EY0) * data$g1)/sum(data$A))
+
+
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "runif", min = -0.8, max = 0.8) +
+  node("W1", distr = "runif", min = -1, max = 1) +
+  node("A", distr = "rbinom", size = 1,  prob = plogis(W1)) +
+  node("g1", distr = "rconst", const = plogis(W1)) +
+  node("Y", distr = "rbinom", size =1 , prob = plogis(( -1.5 + 1 + A + W - W1/2 ))) +
+  node ("EY1", distr = "rconst", const = plogis(( -1.5 + 1 + 1 + W - W1/2 )))
+setD <- set.DAG(D)
+data <- sim(setD, n = 1000)
+data <- as.data.table(data)
+
 node_list <- list(
-  W = c("sexn"),
-  A = "parity01",
-  Y = "haz01"
+  W = c("W", "W1" ),
+  A = "A",
+  Y = "Y"
 )
 
-qlib <- make_learner_stack(
-  "Lrnr_mean",
-  "Lrnr_glm_fast"
+
+
+qlib <- make_learner(
+  "Lrnr_xgboost"
 )
 
-glib <- make_learner_stack(
-  "Lrnr_mean",
-  "Lrnr_glm_fast"
+glib <- make_learner(
+  "Lrnr_xgboost"
 )
 
 logit_metalearner <- make_learner(
   Lrnr_solnp, metalearner_logistic_binomial,
   loss_loglik_binomial
 )
-Q_learner <- make_learner(Lrnr_sl, qlib, logit_metalearner)
-g_learner <- make_learner(Lrnr_sl, glib, logit_metalearner)
+Q_learner <- qlib
+g_learner <- glib
 learner_list <- list(Y = Q_learner, A = g_learner)
 
 tmle_spec <- tmle_ATT(1, 0)
@@ -47,12 +78,26 @@ tmle_task <- tmle_spec$make_tmle_task(data, node_list)
 # estimate likelihood
 initial_likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 
+A_factor <- define_lf(LF_fit, "A", learner = learner_list[["A"]], type = "mean")
+initial_likelihood$add_factors(list(A_factor))
+
+print(names(initial_likelihood$factor_list))
+
+lik <- ((initial_likelihood$get_likelihood(tmle_task, "A")))
+print(head(lik))
+A <- tmle_task$get_tmle_node("A")
+print("risk")
+print(mean(-1 * ifelse(A==1, log(lik), log(1 - lik))))
+print(mean(- log(lik)))
+pA1 <- initial_likelihood$get_likelihoods(tmle_task, "A")
+print(quantile(pA1))
+
 updater <- tmle3_Update$new(
   cvtmle = FALSE, convergence_type = "sample_size",
-  constrain_step = TRUE, one_dimensional = TRUE, delta_epsilon = 0.001,
-  optim_delta_epsilon = FALSE
+  constrain_step = T, one_dimensional = T, delta_epsilon = c(-0.0005, 0.0005),
+  optim_delta_epsilon = T
 )
-
+print(updater$step_number)
 # debugonce(updater$update_step)
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 
@@ -61,18 +106,31 @@ targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater)
 tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
 att <- tmle_params[[1]]
-
+print("before")
+print(tmle_params[[1]]$estimates(tmle_task)$psi)
 # fit tmle update
 tmle_fit <- fit_tmle3(
   tmle_task, targeted_likelihood, list(att), updater,
   max_it
 )
 
+lik <- ((targeted_likelihood$get_likelihood(tmle_task, "A")))
+A <- tmle_task$get_tmle_node("A")
+print("risk")
+print(mean(-1 * ifelse(A==1, log(lik), log(1 - lik))))
+print(mean(- log(lik)))
+print(updater$step_number)
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
 tmle3_se <- tmle_fit$summary$se
 tmle3_epsilon <- updater$epsilons[[1]]$Y
 
+print("here")
+g <-  ((targeted_likelihood$get_likelihood(tmle_task, "A")))
+print(mean(tmle_params[[1]]$clever_covariates(tmle_task)$A * (g - A)))
+g <- ifelse(A==1, g, 1-g)
+print(mean(tmle_params[[1]]$clever_covariates(tmle_task)$A * (g - A)))
+print(mean(unlist(tmle_fit$estimates[[1]]$IC)))
 #################################################
 # compare with the tmle package
 library(tmle)
@@ -93,6 +151,7 @@ Q <- cbind(EY0, EY1)
 
 # get G
 pA1 <- initial_likelihood$get_likelihoods(cf_task1, "A")
+print(quantile(pA1))
 
 # debugonce(oneStepATT)
 tmle_classic_fit <- tmle(
@@ -110,8 +169,10 @@ tmle_classic_fit <- tmle(
 # extract estimates
 classic_psi <- tmle_classic_fit$estimates$ATT$psi
 print( tmle3_psi)
+print( classic_psi)
+
 classic_se <- sqrt(tmle_classic_fit$estimates$ATT$var.psi)
-tol <- 1 / sqrt(tmle_task$nrow)
+tol <- 1 / (tmle_task$nrow)
 test_that("psi matches result from classic package", {
   expect_equal(tmle3_psi, classic_psi, tol)
 })

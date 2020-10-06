@@ -22,20 +22,6 @@ Summary_measure <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(column_names, summary_function, name = "Summary", strict_past = F, args_to_pass = NULL, group_by_id = T){
-        # Summary function must return data.table with nrow = 1 ...
-      # TODO caution output must be of right format for this to work
-      # The above wrapper slows things down a lot s ois ignored.
-       # for self$summarize to work correctly.
-        # summary_function_wrap <- function(data, time,  ...){
-        #   if(all(is.na(data))) {
-        #     return(data)
-        #   }
-        #   result <- summary_function(data, time, ...)
-        #   if(!is.data.table(result)){
-        #     result <- data.table(matrix(result, nrow =1))
-        #   }
-        #   return(result)
-        # }
         params <- sl3::args_to_list()
         params$summary_function <- summary_function
         private$.params <- params
@@ -48,8 +34,7 @@ Summary_measure <- R6Class(
     },
     summarize = function(data, time, add_id = T){
 
-      #data <- private$.process_data(data, time, NULL)
-      #ssertthat::assert_that(all(c("id", "t") %in% colnames(data)), msg = "Error: Column 'id' or 't' not found in data.")
+
       if(!is.data.table(data)){
         data = as.data.table(data)
       }
@@ -63,20 +48,12 @@ Summary_measure <- R6Class(
       func <- private$.params$summary_function
       # Needed since pass by promise would break next line apparently
 
-
       if(self$params$group_by_id){
       reduced_data <- data[,func(.SD, time, self$params$args_to_pass), by = id,
                            .SDcols = self$params$column_names]
       } else {
         reduced_data <- func(data, time,  self$params$args_to_pass, self$params$column_names )
       }
-
-    # This code isn't needed unless func does not return a data.table, which can't happen.
-     #  num_sample <- length(unique(reduced_data$id))
-     #  num_summary_vars <- nrow(reduced_data) / num_sample
-     #  reduced_data$summary_id <- c(1:num_summary_vars, num_sample)
-     #  reduced_data <- reshape(reduced_data, idvar = "id", timevar = "summary_id", direction = "wide")
-
 
       if(!is.null(self$params$name)){
         setnames(reduced_data,  c("id", self$params$name))

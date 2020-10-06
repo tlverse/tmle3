@@ -45,6 +45,21 @@ submodel_density <- function(eps, offset, X) {
 }
 
 
+#' Exponential Submodel Fluctuation (e.g. continuous hazard/partial likelihood)
+#' Standard exp(log(offset) + eps H) submodel
+#' @param eps ...
+#' @param X ...
+#' @param offset ...
+#'
+#'
+#' @export
+#
+submodel_exponential <- function(eps, offset, X) {
+  preds <- exp(log(offset) + X %*% eps)
+  return(preds)
+}
+
+
 #' Log-likelihood Loss Function
 #'
 #' @param estimate ...
@@ -75,6 +90,8 @@ submodel_spec = function(optim_type = c("logistic", "EIC")){
     spec <- list(submodel = submodel_logit, loss_function = logistic_loss, family = binomial(), offset_tranform = stats::qlogis)
   } else if(type == "EIC") {
     spec <- list(submodel = submodel_density, loss_function = loglik_loss, family = plug_f, offset_tranform = plug_f)
+  } else if(type == "exponential") {
+    spec <- list(submodel = submodel_exponential, loss_function = loglik_loss, family = plug_f, offset_tranform = plug_f)
   }
   return(spec)
 }

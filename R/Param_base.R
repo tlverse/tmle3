@@ -51,6 +51,9 @@ Param_base <- R6Class(
       stop("Param_base is a base class")
     },
     empirical_mean = function(tmle_task, observed, baseline_node = "W") {
+      if(is.null(tmle_task)) {
+        tmle_task <- self$observed_likelihood$training_task
+      }
       self$observed_likelihood$factor_list[[baseline_node]]$empirical_mean(tmle_task, observed)
     },
     print = function() {

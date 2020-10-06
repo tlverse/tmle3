@@ -77,7 +77,6 @@ Other Parameters:
 \code{\link{Param_stratified}},
 \code{\link{Param_survival_old}},
 \code{\link{Param_survival}},
-\code{\link{Param_thresh}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}
 }

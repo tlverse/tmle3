@@ -56,7 +56,7 @@ tmle3_Update <- R6Class(
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
-                          lower_bound = 0.005,
+                          bounds = 0.005,
                           verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
@@ -67,7 +67,7 @@ tmle3_Update <- R6Class(
       private$.fluctuation_type <- match.arg(fluctuation_type)
       private$.optim_delta_epsilon <- optim_delta_epsilon
       private$.use_best <- use_best
-      private$.lower_bound <- lower_bound
+      private$.bounds <- bounds
       private$.verbose <- verbose
     },
     collapse_covariates = function(estimates, clever_covariates) {
@@ -95,7 +95,7 @@ tmle3_Update <- R6Class(
           likelihood, tmle_task,
           fold_number, update_node,
           drop_censored = TRUE,
-          for_fitting = T
+          for_fitting = TRUE
         )
 
         new_epsilon <- self$fit_submodel(submodel_data)
@@ -117,7 +117,7 @@ tmle3_Update <- R6Class(
     generate_submodel_data = function(likelihood, tmle_task,
                                       fold_number = "full",
                                       update_node = "Y",
-                                      drop_censored = FALSE, for_fitting = F) {
+                                      drop_censored = FALSE, for_fitting = FALSE) {
 
 
       if(!(inherits(likelihood, "Targeted_Likelihood"))) {
@@ -131,31 +131,15 @@ tmle3_Update <- R6Class(
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         # Assert that it supports the submodel type
         tmle_param$supports_submodel_type(submodel_type, update_node)
-        #formal_args <- names(formals(tmle_param$clever_covariates))
-
-        # For backwards compatibility:
-        # In future, clever covariate functions should accept a "node" and "submodel_type" argument.
         args <- list(for_fitting = for_fitting, submodel_type = submodel_type, fold_number = fold_number, tmle_task = tmle_task
              ,node = update_node)
         return(sl3:::call_with_args(tmle_param$clever_covariates, args))
-        # if("for_fitting" %in% formal_args) {
-        #   return(tmle_param$clever_covariates(tmle_task, fold_number, for_fitting = for_fitting))
-        # }
-        # else if(all(c("submodel_type", "node") %in% formal_args)){
-        #   return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_type, node = update_node))
-        # }
-        # else if("submodel_type" %in% formal_args){
-        #   return(tmle_param$clever_covariates(tmle_task, fold_number, submodel_type = submodel_typee))
-        # }
-        # else if("node" %in% formal_args){
-        #   return(tmle_param$clever_covariates(tmle_task, fold_number, node = update_node))
-        # }
-        #  else {
-        #   return(tmle_param$clever_covariates(tmle_task, fold_number))
-        # }
+
       })
 
+
       node_covariates <- lapply(clever_covariates, `[[`, update_node)
+
       # Get EDs if present. Only for training task
       if(self$one_dimensional & for_fitting) {
         IC <- lapply(clever_covariates, `[[`, "IC")
@@ -168,13 +152,6 @@ tmle3_Update <- R6Class(
 
       covariates_dt <- do.call(cbind, node_covariates)
 
-      # if (self$one_dimensional) {
-      #   #TODO this should happen in fit_submodel so we can store epsiln
-      #   observed_task <- likelihood$training_task
-      #   covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
-      #
-      #   }
-
       observed <- tmle_task$get_tmle_node(update_node)
       initial <- likelihood$get_likelihood(
         tmle_task, update_node,
@@ -186,18 +163,18 @@ tmle3_Update <- R6Class(
 
 
       # protect against qlogis(1)=Inf
-      initial <- bound(initial, private$.lower_bound)
+      initial <- bound(initial, private$.bounds)
       weights <- tmle_task$get_regression_task(update_node)$weights
       n <- length(unique(tmle_task$id))
       if(self$one_dimensional & for_fitting){
         # This computes (possibly weighted) ED and handles long case
-
         ED <- colSums(IC * weights)/sum(weights) #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
       } else {
         ED <- NULL
       }
-
+      unequal = F
       if(length(observed) != length(initial)) {
+        unequal = T
         ratio <- length(initial) / length(observed)
         if(ratio%%1 == 0){
           warning("Observed and initial length do not match but are multiples of each other. Recycling values...")
@@ -228,20 +205,32 @@ tmle3_Update <- R6Class(
 
       if (drop_censored) {
         censoring_node <- tmle_task$npsem[[update_node]]$censoring_node$name
+        subset <- 1:length(submodel_data$observed)
         if (!is.null(censoring_node)) {
           observed_node <- tmle_task$get_tmle_node(censoring_node)
           subset <- which(observed_node == 1)
-          subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
-          submodel_data <- list(
-            observed = submodel_data$observed[subset],
-            H = submodel_data$H[subset, , drop = FALSE],
-            initial = submodel_data$initial[subset],
-            submodel_info = submodel_info,
-            ED = ED,
-            update_node = update_node,
-            weights = submodel_data$weights[subset]
-          )
         }
+
+        subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
+
+        if(unequal) {
+          subset <- 1:length(submodel_data$observed) %in% subset
+          ratio <- length(initial) / length(observed)
+          if(ratio%%1 == 0){
+            subset <- rep(subset, ratio)
+          }
+          subset <- which(subset)
+        }
+
+        submodel_data <- list(
+          observed = submodel_data$observed[subset],
+          H = submodel_data$H[subset, , drop = FALSE],
+          initial = submodel_data$initial[subset],
+          submodel_info = submodel_info,
+          ED = ED,
+          update_node = update_node,
+          weights = submodel_data$weights[subset]
+        )
       }
 
       return(submodel_data)
@@ -697,6 +686,6 @@ tmle3_Update <- R6Class(
     .targeted_components = NULL,
     .current_estimates = NULL,
     .initial_variances = NULL,
-    .lower_bound = NULL
+    .bounds = NULL
   )
 )

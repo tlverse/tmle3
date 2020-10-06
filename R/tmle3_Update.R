@@ -173,6 +173,7 @@ tmle3_Update <- R6Class(
         ED <- NULL
       }
       unequal = F
+      len <- length(observed)
       if(length(observed) != length(initial)) {
         unequal = T
         ratio <- length(initial) / length(observed)
@@ -205,7 +206,7 @@ tmle3_Update <- R6Class(
 
       if (drop_censored) {
         censoring_node <- tmle_task$npsem[[update_node]]$censoring_node$name
-        subset <- 1:length(submodel_data$observed)
+        subset <- 1:len
         if (!is.null(censoring_node)) {
           observed_node <- tmle_task$get_tmle_node(censoring_node)
           subset <- which(observed_node == 1)
@@ -214,8 +215,8 @@ tmle3_Update <- R6Class(
         subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
 
         if(unequal) {
-          subset <- 1:length(submodel_data$observed) %in% subset
-          ratio <- length(initial) / length(observed)
+          subset <- 1:len %in% subset
+          ratio <- ratio
           if(ratio%%1 == 0){
             subset <- rep(subset, ratio)
           }

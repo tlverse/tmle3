@@ -110,7 +110,7 @@ Gradient <- R6Class(
       if(length(variables) >1) stop("Multivariate nodes not supported")
       # Expand task by levels of node
       # TODO extend for continuous
-      data <- tmle_task$data
+      data <- copy(tmle_task$data)
       data$trueid <- data$id
       time <- tmle_task$npsem[[node]]$time
       levels <- sort(unique(unlist(tmle_task$get_tmle_node(node))))  #data[, variables, with = F])))

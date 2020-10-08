@@ -133,7 +133,7 @@ tmle3_Update <- R6Class(
         tmle_param$supports_submodel_type(submodel_type, update_node)
         args <- list(for_fitting = for_fitting, submodel_type = submodel_type, fold_number = fold_number, tmle_task = tmle_task
              ,node = update_node)
-        return(sl3:::call_with_args(tmle_param$clever_covariates, args))
+        return(sl3:::call_with_args(tmle_param$clever_covariates, args, silent = T))
 
       })
 
@@ -506,7 +506,7 @@ tmle3_Update <- R6Class(
         #TODO weights correctly
         clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
           args <- list(tmle_task = tmle_task, update_fold = update_fold, for_fitting = T)
-          return(sl3:::call_with_args(tmle_param$clever_covariates, args))
+          return(sl3:::call_with_args(tmle_param$clever_covariates, args, silent = T))
          })
         IC <- lapply(clever_covariates, `[[`, "IC")
         if(!is.null(IC[[1]])){

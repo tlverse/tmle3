@@ -9,6 +9,50 @@ devtools::document()
 ```
 
 
+
+
+```{r}
+n = 1000
+results <- sim2
+results$X1 <- NULL
+apply(results,1, hist)
+res <- as.data.table(results)
+
+residual <- res - truth
+
+residual <- transpose(residual)
+residual
+sqrt(n) * colMeans(residual)
+sqrt(colMeans(residual^2))
+n * (colMeans(residual)^2 + (colMeans(residual^2)))
+```
+
+```{r, include = T}
+library(simcausal)
+library(data.table)
+D <- DAG.empty()
+D <- D +
+  node("W", distr = "runif", min = -0.8, max = 0.8) +
+  node("W1", distr = "runif", min = -1, max = 1) +
+  node("W2", distr = "rbinom", size = 1, prob = 0.5) +
+  node("A", distr = "rbinom", size = 1,  prob = 0.3 + 0.7*plogis(W1/2 + W*0.8 - W2*0.5 + W2*W - W*W1 - W*sin(W1) + W1*cos(W))) +
+  node("g1", distr = "rconst", const = 0.3 + 0.7*plogis(W1^2 - W1/2 + W^2 - W2*0.5 + W2*W - W*W1 - W*sin(W1) + W1*cos(W))) +
+  node("Y", distr = "rbinom", size =1 , prob =  plogis(( A + W - A*W1/2 + W1*W + W2*sin(W) + exp(W1)*W1 - W^2 ))) +
+  node ("EY1", distr = "rconst", const =  plogis(( 1 + W - 1*W1/2 + W1*W + W2*sin(W) + exp(W1)*W1 - W^2 ))) 
+setD <- set.DAG(D)
+data <- sim(setD, n = 5000000)
+data
+data <- as.data.table(data)
+truth = mean(data$EY1)
+truth
+quantile(data$EY1)
+quantile(data$g1)
+```
+
+
+
+
+
 ```{r}
 library(simcausal)
 library(sl3)

@@ -55,23 +55,8 @@ tmle3_Node <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(name, variables, parents = c(), time = NULL, summary_functions = NULL, risk_set_map = NULL, degeneracy_type = "last", missing_row_implies_not_at_risk = T,
-                              variable_type = NULL, censoring_node = NULL, scale = FALSE) {
-
-
-      if(is.null(time)){
-        time <- 0
-      }
-      if(!is.null(summary_functions) & !is.list(summary_functions)){
-        summary_functions <- list(summary_functions)
-      }
-      if (!is.null(risk_set_map)){
-        if(!is.character(risk_set_map)){
-          risk_set_map$set_name(paste(paste(variables, collapse = "_"), "at_risk", sep = "_") )
-        }
-      }
-      private$.ltmle_params <- list(degeneracy_type = degeneracy_type, missing_row_implies_not_at_risk = missing_row_implies_not_at_risk, risk_set_map = risk_set_map, time = time, summary_functions = summary_functions)
-
+    initialize = function(name, variables, parents = c(),
+                          variable_type = NULL, censoring_node = NULL, scale = FALSE) {
       private$.name <- name
       private$.variables <- variables
       private$.parents <- parents
@@ -80,58 +65,13 @@ tmle3_Node <- R6Class(
       private$.censoring_node <- censoring_node
     },
     print = function() {
-      if(is.character(self$risk_set_map)){
-        risk_name <- self$risk_set_map
-      } else {
-        risk_name <- self$risk_set_map$name
-      }
       node_class <- class(self)[1]
       cat(sprintf("%s: %s\n", node_class, self$name))
       cat(sprintf("\tVariables: %s\n", paste(self$variables, collapse = ", ")))
       cat(sprintf("\tParents: %s\n", paste(self$parents, collapse = ", ")))
-      cat(sprintf("\tTime: %s\n", paste(self$time, collapse = ", ")))
-      cat(sprintf("\tSummary Measures: %s\n", paste(unlist(sapply(self$summary_functions, function(f){f$name})), collapse = ", ")))
-      cat(sprintf("\tRisk-set Map: %s\n",risk_name))
-
     },
     guess_variable_type = function(variable_data) {
-      private$.variable_type <- sl3::variable_type(x = variable_data)
-    },
-    risk_set = function(data, time, subset_time = T){
-
-      if(subset_time) data <- data[t <= time]
-      #Assumes data == data[t <= time,] and time is single number
-      #Computes, for this node, the id's of those in data at risk of changing their value at this time
-      at_risk_map <- self$risk_set_map
-      missing_not_at_risk <- private$.ltmle_params$missing_row_implies_not_at_risk
-      if(missing_not_at_risk){
-        keep_id <- unique(data[t == time, id])
-        data <- data[id %in% keep_id,]
-      }
-      if(is.null(at_risk_map)) {
-        risk_set <- unique(data$id)
-        return(risk_set)
-        }
-      if(is.character(at_risk_map)) {
-        if(missing_not_at_risk){
-          #If those missing rows are not at risk
-          #then only check for those with rows at this time
-          risk_set <- data[t == time & data[,at_risk_map,with = F, drop = T]==1, "id", with = F][["id"]]
-        } else{
-          #Otherwise find the last value of risk indicator
-          data <- data[, last(.SD), by = id, .SDcols = at_risk_map]
-          risk_set <- data$id[data[[at_risk_map]] ==1]
-        }
-      } else if (inherits(at_risk_map, "Summary_measure")){
-
-        risk_set <-at_risk_map$summarize(data,time)# [,at_risk_map$name, with = F, drop = T]
-
-        risk_set <- risk_set$id[risk_set[[at_risk_map$name]]==1]
-      } else {
-        risk_set <- risk_set(data, time)
-      }
-      return(unlist(risk_set, use.names = F))
-
+      private$.variable_type <- variable_type(x = variable_data)
     }
   ),
   active = list(
@@ -150,24 +90,6 @@ tmle3_Node <- R6Class(
     parents = function() {
       return(private$.parents)
     },
-    summary_functions = function(){
-      return(private$.ltmle_params$summary_functions)
-    },
-    missing_not_at_risk = function(){
-      private$.ltmle_params$missing_row_implies_not_at_risk
-    },
-    time = function(time = NULL){
-      if(!is.null(time)){
-        private$.ltmle_params$time <- time
-      }
-      private$.ltmle_params$time
-    },
-    risk_set_map = function(){
-      private$.ltmle_params$risk_set_map
-    },
-    degeneracy_type = function(){
-      private$.ltmle_params$degeneracy_type
-    },
     scale = function() {
       return(private$.scale)
     },
@@ -184,8 +106,7 @@ tmle3_Node <- R6Class(
     .censoring_node = NULL,
     .parents = NULL,
     .variable_type = NULL,
-    .scale = NULL,
-    .ltmle_params = NULL
+    .scale = NULL
   )
 )
 

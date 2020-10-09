@@ -85,7 +85,6 @@ with one row per possibility.
 Other Likelihood objects: 
 \code{\link{CF_Likelihood}},
 \code{\link{LF_base}},
-\code{\link{LF_binomial_collapsed}},
 \code{\link{LF_derived}},
 \code{\link{LF_emp}},
 \code{\link{LF_fit}},

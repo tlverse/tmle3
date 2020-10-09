@@ -163,7 +163,11 @@ tmle3_Task <- R6Class(
         # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
         # and for generating values for ICs (which will then be cancelled by 0)
-        impute_value <- data[which(!censoring)[1]]
+        if(any(censoring)) {
+          impute_value <- data[which(!censoring)[1]]
+        } else {
+          impute_value <- 0
+        }
         if (is.data.table(data)) {
           set(data, which(censoring), names(data), as.list(impute_value))
         } else {
@@ -200,7 +204,7 @@ tmle3_Task <- R6Class(
       nodes$covariates <- covariates
 
 
-      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
+      regression_data <- as.data.table(do.call(cbind, c(all_covariate_data, outcome_data, node_data)))
 
       if ((is_time_variant) && (!is.null(self$nodes$time))) {
         regression_data$time <- self$time
@@ -217,9 +221,10 @@ tmle3_Task <- R6Class(
         censoring <- rep(FALSE, nrow(regression_data))
       }
 
+
       if (drop_censored) {
         indices <- intersect(indices, which(!censoring))
-      } else {
+      } else if (any(censoring)) {
         # impute arbitrary value for node Need to keep the data shape the same,
         # but value should not matter here as this will only be used for prediction
         # and for generating values for ICs (which will then be cancelled by 0)

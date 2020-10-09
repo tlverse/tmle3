@@ -11,6 +11,11 @@ devtools::document()
 
 
 ```{r}
+unique(data.table(rep(1,10)))
+
+```
+
+```{r}
 library(simcausal)
 library(sl3)
 library(tmle3)

@@ -48,7 +48,6 @@ Inherits from \code{\link{Likelihood}}. Other factors (including their updates) 
 \seealso{
 Other Likelihood objects: 
 \code{\link{LF_base}},
-\code{\link{LF_binomial_collapsed}},
 \code{\link{LF_derived}},
 \code{\link{LF_emp}},
 \code{\link{LF_fit}},

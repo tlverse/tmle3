@@ -43,16 +43,12 @@ Other Parameters:
 \code{\link{Param_ATC}},
 \code{\link{Param_ATE}},
 \code{\link{Param_ATT}},
-\code{\link{Param_CR}},
-\code{\link{Param_LATE}},
 \code{\link{Param_MSM}},
 \code{\link{Param_TSM}},
 \code{\link{Param_base}},
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
-\code{\link{Param_middle_projection}},
 \code{\link{Param_stratified}},
-\code{\link{Param_survival}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}
 }

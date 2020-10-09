@@ -212,7 +212,7 @@ tmle3_Update <- R6Class(
           subset <- which(observed_node == 1)
         }
 
-        subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
+        #subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
 
         if(unequal) {
           subset <- 1:len %in% subset

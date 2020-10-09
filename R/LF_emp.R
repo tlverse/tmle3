@@ -33,21 +33,27 @@ LF_emp <- R6Class(
   inherit = LF_base,
   public = list(
     initialize = function(name, ...) {
+
       super$initialize(name, ..., type = "density")
       private$.name <- name
+
     },
     train = function(tmle_task, ...) {
+
       # get possible values from task if discrete
       super$train(tmle_task)
+
       weights <- tmle_task$get_regression_task(self$name)$weights
 
       # TODO weights
-      observed <- (tmle_task$get_tmle_node(self$name, format = T, include_id = F))
+      observed <- as.data.table(tmle_task$get_tmle_node(self$name, format = T))
+
       if(ncol(observed) == 0 | length(observed) ==0){
         private$.empirical_fit <- list(emp_probs = NULL, uniq_obs = NULL )
         return()
 
       }
+
       uniq_obs <- unique(observed)
 
       match_index <- uniq_obs[observed, which = T, on = colnames(uniq_obs)]
@@ -73,13 +79,11 @@ LF_emp <- R6Class(
     get_mean = function(tmle_task, fold_number = "full") {
       stop("nothing to predict")
     },
-    get_density = function(tmle_task, fold_number = "full", expand = T, node = NULL) {
-      if (is.null(node)) {
-        node <- tmle_task$npsem[[self$name]]$variables
-      } else {
-        node <- tmle_task$npsem[[node]]$variables
-      }
-      observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T, expand = expand)
+    get_density = function(tmle_task, fold_number = "full") {
+
+      node <- tmle_task$npsem[[node]]$variables
+
+      observedfull <-  as.data.table(tmle_task$get_tmle_node(self$name, format = T))
       if(length(observedfull)==0){
         return(observedfull)
       }
@@ -128,7 +132,7 @@ LF_emp <- R6Class(
       if(is.null(tmle_task)) {
         num <- 1
       } else {
-        observedfull <-  tmle_task$get_tmle_node(self$name, format = T, include_id = T, include_time = T)
+        observedfull <-  tmle_task$get_tmle_node(self$name, format = T)
         num <- 1:nrow(observedfull)
       }
       emp_probs <-  private$.empirical_fit$emp_probs

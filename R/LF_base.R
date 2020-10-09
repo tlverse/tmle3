@@ -49,9 +49,9 @@ LF_base <- R6Class(
     get_likelihood = function(tmle_task, fold_number = "full", ...) {
       node <- self$name
       if (self$type == "mean") {
-        values <- self$get_mean(tmle_task, fold_number, ...)
+        values <- self$get_mean(tmle_task, fold_number)
       } else {
-        values <- self$get_density(tmle_task, fold_number, ...)
+        values <- self$get_density(tmle_task, fold_number)
       }
       if (!is.null(self$bound)) {
         #values <- bound(values, self$bound)

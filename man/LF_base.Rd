@@ -68,7 +68,6 @@ Get conditional mean values for for the observations in \code{tmle_task}.
 \seealso{
 Other Likelihood objects: 
 \code{\link{CF_Likelihood}},
-\code{\link{LF_binomial_collapsed}},
 \code{\link{LF_derived}},
 \code{\link{LF_emp}},
 \code{\link{LF_fit}},

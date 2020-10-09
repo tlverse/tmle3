@@ -36,6 +36,7 @@ Likelihood <- R6Class(
         factor_list <- list(factor_list)
       }
 
+      # I have removed the pooling stuff so this done nothing
       factor_names <- sapply(factor_list, `[[`, "name")
       factor_list_unpooled <- list()
       for(i in seq_along(factor_names)){
@@ -74,86 +75,36 @@ Likelihood <- R6Class(
         stop("factor_list and task$npsem must have matching names")
       }
     },
-    get_likelihood = function(tmle_task, node, fold_number = "full", expand = T) {
+    get_likelihood = function(tmle_task, node, fold_number = "full") {
       # TODO from regression task extract risk_set and handle this if degeneracy option is set.
 
 
       # Likelihood factors just compute likelihoods
       # Risk sets are computed here?
-      if(length(node) > 1){
-        likelihood_factor <- self$factor_list_pooled[[paste0(node, collapse = "%")]]
-        warning("You shouldn't be calling node likelihoods in a pooled way as these likelihoods don't get updated in targeting.")
 
-      } else {
-        likelihood_factor <- self$factor_list[[node]]
+      likelihood_factor <- self$factor_list[[node]]
 
-      }
+
       # first check for cached values for this task
       likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = paste0(node, collapse = "%"))
       if(!is.null(likelihood_values) & length(likelihood_values)==0){
         return(likelihood_values)
       }
 
-      if(!expand & !is.null(likelihood_values)) {
-        #Only store the full likelihood
-        #Regression task should be cached so this is cheap
-        keep <- tmle_task$get_regression_task(node, expand = T)$get_data()$at_risk == 1
-        likelihood_values <- likelihood_values[keep]
 
-      }
       if(is.null(likelihood_values)) {
-        # if not, generate new ones
-        #Include id's and time
-        args <- formalArgs(likelihood_factor$get_likelihood)
-        if(!all(c("expand", "node") %in% args)){
-          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
-        } else {
-          likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number, expand = expand, node = node)
 
-        }
-
-        # if(!is.data.table(likelihood_values)){
-        #   likelihood_values <- as.data.table(likelihood_values)
-        #   if(!to_wide){
-        #     out_name <- paste0(node, collapse = "%")
-        #     setnames(likelihood_values, out_name)
-        #   }
-        #
-        # }
-        if(expand){
-          self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values, node = paste0(node, collapse = "%"))
-        }
+        likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
 
       }
 
       if(length(likelihood_values)==0){
         return(likelihood_values)
       }
-     # names_of <- colnames(likelihood_values)
-      #keep_cols <- intersect(c("t", "id", grep(node, names_of, value = T)), names_of)
 
-
-     # likelihood_values <- likelihood_values[,  keep_cols, with = F]
-
-      # if(to_wide & "t" %in% colnames(likelihood_values)  & length(unique(likelihood_values$t))==1){
-      #
-      #   likelihood_values$t <- NULL
-      # }
-      # else if(to_wide & "t" %in% colnames(likelihood_values) & "id" %in% colnames(likelihood_values)){
-      #   #likelihood_values <- reshape(likelihood_values, idvar = "id", timevar = "t", direction = "wide")
-      #   likelihood_values <- dcast(likelihood_values, id ~ t, value.var = setdiff(names(likelihood_values), c("t", "id")))
-      #   if(length(node) + 1 == ncol(likelihood_values)){
-      #     setnames(likelihood_values, c("id", node))
-      #   } else if (length(node)==1){
-      #     setnames(likelihood_values, c("id", paste0( node, "_", names(likelihood_values)[-1])))
-      #   }
-      # }
-      #if(drop_id & "id" %in% colnames(likelihood_values)) likelihood_values$id <- NULL
-      #if(drop_time & "t" %in% colnames(likelihood_values)) likelihood_values$t <- NULL
-      #if(drop & ncol(likelihood_values) == 1) likelihood_values <- likelihood_values[[1]]
       return(likelihood_values)
     },
-    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full", expand = T) {
+    get_likelihoods = function(tmle_task, nodes = NULL, fold_number = "full") {
       if (is.null(nodes)) {
         nodes <- self$nodes
       }
@@ -161,12 +112,12 @@ Likelihood <- R6Class(
       if (length(nodes) > 1) {
 
         all_likelihoods <- lapply(nodes, function(node) {
-          self$get_likelihood(tmle_task, node = node, fold_number = fold_number, expand = expand)
+          self$get_likelihood(tmle_task, node = node, fold_number = fold_number)
         })
         likelihood_dt <- as.data.table(all_likelihoods)
         return(likelihood_dt)
       } else {
-        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number,  expand = expand))
+        return(self$get_likelihood(tmle_task, nodes[[1]], fold_number))
       }
     },
     get_possible_counterfactuals = function(nodes = NULL) {

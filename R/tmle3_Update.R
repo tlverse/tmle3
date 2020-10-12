@@ -434,9 +434,9 @@ tmle3_Update <- R6Class(
 
       n <- length(unique(tmle_task$id))
       weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-      weights <- weights /sum(weights)
-      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
 
+      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
+      IC <- IC*weights
       if (self$convergence_type == "scaled_var") {
         # NOTE: the point of this criterion is to avoid targeting in an overly
         #       aggressive manner, as we simply need check that the following
@@ -445,17 +445,7 @@ tmle3_Update <- R6Class(
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
 
-        se_Dstar <- sqrt(apply(IC, 2, function(v){
-          # If long then make it a matrix
-          if(length(v)!=n){
-            v <- matrix(v, nrow = n, byrow = T)
-            #Collapse EIC for each person by summing across time (this is correct for survival)
-            v <- rowSums(v)
-          }
-          mean_v <- weighted.mean(v, weights)
-          var_v <- sum(weights * (v - mean_v)^2)
-          return(var_v)
-        })/n)
+        se_Dstar <- sqrt(apply(IC, 2, var)/n)
         # Handle case where variance is 0 or very small for whatever reason
         ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1/n)
 
@@ -465,7 +455,7 @@ tmle3_Update <- R6Class(
 
       # get |P_n D*| of any number of parameter estimates
       #ED <- ED_from_estimates(estimates)
-      ED <- apply(IC, 2, weighted.mean, weights)
+      ED <- apply(IC, 2, mean)
       # zero out any that are from nontargeted parameter components
       ED <- ED * private$.targeted_components
       current_step <- self$step_number

@@ -52,13 +52,14 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   }
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)
+  IC <- IC * weights
   # for repeated measures, average IC values to get subject-level IC values
   if (length(unique(task$id)) < length(task$id)) {
     combined <- (by(IC, as.numeric(as.character(task$id)), colMeans, simplify = FALSE))
     IC <- do.call(rbind, combined)
   }
-  var_D <- cov.wt(IC, weights/sum(weights))$cov
-  #var_D <- cov(IC)
+  #var_D <- cov.wt(IC, weights/sum(weights))$cov
+  var_D <- cov(IC)
   n <- nrow(IC)
   se <- sqrt(diag(var_D) / n)
   level <- 0.95

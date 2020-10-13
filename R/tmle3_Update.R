@@ -498,19 +498,18 @@ tmle3_Update <- R6Class(
           args <- list(tmle_task = tmle_task, update_fold = update_fold, for_fitting = T)
           return(sl3:::call_with_args(tmle_param$clever_covariates, args, silent = T))
          })
+        weights <- tmle_task$weights[!duplicated(tmle_task$id)]
         IC <- lapply(clever_covariates, `[[`, "IC")
+
         if(!is.null(IC[[1]])){
           n <- length(unique(tmle_task$id))
-          weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-          weights <- weights/sum(weights)
           IC_vars <- lapply(IC, function(IC) {
 
             out <- lapply(self$update_nodes, function(node) {
               IC_node <- IC[[node]]
               IC_node <- as.matrix(IC_node)
-              as.vector(apply(IC_node ,2, function(v) {
-                diag(cov.wt(matrix(v, nrow = n, byrow = T),weights)$cov)}))
-            } )
+              IC_node <- IC_node * weights
+              as.vector(apply(IC_node ,2, var ))})
             names(out) <- self$update_nodes
             return(out)
           })
@@ -521,12 +520,12 @@ tmle3_Update <- R6Class(
 
           n <- length(unique(tmle_task$id))
           weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-          weights <- weights/sum(weights)
+
           IC <- lapply(private$.current_estimates, `[[`, "IC")
           IC_vars <- lapply(IC, function(IC) {
             IC <- as.matrix(IC)
-
-            IC_var <- diag(cov.wt(IC, weights)$cov)
+            IC <- IC * weights
+            IC_var <- apply(IC, 2, var)
             IC_var <- lapply(self$update_nodes, function(node) {IC_var})
             names(IC_var) <- self$update_nodes
             return(IC_var)

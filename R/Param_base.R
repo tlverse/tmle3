@@ -42,13 +42,19 @@ Param_base <- R6Class(
         stop("Invalid Likelihood class: ", class(observed_likelihood))
       }
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full", submodel_type = "logistic") {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", submodel_type = "logistic", node = NULL, for_fitting = TRUE, ...){
       # TODO Returns clever covariates and component-specific ICs ?
-      stop("Param_base is a base class")
+      args <- sl3::args_to_list()
+      est <- sl3:::call_with_args(private$.clever_covariates, args)
+      return(est)
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       #Returns full IC and estimate
-      stop("Param_base is a base class")
+      args <- sl3::args_to_list()
+      est <- sl3:::call_with_args(private$.clever_covariates, args)
+      weights <- tmle_task$weights
+      est$IC <- weights*est$IC
+      return(est)
     },
     empirical_mean = function(tmle_task, observed, baseline_node = "W") {
       if(is.null(tmle_task)) {
@@ -101,6 +107,12 @@ Param_base <- R6Class(
   }
   ),
   private = list(
+    .clever_covariates = function(tmle_task = NULL, fold_number = "full", submodel_type = "logistic", node = NULL, for_fitting = TRUE, ...){
+      stop("Param_base is a base class")
+    },
+    .estimates = function(tmle_task = NULL, fold_number = "full") {
+      stop("Param_base is a base class")
+    },
     .type = "undefined",
     .observed_likelihood = NULL,
     .outcome_node = NULL,

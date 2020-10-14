@@ -74,6 +74,25 @@ loglik_loss <- function(estimate, observed) {
   return(preds)
 }
 
+
+#' Least squares Loss Function
+#'
+#' @param estimate ...
+#' @param observed ...
+#'
+#'
+#' @export
+#
+least_squares_loss <- function(estimate, observed) {
+  preds <- mean((estimate - observed))^2
+  return(preds)
+}
+
+submodel_least_squares <- function(eps, offset, X) {
+  preds <- offset + X %*% eps
+  return(preds)
+}
+
 #' Function that returns the necessary updating information/functions for
 #' a given optimization type in the targetting step.
 #' Currently supports targetting through logistic submodels or (1 + eps D) P likelihood submodels
@@ -92,6 +111,9 @@ submodel_spec = function(optim_type = c("logistic", "EIC")){
     spec <- list(submodel = submodel_density, loss_function = loglik_loss, family = plug_f, offset_tranform = plug_f)
   } else if(type == "exponential") {
     spec <- list(submodel = submodel_exponential, loss_function = loglik_loss, family = plug_f, offset_tranform = plug_f)
+  }
+  else if(type == "gaussian") {
+    spec <- list(submodel = submodel_least_squares, loss_function = least_squares_loss, family = gaussian(), offset_tranform = function(x){x})
   }
   return(spec)
 }

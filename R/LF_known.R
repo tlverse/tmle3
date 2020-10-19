@@ -46,16 +46,14 @@ LF_known <- R6Class(
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
     },
-    get_mean = function(tmle_task, fold_number, ...) {
-      learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE, ...)
-      preds <- as.data.table(self$mean_fun(learner_task))
-      preds <- unlist(preds)
-      #setnames(preds, self$name)
+    get_mean = function(tmle_task, fold_number) {
+      learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
+      preds <- self$mean_fun(learner_task)
 
       return(preds)
     },
-    get_density = function(tmle_task, fold_number, ...) {
-      learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE, ...)
+    get_density = function(tmle_task, fold_number) {
+      learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
       preds <- self$density_fun(learner_task)
 
       outcome_type <- learner_task$outcome_type
@@ -71,9 +69,6 @@ LF_known <- R6Class(
       } else {
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
-      likelihood <- as.data.table(likelihood)
-      #setnames(likelihood, self$name)
-      likelihood <- unlist(likelihood)
       return(likelihood)
     }
   ),

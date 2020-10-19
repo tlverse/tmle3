@@ -81,7 +81,7 @@ LF_emp <- R6Class(
     },
     get_density = function(tmle_task, fold_number = "full") {
 
-      node <- tmle_task$npsem[[node]]$variables
+      node <- tmle_task$npsem[[self$name]]$variables
 
       observedfull <-  as.data.table(tmle_task$get_tmle_node(self$name, format = T))
       if(length(observedfull)==0){

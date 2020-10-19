@@ -132,8 +132,8 @@ tmle3_Update <- R6Class(
         # Assert that it supports the submodel type
         tmle_param$supports_submodel_type(submodel_type, update_node)
         args <- list(for_fitting = for_fitting, submodel_type = submodel_type, fold_number = fold_number, tmle_task = tmle_task
-             ,node = update_node)
-        return(sl3:::call_with_args(tmle_param$clever_covariates, args, silent = T))
+                     ,node = update_node)
+        return(suppressWarnings(sl3:::call_with_args(tmle_param$clever_covariates, args)))
 
       })
 
@@ -168,7 +168,7 @@ tmle3_Update <- R6Class(
       n <- length(unique(tmle_task$id))
       if(self$one_dimensional & for_fitting){
         # This computes (possibly weighted) ED and handles long case
-        ED <- colSums(IC * weights)/sum(weights) #apply(IC , 2, function(v) {sum(as.vector(matrix(v, nrow = n, byrow = T)*weights))})/length(weights)
+        ED <- colMeans(IC * weights)
       } else {
         ED <- NULL
       }
@@ -212,7 +212,7 @@ tmle3_Update <- R6Class(
           subset <- which(observed_node == 1)
         }
 
-        #subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
+        subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
 
         if(unequal) {
           subset <- 1:len %in% subset
@@ -333,7 +333,7 @@ tmle3_Update <- R6Class(
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
 
-         #TODO: consider if we should do this
+        #TODO: consider if we should do this
         if(risk_zero<=risk_val){
 
           epsilon <- 0
@@ -434,9 +434,9 @@ tmle3_Update <- R6Class(
 
       n <- length(unique(tmle_task$id))
       weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-      weights <- weights /sum(weights)
-      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
 
+      IC <- do.call(cbind, lapply(estimates, `[[`, "IC"))
+      IC <- IC*weights
       if (self$convergence_type == "scaled_var") {
         # NOTE: the point of this criterion is to avoid targeting in an overly
         #       aggressive manner, as we simply need check that the following
@@ -445,17 +445,7 @@ tmle3_Update <- R6Class(
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
 
-        se_Dstar <- sqrt(apply(IC, 2, function(v){
-          # If long then make it a matrix
-          if(length(v)!=n){
-            v <- matrix(v, nrow = n, byrow = T)
-            #Collapse EIC for each person by summing across time (this is correct for survival)
-            v <- rowSums(v)
-          }
-          mean_v <- weighted.mean(v, weights)
-          var_v <- sum(weights * (v - mean_v)^2)
-          return(var_v)
-        })/n)
+        se_Dstar <- sqrt(apply(IC, 2, var)/n)
         # Handle case where variance is 0 or very small for whatever reason
         ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1/n)
 
@@ -465,7 +455,7 @@ tmle3_Update <- R6Class(
 
       # get |P_n D*| of any number of parameter estimates
       #ED <- ED_from_estimates(estimates)
-      ED <- apply(IC, 2, weighted.mean, weights)
+      ED <- apply(IC, 2, mean)
       # zero out any that are from nontargeted parameter components
       ED <- ED * private$.targeted_components
       current_step <- self$step_number
@@ -506,21 +496,20 @@ tmle3_Update <- R6Class(
         #TODO weights correctly
         clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
           args <- list(tmle_task = tmle_task, update_fold = update_fold, for_fitting = T)
-          return(sl3:::call_with_args(tmle_param$clever_covariates, args, silent = T))
-         })
+          return(suppressWarnings(sl3:::call_with_args(tmle_param$clever_covariates, args)))
+        })
+        weights <- tmle_task$weights[!duplicated(tmle_task$id)]
         IC <- lapply(clever_covariates, `[[`, "IC")
+
         if(!is.null(IC[[1]])){
           n <- length(unique(tmle_task$id))
-          weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-          weights <- weights/sum(weights)
           IC_vars <- lapply(IC, function(IC) {
 
             out <- lapply(self$update_nodes, function(node) {
               IC_node <- IC[[node]]
               IC_node <- as.matrix(IC_node)
-              as.vector(apply(IC_node ,2, function(v) {
-                diag(cov.wt(matrix(v, nrow = n, byrow = T),weights)$cov)}))
-            } )
+              IC_node <- IC_node * weights
+              as.vector(apply(IC_node ,2, var ))})
             names(out) <- self$update_nodes
             return(out)
           })
@@ -531,12 +520,12 @@ tmle3_Update <- R6Class(
 
           n <- length(unique(tmle_task$id))
           weights <- tmle_task$weights[!duplicated(tmle_task$id)]
-          weights <- weights/sum(weights)
+
           IC <- lapply(private$.current_estimates, `[[`, "IC")
           IC_vars <- lapply(IC, function(IC) {
             IC <- as.matrix(IC)
-
-            IC_var <- diag(cov.wt(IC, weights)$cov)
+            IC <- IC * weights
+            IC_var <- apply(IC, 2, var)
             IC_var <- lapply(self$update_nodes, function(node) {IC_var})
             names(IC_var) <- self$update_nodes
             return(IC_var)
@@ -581,17 +570,6 @@ tmle3_Update <- R6Class(
         private$.update_nodes,
         new_update_nodes
       ))
-    },
-    set_estimates = function(tmle_task, update_fold = "full"){
-      private$.current_estimates <- lapply(self$tmle_params, function(tmle_param) {
-        tmle_param$estimates(tmle_task, update_fold)
-      })
-      #TODO Variance weights should be based on each component separately.
-      # Might be better to have estimates return IC and IC-components.
-      # private$.initial_variances <- lapply(private$.current_estimates, function(ests) {
-      #   resample::colVars(matrix(ests$IC, nrow = length(unique(tmle_task$id))))
-      # })
-      #private$.initial_variances <- lapply(private$.current_estimates, `[[`, "var_comps")
     }
   ),
   active = list(

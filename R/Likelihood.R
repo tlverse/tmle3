@@ -36,24 +36,9 @@ Likelihood <- R6Class(
         factor_list <- list(factor_list)
       }
 
-      # I have removed the pooling stuff so this done nothing
       factor_names <- sapply(factor_list, `[[`, "name")
-      factor_list_unpooled <- list()
-      for(i in seq_along(factor_names)){
-        names <- c(factor_names[[i]])
-        factor <- factor_list[[i]]
-        for(name in names){
-          factor_list_unpooled[[name]] <- factor
-        }
-      }
-
-
-
-      names(factor_list) <-  sapply(factor_names, function(name) paste(name, collapse = "%"))
-
-      params$factor_list <- factor_list_unpooled
-      params$factor_list_pooled <- factor_list
-
+      names(factor_list) <- factor_names
+      params$factor_list <- factor_list
       if (is.null(cache)) {
         cache <- Likelihood_cache$new()
       }
@@ -76,30 +61,14 @@ Likelihood <- R6Class(
       }
     },
     get_likelihood = function(tmle_task, node, fold_number = "full") {
-      # TODO from regression task extract risk_set and handle this if degeneracy option is set.
-
-
-      # Likelihood factors just compute likelihoods
-      # Risk sets are computed here?
-
       likelihood_factor <- self$factor_list[[node]]
-
-
       # first check for cached values for this task
-      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number, node = paste0(node, collapse = "%"))
-      if(!is.null(likelihood_values) & length(likelihood_values)==0){
-        return(likelihood_values)
-      }
+      likelihood_values <- self$cache$get_values(likelihood_factor, tmle_task, fold_number)
 
-
-      if(is.null(likelihood_values)) {
-
+      if (is.null(likelihood_values)) {
+        # if not, generate new ones
         likelihood_values <- likelihood_factor$get_likelihood(tmle_task, fold_number)
-
-      }
-
-      if(length(likelihood_values)==0){
-        return(likelihood_values)
+        self$cache$set_values(likelihood_factor, tmle_task, 0, fold_number, likelihood_values)
       }
 
       return(likelihood_values)
@@ -110,11 +79,11 @@ Likelihood <- R6Class(
       }
 
       if (length(nodes) > 1) {
-
         all_likelihoods <- lapply(nodes, function(node) {
-          self$get_likelihood(tmle_task, node = node, fold_number = fold_number)
+          self$get_likelihood(tmle_task, node, fold_number)
         })
         likelihood_dt <- as.data.table(all_likelihoods)
+        setnames(likelihood_dt, nodes)
         return(likelihood_dt)
       } else {
         return(self$get_likelihood(tmle_task, nodes[[1]], fold_number))
@@ -143,7 +112,6 @@ Likelihood <- R6Class(
       return(new_object)
     },
     add_factors = function(factor_list) {
-      #TODO this will fail if the factor_list contains pooled likelihood factors
       if (inherits(factor_list, "LF_base")) {
         factor_list <- list(factor_list)
       }
@@ -159,7 +127,6 @@ Likelihood <- R6Class(
     sample = function(tmle_task = NULL, sample_lib = NULL) {
       # for now assume nodes are in order
       # TODO: order nodes based on dependencies
-      stop("This doesn't work")
       if (is.NULL(sample_lib = NULL)) {
         nodes <- names(self$factor_list)
         sample_lib <- rep(list(NULL), length(nodes))
@@ -174,9 +141,6 @@ Likelihood <- R6Class(
     }
   ),
   active = list(
-    factor_list_pooled = function(){
-      return(self$params$factor_list_pooled)
-    },
     factor_list = function() {
       return(self$params$factor_list)
     },
@@ -192,12 +156,12 @@ Likelihood <- R6Class(
   ),
   private = list(
     .train_sublearners = function(tmle_task) {
-      factor_fits <- lapply(self$factor_list_pooled, function(factor) factor$delayed_train(tmle_task))
+      factor_fits <- lapply(self$factor_list, function(factor) factor$delayed_train(tmle_task))
       result <- bundle_delayed(factor_fits)
       return(result)
     },
     .train = function(tmle_task, factor_fits) {
-      factor_list <- self$factor_list_pooled
+      factor_list <- self$factor_list
       for (i in seq_along(factor_list)) {
         factor_list[[i]]$train(tmle_task, factor_fits[[i]])
       }

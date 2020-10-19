@@ -39,7 +39,7 @@ LF_derived <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, learner, base_likelihood, task_generator, type_outcome = NULL, ..., type = "density") {
+    initialize = function(name, learner, base_likelihood, task_generator, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.learner <- learner
       private$.base_likelihood <- base_likelihood
@@ -63,31 +63,17 @@ LF_derived <- R6Class(
       super$train(tmle_task)
       private$.learner <- learner_fit
     },
-    get_mean = function(tmle_task, fold_number, ...) {
+    get_mean = function(tmle_task, fold_number) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
-      preds <- as.data.table(learner$predict_fold(derived_task, fold_number))
-      #setnames(preds, self$name)
-      preds <- unlist(preds)
+      preds <- learner$predict_fold(derived_task, fold_number)
+
       return(preds)
     },
-    get_density = function(tmle_task, fold_number, ...) {
+    get_density = function(tmle_task, fold_number) {
       derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
-      outcome_type <- tmle_task$npsem[[self$name]]$variable_type$type
-      if(is.null(outcome_type)) {
-        outcome_type <- "continuous"
-      }
       preds <- learner$predict_fold(derived_task, fold_number)
-      if(outcome_type == "continuous") {
-        preds <- unlist(preds)
-      } else if (outcome_type == "binomial") {
-        A <- tmle_task$get_tmle_node(self$name, format = T)[[1]]
-        preds <- ifelse(A==1, preds, 1 - preds)
-
-      } else {
-        stop("outcome_type not supportd")
-      }
       # todo: think about derived task with other outcome types (this assumes continuous)
       return(preds)
     }

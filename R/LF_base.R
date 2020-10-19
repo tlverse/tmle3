@@ -40,26 +40,20 @@ LF_base <- R6Class(
       private$.training_task <- tmle_task
       # subclasses may do more, like fit sl3 models
     },
-    get_density = function(tmle_task, fold_number, ...) {
+    get_density = function(tmle_task, fold_number) {
       stop("density not supported")
     },
-    get_mean = function(tmle_task, fold_number, ...) {
+    get_mean = function(tmle_task, fold_number) {
       stop("mean not supported")
     },
-    get_likelihood = function(tmle_task, fold_number = "full", ...) {
-      node <- self$name
+    get_likelihood = function(tmle_task, fold_number = "full") {
       if (self$type == "mean") {
         values <- self$get_mean(tmle_task, fold_number)
       } else {
         values <- self$get_density(tmle_task, fold_number)
       }
       if (!is.null(self$bound)) {
-        #values <- bound(values, self$bound)
-        if(is.data.table(values)){
-          values[, (node) := bound(values[[node]], self$bound)]
-        } else {
-          values <- bound(values, self$bound)
-        }
+        values <- bound(values, self$bound)
       }
 
       return(values)

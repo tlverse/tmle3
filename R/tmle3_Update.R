@@ -212,7 +212,6 @@ tmle3_Update <- R6Class(
           subset <- which(observed_node == 1)
         }
 
-        subset <- intersect(subset, which(tmle_task$get_tmle_node(update_node, compute_risk_set = T)[, at_risk] == 1))
 
         if(unequal) {
           subset <- 1:len %in% subset
@@ -445,7 +444,10 @@ tmle3_Update <- R6Class(
         # TODO colVars is wrong when using long format
         # TODO The below is a correction that should be correct for survival (assuming long format is stacked by vectors of time and not by person)
 
-        se_Dstar <- sqrt(apply(IC, 2, var)/n)
+        se_Dstar <- sqrt(apply(IC, 2, function(v) {
+          v <- rowSums(matrix(v, nrow = n))
+          return(var(v))
+        })/n)
         # Handle case where variance is 0 or very small for whatever reason
         ED_threshold <- pmax(se_Dstar / min(log(n), 10), 1/n)
 

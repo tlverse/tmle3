@@ -33,12 +33,18 @@ sl_A <- Lrnr_sl$new(learners = list(lrnr_mean, lrnr_glm, lrnr_gam))
 learner_list <- list(A = sl_A, N = sl_A, A_c = sl_A)
 
 var_types <- list(T_tilde = Variable_Type$new("continuous"), t = Variable_Type$new("continuous"), Delta = Variable_Type$new("binomial"))
-survival_spec <- tmle_survival(
+survival_spec1 <- tmle_survival(
   treatment_level = 1, control_level = 0,
   variable_types = var_types
 )
-tmle_task <- survival_spec$make_tmle_task(df_long, node_list)
-initial_likelihood <- survival_spec$make_initial_likelihood(tmle_task, learner_list)
+
+survival_spec0 <- tmle_survival(
+  treatment_level = 0, control_level = 0,
+  variable_types = var_types
+)
+
+tmle_task <- survival_spec1$make_tmle_task(df_long, node_list)
+initial_likelihood <- survival_spec1$make_initial_likelihood(tmle_task, learner_list)
 
 up <- tmle3_Update_survival$new(
   maxit = 3e1,
@@ -51,7 +57,8 @@ up <- tmle3_Update_survival$new(
 )
 
 targeted_likelihood <- Targeted_Likelihood$new(initial_likelihood, updater = up)
-tmle_params <- survival_spec$make_params(tmle_task, targeted_likelihood)
+tmle_params <- list(survival_spec1$make_params(tmle_task, targeted_likelihood),
+                    survival_spec0$make_params(tmle_task, targeted_likelihood))
 
 max(abs(colMeans(tmle_params[[1]]$estimates(tmle_task, "validation")$IC[, 1:10])))
 

@@ -41,6 +41,11 @@ g_dens <- function(task) {
   dens <- dnorm(task$Y, mean = mean_val)
 }
 
+g_sample <- function(task) {
+  mean_val <- g_mean(task)
+  res <- rnorm(task$Y, mean = mean_val)
+}
+
 Q_mean <- function(task) {
   W <- task$data$W
   A <- task$data$A
@@ -50,7 +55,8 @@ Q_mean <- function(task) {
 # use known likelihoods
 factor_list <- list(
   define_lf(LF_emp, "W"),
-  define_lf(LF_known, "A", mean_fun = g_mean, density_fun = g_dens),
+  define_lf(LF_known, "A", mean_fun = g_mean,
+            density_fun = g_dens, sample_fun = g_sample),
   define_lf(LF_known, "Y", mean_fun = Q_mean, type = "mean")
 )
 likelihood_def <- Likelihood$new(factor_list)
@@ -71,7 +77,12 @@ tmle_spec <- tmle_shift(
 )
 
 tmle_task <- tmle_spec$make_tmle_task(sim_obj$data, node_list)
-tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
+likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
+g_task <- tmle_task$get_regression_task("A")
+lf_g <- likelihood$factor_list[["A"]]
+g_samp <- lf_g$sample(g_task)
 
-psi <- tmle_fit$estimates[[1]]$psi
-var_eif <- as.numeric(var(tmle_fit$estimates[[1]]$IC))
+# tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
+#
+# psi <- tmle_fit$estimates[[1]]$psi
+# var_eif <- as.numeric(var(tmle_fit$estimates[[1]]$IC))

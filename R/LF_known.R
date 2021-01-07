@@ -41,10 +41,11 @@ LF_known <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, ..., type = "density") {
+    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, sample_fun = stub_known, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
+      private$.sample_fun <- sample_fun
     },
     get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
@@ -70,6 +71,9 @@ LF_known <- R6Class(
         stop(sprintf("unsupported outcome_type: %s", outcome_type$type))
       }
       return(likelihood)
+    },
+    sample = function(tmle_task, fold_number){
+      new_task <- self$sample_fun(tmle_task)
     }
   ),
   active = list(
@@ -79,11 +83,16 @@ LF_known <- R6Class(
 
     density_fun = function() {
       return(private$.density_fun)
+    },
+
+    sample_fun = function() {
+      return(private$.sample_fun)
     }
   ),
   private = list(
     .name = NULL,
     .mean_fun = NULL,
-    .density_fun = NULL
+    .density_fun = NULL,
+    .sample_fun = NULL
   )
 )

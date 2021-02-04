@@ -56,13 +56,15 @@ tmle3_Node <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(name, variables, parents = c(),
-                              variable_type = NULL, censoring_node = NULL, scale = FALSE) {
+                              variable_type = NULL, censoring_node = NULL, scale = FALSE,
+                              observed = TRUE) {
       private$.name <- name
       private$.variables <- variables
       private$.parents <- parents
       private$.variable_type <- variable_type
       private$.scale <- scale
       private$.censoring_node <- censoring_node
+      private$.observed <- observed
     },
     print = function() {
       node_class <- class(self)[1]
@@ -90,6 +92,9 @@ tmle3_Node <- R6Class(
     parents = function() {
       return(private$.parents)
     },
+    is_observed = function() {
+      return(private$.observed)
+    },
     scale = function() {
       return(private$.scale)
     },
@@ -106,7 +111,8 @@ tmle3_Node <- R6Class(
     .censoring_node = NULL,
     .parents = NULL,
     .variable_type = NULL,
-    .scale = NULL
+    .scale = NULL,
+    .observed = NULL
   )
 )
 

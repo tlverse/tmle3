@@ -1,6 +1,6 @@
 Package: tmle3
 Title: The Extensible TMLE Framework
-Version: 0.1.8
+Version: 0.1
 Authors@R: c(
   person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
          role = c("aut", "cre", "cph"),

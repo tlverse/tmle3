@@ -4,7 +4,9 @@
 \name{delta_param_OR}
 \alias{delta_param_OR}
 \title{Odds Ratio odds(Y1)/odds(Y0)}
-\format{An object of class \code{list} of length 5.}
+\format{
+An object of class \code{list} of length 5.
+}
 \usage{
 delta_param_OR
 }

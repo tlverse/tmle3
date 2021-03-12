@@ -58,6 +58,7 @@ Param_stratified <- R6Class(
       set(strata, , "strata_i", factor(1:nrow(strata)))
       private$.strata <- strata
     },
+
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       base_covs <- self$param_base$clever_covariates(tmle_task, fold_number)
       strata_weights <- self$get_strata_weights(tmle_task)
@@ -65,6 +66,7 @@ Param_stratified <- R6Class(
       strata_covs <- lapply(base_covs, `*`, strata_weights)
       return(strata_covs)
     },
+
     estimates = function(tmle_task = NULL, fold_number = "full") {
       strata_weights <- self$get_strata_weights(tmle_task)
       strata_tasks <- apply(strata_weights, 2, function(weights) tmle_task[which(weights != 0)])
@@ -78,6 +80,7 @@ Param_stratified <- R6Class(
       result <- list(psi = psi, IC = IC)
       return(result)
     },
+
     get_strata_weights = function(tmle_task) {
       V <- tmle_task$get_data(, self$strata_variable)
       strata <- self$strata
@@ -86,6 +89,18 @@ Param_stratified <- R6Class(
       strata_weights_dt <- dcast(combined, index ~ strata_i, value.var = "weight", fill = 0, drop = FALSE)
       strata_weights <- as.matrix(strata_weights_dt[, -1, with = FALSE])
       return(strata_weights)
+    },
+
+    get_strata_indicators = function(tmle_task) {
+      # deprecated
+      # keeping it here temporarily in case it's needed
+      V <- tmle_task$get_data(, self$strata_variable)
+      strata <- self$strata[, !"weight"][, "indicators" := 1]
+      combined <- merge(V, strata, by = self$strata_variable, sort = FALSE, all.x = TRUE)
+      combined[, index := .I]
+      strata_indicators_dt <- dcast(combined, index ~ strata_i, value.var = "indicators", fill = 0, drop = FALSE)
+      strata_indicators <- as.matrix(strata_indicators_dt[, -1, with = FALSE])
+      return(strata_indicators)
     }
   ),
   active = list(
@@ -115,6 +130,7 @@ Param_stratified <- R6Class(
     .type = NULL,
     .param_base = NULL,
     .strata_variable = NULL,
-    .strata = NULL
+    .strata = NULL,
+    .supports_outcome_censoring = TRUE
   )
 )

@@ -1,6 +1,6 @@
 Package: tmle3
 Title: The Extensible TMLE Framework
-Version: 0.1.7
+Version: 0.1
 Authors@R: c(
   person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
          role = c("aut", "cre", "cph"),
@@ -18,7 +18,7 @@ Depends:
     R (>= 3.2.2),
     graphics
 Imports:
-    sl3,
+    sl3 (>= 1.3.7),
     delayed,
     data.table,
     assertthat,
@@ -29,28 +29,24 @@ Imports:
     stats,
     Rsolnp,
     foreach,
-    mvtnorm
+    mvtnorm,
+    magrittr,
+    stringr,
+    digest
 Suggests:
     testthat,
     knitr,
-    origami,
+    origami (>= 1.0.3),
     tableone,
     speedglm,
     rmarkdown,
     nnls,
-    simcausal,
-    condensier,
     tmle,
     tmle3shift,
     future,
     future.apply,
-    stringr,
     xgboost
 Remotes:
-    github::osofr/simcausal,
-    github::osofr/condensier,
-    github::tlverse/origami,
-    github::tlverse/delayed,
     github::tlverse/sl3,
     github::tlverse/tmle3shift
 License: GPL-3
@@ -60,4 +56,5 @@ Encoding: UTF-8
 LazyData: yes
 LazyLoad: yes
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1.9000
+Roxygen: list(markdown = TRUE, r6 = FALSE)

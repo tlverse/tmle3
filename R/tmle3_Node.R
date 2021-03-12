@@ -19,10 +19,10 @@
 #'     }
 #'     \item{\code{variables}}{character vector, the names of the variables that comprise the node
 #'     }
-#'     \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+#'     \item{\code{parents}}{character vector, the names of the parent nodes. If censoring, node is assumed to have no parents.
 #'     }
 #'     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.
-#'     If missing, variable_type will be guessed later from the data.
+#'     If censoring, variable_type will be guessed later from the data.
 #'     }
 #'     }
 #'
@@ -46,7 +46,7 @@
 #'     }
 #'     \item{\code{variables}}{character vector, the names of the variables that comprise the node
 #'     }
-#'     \item{\code{parents}}{character vector, the names of the parent nodes. If missing, node is assumed to have no parents.
+#'     \item{\code{parents}}{character vector, the names of the parent nodes. If censoring, node is assumed to have no parents.
 #'     }
 #'     \item{\code{variable_type}}{\code{\link[sl3]{variable_type}} object, specifying the data type of this variable.}
 #' }
@@ -56,12 +56,13 @@ tmle3_Node <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(name, variables, parents = c(),
-                              variable_type = NULL, scale = FALSE) {
+                              variable_type = NULL, censoring_node = NULL, scale = FALSE) {
       private$.name <- name
       private$.variables <- variables
       private$.parents <- parents
       private$.variable_type <- variable_type
       private$.scale <- scale
+      private$.censoring_node <- censoring_node
     },
     print = function() {
       node_class <- class(self)[1]
@@ -80,6 +81,12 @@ tmle3_Node <- R6Class(
     variables = function() {
       return(private$.variables)
     },
+    censoring_node = function(new_censoring_node = NULL) {
+      if (!is.null(new_censoring_node)) {
+        private$.censoring_node <- new_censoring_node
+      }
+      return(private$.censoring_node)
+    },
     parents = function() {
       return(private$.parents)
     },
@@ -96,6 +103,7 @@ tmle3_Node <- R6Class(
   private = list(
     .name = NULL,
     .variables = NULL,
+    .censoring_node = NULL,
     .parents = NULL,
     .variable_type = NULL,
     .scale = NULL

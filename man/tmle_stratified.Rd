@@ -4,12 +4,12 @@
 \alias{tmle_stratified}
 \title{Stratified version of TML estimator from other Spec classes}
 \usage{
-tmle_stratified(base_spec, strata_variable)
+tmle_stratified(base_spec, base_estimate = TRUE)
 }
 \arguments{
 \item{base_spec}{An underlying spec to stratify.}
 
-\item{strata_variable}{The variable(s) to use for stratification.}
+\item{base_estimate}{Indicate whether to report base parameter.}
 }
 \description{
 O=(W,A,Y)

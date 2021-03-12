@@ -4,7 +4,9 @@
 \name{delta_param_PAR}
 \alias{delta_param_PAR}
 \title{PAR = Linear Contrast EY-EY0}
-\format{An object of class \code{list} of length 4.}
+\format{
+An object of class \code{list} of length 4.
+}
 \usage{
 delta_param_PAR
 }

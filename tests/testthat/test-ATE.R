@@ -41,7 +41,12 @@ learner_list <- list(Y = Q_learner, A = g_learner)
 tmle_spec <- tmle_ATE(1, 0)
 
 # define data
+data2 <- copy(data)
+data2$haz01 <- sample(data2$haz01)
 tmle_task <- tmle_spec$make_tmle_task(data, node_list)
+tmle_task2 <- tmle_spec$make_tmle_task(data2, node_list)
+tmle_task$uuid
+tmle_task2$uuid
 
 # LF_fit$undebug("get_likelihood")
 # estimate likelihood
@@ -55,11 +60,19 @@ tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
 ate <- tmle_params[[1]]
 
+cf_task1 <- ate$cf_likelihood_treatment$cf_tasks[[1]]
+cf_task0 <- ate$cf_likelihood_control$cf_tasks[[1]]
+
+tmle_task$uuid
+cf_task0$uuid
+cf_task1$uuid
+
 # fit tmle update
 tmle_fit <- fit_tmle3(
   tmle_task, targeted_likelihood, list(ate), updater,
   max_it
 )
+
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -85,7 +98,7 @@ EY1 <- initial_likelihood$get_likelihoods(cf_task1, "Y")
 EY0 <- initial_likelihood$get_likelihoods(cf_task0, "Y")
 EY1_final <- targeted_likelihood$get_likelihoods(cf_task1, "Y")
 EY0_final <- targeted_likelihood$get_likelihoods(cf_task0, "Y")
-EY0 <- rep(0, length(EY1)) # not used
+# EY0 <- rep(0, length(EY1)) # not used
 Q <- cbind(EY0, EY1)
 
 # get G
@@ -95,7 +108,10 @@ tmle_classic_fit <- tmle(
   A = tmle_task$get_tmle_node("A"),
   W = cbind(tmle_task$get_tmle_node("W"), tmle_task$get_tmle_node("W")),
   Q = Q,
-  g1W = pA1
+  g1W = pA1,
+  family = "binomial",
+  alpha = 0.995,
+  target.gwt = FALSE
 )
 
 

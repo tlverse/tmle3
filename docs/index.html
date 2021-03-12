@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -98,8 +98,17 @@
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>You can install the development version of <code>tmle3</code> from GitHub via <a href="https://www.rstudio.com/products/rpackages/devtools/"><code>devtools</code></a> with</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html">install_github</a></span>(<span class="st">"tlverse/tmle3"</span>)</a></code></pre></div>
+<!--
+For standard use, we recommend installing the package from
+[CRAN](https://CRAN.R-project.org/package=hal9001) via
+
+
+```r
+install.packages("hal9001")
+```
+-->
+<p>To contribute, install the <em>development version</em> of <code>tmle3</code> from GitHub via <a href="https://CRAN.R-project.org/package=remotes"><code>remotes</code></a>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">remotes<span class="op">::</span><span class="kw"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"tlverse/tmle3"</span>)</a></code></pre></div>
 <hr>
 </div>
 <div id="getting-started" class="section level2">
@@ -117,7 +126,7 @@
 <div id="license" class="section level2">
 <h2 class="hasAnchor">
 <a href="#license" class="anchor"></a>License</h2>
-<p>© 2017-2019 <a href="https://github.com/jeremyrcoyle">Jeremy R. Coyle</a></p>
+<p>© 2017-2020 <a href="https://github.com/jeremyrcoyle">Jeremy R. Coyle</a></p>
 <p>The contents of this repository are distributed under the GPL-3 license. See file <code>LICENSE</code> for details.</p>
 <hr>
 </div>

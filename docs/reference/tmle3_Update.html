@@ -80,7 +80,7 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -129,39 +129,35 @@ loss function and submodel are hard-coded (need to accept arguments for these)" 
 loss function and submodel are hard-coded (need to accept arguments for these)</p>
     </div>
 
-    <pre class="usage"><span class='no'>tmle3_Update</span></pre>
 
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
-
-    <p>An object of class <code>R6ClassGenerator</code> of length 24.</p>
     <h2 class="hasAnchor" id="constructor"><a class="anchor" href="#constructor"></a>Constructor</h2>
 
     
 
 <p><code><a href='define_param.html'>define_param(maxit, cvtmle, one_dimensional, constrain_step, delta_epsilon, verbose)</a></code></p>
-<p></p><dl class='dl-horizontal'>
-    <dt><code>maxit</code></dt><dd><p>The maximum number of update iterations</p></dd>
-    <dt><code>cvtmle</code></dt><dd><p>If <code>TRUE</code>, use CV-likelihood values when
-       calculating updates.</p></dd>
-    <dt><code>one_dimensional</code></dt><dd><p>If <code>TRUE</code>, collapse clever covariates
-       into a one-dimensional clever covariate scaled by the mean of their
-       EIFs.</p></dd>
-    <dt><code>constrain_step</code></dt><dd><p>If <code>TRUE</code>, step size is at most
-       <code>delta_epsilon</code> (it can be smaller if a smaller step decreases
-       the loss more).</p></dd>
-    <dt><code>delta_epsilon</code></dt><dd><p>The maximum step size allowed if
-       <code>constrain_step</code> is <code>TRUE</code>.</p></dd>
-    <dt><code>convergence_type</code></dt><dd><p>The convergence criterion to use: (1)
-       <code>"scaled_var"</code> corresponds to sqrt(Var(D)/n)/logn (the default)
-       while (2) <code>"sample_size"</code> corresponds to 1/n.</p></dd>
-    <dt><code>fluctuation_type</code></dt><dd><p>Whether to include the auxiliary covariate
-       for the fluctuation model as a covariate or to treat it as a weight.
-       Note that the option <code>"weighted"</code> is incompatible with a
-       multi-epsilon submodel (<code>one_dimensional = FALSE</code>).</p></dd>
-    <dt><code>verbose</code></dt><dd><p>If <code>TRUE</code>, diagnostic output is generated
-       about the updating procedure.</p></dd>
-    
+<dl class='dl-horizontal'>
+<dt><code>maxit</code></dt><dd><p>The maximum number of update iterations</p></dd>
+<dt><code>cvtmle</code></dt><dd><p>If <code>TRUE</code>, use CV-likelihood values when
+calculating updates.</p></dd>
+<dt><code>one_dimensional</code></dt><dd><p>If <code>TRUE</code>, collapse clever covariates
+into a one-dimensional clever covariate scaled by the mean of their
+EIFs.</p></dd>
+<dt><code>constrain_step</code></dt><dd><p>If <code>TRUE</code>, step size is at most
+<code>delta_epsilon</code> (it can be smaller if a smaller step decreases
+the loss more).</p></dd>
+<dt><code>delta_epsilon</code></dt><dd><p>The maximum step size allowed if
+<code>constrain_step</code> is <code>TRUE</code>.</p></dd>
+<dt><code>convergence_type</code></dt><dd><p>The convergence criterion to use: (1)
+<code>"scaled_var"</code> corresponds to sqrt(Var(D)/n)/logn (the default)
+while (2) <code>"sample_size"</code> corresponds to 1/n.</p></dd>
+<dt><code>fluctuation_type</code></dt><dd><p>Whether to include the auxiliary covariate
+for the fluctuation model as a covariate or to treat it as a weight.
+Note that the option <code>"weighted"</code> is incompatible with a
+multi-epsilon submodel (<code>one_dimensional = FALSE</code>).</p></dd>
+<dt><code>verbose</code></dt><dd><p>If <code>TRUE</code>, diagnostic output is generated
+about the updating procedure.</p></dd>
+
 </dl>
 
 
@@ -169,7 +165,6 @@ loss function and submodel are hard-coded (need to accept arguments for these)</
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#format">Format</a></li>
       <li><a href="#constructor">Constructor</a></li>
     </ul>
 

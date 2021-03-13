@@ -56,7 +56,7 @@ tmle3_Node <- R6Class(
   class = TRUE,
   public = list(
     initialize = function(name, variables, parents = c(),
-                              variable_type = NULL, censoring_node = NULL, scale = FALSE) {
+                          variable_type = NULL, censoring_node = NULL, scale = FALSE) {
       private$.name <- name
       private$.variables <- variables
       private$.parents <- parents

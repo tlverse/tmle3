@@ -10,23 +10,27 @@
 
 
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
 <!-- headroom.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -38,7 +42,6 @@
 <meta property="og:title" content="Class for Storing Data and NPSEM for TMLE — tmle3_Task" />
 <meta property="og:description" content="This class inherits from sl3_Task. In addition to all the
 methods supported by sl3_Task, it supports the following." />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -66,7 +69,7 @@ methods supported by sl3_Task, it supports the following." />
 
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -80,7 +83,7 @@ methods supported by sl3_Task, it supports the following." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -102,7 +105,7 @@ methods supported by sl3_Task, it supports the following." />
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/tlverse/tmle3">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fas fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -120,7 +123,7 @@ methods supported by sl3_Task, it supports the following." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Class for Storing Data and NPSEM for TMLE</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/tlverse/tmle3/blob/master/R/tmle3_Task.R'><code>R/tmle3_Task.R</code></a></small>
     <div class="hidden name"><code>tmle3_Task.Rd</code></div>
     </div>
 
@@ -129,7 +132,7 @@ methods supported by sl3_Task, it supports the following." />
 methods supported by <code><a href='https://tlverse.org/sl3/reference/sl3_Task.html'>sl3_Task</a></code>, it supports the following.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>make_tmle3_Task</span>(<span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>make_tmle3_Task</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -152,7 +155,7 @@ Constructor below.</p></td>
     
 
 <p><code>make_tmle3_task(data, npsem, ...)</code></p>
-<dl class='dl-horizontal'>
+<dl>
 <dt><code>data</code></dt><dd><p>A <code>data.frame</code> or <code>data.table</code> containing the underlying data</p></dd>
 <dt><code>npsem</code></dt><dd><p>A list of <code><a href='tmle3_Node.html'>tmle3_Node</a></code> objects, where each is created using <code><a href='tmle3_Node.html'>define_node</a></code>. These specify the NPSEM. See examples.</p></dd>
 <dt><code>...</code></dt><dd><p>Other arguments passed to the constructor of <code><a href='https://tlverse.org/sl3/reference/sl3_Task.html'>sl3_Task</a></code>. <strong>NB:</strong> Support for these is currently limited.</p></dd>
@@ -164,7 +167,7 @@ Constructor below.</p></td>
     
 
 
-<dl class='dl-horizontal'>
+<dl>
 <dt><code>get_tmle_node(node_name, bound = FALSE)</code></dt><dd><p>Gets the data associated with a tmle_node. Bounds the data if requested.<ul>
 <li><p><code>node_name</code>: character, the name of the node to get.</p></li>
 <li><p><code>bound</code>: logical, if true the data is transformed to be in (0,1) based on pre-specified bounds.</p></li>
@@ -185,24 +188,17 @@ as the outcome.<ul>
 
     
 
-<dl class='dl-horizontal'>
+<dl>
 <dt><code>npsem</code></dt><dd><p>The list of <code><a href='tmle3_Node.html'>tmle3_Node</a></code> objects specifying the NPSEM</p></dd>
 
 </dl>
 
 
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#format">Format</a></li>
-      <li><a href="#value">Value</a></li>
-      <li><a href="#constructor">Constructor</a></li>
-      <li><a href="#methods">Methods</a></li>
-      <li><a href="#fields">Fields</a></li>
-    </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
 
@@ -213,7 +209,7 @@ as the outcome.<ul>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

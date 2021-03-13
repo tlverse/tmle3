@@ -14,6 +14,7 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4603358.svg)](https://doi.org/10.5281/zenodo.4603358)
 
 > The *Extensible* TMLE framework
 
@@ -92,8 +93,8 @@ After using the `tmle3` R package, please cite the following:
       year = {2021},
       howpublished = {\url{https://github.com/tlverse/tmle3}},
       note = {{R} package version 0.2.0},
-      url = {https://doi.org/},
-      doi = {}
+      url = {https://doi.org/10.5281/zenodo.4603358},
+      doi = {10.5281/zenodo.4603358}
     }
 ```
 

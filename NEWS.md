@@ -1,6 +1,8 @@
-# sl3 0.2
-* Updater improvements
-* Stratified TMLE
-* Some support for MSMs (still WIP)
-* Censored outcomes
-* Point Tx Survival
+# tmle3 0.2.0
+* Improvements to the `tmle3_Update` class.
+* Changes to the Spec object for stratified TMLEs.
+* Adds cursory support for MSMs (still WIP).
+* Changes to handling for censored outcomes, including addition of inverse
+  probability of censoring weights.
+* Proper handling of survival outcomes subject to right-censoring in point
+  treatment settings.

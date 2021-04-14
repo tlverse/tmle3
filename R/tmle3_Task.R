@@ -349,6 +349,7 @@ tmle3_Task <- R6Class(
     },
     data = function() {
       all_variables <- unlist(lapply(self$npsem, `[[`, "variables"))
+      all_variables <- unique(all_variables)
       self$get_data(columns = all_variables)
     }
   ),

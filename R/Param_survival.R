@@ -200,6 +200,7 @@ Param_survival <- R6Class(
     .cf_likelihood = NULL,
     .supports_outcome_censoring = TRUE,
     .times = NULL,
-    .target_times = NULL
+    .target_times = NULL,
+    .submodel = list("N" = "binomial_logit")
   )
 )

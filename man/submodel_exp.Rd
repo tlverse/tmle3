@@ -4,7 +4,7 @@
 \alias{submodel_exp}
 \title{Log-linear (Poisson) Submodel Fluctuation}
 \usage{
-submodel_exp(eps, offset, X)
+submodel_exp(eps, offset, X, observed)
 }
 \arguments{
 \item{eps}{...}

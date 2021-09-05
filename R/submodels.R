@@ -7,14 +7,14 @@
 generate_submodel_from_family <- function(family) {
   linkfun <- family$linkfun
   linkinv <- family$linkinv
-  submodel <- function(eps, offset, X) {
+  submodel <- function(eps, offset, X, observed) {
     linkinv(linkfun(offset) + X %*% eps)
   }
   return(submodel)
 }
 
 
-#' Logistic Submodel Fluctuation
+#' Logistic Submodel Fluctuation for likelihood (not conditional means)
 #'
 #' @param eps ...
 #' @param X ...
@@ -24,7 +24,11 @@ generate_submodel_from_family <- function(family) {
 #'
 #' @export
 #
-submodel_logistic <- generate_submodel_from_family(binomial())
+submodel_logistic_switch   <- function(eps, offset, X, observed) {
+  offset <- ifelse(observed==1, offset, 1-offset)
+  output <- stats::plogis(stats::qlogis(offset) + X %*% eps)
+  output <- ifelse(observed==1, output, 1-output)
+}
 
 #' Log likelihood loss for binary variables
 #'
@@ -35,6 +39,14 @@ submodel_logistic <- generate_submodel_from_family(binomial())
 #' @export
 loss_function_loglik_binomial = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
+  if(!is.null(weights)) {
+    loss <- weights * loss
+  }
+  return(loss)
+}
+#' @export
+loss_function_loglik = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
+  loss <- -1 * log(estimate)
   if(!is.null(weights)) {
     loss <- weights * loss
   }
@@ -155,4 +167,8 @@ get_submodel_spec <- function(name) {
   }
   return(output)
 }
+
+#' Submodel for binary outcomes where "initial" is a likelihood and not a conditional mean (e.g. for Param_ATC and Param_ATT for updating node `A`).
+#' @export
+submodel_spec_logistic_switch <- list(name = "logistic_switch", family = function(){stop("Does not support family-based updating. Please use optim instead.")}, submodel_function = submodel_logistic_switch, loss_function = loss_function_loglik)
 

@@ -4,7 +4,7 @@
 \alias{submodel_linear}
 \title{Linear (gaussian) Submodel Fluctuation}
 \usage{
-submodel_linear(eps, offset, X)
+submodel_linear(eps, offset, X, observed)
 }
 \arguments{
 \item{eps}{...}

@@ -154,6 +154,7 @@ Param_ATT <- R6Class(
   private = list(
     .type = "ATT",
     .cf_likelihood_treatment = NULL,
-    .cf_likelihood_control = NULL
+    .cf_likelihood_control = NULL,
+    .submodel = list("A" = "logistic_switch", "Y" = "binomial_logit")
   )
 )

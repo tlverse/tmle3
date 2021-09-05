@@ -286,14 +286,14 @@ tmle3_Update <- R6Class(
 
       return(epsilon)
     },
-    submodel = function(epsilon, initial, H) {
+    submodel = function(epsilon, initial, H, observed) {
       plogis(qlogis(initial) + H %*% epsilon)
     },
     loss_function = function(estimate, observed) {
       -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
     },
     apply_submodel = function(submodel, submodel_data, epsilon) {
-      submodel(epsilon, submodel_data$initial, submodel_data$H)
+      submodel(epsilon, submodel_data$initial, submodel_data$H, submodel_data$observed)
     },
     apply_update = function(tmle_task, likelihood, fold_number, new_epsilon, update_node) {
 

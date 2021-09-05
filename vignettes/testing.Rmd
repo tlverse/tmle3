@@ -1,0 +1,50 @@
+---
+title: "test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r}
+library(sl3)
+n <- 200
+W <- runif(n, -1, 1)
+A <- rbinom(n, size = 1, prob = plogis(W))
+Y <- rnorm(n, mean = A+W, sd = 0.5)
+data <- data.table(W,A,Y)
+lrnr_Y0W <- Lrnr_glm$new()
+lrnr_A <- Lrnr_glm$new()
+lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1, lrnr_Y0W, interaction_variable = "A", family = gaussian(), return_matrix_predictions = TRUE)
+
+node_list <- list (W = "W", A = "A", Y= "Y")
+
+tmle_task <- point_tx_task(data, node_list, scale_outcome = F)
+
+tmle_task$get_tmle_node("Y", format = T)
+
+learner_list <- list(Y = lrnr_sp, A = lrnr_A)
+likelihood <- point_tx_likelihood(tmle_task, learner_list)
+unpacked <- (sl3::unpack_predictions(likelihood$get_likelihood(tmle_task, "Y" )))
+quantile(apply(unpacked,1,diff))
+```
+
+
+
+
+```{r}
+data <- data.table(W,A,Y)
+head(data)
+
+task <- sl3_Task$new(data,covariates = c("W" , "A"), outcome = "Y")
+lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1, Lrnr_glmnet$new(), family = binomial())
+lrnr_sp <- lrnr_sp$train(task)
+lrnr_sp$fit_object$beta
+lrnr_sp$fit_object$lrnr_baseline$fit_object$coefficients
+data.table(lrnr_sp$predict(task), Lrnr_glm$new()$train(task)$predict(task))
+ 
+````

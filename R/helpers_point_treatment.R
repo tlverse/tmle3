@@ -10,23 +10,26 @@
 #' @param ... extra arguments.
 #' @export
 #' @rdname point_tx
-point_tx_npsem <- function(node_list, variable_types = NULL) {
+point_tx_npsem <- function(node_list, variable_types = NULL, scale_outcome = TRUE, include_variance_node = FALSE) {
   # make tmle_task
   npsem <- list(
     define_node("W", node_list$W, variable_type = variable_types$W),
     define_node("A", node_list$A, c("W"), variable_type = variable_types$A),
-    define_node("Y", node_list$Y, c("A", "W"), variable_type = variable_types$Y, scale = TRUE)
+    define_node("Y", node_list$Y, c("A", "W"), variable_type = variable_types$Y, scale = scale_outcome)
   )
+  if(include_variance_node) {
+    npsem$var_Y <- define_node("var_Y", node_list$Y, c("A", "W"), variable_type = variable_types$var_Y, scale = FALSE)
+  }
 
   return(npsem)
 }
 
 #' @export
 #' @rdname point_tx
-point_tx_task <- function(data, node_list, variable_types = NULL, ...) {
+point_tx_task <- function(data, node_list, variable_types = NULL, scale_outcome = TRUE, ...) {
   setDT(data)
 
-  npsem <- point_tx_npsem(node_list, variable_types)
+  npsem <- point_tx_npsem(node_list, variable_types, scale_outcome)
 
   if (!is.null(node_list$id)) {
     tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, ...)
@@ -82,5 +85,22 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
 
   likelihood_def <- Likelihood$new(factor_list)
   likelihood <- likelihood_def$train(tmle_task)
+
+  if("var_Y" %in% names(tmle_task$npsem)) {
+    task_generator <- function(tmle_task, base_likelihood) {
+      EY <- sl3::unpack_predictions(base_likelihood$get_likelihood(tmle_task, "Y"))
+      EY <- EY[, ncol(EY)]
+      Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
+      outcome <- (Y-EY)^2
+      task <- tmle_task$get_regression_task("Y")
+      column_names <- task$add_columns(data.table("var_Y" = outcome))
+      task <- task$next_in_chain(outcome = "var_Y", column_names = column_names )
+    }
+    if(tmle_task$npsem[["Y"]]$variable_type == "binomial") {
+      LF_known$new("var_Y", ,  type = "mean")
+    } else {
+      LF_derived$new("var_Y", learner_list[["var_Y"]], likelihood, task_generator = task_generator ,  type = "mean")
+    }
+  }
   return(likelihood)
 }

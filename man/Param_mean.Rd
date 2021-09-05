@@ -46,6 +46,7 @@ Other Parameters:
 \code{\link{Param_TSM}},
 \code{\link{Param_base}},
 \code{\link{Param_delta}},
+\code{\link{Param_spCATE}},
 \code{\link{Param_stratified}},
 \code{\link{Param_survival}},
 \code{\link{define_param}()},

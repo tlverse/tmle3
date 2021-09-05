@@ -41,10 +41,11 @@ LF_known <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, ..., type = "density") {
+    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, base_likelihood = NULL, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
+      private$.base_likelihood <- base_likelihood
     },
     get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)

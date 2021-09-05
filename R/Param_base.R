@@ -51,11 +51,11 @@ Param_base <- R6Class(
     print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     },
-    supports_submodel = function(submodel_name) {
-      return(submodel_name %in% c(private$.submodel))
+    supports_submodel = function(submodel_name, node) {
+      return(submodel_name %in% c(private$.submodel[[node]]))
     },
-    get_submodel_spec = function() {
-      return(get_submodel_spec(private$.submodel))
+    get_submodel_spec = function(update_node) {
+      return(get_submodel_spec(private$.submodel[[update_node]]))
     }
   ),
   active = list(
@@ -88,7 +88,7 @@ Param_base <- R6Class(
     .outcome_node = NULL,
     .targeted = TRUE,
     .supports_outcome_censoring = FALSE,
-    .submodel = "binomial_logit"
+    .submodel = list("A" = "binomial_logit", "Y" = "binomial_logit")
   )
 )
 

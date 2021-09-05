@@ -8,7 +8,9 @@ loss_function_least_squares(
   estimate,
   observed,
   weights = NULL,
-  likelihood = NULL
+  likelihood = NULL,
+  tmle_task = NULL,
+  fold_number = NULL
 )
 }
 \arguments{

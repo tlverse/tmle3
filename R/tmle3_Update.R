@@ -114,6 +114,17 @@ tmle3_Update <- R6Class(
                                       update_node = "Y",
                                       drop_censored = FALSE) {
 
+      # USE first parameter to get submodel spec
+      submodel_spec <- self$tmle_params[[1]]$get_submodel_spec(update_node)
+      submodel_name <- submodel_spec$name
+      # Check compatibility of tmle_params with submodel
+      lapply(self$tmle_params, function(tmle_param) {
+        if(update_node %in% tmle_param$update_nodes  ) {
+          if(!(tmle_param$supports_submodel(submodel_name, update_node))){
+            stop(paste0("Incompatible parameter-specific submodel specs for update node: Parameter `", tmle_param$name, "`` does not support the submodel `", submodel_name, "` for update node `", update_node,  "`."))
+          }
+        }
+      })
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$clever_covariates(tmle_task, fold_number)
@@ -161,9 +172,27 @@ tmle3_Update <- R6Class(
         }
       }
 
+      submodel_data$submodel_spec <- submodel_spec
+      # To support arbitrary likelihood-dependent risk functions for updating.
+      # Is carrying this stuff around a problem computationally?
+      submodel_data$tmle_task <- tmle_task
+      submodel_data$likelihood <- likelihood
+      submodel_data$fold_number <- fold_number
+
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
+      # Extract submodel spec info
+      submodel_spec <- submodel_data$submodel_spec
+      family_object <- submodel_spec$family
+      loss_function <- submodel_spec$loss_function
+      submodel <- submodel_spec$submodel_function
+      training_likelihood <- submodel_data$likelihood
+      training_task <- submodel_data$tmle_task
+      training_fold <- submodel_data$fold_number
+      # Subset to only numericals needed for fitting.
+      submodel_data <- submodel_data[c("observed", "H", "initial")]
+
       if (self$constrain_step) {
         ncol_H <- ncol(submodel_data$H)
         if (!(is.null(ncol_H) || (ncol_H == 1))) {
@@ -175,8 +204,8 @@ tmle3_Update <- R6Class(
 
 
         risk <- function(epsilon) {
-          submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
-          loss <- self$loss_function(submodel_estimate, submodel_data$observed)
+          submodel_estimate <- self$apply_submodel(submodel, submodel_data, epsilon)
+          loss <- loss_function(submodel_estimate, submodel_data$observed, training_likelihood, training_task, training_fold)
           mean(loss)
         }
 
@@ -192,8 +221,8 @@ tmle3_Update <- R6Class(
           epsilon <- self$delta_epsilon
         }
 
-        risk_val <- risk(epsilon)
-        risk_zero <- risk(0)
+        #risk_val <- risk(epsilon)
+        #risk_zero <- risk(0)
 
         # # TODO: consider if we should do this
         # if(risk_zero<risk_val){
@@ -204,11 +233,13 @@ tmle3_Update <- R6Class(
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }
       } else {
+
         if (self$fluctuation_type == "standard") {
+
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
-              offset = qlogis(submodel_data$initial),
-              family = binomial(),
+              offset = family_object$linkfun(submodel_data$initial),
+              family = family_object,
               start = rep(0, ncol(submodel_data$H))
             )
           })
@@ -216,8 +247,8 @@ tmle3_Update <- R6Class(
           if (self$one_dimensional) {
             suppressWarnings({
               submodel_fit <- glm(observed ~ -1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
+                offset = family_object$linkfun(submodel_data$initial),
+                family = family_object,
                 weights = as.numeric(H),
                 start = rep(0, ncol(submodel_data$H))
               )
@@ -229,8 +260,8 @@ tmle3_Update <- R6Class(
             )
             suppressWarnings({
               submodel_fit <- glm(observed ~ H - 1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
+                offset = family_object$linkfun(submodel_data$initial),
+                family = family_object,
                 start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -256,8 +287,8 @@ tmle3_Update <- R6Class(
     loss_function = function(estimate, observed) {
       -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
     },
-    apply_submodel = function(submodel_data, epsilon) {
-      self$submodel(epsilon, submodel_data$initial, submodel_data$H)
+    apply_submodel = function(submodel, submodel_data, epsilon) {
+      submodel(epsilon, submodel_data$initial, submodel_data$H)
     },
     apply_update = function(tmle_task, likelihood, fold_number, new_epsilon, update_node) {
 
@@ -267,8 +298,8 @@ tmle3_Update <- R6Class(
         fold_number, update_node,
         drop_censored = FALSE
       )
-
-      updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
+      submodel <- submodel_data$submodel_spec$submodel
+      updated_likelihood <- self$apply_submodel(submodel, submodel_data, new_epsilon)
 
       if (any(!is.finite(updated_likelihood))) {
         stop("Likelihood was updated to contain non-finite values.\n

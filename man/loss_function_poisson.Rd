@@ -4,7 +4,14 @@
 \alias{loss_function_poisson}
 \title{Poisson/log-linear loss for nonnegative variables}
 \usage{
-loss_function_poisson(estimate, observed, weights = NULL, likelihood = NULL)
+loss_function_poisson(
+  estimate,
+  observed,
+  weights = NULL,
+  likelihood = NULL,
+  tmle_task = NULL,
+  fold_number = NULL
+)
 }
 \arguments{
 \item{estimate}{...}

@@ -7,7 +7,7 @@
 generate_submodel_from_family <- function(family) {
   linkfun <- family$linkfun
   linkinv <- family$linkinv
-  submodel <- function(eps, X, offset) {
+  submodel <- function(eps, offset, X) {
     linkinv(linkfun(offset) + X %*% eps)
   }
   return(submodel)
@@ -33,7 +33,7 @@ submodel_logistic <- generate_submodel_from_family(binomial())
 #' @param weights ...
 #' @param v ...
 #' @export
-loss_function_loglik_binomial = function(estimate, observed, weights = NULL, likelihood = NULL) {
+loss_function_loglik_binomial = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
   if(!is.null(weights)) {
     loss <- weights * loss
@@ -58,7 +58,7 @@ submodel_linear <- generate_submodel_from_family(gaussian())
 #' @param weights ...
 #' @param likelihood ...
 #' @export
-loss_function_least_squares = function(estimate, observed, weights = NULL, likelihood = NULL) {
+loss_function_least_squares = function(estimate, observed, weights = NULL,  likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- (observed - estimate)^2
   if(!is.null(weights)) {
     loss <- weights * loss
@@ -85,7 +85,7 @@ submodel_exp  <- generate_submodel_from_family(poisson())
 #' @param weights ...
 #' @param likelihood ...
 #' @export
-loss_function_poisson = function(estimate, observed, weights = NULL, likelihood = NULL) {
+loss_function_poisson = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <-  estimate - observed * log(estimate)
   if(!is.null(weights)) {
     loss <- weights * loss
@@ -116,22 +116,22 @@ generate_loss_function_from_family <- function(family) {
 #' Main maker of submodel specs.
 #' @param name ...
 #' @export
-make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, risk_function  = NULL) {
+make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, loss_function  = NULL) {
   if(is.null(submodel_function)  && inherits(submodel_function, "family")) {
     submodel_function <- generate_submodel_from_family(submodel_function)
   } else if(is.null(submodel_function) && !is.null(family)) {
     submodel_function <- generate_submodel_from_family(family)
   }
-  if(is.null(risk_function)  && inherits(risk_function, "family")) {
-    generate_loss_function_from_family(risk_function)
-  } else if(is.null(risk_function) && !is.null(family)) {
-    risk_function <- generate_loss_function_from_family(family)
+  if(is.null(loss_function)  && inherits(loss_function, "family")) {
+    generate_loss_function_from_family(loss_function)
+  } else if(is.null(loss_function) && !is.null(family)) {
+    loss_function <- generate_loss_function_from_family(family)
   }
-  return(list(name = name, family = family, submodel_function = submodel_function, risk_function = risk_function))
+  return(list(name = name, family = family, submodel_function = submodel_function, loss_function = loss_function))
 }
 
 #' Main getter for submodel specs.
-#' @param name Either a name for submodel spec or a family object.
+#' @param name Either a name for a submodel spec obtainable from environment (name -->  get(paste0("submodel_spec_",name))}), a family object or string, or a string of the form "family_link" (e.g. "binomial_logit").
 #' @export
 get_submodel_spec <- function(name) {
   output <- NULL

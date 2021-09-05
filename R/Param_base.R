@@ -50,6 +50,9 @@ Param_base <- R6Class(
     },
     print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
+    },
+    supports_submodel = function(submodel_name) {
+      return(submodel_name %in% c(private$.submodel))
     }
   ),
   active = list(
@@ -71,6 +74,9 @@ Param_base <- R6Class(
     },
     targeted = function() {
       return(private$.targeted)
+    },
+    submodel = function() {
+      return(private$.submodel)
     }
   ),
   private = list(
@@ -78,7 +84,8 @@ Param_base <- R6Class(
     .observed_likelihood = NULL,
     .outcome_node = NULL,
     .targeted = TRUE,
-    .supports_outcome_censoring = FALSE
+    .supports_outcome_censoring = FALSE,
+    .submodel = "logistic"
   )
 )
 

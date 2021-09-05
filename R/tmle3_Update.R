@@ -147,6 +147,7 @@ tmle3_Update <- R6Class(
       # scale observed and predicted values for bounded continuous
       observed <- tmle_task$scale(observed, update_node)
       initial <- tmle_task$scale(initial, update_node)
+      weights <- tmle_task$get_regression_task(update_node)$weights
 
 
       # protect against qlogis(1)=Inf
@@ -155,7 +156,8 @@ tmle3_Update <- R6Class(
       submodel_data <- list(
         observed = observed,
         H = covariates_dt,
-        initial = initial
+        initial = initial,
+        weights = weights
       )
 
 
@@ -167,7 +169,8 @@ tmle3_Update <- R6Class(
           submodel_data <- list(
             observed = submodel_data$observed[subset],
             H = submodel_data$H[subset, , drop = FALSE],
-            initial = submodel_data$initial[subset]
+            initial = submodel_data$initial[subset],
+            weights = submodel_data$weights[subset]
           )
         }
       }
@@ -191,7 +194,7 @@ tmle3_Update <- R6Class(
       training_task <- submodel_data$tmle_task
       training_fold <- submodel_data$fold_number
       # Subset to only numericals needed for fitting.
-      submodel_data <- submodel_data[c("observed", "H", "initial")]
+      submodel_data <- submodel_data[c("observed", "H", "initial", "weights")]
 
       if (self$constrain_step) {
         ncol_H <- ncol(submodel_data$H)
@@ -205,7 +208,7 @@ tmle3_Update <- R6Class(
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel, submodel_data, epsilon)
-          loss <- loss_function(submodel_estimate, submodel_data$observed, training_likelihood, training_task, training_fold)
+          loss <- loss_function(submodel_estimate, submodel_data$observed,  weights = submodel_data$weights, likelihood = training_likelihood, tmle_task = training_task, fold_number = training_fold)
           mean(loss)
         }
 
@@ -240,6 +243,7 @@ tmle3_Update <- R6Class(
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
               offset = family_object$linkfun(submodel_data$initial),
               family = family_object,
+              weights = submodel_data$weights,
               start = rep(0, ncol(submodel_data$H))
             )
           })
@@ -249,7 +253,7 @@ tmle3_Update <- R6Class(
               submodel_fit <- glm(observed ~ -1, submodel_data,
                 offset = family_object$linkfun(submodel_data$initial),
                 family = family_object,
-                weights = as.numeric(H),
+                weights = as.numeric(H) * submodel_data$weights,
                 start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -262,6 +266,7 @@ tmle3_Update <- R6Class(
               submodel_fit <- glm(observed ~ H - 1, submodel_data,
                 offset = family_object$linkfun(submodel_data$initial),
                 family = family_object,
+                weights = submodel_data$weights,
                 start = rep(0, ncol(submodel_data$H))
               )
             })

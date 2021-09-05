@@ -24,7 +24,7 @@ generate_submodel_from_family <- function(family) {
 #'
 #' @export
 #
-submodel_logit <- generate_submodel_from_family(binomial())
+submodel_logistic <- generate_submodel_from_family(binomial())
 
 #' Log likelihood loss for binary variables
 #'
@@ -111,6 +111,11 @@ generate_loss_function_from_family <- function(family) {
     return(loss_function_loglik_binomial)
   }
 }
+
+
+#' Main maker of submodel specs.
+#' @param name ...
+#' @export
 make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, risk_function  = NULL) {
   if(is.null(submodel_function)  && inherits(submodel_function, "family")) {
     submodel_function <- generate_submodel_from_family(submodel_function)
@@ -125,11 +130,22 @@ make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, r
   return(list(name = name, family = family, submodel_function = submodel_function, risk_function = risk_function))
 }
 
-
+#' Main getter for submodel specs.
+#' @param name Either a name for submodel spec or a family object.
+#' @export
 get_submodel_spec <- function(name) {
   output <- NULL
   tryCatch({
-    family <- get(name)
+    if(inherits(name, "family")) {
+      family <- name
+    } else {
+      split_names <- unlist(strsplit(name, "_"))
+      if(length(split_names)==2) {
+        family <- get(split_names[1])(link = split_names[2])
+      } else {
+        family <- get(split_names[1])()
+      }
+    }
     output <- make_submodel_spec(name, family)
   }, error = function(...) {
     try({output <<- get(paste0("submodel_spec_",name))})

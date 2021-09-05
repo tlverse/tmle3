@@ -53,6 +53,9 @@ Param_base <- R6Class(
     },
     supports_submodel = function(submodel_name) {
       return(submodel_name %in% c(private$.submodel))
+    },
+    get_submodel_spec = function() {
+      return(get_submodel_spec(private$.submodel))
     }
   ),
   active = list(
@@ -85,7 +88,7 @@ Param_base <- R6Class(
     .outcome_node = NULL,
     .targeted = TRUE,
     .supports_outcome_censoring = FALSE,
-    .submodel = "logistic"
+    .submodel = "binomial_logit"
   )
 )
 

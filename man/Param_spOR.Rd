@@ -2,7 +2,10 @@
 % Please edit documentation in R/Param_spOR.R
 \name{Param_spOR}
 \alias{Param_spOR}
-\title{Average Treatment Effect}
+\title{Semiparametric estimation of the conditonal odds ratio for arbitrary partially-linear logistic regression models.
+This is a semiparametric version of \code{Param_npOR} where the parametric model for the OR is assumed correct.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-conditional odds ratio.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +13,10 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Semiparametric estimation of the conditonal odds ratio for arbitrary partially-linear logistic regression models.
+This is a semiparametric version of \code{Param_npOR} where the parametric model for the OR is assumed correct.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-conditional odds ratio.
 }
 \section{Constructor}{
 
@@ -19,7 +25,7 @@ Parameter definition for the Average Treatment Effect (ATE).
 \describe{
 \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 }
-\item{\code{formula_OR}}{...
+\item{\code{formula_logOR}}{...
 }
 \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 }

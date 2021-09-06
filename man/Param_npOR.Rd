@@ -2,7 +2,12 @@
 % Please edit documentation in R/Param_npOR.R
 \name{Param_npOR}
 \alias{Param_npOR}
-\title{Average Treatment Effect}
+\title{Nonparametric inference for user-specified parametric working models for the conditional odds ratio between two binary variables
+The true conditional odds ratio is projected onto a parametric working model using logistic-regression.
+This can be used to assess heterogeneity of the odds ratio.
+We note that \code{formula_logOR = ~ 1} gives an estimator of the nonparametric marginal odds ratio among the treated.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-conditional odds ratio.
+Parameter definition for the Average Treatment Effect (ATE).}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,6 +15,11 @@
 \code{Param_base} object
 }
 \description{
+Nonparametric inference for user-specified parametric working models for the conditional odds ratio between two binary variables
+The true conditional odds ratio is projected onto a parametric working model using logistic-regression.
+This can be used to assess heterogeneity of the odds ratio.
+We note that \code{formula_logOR = ~ 1} gives an estimator of the nonparametric marginal odds ratio among the treated.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-conditional odds ratio.
 Parameter definition for the Average Treatment Effect (ATE).
 }
 \section{Constructor}{
@@ -19,7 +29,7 @@ Parameter definition for the Average Treatment Effect (ATE).
 \describe{
 \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 }
-\item{\code{formula_OR}}{...
+\item{\code{formula_logOR}}{...
 }
 \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 }

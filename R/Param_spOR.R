@@ -1,6 +1,7 @@
-#' Average Treatment Effect
-#'
-#' Parameter definition for the Average Treatment Effect (ATE).
+#' Semiparametric estimation of the conditonal odds ratio for arbitrary partially-linear logistic regression models.
+#' This is a semiparametric version of \code{Param_npOR} where the parametric model for the OR is assumed correct.
+#' Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+#' The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the `log`-conditional odds ratio.
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
@@ -17,7 +18,7 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{formula_OR}}{...
+#'     \item{\code{formula_logOR}}{...
 #'     }
 #'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 #'     }
@@ -48,7 +49,7 @@ Param_spOR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_OR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood,  formula_logOR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -57,7 +58,7 @@ Param_spOR <- R6Class(
         intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
         intervention_list_control <- c(intervention_list_control, censoring_intervention)
       }
-      private$.formula_OR <- formula_OR
+      private$.formula_logOR <- formula_logOR
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
@@ -75,7 +76,7 @@ Param_spOR <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       W <- tmle_task$get_tmle_node("W")
-      V <- model.matrix(self$formula_OR, as.data.frame(W))
+      V <- model.matrix(self$formula_logOR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
@@ -91,10 +92,10 @@ Param_spOR <- R6Class(
       Qorig <- Q
       Q0 <- bound(Q0, 0.005)
       Q1 <- bound(Q1, 0.005)
-      OR <- Q1*(1-Q1) / (Q0*(1-Q0))
+      sigma_rel <- Q1*(1-Q1) / (Q0*(1-Q0))
 
 
-      h_star <-  -1*as.vector((g1*OR) / (g1*OR + (1-g1)))
+      h_star <-  -1*as.vector((g1*sigma_rel) / (g1*sigma_rel + (1-g1)))
       H <- as.matrix(V*(A  + h_star))
 
       # Store EIF component
@@ -137,8 +138,8 @@ Param_spOR <- R6Class(
       # Q <- Q_packed[[3]]
       Q0 <- bound(Q0, 0.0005)
       Q1 <- bound(Q1, 0.0005)
-      beta <- get_beta(W, A, self$formula_OR, Q1, Q0, family = binomial(), weights = weights)
-      V <- model.matrix(self$formula_OR, as.data.frame(W))
+      beta <- get_beta(W, A, self$formula_logOR, Q1, Q0, family = binomial(), weights = weights)
+      V <- model.matrix(self$formula_logOR, as.data.frame(W))
       OR <- exp(V%*%beta)
 
       IC <- EIF
@@ -167,8 +168,8 @@ Param_spOR <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_OR = function(){
-      return(private$.formula_OR)
+    formula_logOR = function(){
+      return(private$.formula_logOR)
     }
   ),
   private = list(
@@ -176,7 +177,7 @@ Param_spOR <- R6Class(
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
-    .formula_OR = NULL,
+    .formula_logOR = NULL,
     .submodel = list(Y = "gaussian_identity")
   )
 )

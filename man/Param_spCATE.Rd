@@ -2,7 +2,10 @@
 % Please edit documentation in R/Param_spCATE.R
 \name{Param_spCATE}
 \alias{Param_spCATE}
-\title{Average Treatment Effect}
+\title{Semiparametric estimation of the conditonal average treatment effect for arbitrary partially-linear least-squares regression models.
+This is a semiparametric version of \code{Param_npCATT} and \code{Param_npCATE} where the parametric model for the CATE is assumed correct.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+Note a linear-link is used for the CATE.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +13,10 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Semiparametric estimation of the conditonal average treatment effect for arbitrary partially-linear least-squares regression models.
+This is a semiparametric version of \code{Param_npCATT} and \code{Param_npCATE} where the parametric model for the CATE is assumed correct.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+Note a linear-link is used for the CATE.
 }
 \section{Constructor}{
 

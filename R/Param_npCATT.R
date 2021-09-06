@@ -1,6 +1,7 @@
-#' Average Treatment Effect
-#'
-#' Parameter definition for the Average Treatment Effect (ATE).
+#' Nonparametric inference for user-specified parametric working models for the conditional treatment effect.
+#' The true conditional average treatment effect is projected onto a parametric working model using only individuals with `A=1` (among the treated).
+#' This can be used to assess heterogeneity of the average treatment effect and avoids positivity issues by focusing on best approximating the conditional average treatment effect ampng the treated.
+#' We note that `formula_CATT = ~ 1` gives an estimator of the nonparametric average treatment effect among the treated (ATT).
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is

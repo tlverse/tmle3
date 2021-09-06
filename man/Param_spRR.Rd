@@ -2,7 +2,10 @@
 % Please edit documentation in R/Param_spRR.R
 \name{Param_spRR}
 \alias{Param_spRR}
-\title{Average Treatment Effect}
+\title{Semiparametric estimation of the conditonal relative risk/treatment-effect for arbitrary partially-linear log-linear/link regression models.
+Arbitrary user-specified parametric models for the conditional relative-risk are supported.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-relative-risk.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +13,10 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Semiparametric estimation of the conditonal relative risk/treatment-effect for arbitrary partially-linear log-linear/link regression models.
+Arbitrary user-specified parametric models for the conditional relative-risk are supported.
+Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the \code{log}-relative-risk.
 }
 \section{Constructor}{
 
@@ -19,7 +25,7 @@ Parameter definition for the Average Treatment Effect (ATE).
 \describe{
 \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 }
-\item{\code{formula_RR}}{...
+\item{\code{formula_logRR}}{...
 }
 \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 }

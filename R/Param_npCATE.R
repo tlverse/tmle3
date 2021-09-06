@@ -1,4 +1,8 @@
-#' Average Treatment Effect
+#' Nonparametric inference for user-specified parametric working models for the conditional treatment effect.
+#' The true conditional average treatment effect is projected onto a parametric working model using least-squares regression.
+#' Unlike \code{Param_npCATT}, this function uses all observations to compute the projection.
+#' This can be used to assess heterogeneity of the average treatment effect.
+#' We note that `formula_CATE = ~ 1` gives an estimator of the nonparametric average treatment effect (ATE).
 #'
 #' Parameter definition for the Average Treatment Effect (ATE).
 #' @importFrom R6 R6Class

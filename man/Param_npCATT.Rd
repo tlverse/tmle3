@@ -2,7 +2,10 @@
 % Please edit documentation in R/Param_npCATT.R
 \name{Param_npCATT}
 \alias{Param_npCATT}
-\title{Average Treatment Effect}
+\title{Nonparametric inference for user-specified parametric working models for the conditional treatment effect.
+The true conditional average treatment effect is projected onto a parametric working model using only individuals with \code{A=1} (among the treated).
+This can be used to assess heterogeneity of the average treatment effect and avoids positivity issues by focusing on best approximating the conditional average treatment effect ampng the treated.
+We note that \code{formula_CATT = ~ 1} gives an estimator of the nonparametric average treatment effect among the treated (ATT).}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -10,7 +13,10 @@
 \code{Param_base} object
 }
 \description{
-Parameter definition for the Average Treatment Effect (ATE).
+Nonparametric inference for user-specified parametric working models for the conditional treatment effect.
+The true conditional average treatment effect is projected onto a parametric working model using only individuals with \code{A=1} (among the treated).
+This can be used to assess heterogeneity of the average treatment effect and avoids positivity issues by focusing on best approximating the conditional average treatment effect ampng the treated.
+We note that \code{formula_CATT = ~ 1} gives an estimator of the nonparametric average treatment effect among the treated (ATT).
 }
 \section{Constructor}{
 

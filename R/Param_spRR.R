@@ -1,6 +1,8 @@
-#' Average Treatment Effect
-#'
-#' Parameter definition for the Average Treatment Effect (ATE).
+#' Semiparametric estimation of the conditonal relative risk/treatment-effect for arbitrary partially-linear log-linear/link regression models.
+#' Arbitrary user-specified parametric models for the conditional relative-risk are supported.
+#` This method implements semiparametric efficient relative-risk regression for nonnegative outcomes.
+#' Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
+#' The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the `log`-relative-risk.
 #' @importFrom R6 R6Class
 #' @importFrom uuid UUIDgenerate
 #' @importFrom methods is
@@ -17,7 +19,7 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{formula_RR}}{...
+#'     \item{\code{formula_logRR}}{...
 #'     }
 #'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 #'     }
@@ -48,7 +50,7 @@ Param_spRR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_RR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood,  formula_logRR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -57,7 +59,7 @@ Param_spRR <- R6Class(
         intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
         intervention_list_control <- c(intervention_list_control, censoring_intervention)
       }
-      private$.formula_RR <- formula_RR
+      private$.formula_logRR <- formula_logRR
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
@@ -75,7 +77,7 @@ Param_spRR <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       W <- tmle_task$get_tmle_node("W")
-      V <- model.matrix(self$formula_RR, as.data.frame(W))
+      V <- model.matrix(self$formula_logRR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
 
@@ -144,8 +146,8 @@ Param_spRR <- R6Class(
 
       Q0 <- pmax(Q0, 0.0005)
       Q1 <- pmax(Q1, 0.0005)
-      beta <- get_beta(W, A, self$formula_RR, Q1, Q0, family = poisson(), weights = weights)
-      V <- model.matrix(self$formula_RR, as.data.frame(W))
+      beta <- get_beta(W, A, self$formula_logRR, Q1, Q0, family = poisson(), weights = weights)
+      V <- model.matrix(self$formula_logRR, as.data.frame(W))
       RR <- exp(V%*%beta)
 
       IC <- as.matrix(EIF)
@@ -174,8 +176,8 @@ Param_spRR <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_RR = function(){
-      return(private$.formula_RR)
+    formula_logRR = function(){
+      return(private$.formula_logRR)
     }
   ),
   private = list(
@@ -183,7 +185,7 @@ Param_spRR <- R6Class(
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
-    .formula_RR = NULL,
+    .formula_logRR = NULL,
     .submodel = list(Y = "poisson_log")
   )
 )

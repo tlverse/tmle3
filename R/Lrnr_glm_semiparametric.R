@@ -41,7 +41,7 @@ Lrnr_glm_semiparametric <- R6Class(
   classname = "Lrnr_glm_semiparametric", inherit = Lrnr_base,
   portable = TRUE, class = TRUE,
   public = list(
-    initialize = function(formula_sp, lrnr_baseline, interaction_variable = "A", family = NULL, append_interaction_matrix = TRUE, return_matrix_predictions = F, ...) {
+    initialize = function(formula_sp, lrnr_baseline, interaction_variable = "A", family = NULL, append_interaction_matrix = TRUE, return_matrix_predictions = FALSE, ...) {
       params <- args_to_list()
       super$initialize(params = params, ...)
     }

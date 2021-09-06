@@ -14,7 +14,7 @@ Learner object with methods for training and prediction. See
 \description{
 This learner provides fitting procedures for semiparametric generalized linear models using a user-given baseline learner and
 \code{\link[stats]{glm.fit}}. It supports models of the form \verb{linkfun(E[Y|A,W]) = linkfun(E[Y|A=0,W]) + A * f(W)} where \code{A} is a binary or continuous interaction variable,
-and \code{f(W)} is a user-specified parametric function (e.g. \code{f(W) = model.matrix(formula_sp, W)}).
+and \code{f(W)} is a user-specified parametric function (e.g. \code{f(W) = model.matrix(formula_sp, W)}). The baseline function \verb{E[Y|A=0,W]} is fit using a user-specified \code{sl3}-Learner (possibly pooled over values of \code{A} and then projected onto the semiparametric model).
 }
 \section{Parameters}{
 

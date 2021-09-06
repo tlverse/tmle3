@@ -92,17 +92,17 @@ Param_spCATE <- R6Class(
       #Q0 <- Q_packed[[1]]
       #Q1 <- Q_packed[[2]]
       #Q <- Q_packed[[3]]
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
       #print(data.table(Q0,Q1,Q))
       #Extract current semiparametric coef
       #print(data.table(Q1,Q0))
       #beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
       # Get conditional variances
-      var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
-      var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
-      var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
+      var_Y <- as.vector(self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number))
+      var_Y0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number))
+      var_Y1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number))
 
       gradM <- V
       num <- gradM * ( g1/var_Y1)

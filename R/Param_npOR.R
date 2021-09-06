@@ -90,20 +90,20 @@ Param_npOR <- R6Class(
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
 
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
       Qorig <- Q
       Q0 <- bound(Q0, 0.005)
       Q1 <- bound(Q1, 0.005)
       beta <- get_beta(W_train, A_train, self$formula_logOR, Q1, Q0, family = binomial(), weights = self$weights)
 
-      Q1beta <- plogis(qlogis(Q0) + V%*%beta)
+      Q1beta <- as.vector(plogis(qlogis(Q0) + V%*%beta))
 
       sigma_rel <- Q1beta*(1-Q1beta) / (Q0*(1-Q0))
 
 
-      omega <- (g0 + g1*sigma_rel) / (g0)
+      omega <- as.vector((g0 + g1*sigma_rel) / (g0))
 
       h_star <-  -1*as.vector((g1*sigma_rel) / (g1*sigma_rel + (1-g1)))
       H <- as.matrix(omega*V*(A  + h_star))
@@ -115,7 +115,7 @@ Param_npOR <- R6Class(
         tryCatch({
           scale <- apply(V,2, function(v){apply(self$weights*(A * Q1beta*(1-Q1beta) * v*V),2,mean)})
           scaleinv <- solve(scale)
-          EIF_Y <- self$weights * (H%*% scaleinv) * (Y-Q)
+          EIF_Y <- self$weights * (H%*% scaleinv) * as.vector(Y-Q)
           EIFWA <- apply(V, 2, function(v) {
             (self$weights*(A*v*(Q1 - Q1beta)) - mean( self$weights*(A*v*(Q1 - Q1beta))))
           })

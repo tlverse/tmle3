@@ -2,7 +2,7 @@
 #'
 #' This learner provides fitting procedures for semiparametric generalized linear models using a user-given baseline learner and
 #' \code{\link[stats]{glm.fit}}. It supports models of the form `linkfun(E[Y|A,W]) = linkfun(E[Y|A=0,W]) + A * f(W)` where `A` is a binary or continuous interaction variable,
-#' and `f(W)` is a user-specified parametric function (e.g. `f(W) = model.matrix(formula_sp, W)`).
+#' and `f(W)` is a user-specified parametric function (e.g. `f(W) = model.matrix(formula_sp, W)`). The baseline function `E[Y|A=0,W]` is fit using a user-specified \code{sl3}-Learner (possibly pooled over values of `A` and then projected onto the semiparametric model).
 #'
 #' @docType class
 #'
@@ -152,9 +152,9 @@ Lrnr_glm_semiparametric <- R6Class(
         task_baseline0 <- task$next_in_chain(covariates = colnames(X0), column_names = column_names )
         Q0 <-  lrnr_baseline$predict(task_baseline0)
       }
-
-      Q1 <- family$linkinv(family$linkfun(Q0) + V%*%beta)
-      Q <- family$linkinv(family$linkfun(Q0) + A*V%*%beta)
+      Q0 <- as.vector(Q0)
+      Q1 <- as.vector(family$linkinv(family$linkfun(Q0) + V%*%beta))
+      Q <- as.vector(family$linkinv(family$linkfun(Q0) + A*V%*%beta))
       if(self$params$return_matrix_predictions && binary) {
         predictions <- cbind(Q0,Q1,Q)
         colnames(predictions) <- c("A=0", "A=1", "A")

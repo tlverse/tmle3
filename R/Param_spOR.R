@@ -79,16 +79,16 @@ Param_spOR <- R6Class(
       V <- model.matrix(self$formula_logOR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
-      g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
+      g <- self$observed_likelihood$get_likelihood(tmle_task, "A", fold_number)
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
       #Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       #Q0 <- Q_packed[[1]]
       #Q1 <- Q_packed[[2]]
       #Q <- Q_packed[[3]]
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number))
       Qorig <- Q
       Q0 <- bound(Q0, 0.005)
       Q1 <- bound(Q1, 0.005)
@@ -104,9 +104,8 @@ Param_spOR <- R6Class(
         tryCatch({
         scale <- apply(V,2, function(v){apply(self$weights*as.vector( Q1*(1-Q1) * Q0*(1-Q0) * g1 * (1-g1) / (g1 * Q1*(1-Q1) + (1-g1) *Q0*(1-Q0) )) * v*V,2,mean)})
         scaleinv <- solve(scale)
-        EIF_Y <- self$weights * (H%*% scaleinv) * (Y-Q)
-      }, error = function(...){
 
+        EIF_Y <- self$weights * (H%*% scaleinv) * as.vector(Y-Q)
       })
       }
 
@@ -125,9 +124,9 @@ Param_spOR <- R6Class(
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
       EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF$Y
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number)
+      Q0 <- self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number)
+      Q1 <- self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number)
       Qtest <- ifelse(A==1, Q1, Q0)
       if(!all(Qtest-Q==0)) {
         stop("Q and Q1,Q0 dont match")
@@ -140,9 +139,10 @@ Param_spOR <- R6Class(
       Q1 <- bound(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logOR, Q1, Q0, family = binomial(), weights = weights)
       V <- model.matrix(self$formula_logOR, as.data.frame(W))
-      OR <- exp(V%*%beta)
+      OR <- as.vector(exp(V%*%beta))
 
-      IC <- EIF
+      IC <- as.matrix(EIF)
+
 
       result <- list(psi = beta, IC = IC, OR = OR)
       return(result)

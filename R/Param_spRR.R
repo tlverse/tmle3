@@ -81,22 +81,22 @@ Param_spRR <- R6Class(
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
 
-      g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
+      g <- self$observed_likelihood$get_likelihood(tmle_task, "A", fold_number)
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
       #Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       #Q0 <- Q_packed[[1]]
       #Q1 <- Q_packed[[2]]
       #Q <- Q_packed[[3]]
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number))
       Qorig <- Q
 
       Q0 <- pmax(Q0, 0.005)
       Q1 <- pmax(Q1, 0.005)
 
-      RR <- Q1/Q0
+      RR <- as.vector(Q1/Q0)
       gradM <- V
       mstar <- RR + (1-A)*1
       num <- gradM * ( RR * g1)
@@ -107,10 +107,10 @@ Param_spRR <- R6Class(
       # Store EIF component
       EIF_Y <- NULL
       if(is_training_task) {
-
         scale <- apply(V,2, function(v) {
-          apply(self$weights*V*v*g1*g0*RR/(g1*RR + g0)^2 *(Y-Q) + H*(A*v*Q),2,mean)
+          apply(self$weights*V*v*g1*g0*RR/(g1*RR + g0)^2 *(Y-Q) + self$weights*H*(A*v*Q),2,mean)
         })
+
         scaleinv <- solve(scale)
         EIF_Y <- as.matrix(self$weights * (H%*% scaleinv) * (Y-Q))
 
@@ -148,7 +148,7 @@ Param_spRR <- R6Class(
       Q1 <- pmax(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logRR, Q1, Q0, family = poisson(), weights = weights)
       V <- model.matrix(self$formula_logRR, as.data.frame(W))
-      RR <- exp(V%*%beta)
+      RR <- as.vector(exp(V%*%beta))
 
       IC <- as.matrix(EIF)
 

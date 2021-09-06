@@ -93,9 +93,9 @@ Param_npCATT <- R6Class(
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
 
-      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
       beta <- get_beta(W_train, A_train, self$formula_CATT, Q1, Q0, family = gaussian(), weights = self$weights)
 
       # var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)

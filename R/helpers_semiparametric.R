@@ -23,3 +23,6 @@ project_onto_model  <- function(W, A, formula, Q1, Q0, family, weights = NULL) {
 
 
 
+
+
+

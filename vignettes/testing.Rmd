@@ -17,20 +17,30 @@ W <- runif(n, -1, 1)
 A <- rbinom(n, size = 1, prob = plogis(W))
 Y <- rnorm(n, mean = A+W, sd = 0.5)
 data <- data.table(W,A,Y)
-lrnr_Y0W <- Lrnr_glm$new()
+lrnr_Y0W <- Lrnr_glmnet$new()
 lrnr_A <- Lrnr_glm$new()
 lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1, lrnr_Y0W, interaction_variable = "A", family = gaussian(), return_matrix_predictions = TRUE)
 
 node_list <- list (W = "W", A = "A", Y= "Y")
 
-tmle_task <- point_tx_task(data, node_list, scale_outcome = F)
+tmle_task <- point_tx_task(data, node_list, scale_outcome = F, include_variance_node = TRUE)
 
 tmle_task$get_tmle_node("Y", format = T)
 
 learner_list <- list(Y = lrnr_sp, A = lrnr_A)
 likelihood <- point_tx_likelihood(tmle_task, learner_list)
-unpacked <- (sl3::unpack_predictions(likelihood$get_likelihood(tmle_task, "Y" )))
-quantile(apply(unpacked,1,diff))
+
+updater <- tmle3_Update$new()
+tlik <- Targeted_Likelihood$new(likelihood, updater = updater)
+param_cate <- Param_spCATE$new(tlik, formula_CATE  = ~1, intervention_list_treatment = list(define_lf(LF_static, "A", value = 1)), intervention_list_control = list(define_lf(LF_static, "A", value = 0)))
+
+
+```
+
+```{r}
+param_cate$formula_CATE
+updater <- tlik$updater
+updater$update()
 ```
 
 

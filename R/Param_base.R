@@ -86,6 +86,9 @@ Param_base <- R6Class(
     },
     submodel = function() {
       return(private$.submodel)
+    },
+    weights = function(){
+      return(self$observed_likelihood$training_task$weights)
     }
   ),
   private = list(

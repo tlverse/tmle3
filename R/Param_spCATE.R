@@ -46,7 +46,7 @@ Param_spCATE <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood,  formula_CATE =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -55,79 +55,82 @@ Param_spCATE <- R6Class(
         intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
         intervention_list_control <- c(intervention_list_control, censoring_intervention)
       }
-
+      private$.formula_CATE <- formula_CATE
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
+
+
+      training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
-        tmle_task <- self$observed_likelihood$training_task
+        tmle_task <- training_task
+      }
+      if(training_task$uuid == tmle_task$uuid){
+        is_training_task <- TRUE
       }
 
+      cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       W <- tmle_task$get_tmle_node("W")
+      V <- model.matrix(self$formula_CATE, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
-      weights <- tmle_task$weights
+
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
-      g1 <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "A", fold_number)
-      g0 <- self$cf_likelihood_control$get_likelihoods(tmle_task, "A", fold_number)
+      g1 <- ifelse(A==1, g, 1-g)
+      g0 <- 1-g1
       Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       Q0 <- Q_packed[[1]]
       Q1 <- Q_packed[[2]]
       Q <- Q_packed[[3]]
-      beta <- get_beta(W, A, formula, Q1, Q0, family = gaussian(), weights = weights)
+      #Extract current semiparametric coef
+      beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
+      # Get conditional variances
+      var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
+      var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
+      var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
-      HA_treatment <- cf_pA_treatment / pA
-      HA_control <- cf_pA_control / pA
+      gradM <- V
+      num <- gradM * ( g1/var_Y1)
+      denom <- (g0/ var_Y0 + g1/var_Y1)
+      hstar <- - num/denom
+      H <- (A*gradM  + hstar) /var_Y
+      EIF <-  as.matrix(H * (Y-Q))
 
-      # collapse across multiple intervention nodes
-      if (!is.null(ncol(HA_treatment)) && ncol(HA_treatment) > 1) {
-        HA_treatment <- apply(HA_treatment, 1, prod)
+      # Store EIF component
+      if(is_training_task) {
+        EIF_Y <- self$weights *  as.matrix(H * (Y-Q))
+      } else {
+        EIF_Y <- NULL
       }
 
-      # collapse across multiple intervention nodes
-      if (!is.null(ncol(HA_control)) && ncol(HA_control) > 1) {
-        HA_control <- apply(HA_control, 1, prod)
-      }
-
-      HA <- HA_treatment - HA_control
-
-      HA <- bound(HA, c(-40, 40))
-      return(list(Y = HA))
+      return(list(Y = H, EIF = list(Y = EIF_Y)))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
 
-      intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
+      W <- tmle_task$get_tmle_node("W")
+      A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
+      Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
 
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      HA <- self$clever_covariates(tmle_task, fold_number)[[self$outcome_node]]
+      EIF <- self$clever_covariates(tmle_task, fold_number)$EIF$Y
 
+      Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      Q0 <- Q_packed[[1]]
+      Q1 <- Q_packed[[2]]
+      Q <- Q_packed[[3]]
+      beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
+      CATE <- Q1 - Q0
 
-      # todo: make sure we support updating these params
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      IC <- EIF
 
-      # todo: extend for stochastic
-      cf_task_treatment <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
-      cf_task_control <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
-
-      Y <- tmle_task$get_tmle_node(self$outcome_node, impute_censoring = TRUE)
-
-      EY <- self$observed_likelihood$get_likelihood(tmle_task, self$outcome_node, fold_number)
-      EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
-      EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
-
-      psi <- mean(EY1 - EY0)
-
-      IC <- HA * (Y - EY) + (EY1 - EY0) - psi
-
-      result <- list(psi = psi, IC = IC)
+      result <- list(psi = beta, IC = IC, CATE = CATE)
       return(result)
     }
   ),
@@ -150,12 +153,17 @@ Param_spCATE <- R6Class(
     },
     update_nodes = function() {
       return(c(self$outcome_node))
+    },
+    formula_CATE = function(){
+      return(private$.formula_CATE)
     }
   ),
   private = list(
     .type = "ATE",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
-    .supports_outcome_censoring = TRUE
+    .supports_outcome_censoring = TRUE,
+    .formula_CATE = NULL,
+    .submodel = list(Y = "gaussian_linear")
   )
 )

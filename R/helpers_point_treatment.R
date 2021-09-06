@@ -26,10 +26,10 @@ point_tx_npsem <- function(node_list, variable_types = NULL, scale_outcome = TRU
 
 #' @export
 #' @rdname point_tx
-point_tx_task <- function(data, node_list, variable_types = NULL, scale_outcome = TRUE, ...) {
+point_tx_task <- function(data, node_list, variable_types = NULL, scale_outcome = TRUE,  include_variance_node = FALSE, ...) {
   setDT(data)
 
-  npsem <- point_tx_npsem(node_list, variable_types, scale_outcome)
+  npsem <- point_tx_npsem(node_list, variable_types, scale_outcome, include_variance_node)
 
   if (!is.null(node_list$id)) {
     tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, ...)
@@ -86,21 +86,33 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
   likelihood_def <- Likelihood$new(factor_list)
   likelihood <- likelihood_def$train(tmle_task)
 
+  # If conditional variance needs to be estimated, do so.
   if("var_Y" %in% names(tmle_task$npsem)) {
-    task_generator <- function(tmle_task, base_likelihood) {
-      EY <- sl3::unpack_predictions(base_likelihood$get_likelihood(tmle_task, "Y"))
-      EY <- EY[, ncol(EY)]
-      Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
-      outcome <- (Y-EY)^2
-      task <- tmle_task$get_regression_task("Y")
-      column_names <- task$add_columns(data.table("var_Y" = outcome))
-      task <- task$next_in_chain(outcome = "var_Y", column_names = column_names )
+    if(is.null(learner_list[["var_Y"]])) {
+      learner_list[["var_Y"]] <- Lrnr_glmnet$new(family = "poisson")
+      warning("Node var_Y is in npsem but no learner is provided in `learner_list`. Defaulting to glmnet with `poisson` family.")
     }
-    if(tmle_task$npsem[["Y"]]$variable_type == "binomial") {
-      LF_known$new("var_Y", ,  type = "mean")
+    if(tmle_task$npsem[["Y"]]$variable_type$type == "binomial") {
+      mean_fun <- function(task, likelihood, tmle_task) {
+        EY <-  sl3::unpack_predictions(likelihood$get_likelihood(tmle_task, "Y"))
+        EY <- EY[, ncol(EY)]
+        return(EY * (1-EY))
+      }
+      LF_var_Y <- LF_known$new("var_Y", mean_fun = mean_fun ,  base_likelihood = likelihood,  type = "mean")
     } else {
-      LF_derived$new("var_Y", learner_list[["var_Y"]], likelihood, task_generator = task_generator ,  type = "mean")
+      task_generator <- function(tmle_task, base_likelihood) {
+        EY <- sl3::unpack_predictions(base_likelihood$get_likelihood(tmle_task, "Y"))
+        EY <- EY[, ncol(EY)]
+        Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
+        outcome <- (Y-EY)^2
+        task <- tmle_task$get_regression_task("Y")
+        column_names <- task$add_columns(data.table("var_Y" = outcome))
+        task <- task$next_in_chain(outcome = "var_Y", column_names = column_names )
+      }
+      LF_var_Y <- LF_derived$new("var_Y", learner_list[["var_Y"]], likelihood, task_generator = task_generator ,  type = "mean")
     }
+    likelihood$add_factors(LF_var_Y)
   }
+
   return(likelihood)
 }

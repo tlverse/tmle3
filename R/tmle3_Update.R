@@ -134,8 +134,23 @@ tmle3_Update <- R6Class(
       covariates_dt <- do.call(cbind, node_covariates)
 
       if (self$one_dimensional) {
-        observed_task <- likelihood$training_task
-        covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+        EIF_components <- NULL
+        tryCatch({
+         EIF_components <-lapply(clever_covariates, function(item) {
+           item$EIF[[update_node]]
+         })
+         EIF_components <- do.call(cbind, EIF_components)
+         if(length(EIF_components) ==0 || ncol(EIF_components) != ncol(covariates_dt)) {
+           stop("Not all params provide EIF components")
+         }
+          }, error = function(...){})
+        if(is.null(EIF_components)) {
+          ED <- ED_from_estimates(self$current_estimates)
+          EDnormed <- ED / norm(ED, type = "2")
+        }
+        #covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+      } else {
+        EDnormed <- NULL
       }
 
       observed <- tmle_task$get_tmle_node(update_node)
@@ -175,6 +190,7 @@ tmle3_Update <- R6Class(
         }
       }
 
+      submodel_data$EDnormed <- EDnormed
       submodel_data$submodel_spec <- submodel_spec
       # To support arbitrary likelihood-dependent risk functions for updating.
       # Is carrying this stuff around a problem computationally?
@@ -186,6 +202,14 @@ tmle3_Update <- R6Class(
     },
     fit_submodel = function(submodel_data) {
       # Extract submodel spec info
+      EDnormed <- submodel_data$EDnormed
+      if(!is.null(EDnormed)) {
+        # Collapse clever covariates
+        submodel_data$H <-  as.matrix(submodel_data$H) %*% EDnormed
+      } else {
+        EDnormed <- 1
+      }
+
       submodel_spec <- submodel_data$submodel_spec
       family_object <- submodel_spec$family
       loss_function <- submodel_spec$loss_function
@@ -284,6 +308,9 @@ tmle3_Update <- R6Class(
         cat(sprintf("(max) epsilon: %e ", max_eps))
       }
 
+      # Convert univariate epsilon back to multivariate epsilon if needed.
+      # This is change allows us to store the actual epsilon in each update step (noting that EIF changes each iteration)
+      epsilon <- epsilon * EDnormed
       return(epsilon)
     },
     submodel = function(epsilon, initial, H, observed) {

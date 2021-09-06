@@ -146,7 +146,7 @@ Lrnr_glm_semiparametric <- R6Class(
       if(self$params$return_matrix_predictions && binary) {
         predictions <- cbind(Q0,Q1,Q)
         colnames(predictions) <- c("A=0", "A=1", "A")
-        predictions <- sl3::pack_predictions(cbind(Q0,Q1))
+        predictions <- sl3::pack_predictions(predictions)
       } else {
         predictions <- Q
       }

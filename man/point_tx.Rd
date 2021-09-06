@@ -18,6 +18,7 @@ point_tx_task(
   node_list,
   variable_types = NULL,
   scale_outcome = TRUE,
+  include_variance_node = FALSE,
   ...
 )
 

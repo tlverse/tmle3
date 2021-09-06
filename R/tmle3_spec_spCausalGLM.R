@@ -32,7 +32,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
         variable_types <- list(Y = variable_type("binomial"))
       }
       tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = FALSE, include_variance_node = include_variance_node)
-
+      private$.node_list <- node_list
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL ) {
@@ -40,7 +40,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
       wrap_in_Lrnr_glm_sp <- self$options$wrap_in_Lrnr_glm_sp
       append_interaction_matrix <- self$options$append_interaction_matrix
       if (wrap_in_Lrnr_glm_sp) {
-        learner_list[["Y"]] <- Lrnr_glm_semiparametric$new(formula_sp = self$options$formula, family = self$family, interaction_variable = "A", lrnr_baseline = learner_list[["Y"]], append_interaction_matrix = append_interaction_matrix)
+        learner_list[["Y"]] <- Lrnr_glm_semiparametric$new(formula_sp = self$options$formula, family = self$family, interaction_variable = private$.node_list$A, lrnr_baseline = learner_list[["Y"]], append_interaction_matrix = append_interaction_matrix)
       }
       # produce trained likelihood when likelihood_def provided
       if (!is.null(self$options$likelihood_override)) {
@@ -96,6 +96,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
   ),
   private = list(
     .options = NULL,
-    .families = list("CATE" = gaussian(), "RR" = poisson(), "OR" = binomial())
+    .families = list("CATE" = gaussian(), "RR" = poisson(), "OR" = binomial()),
+    .node_list = NULL
   )
 )

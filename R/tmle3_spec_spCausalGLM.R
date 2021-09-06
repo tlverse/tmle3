@@ -27,6 +27,8 @@ tmle3_Spec_spCausalGLM <- R6Class(
       include_variance_node <- self$options$estimand == "CATE"
       if (self$options$estimand == "RR") {
         variable_types <- list(Y = variable_type("continuous"))
+      } else if (self$options$estimand == "OR") {
+        variable_types <- list(Y = variable_type("binomial"))
       }
       tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = FALSE, include_variance_node = include_variance_node)
 

@@ -17,6 +17,8 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
+#'     \item{\code{formula_RR}}{...
+#'     }
 #'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 #'     }
 #'     \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.
@@ -59,18 +61,14 @@ Param_spRR <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
 
 
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
       }
-      if(training_task$uuid == tmle_task$uuid){
-        is_training_task <- TRUE
-      } else {
-        is_training_task <- FALSE
-      }
+
 
       cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
       cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
@@ -92,8 +90,9 @@ Param_spRR <- R6Class(
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
       Qorig <- Q
-      Q0 <- bound(Q0, 0.005)
-      Q1 <- bound(Q1, 0.005)
+
+      Q0 <- pmax(Q0, 0.005)
+      Q1 <- pmax(Q1, 0.005)
 
       RR <- Q1/Q0
       gradM <- V
@@ -104,14 +103,15 @@ Param_spRR <- R6Class(
       H <- as.matrix(A*gradM  + hstar)
 
       # Store EIF component
+      EIF_Y <- NULL
       if(is_training_task) {
+
         scale <- apply(V,2, function(v) {
-          apply(weights*V*v*g1*g0*RR/(g1*RR + g0)^2 *(Y-Q) + H*(A*v*Q),2,mean)
+          apply(self$weights*V*v*g1*g0*RR/(g1*RR + g0)^2 *(Y-Q) + H*(A*v*Q),2,mean)
         })
         scaleinv <- solve(scale)
-        EIF_Y <- self$weights * (H%*% scaleinv) * (Y-Q)
-      } else {
-        EIF_Y <- NULL
+        EIF_Y <- as.matrix(self$weights * (H%*% scaleinv) * (Y-Q))
+
       }
 
       return(list(Y = H, EIF = list(Y = EIF_Y)))
@@ -126,9 +126,10 @@ Param_spRR <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
+
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIF <- self$clever_covariates(tmle_task, fold_number)$EIF$Y
+      EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF$Y
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
@@ -141,12 +142,13 @@ Param_spRR <- R6Class(
       # Q1 <- Q_packed[[2]]
       # Q <- Q_packed[[3]]
 
-      Q0 <- bound(Q0, 0.0005)
-      Q1 <- bound(Q1, 0.0005)
-      beta <- get_beta(W, A, self$formula_OR, Q1, Q0, family = poisson(), weights = weights)
+      Q0 <- pmax(Q0, 0.0005)
+      Q1 <- pmax(Q1, 0.0005)
+      beta <- get_beta(W, A, self$formula_RR, Q1, Q0, family = poisson(), weights = weights)
+      V <- model.matrix(self$formula_RR, as.data.frame(W))
       RR <- exp(V%*%beta)
 
-      IC <- EIF
+      IC <- as.matrix(EIF)
 
       result <- list(psi = beta, IC = IC, RR = RR)
       return(result)

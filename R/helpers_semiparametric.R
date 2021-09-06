@@ -6,7 +6,7 @@ get_beta <- function(W, A, formula, Q1, Q0, family, weights = NULL) {
   }
   V <- model.matrix(formula, as.data.frame(W))
   Q <- ifelse(A==1, Q1, Q0)
-  beta <- coef(glm.fit(A*V, Q, offset = family$linkfun(Q0), family = family, intercept = F, weights = weights))
+  beta <- suppressWarnings(coef(glm.fit(A*V, Q, offset = family$linkfun(Q0), family = family, intercept = F, weights = weights)))
   return(beta)
 }
 

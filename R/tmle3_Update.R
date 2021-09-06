@@ -52,7 +52,7 @@ tmle3_Update <- R6Class(
     # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                           constrain_step = FALSE, delta_epsilon = 1e-4,
-                          convergence_type = c("scaled_var", "sample_size"),
+                          convergence_type = c("scaled_var", "sample_size", "exact"),
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
@@ -67,6 +67,7 @@ tmle3_Update <- R6Class(
       private$.optim_delta_epsilon <- optim_delta_epsilon
       private$.use_best <- use_best
       private$.verbose <- verbose
+      private$.bounds <- bounds
     },
     collapse_covariates = function(estimates, clever_covariates) {
       ED <- ED_from_estimates(estimates)
@@ -141,6 +142,10 @@ tmle3_Update <- R6Class(
            item$EIF[[update_node]]
          })
          EIF_components <- do.call(cbind, EIF_components)
+
+         ED <- colMeans(EIF_components)
+
+         EDnormed <- ED / norm(ED, type = "2")
          if(length(EIF_components) ==0 || ncol(EIF_components) != ncol(covariates_dt)) {
            stop("Not all params provide EIF components")
          }
@@ -167,6 +172,7 @@ tmle3_Update <- R6Class(
 
 
       # protect against qlogis(1)=Inf
+
       initial <- bound(initial, self$bounds(update_node))
 
 
@@ -206,6 +212,7 @@ tmle3_Update <- R6Class(
     fit_submodel = function(submodel_data) {
       # Extract submodel spec info
       EDnormed <- submodel_data$EDnormed
+
       if(!is.null(EDnormed)) {
         # Collapse clever covariates
         submodel_data$H <-  as.matrix(submodel_data$H) %*% EDnormed
@@ -251,8 +258,9 @@ tmle3_Update <- R6Class(
           epsilon <- self$delta_epsilon
         }
 
-        #risk_val <- risk(epsilon)
-        #risk_zero <- risk(0)
+
+        risk_val <- risk(epsilon)
+        risk_zero <- risk(0)
 
         # # TODO: consider if we should do this
         # if(risk_zero<risk_val){
@@ -266,6 +274,8 @@ tmle3_Update <- R6Class(
 
         if (self$fluctuation_type == "standard") {
 
+
+
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
               offset = family_object$linkfun(submodel_data$initial),
@@ -274,6 +284,7 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
+
         } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
@@ -313,6 +324,7 @@ tmle3_Update <- R6Class(
 
       # Convert univariate epsilon back to multivariate epsilon if needed.
       # This is change allows us to store the actual epsilon in each update step (noting that EIF changes each iteration)
+
       epsilon <- epsilon * EDnormed
       return(epsilon)
     },
@@ -361,11 +373,17 @@ tmle3_Update <- R6Class(
         ED_threshold <- se_Dstar / min(log(n), 10)
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n
+      } else if (self$convergence_type == "exact") {
+        ED_threshold <- min(1/n,1e-8)
       }
 
       # get |P_n D*| of any number of parameter estimates
+
+
       ED <- ED_from_estimates(estimates)
+
       # zero out any that are from nontargeted parameter components
+
       ED <- ED * private$.targeted_components
       current_step <- self$step_number
 

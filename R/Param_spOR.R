@@ -17,6 +17,8 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
+#'     \item{\code{formula_OR}}{...
+#'     }
 #'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 #'     }
 #'     \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.
@@ -59,18 +61,14 @@ Param_spOR <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full") {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
 
 
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
       }
-      if(training_task$uuid == tmle_task$uuid){
-        is_training_task <- TRUE
-      } else {
-        is_training_task <- FALSE
-      }
+
 
       cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
       cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
@@ -96,16 +94,19 @@ Param_spOR <- R6Class(
       OR <- Q1*(1-Q1) / (Q0*(1-Q0))
 
 
-      h_star <-    -1*as.vector((g1*OR) / (g1*OR + (1-g1)))
-      H <- as.matrix(V*(A  + hstar))
+      h_star <-  -1*as.vector((g1*OR) / (g1*OR + (1-g1)))
+      H <- as.matrix(V*(A  + h_star))
 
       # Store EIF component
+      EIF_Y <- NULL
       if(is_training_task) {
+        tryCatch({
         scale <- apply(V,2, function(v){apply(self$weights*as.vector( Q1*(1-Q1) * Q0*(1-Q0) * g1 * (1-g1) / (g1 * Q1*(1-Q1) + (1-g1) *Q0*(1-Q0) )) * v*V,2,mean)})
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H%*% scaleinv) * (Y-Q)
-      } else {
-        EIF_Y <- NULL
+      }, error = function(...){
+
+      })
       }
 
       return(list(Y = H, EIF = list(Y = EIF_Y)))
@@ -122,7 +123,7 @@ Param_spOR <- R6Class(
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIF <- self$clever_covariates(tmle_task, fold_number)$EIF$Y
+      EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF$Y
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
@@ -137,6 +138,7 @@ Param_spOR <- R6Class(
       Q0 <- bound(Q0, 0.0005)
       Q1 <- bound(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_OR, Q1, Q0, family = binomial(), weights = weights)
+      V <- model.matrix(self$formula_OR, as.data.frame(W))
       OR <- exp(V%*%beta)
 
       IC <- EIF

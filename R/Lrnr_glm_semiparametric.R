@@ -71,7 +71,7 @@ Lrnr_glm_semiparametric <- R6Class(
         task_baseline <- task$next_in_chain(covariates = covariates)
         lrnr_baseline <- lrnr_baseline$train(task_baseline[A==0])
         Q0 <- lrnr_baseline$predict(task_baseline)
-        beta <- coef(glm.fit(A*V, Y, offset = family$linkfun(Q0), intercept = F, weights = task$weights, family = family))
+        beta <- suppressWarnings(coef(glm.fit(A*V, Y, offset = family$linkfun(Q0), intercept = F, weights = task$weights, family = family)))
         Q1 <- family$linkinv(family$linkfun(Q0) + V%*%beta)
         Q <- ifelse(A==1, Q1, Q0)
       } else {
@@ -99,7 +99,7 @@ Lrnr_glm_semiparametric <- R6Class(
         Q0 <- lrnr_baseline$predict(task_baseline0)
         # Project onto model
 
-        beta <- coef(glm.fit(A*V, Q, offset = family$linkfun(Q0), intercept = F, weights = task$weights, family = family))
+        beta <- suppressWarnings(coef(glm.fit(A*V, Q, offset = family$linkfun(Q0), intercept = F, weights = task$weights, family = family)))
 
       }
 

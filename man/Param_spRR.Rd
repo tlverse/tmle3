@@ -19,6 +19,8 @@ Parameter definition for the Average Treatment Effect (ATE).
 \describe{
 \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 }
+\item{\code{formula_RR}}{...
+}
 \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 }
 \item{\code{intervention_list_control}}{A list of objects inheriting from \code{\link{LF_base}}, representing the control intervention.

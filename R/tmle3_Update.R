@@ -56,7 +56,7 @@ tmle3_Update <- R6Class(
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
-                          verbose = FALSE) {
+                          verbose = FALSE, bounds = list(Y = 1e-5, A=0.005)) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -135,6 +135,7 @@ tmle3_Update <- R6Class(
 
       if (self$one_dimensional) {
         EIF_components <- NULL
+        # If EIF components are provided use those instead of the full EIF
         tryCatch({
          EIF_components <-lapply(clever_covariates, function(item) {
            item$EIF[[update_node]]
@@ -166,7 +167,9 @@ tmle3_Update <- R6Class(
 
 
       # protect against qlogis(1)=Inf
-      initial <- bound(initial, 0.005)
+      initial <- bound(initial, self$bounds(update_node))
+
+
 
       submodel_data <- list(
         observed = observed,
@@ -429,6 +432,17 @@ tmle3_Update <- R6Class(
         private$.update_nodes,
         new_update_nodes
       ))
+    },
+    bounds = function(node) {
+      bounds <- private$.bounds
+      if(is.numeric(bounds)) {
+        return(bounds)
+      } else if(is.null(bounds[[node]])) {
+        bounds <- 0.005
+      } else {
+        bounds <- bounds[[node]]
+      }
+      return(bounds)
     }
   ),
   active = list(
@@ -519,6 +533,7 @@ tmle3_Update <- R6Class(
     .use_best = NULL,
     .verbose = FALSE,
     .targeted_components = NULL,
-    .current_estimates = NULL
+    .current_estimates = NULL,
+    .bounds = NULL
   )
 )

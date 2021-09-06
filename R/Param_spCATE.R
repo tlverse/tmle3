@@ -68,6 +68,8 @@ Param_spCATE <- R6Class(
       }
       if(training_task$uuid == tmle_task$uuid){
         is_training_task <- TRUE
+      } else {
+        is_training_task <- FALSE
       }
 
       cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
@@ -82,12 +84,15 @@ Param_spCATE <- R6Class(
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
-      Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      Q0 <- Q_packed[[1]]
-      Q1 <- Q_packed[[2]]
-      Q <- Q_packed[[3]]
+      #Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      #Q0 <- Q_packed[[1]]
+      #Q1 <- Q_packed[[2]]
+      #Q <- Q_packed[[3]]
+      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
+
       #Extract current semiparametric coef
-      beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
+      #print(data.table(Q1,Q0))
+      #beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
       # Get conditional variances
       var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
       var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
@@ -113,18 +118,27 @@ Param_spCATE <- R6Class(
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
+      cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
 
       W <- tmle_task$get_tmle_node("W")
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
-
+      weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
       EIF <- self$clever_covariates(tmle_task, fold_number)$EIF$Y
+      Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
+      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
+      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Qtest <- ifelse(A==1, Q1, Q0)
+      if(!all(Qtest-Q==0)) {
+        stop("Q and Q1,Q0 dont match")
+      }
+      # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      # Q0 <- Q_packed[[1]]
+      # Q1 <- Q_packed[[2]]
+      # Q <- Q_packed[[3]]
 
-      Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      Q0 <- Q_packed[[1]]
-      Q1 <- Q_packed[[2]]
-      Q <- Q_packed[[3]]
       beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
       CATE <- Q1 - Q0
 
@@ -164,6 +178,6 @@ Param_spCATE <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_CATE = NULL,
-    .submodel = list(Y = "gaussian_linear")
+    .submodel = list(Y = "gaussian_identity")
   )
 )

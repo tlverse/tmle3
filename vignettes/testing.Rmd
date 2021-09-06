@@ -19,7 +19,7 @@ Y <- rnorm(n, mean = A+W, sd = 0.5)
 data <- data.table(W,A,Y)
 lrnr_Y0W <- Lrnr_glmnet$new()
 lrnr_A <- Lrnr_glm$new()
-lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1, lrnr_Y0W, interaction_variable = "A", family = gaussian(), return_matrix_predictions = TRUE)
+lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1, lrnr_Y0W, interaction_variable = "A", family = gaussian(), return_matrix_predictions = FALSE)
 
 node_list <- list (W = "W", A = "A", Y= "Y")
 
@@ -30,7 +30,7 @@ tmle_task$get_tmle_node("Y", format = T)
 learner_list <- list(Y = lrnr_sp, A = lrnr_A)
 likelihood <- point_tx_likelihood(tmle_task, learner_list)
 
-updater <- tmle3_Update$new()
+updater <- tmle3_Update$new(verbose = T, bounds = list(Y = c(-Inf, Inf)))
 tlik <- Targeted_Likelihood$new(likelihood, updater = updater)
 param_cate <- Param_spCATE$new(tlik, formula_CATE  = ~1, intervention_list_treatment = list(define_lf(LF_static, "A", value = 1)), intervention_list_control = list(define_lf(LF_static, "A", value = 0)))
 
@@ -38,9 +38,8 @@ param_cate <- Param_spCATE$new(tlik, formula_CATE  = ~1, intervention_list_treat
 ```
 
 ```{r}
-param_cate$formula_CATE
-updater <- tlik$updater
-updater$update()
+
+updater$update(tlik, tmle_task)
 ```
 
 

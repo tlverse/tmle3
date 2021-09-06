@@ -52,13 +52,13 @@ Param_base <- R6Class(
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
     },
     supports_submodel = function(submodel_name, node) {
-      if(!(node%in% names(private$.submodel))) {
+      if (!(node %in% names(private$.submodel))) {
         node <- "default"
       }
       return(submodel_name %in% c(private$.submodel[[node]]))
     },
     get_submodel_spec = function(update_node) {
-      if(!(update_node%in% names(private$.submodel))) {
+      if (!(update_node %in% names(private$.submodel))) {
         update_node <- "default"
       }
       return(get_submodel_spec(private$.submodel[[update_node]]))
@@ -87,7 +87,7 @@ Param_base <- R6Class(
     submodel = function() {
       return(private$.submodel)
     },
-    weights = function(){
+    weights = function() {
       return(self$observed_likelihood$training_task$weights)
     }
   ),

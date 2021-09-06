@@ -11,12 +11,13 @@ tmle3_Spec_spCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level =0,
+    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level = 0,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
-      private$.options <- list(estimand = estimand, formula = formula,
-                               treatment_level = treatment_level, control_level = control_level,
+      private$.options <- list(
+        estimand = estimand, formula = formula,
+        treatment_level = treatment_level, control_level = control_level,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
       )
@@ -24,7 +25,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
       include_variance_node <- self$options$estimand == "CATE"
-      if(self$options$estimand == "RR") {
+      if (self$options$estimand == "RR") {
         variable_types <- list(Y = variable_type("continuous"))
       }
       tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = FALSE, include_variance_node = include_variance_node)
@@ -32,9 +33,9 @@ tmle3_Spec_spCausalGLM <- R6Class(
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE) {
-      #Wrap baseline learner in semiparametric learner
-      if(wrap_in_Lrnr_glm_sp) {
-        learner_list[["Y"]] <- Lrnr_glm_semiparametric$new(formula_sp = self$options$formula, family = self$family, interaction_variable = "A", lrnr_baseline = learner_list[["Y"]] ,  append_interaction_matrix = append_interaction_matrix)
+      # Wrap baseline learner in semiparametric learner
+      if (wrap_in_Lrnr_glm_sp) {
+        learner_list[["Y"]] <- Lrnr_glm_semiparametric$new(formula_sp = self$options$formula, family = self$family, interaction_variable = "A", lrnr_baseline = learner_list[["Y"]], append_interaction_matrix = append_interaction_matrix)
       }
       # produce trained likelihood when likelihood_def provided
       if (!is.null(self$options$likelihood_override)) {
@@ -45,13 +46,13 @@ tmle3_Spec_spCausalGLM <- R6Class(
 
       return(likelihood)
     },
-    make_updater = function(convergence_type = "sample_size", verbose = F,...) {
-      if(self$options$estimand == "CATE"){
-        updater <- tmle3_Update$new(maxit=100,one_dimensional = FALSE,   verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
-      } else if (self$options$estimand == "OR"){
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose,delta_epsilon = 0.01, constrain_step = TRUE, bounds = 0.0025, ...)
-      } else if (self$options$estimand == "RR"){
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE,  convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.01, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
+    make_updater = function(convergence_type = "sample_size", verbose = F, ...) {
+      if (self$options$estimand == "CATE") {
+        updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
+      } else if (self$options$estimand == "OR") {
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.01, constrain_step = TRUE, bounds = 0.0025, ...)
+      } else if (self$options$estimand == "RR") {
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.01, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
       }
       return(updater)
     },
@@ -70,11 +71,11 @@ tmle3_Spec_spCausalGLM <- R6Class(
       treatment <- define_lf(LF_static, "A", value = treatment_value)
       control <- define_lf(LF_static, "A", value = control_value)
       formula <- self$options$formula
-      if(self$options$estimand == "CATE"){
-        param <- Param_spCATE$new(targeted_likelihood,formula, treatment, control)
-      } else if (self$options$estimand == "OR"){
-        param <- Param_spOR$new(targeted_likelihood,formula, treatment, control)
-      } else if (self$options$estimand == "RR"){
+      if (self$options$estimand == "CATE") {
+        param <- Param_spCATE$new(targeted_likelihood, formula, treatment, control)
+      } else if (self$options$estimand == "OR") {
+        param <- Param_spOR$new(targeted_likelihood, formula, treatment, control)
+      } else if (self$options$estimand == "RR") {
         param <- Param_spRR$new(targeted_likelihood, formula, treatment, control)
       }
       return(list(param))

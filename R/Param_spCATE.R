@@ -49,12 +49,12 @@ Param_spCATE <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_CATE =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_CATE = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_CATE, as.data.frame(W))
-      private$.targeted <- rep(T,ncol(V))
+      private$.targeted <- rep(T, ncol(V))
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -68,8 +68,6 @@ Param_spCATE <- R6Class(
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
-
-
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
@@ -82,46 +80,51 @@ Param_spCATE <- R6Class(
 
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_CATE, as.data.frame(W))
-      A <- tmle_task$get_tmle_node("A", format = T )[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T )[[1]]
+      A <- tmle_task$get_tmle_node("A", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
 
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
-      g1 <- ifelse(A==1, g, 1-g)
-      g0 <- 1-g1
-      #Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      #Q0 <- Q_packed[[1]]
-      #Q1 <- Q_packed[[2]]
-      #Q <- Q_packed[[3]]
+      g1 <- ifelse(A == 1, g, 1 - g)
+      g0 <- 1 - g1
+      # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      # Q0 <- Q_packed[[1]]
+      # Q1 <- Q_packed[[2]]
+      # Q <- Q_packed[[3]]
       Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
       Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
-      #print(data.table(Q0,Q1,Q))
-      #Extract current semiparametric coef
-      #print(data.table(Q1,Q0))
-      #beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
+      # print(data.table(Q0,Q1,Q))
+      # Extract current semiparametric coef
+      # print(data.table(Q1,Q0))
+      # beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
       # Get conditional variances
       var_Y <- as.vector(self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number))
       var_Y0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number))
       var_Y1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number))
 
       gradM <- V
-      num <- gradM * ( g1/var_Y1)
-      denom <- (g0/ var_Y0 + g1/var_Y1)
-      hstar <- - num/denom
-      H <- as.matrix((A*gradM  + hstar) /var_Y)
+      num <- gradM * (g1 / var_Y1)
+      denom <- (g0 / var_Y0 + g1 / var_Y1)
+      hstar <- -num / denom
+      H <- as.matrix((A * gradM + hstar) / var_Y)
 
       EIF_Y <- NULL
       # Store EIF component
-      if(is_training_task) {
-        tryCatch({
-         scale <- apply(V,2, function(v) {apply(self$weights * H *(A*v ),2,mean  ) })
+      if (is_training_task) {
+        tryCatch(
+          {
+            scale <- apply(V, 2, function(v) {
+              apply(self$weights * H * (A * v), 2, mean)
+            })
 
-        scaleinv <- solve(scale)
-        EIF_Y <-   self$weights * (H %*% scaleinv) * as.vector(Y-Q)
-        },error = function(...){})
+            scaleinv <- solve(scale)
+            EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
+          },
+          error = function(...) {}
+        )
 
-       # print(dim(EIF_Y))
-        #print(mean(EIF_Y))
+        # print(dim(EIF_Y))
+        # print(mean(EIF_Y))
       }
 
 
@@ -135,8 +138,8 @@ Param_spCATE <- R6Class(
       cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
 
       W <- tmle_task$get_tmle_node("W")
-      A <- tmle_task$get_tmle_node("A", format = T )[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T )[[1]]
+      A <- tmle_task$get_tmle_node("A", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
 
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
@@ -146,9 +149,9 @@ Param_spCATE <- R6Class(
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
-      Qtest <- ifelse(A==1, Q1, Q0)
-      if(!all(Qtest-Q==0)) {
-        print(quantile(abs(Qtest-Q)))
+      Qtest <- ifelse(A == 1, Q1, Q0)
+      if (!all(Qtest - Q == 0)) {
+        print(quantile(abs(Qtest - Q)))
         stop("Q and Q1,Q0 dont match")
       }
       # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
@@ -186,7 +189,7 @@ Param_spCATE <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_CATE = function(){
+    formula_CATE = function() {
       return(private$.formula_CATE)
     }
   ),

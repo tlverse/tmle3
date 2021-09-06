@@ -56,7 +56,7 @@ tmle3_Update <- R6Class(
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
-                          verbose = FALSE, bounds = list(Y = 1e-5, A=0.005)) {
+                          verbose = FALSE, bounds = list(Y = 1e-5, A = 0.005)) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -120,9 +120,9 @@ tmle3_Update <- R6Class(
       submodel_name <- submodel_spec$name
       # Check compatibility of tmle_params with submodel
       lapply(self$tmle_params, function(tmle_param) {
-        if(update_node %in% tmle_param$update_nodes  ) {
-          if(!(tmle_param$supports_submodel(submodel_name, update_node))){
-            stop(paste0("Incompatible parameter-specific submodel specs for update node: Parameter `", tmle_param$name, "`` does not support the submodel `", submodel_name, "` for update node `", update_node,  "`."))
+        if (update_node %in% tmle_param$update_nodes) {
+          if (!(tmle_param$supports_submodel(submodel_name, update_node))) {
+            stop(paste0("Incompatible parameter-specific submodel specs for update node: Parameter `", tmle_param$name, "`` does not support the submodel `", submodel_name, "` for update node `", update_node, "`."))
           }
         }
       })
@@ -137,24 +137,27 @@ tmle3_Update <- R6Class(
       if (self$one_dimensional) {
         EIF_components <- NULL
         # If EIF components are provided use those instead of the full EIF
-        tryCatch({
-         EIF_components <-lapply(clever_covariates, function(item) {
-           item$EIF[[update_node]]
-         })
-         EIF_components <- do.call(cbind, EIF_components)
+        tryCatch(
+          {
+            EIF_components <- lapply(clever_covariates, function(item) {
+              item$EIF[[update_node]]
+            })
+            EIF_components <- do.call(cbind, EIF_components)
 
-         ED <- colMeans(EIF_components)
+            ED <- colMeans(EIF_components)
 
-         EDnormed <- ED / norm(ED, type = "2")
-         if(length(EIF_components) ==0 || ncol(EIF_components) != ncol(covariates_dt)) {
-           stop("Not all params provide EIF components")
-         }
-          }, error = function(...){})
-        if(is.null(EIF_components)) {
+            EDnormed <- ED / norm(ED, type = "2")
+            if (length(EIF_components) == 0 || ncol(EIF_components) != ncol(covariates_dt)) {
+              stop("Not all params provide EIF components")
+            }
+          },
+          error = function(...) {}
+        )
+        if (is.null(EIF_components)) {
           ED <- ED_from_estimates(self$current_estimates)
           EDnormed <- ED / norm(ED, type = "2")
         }
-        #covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+        # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       } else {
         EDnormed <- NULL
       }
@@ -213,9 +216,9 @@ tmle3_Update <- R6Class(
       # Extract submodel spec info
       EDnormed <- submodel_data$EDnormed
 
-      if(!is.null(EDnormed)) {
+      if (!is.null(EDnormed)) {
         # Collapse clever covariates
-        submodel_data$H <-  as.matrix(submodel_data$H) %*% EDnormed
+        submodel_data$H <- as.matrix(submodel_data$H) %*% EDnormed
       } else {
         EDnormed <- 1
       }
@@ -242,7 +245,7 @@ tmle3_Update <- R6Class(
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel, submodel_data, epsilon)
-          loss <- loss_function(submodel_estimate, submodel_data$observed,  weights = submodel_data$weights, likelihood = training_likelihood, tmle_task = training_task, fold_number = training_fold)
+          loss <- loss_function(submodel_estimate, submodel_data$observed, weights = submodel_data$weights, likelihood = training_likelihood, tmle_task = training_task, fold_number = training_fold)
           mean(loss)
         }
 
@@ -271,11 +274,7 @@ tmle3_Update <- R6Class(
           cat(sprintf("risk_change: %e ", risk_val - risk_zero))
         }
       } else {
-
         if (self$fluctuation_type == "standard") {
-
-
-
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
               offset = family_object$linkfun(submodel_data$initial),
@@ -284,7 +283,6 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
-
         } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
@@ -368,7 +366,7 @@ tmle3_Update <- R6Class(
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n
       } else if (self$convergence_type == "exact") {
-        ED_threshold <- min(1/n,1e-8)
+        ED_threshold <- min(1 / n, 1e-8)
       }
 
       # get |P_n D*| of any number of parameter estimates
@@ -447,9 +445,9 @@ tmle3_Update <- R6Class(
     },
     bounds = function(node) {
       bounds <- private$.bounds
-      if(is.numeric(bounds)) {
+      if (is.numeric(bounds)) {
         return(bounds)
-      } else if(is.null(bounds[[node]])) {
+      } else if (is.null(bounds[[node]])) {
         bounds <- 0.005
       } else {
         bounds <- bounds[[node]]

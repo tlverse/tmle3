@@ -24,10 +24,10 @@ generate_submodel_from_family <- function(family) {
 #'
 #' @export
 #
-submodel_logistic_switch   <- function(eps, offset, X, observed) {
-  offset <- ifelse(observed==1, offset, 1-offset)
+submodel_logistic_switch <- function(eps, offset, X, observed) {
+  offset <- ifelse(observed == 1, offset, 1 - offset)
   output <- stats::plogis(stats::qlogis(offset) + X %*% eps)
-  output <- ifelse(observed==1, output, 1-output)
+  output <- ifelse(observed == 1, output, 1 - output)
 }
 
 #' Log likelihood loss for binary variables
@@ -37,17 +37,17 @@ submodel_logistic_switch   <- function(eps, offset, X, observed) {
 #' @param weights ...
 #' @param v ...
 #' @export
-loss_function_loglik_binomial = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
+loss_function_loglik_binomial <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
-  if(!is.null(weights)) {
+  if (!is.null(weights)) {
     loss <- weights * loss
   }
   return(loss)
 }
 #' @export
-loss_function_loglik = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
+loss_function_loglik <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- -1 * log(estimate)
-  if(!is.null(weights)) {
+  if (!is.null(weights)) {
     loss <- weights * loss
   }
   return(loss)
@@ -70,9 +70,9 @@ submodel_linear <- generate_submodel_from_family(gaussian())
 #' @param weights ...
 #' @param likelihood ...
 #' @export
-loss_function_least_squares = function(estimate, observed, weights = NULL,  likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
+loss_function_least_squares <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
   loss <- (observed - estimate)^2
-  if(!is.null(weights)) {
+  if (!is.null(weights)) {
     loss <- weights * loss
   }
   return(loss)
@@ -88,7 +88,7 @@ loss_function_least_squares = function(estimate, observed, weights = NULL,  like
 #'
 #' @export
 #
-submodel_exp  <- generate_submodel_from_family(poisson())
+submodel_exp <- generate_submodel_from_family(poisson())
 
 #' Poisson/log-linear loss for nonnegative variables
 #'
@@ -97,9 +97,9 @@ submodel_exp  <- generate_submodel_from_family(poisson())
 #' @param weights ...
 #' @param likelihood ...
 #' @export
-loss_function_poisson = function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  loss <-  estimate - observed * log(estimate)
-  if(!is.null(weights)) {
+loss_function_poisson <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
+  loss <- estimate - observed * log(estimate)
+  if (!is.null(weights)) {
     loss <- weights * loss
   }
   return(loss)
@@ -109,17 +109,17 @@ loss_function_poisson = function(estimate, observed, weights = NULL, likelihood 
 #' @param family ...
 #' @export
 generate_loss_function_from_family <- function(family) {
-  if(!is.character(family)) {
+  if (!is.character(family)) {
     family <- family$family
   }
-  if(!(family %in% c("poisson", "gaussian", "binomial"))){
+  if (!(family %in% c("poisson", "gaussian", "binomial"))) {
     stop("Unsupported family object.")
   }
-  if(family == "poisson"){
+  if (family == "poisson") {
     return(loss_function_poisson)
-  } else if(family == "gaussian"){
+  } else if (family == "gaussian") {
     return(loss_function_least_squares)
-  } else if(family == "binomial"){
+  } else if (family == "binomial") {
     return(loss_function_loglik_binomial)
   }
 }
@@ -128,15 +128,15 @@ generate_loss_function_from_family <- function(family) {
 #' Main maker of submodel specs.
 #' @param name ...
 #' @export
-make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, loss_function  = NULL) {
-  if(is.null(submodel_function)  && inherits(submodel_function, "family")) {
+make_submodel_spec <- function(name, family = NULL, submodel_function = NULL, loss_function = NULL) {
+  if (is.null(submodel_function) && inherits(submodel_function, "family")) {
     submodel_function <- generate_submodel_from_family(submodel_function)
-  } else if(is.null(submodel_function) && !is.null(family)) {
+  } else if (is.null(submodel_function) && !is.null(family)) {
     submodel_function <- generate_submodel_from_family(family)
   }
-  if(is.null(loss_function)  && inherits(loss_function, "family")) {
+  if (is.null(loss_function) && inherits(loss_function, "family")) {
     generate_loss_function_from_family(loss_function)
-  } else if(is.null(loss_function) && !is.null(family)) {
+  } else if (is.null(loss_function) && !is.null(family)) {
     loss_function <- generate_loss_function_from_family(family)
   }
   return(list(name = name, family = family, submodel_function = submodel_function, loss_function = loss_function))
@@ -147,22 +147,27 @@ make_submodel_spec <- function(name, family = NULL, submodel_function  = NULL, l
 #' @export
 get_submodel_spec <- function(name) {
   output <- NULL
-  tryCatch({
-    if(inherits(name, "family")) {
-      family <- name
-    } else {
-      split_names <- unlist(strsplit(name, "_"))
-      if(length(split_names)==2) {
-        family <- get(split_names[1])(link = split_names[2])
+  tryCatch(
+    {
+      if (inherits(name, "family")) {
+        family <- name
       } else {
-        family <- get(split_names[1])()
+        split_names <- unlist(strsplit(name, "_"))
+        if (length(split_names) == 2) {
+          family <- get(split_names[1])(link = split_names[2])
+        } else {
+          family <- get(split_names[1])()
+        }
       }
+      output <- make_submodel_spec(name, family)
+    },
+    error = function(...) {
+      try({
+        output <<- get(paste0("submodel_spec_", name))
+      })
     }
-    output <- make_submodel_spec(name, family)
-  }, error = function(...) {
-    try({output <<- get(paste0("submodel_spec_",name))})
-  })
-  if(is.null(output)) {
+  )
+  if (is.null(output)) {
     stop(paste0("Argument name was not a valid family nor was `submodel_spec_", name, "` found in the environment."))
   }
   return(output)
@@ -170,5 +175,6 @@ get_submodel_spec <- function(name) {
 
 #' Submodel for binary outcomes where "initial" is a likelihood and not a conditional mean (e.g. for Param_ATC and Param_ATT for updating node `A`).
 #' @export
-submodel_spec_logistic_switch <- list(name = "logistic_switch", family = function(){stop("Does not support family-based updating. Please use optim instead.")}, submodel_function = submodel_logistic_switch, loss_function = loss_function_loglik)
-
+submodel_spec_logistic_switch <- list(name = "logistic_switch", family = function() {
+  stop("Does not support family-based updating. Please use optim instead.")
+}, submodel_function = submodel_logistic_switch, loss_function = loss_function_loglik)

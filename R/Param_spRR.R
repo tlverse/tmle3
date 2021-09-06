@@ -1,6 +1,6 @@
 #' Semiparametric estimation of the conditonal relative risk/treatment-effect for arbitrary partially-linear log-linear/link regression models.
 #' Arbitrary user-specified parametric models for the conditional relative-risk are supported.
-#` This method implements semiparametric efficient relative-risk regression for nonnegative outcomes.
+# ` This method implements semiparametric efficient relative-risk regression for nonnegative outcomes.
 #' Assuming the semiparametric model to be true allows for some efficiency gain (when true) but may lead to less robust estimates due to misspecification.
 #' The parametric model is at the log-scale and therefore the coefficients returned code the linear predictor for the `log`-relative-risk.
 #' @importFrom R6 R6Class
@@ -50,7 +50,7 @@ Param_spRR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_logRR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_logRR = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -64,8 +64,6 @@ Param_spRR <- R6Class(
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
-
-
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
@@ -82,12 +80,12 @@ Param_spRR <- R6Class(
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
 
       g <- self$observed_likelihood$get_likelihood(tmle_task, "A", fold_number)
-      g1 <- ifelse(A==1, g, 1-g)
-      g0 <- 1-g1
-      #Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      #Q0 <- Q_packed[[1]]
-      #Q1 <- Q_packed[[2]]
-      #Q <- Q_packed[[3]]
+      g1 <- ifelse(A == 1, g, 1 - g)
+      g0 <- 1 - g1
+      # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
+      # Q0 <- Q_packed[[1]]
+      # Q1 <- Q_packed[[2]]
+      # Q <- Q_packed[[3]]
       Q <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number))
       Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number))
       Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number))
@@ -96,24 +94,23 @@ Param_spRR <- R6Class(
       Q0 <- pmax(Q0, 0.005)
       Q1 <- pmax(Q1, 0.005)
 
-      RR <- as.vector(Q1/Q0)
+      RR <- as.vector(Q1 / Q0)
       gradM <- V
-      mstar <- RR + (1-A)*1
-      num <- gradM * ( RR * g1)
+      mstar <- RR + (1 - A) * 1
+      num <- gradM * (RR * g1)
       denom <- RR * g1 + g0
-      hstar <- - num/denom
-      H <- as.matrix(A*gradM  + hstar)
+      hstar <- -num / denom
+      H <- as.matrix(A * gradM + hstar)
 
       # Store EIF component
       EIF_Y <- NULL
-      if(is_training_task) {
-        scale <- apply(V,2, function(v) {
-          apply(self$weights*V*v*g1*g0*RR/(g1*RR + g0)^2 *(Y-Q) + self$weights*H*(A*v*Q),2,mean)
+      if (is_training_task) {
+        scale <- apply(V, 2, function(v) {
+          apply(self$weights * V * v * g1 * g0 * RR / (g1 * RR + g0)^2 * (Y - Q) + self$weights * H * (A * v * Q), 2, mean)
         })
 
         scaleinv <- solve(scale)
-        EIF_Y <- as.matrix(self$weights * (H%*% scaleinv) * (Y-Q))
-
+        EIF_Y <- as.matrix(self$weights * (H %*% scaleinv) * (Y - Q))
       }
 
       return(list(Y = H, EIF = list(Y = EIF_Y)))
@@ -135,8 +132,8 @@ Param_spRR <- R6Class(
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
-      Qtest <- ifelse(A==1, Q1, Q0)
-      if(!all(Qtest-Q==0)) {
+      Qtest <- ifelse(A == 1, Q1, Q0)
+      if (!all(Qtest - Q == 0)) {
         stop("Q and Q1,Q0 dont match")
       }
       # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
@@ -148,7 +145,7 @@ Param_spRR <- R6Class(
       Q1 <- pmax(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logRR, Q1, Q0, family = poisson(), weights = weights)
       V <- model.matrix(self$formula_logRR, as.data.frame(W))
-      RR <- as.vector(exp(V%*%beta))
+      RR <- as.vector(exp(V %*% beta))
 
       IC <- as.matrix(EIF)
 
@@ -176,7 +173,7 @@ Param_spRR <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_logRR = function(){
+    formula_logRR = function() {
       return(private$.formula_logRR)
     }
   ),

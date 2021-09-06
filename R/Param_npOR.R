@@ -51,7 +51,7 @@ Param_npOR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_logOR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_logOR = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -65,8 +65,6 @@ Param_npOR <- R6Class(
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
-
-
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
@@ -87,8 +85,8 @@ Param_npOR <- R6Class(
       Y_train <- training_task$get_tmle_node("Y", format = TRUE)[[1]]
 
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
-      g1 <- ifelse(A==1, g, 1-g)
-      g0 <- 1-g1
+      g1 <- ifelse(A == 1, g, 1 - g)
+      g0 <- 1 - g1
 
       Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
@@ -98,31 +96,35 @@ Param_npOR <- R6Class(
       Q1 <- bound(Q1, 0.005)
       beta <- get_beta(W_train, A_train, self$formula_logOR, Q1, Q0, family = binomial(), weights = self$weights)
 
-      Q1beta <- as.vector(plogis(qlogis(Q0) + V%*%beta))
+      Q1beta <- as.vector(plogis(qlogis(Q0) + V %*% beta))
 
-      sigma_rel <- Q1beta*(1-Q1beta) / (Q0*(1-Q0))
+      sigma_rel <- Q1beta * (1 - Q1beta) / (Q0 * (1 - Q0))
 
 
-      omega <- as.vector((g0 + g1*sigma_rel) / (g0))
+      omega <- as.vector((g0 + g1 * sigma_rel) / (g0))
 
-      h_star <-  -1*as.vector((g1*sigma_rel) / (g1*sigma_rel + (1-g1)))
-      H <- as.matrix(omega*V*(A  + h_star))
+      h_star <- -1 * as.vector((g1 * sigma_rel) / (g1 * sigma_rel + (1 - g1)))
+      H <- as.matrix(omega * V * (A + h_star))
 
       # Store EIF component
       EIF_Y <- NULL
       EIFWA <- NULL
-      if(is_training_task) {
-        tryCatch({
-          scale <- apply(V,2, function(v){apply(self$weights*(A * Q1beta*(1-Q1beta) * v*V),2,mean)})
-          scaleinv <- solve(scale)
-          EIF_Y <- self$weights * (H%*% scaleinv) * as.vector(Y-Q)
-          EIFWA <- apply(V, 2, function(v) {
-            (self$weights*(A*v*(Q1 - Q1beta)) - mean( self$weights*(A*v*(Q1 - Q1beta))))
-          })
+      if (is_training_task) {
+        tryCatch(
+          {
+            scale <- apply(V, 2, function(v) {
+              apply(self$weights * (A * Q1beta * (1 - Q1beta) * v * V), 2, mean)
+            })
+            scaleinv <- solve(scale)
+            EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
+            EIFWA <- apply(V, 2, function(v) {
+              (self$weights * (A * v * (Q1 - Q1beta)) - mean(self$weights * (A * v * (Q1 - Q1beta))))
+            })
 
-          EIFWA <- EIFWA %*% scaleinv
-
-        } ,error = function(...) {} )
+            EIFWA <- EIFWA %*% scaleinv
+          },
+          error = function(...) {}
+        )
       }
 
       return(list(Y = H, EIF = list(Y = EIF_Y, WA = EIFWA)))
@@ -144,8 +146,8 @@ Param_npOR <- R6Class(
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
-      Qtest <- ifelse(A==1, Q1, Q0)
-      if(!all(Qtest-Q==0)) {
+      Qtest <- ifelse(A == 1, Q1, Q0)
+      if (!all(Qtest - Q == 0)) {
         stop("Q and Q1,Q0 dont match")
       }
       # Q_packed <- sl3::unpack_predictions(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
@@ -156,7 +158,7 @@ Param_npOR <- R6Class(
       Q1 <- bound(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logOR, Q1, Q0, family = binomial(), weights = weights)
       V <- model.matrix(self$formula_logOR, as.data.frame(W))
-      OR <- exp(V%*%beta)
+      OR <- exp(V %*% beta)
 
       IC <- EIF
 
@@ -184,7 +186,7 @@ Param_npOR <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_logOR = function(){
+    formula_logOR = function() {
       return(private$.formula_logOR)
     }
   ),

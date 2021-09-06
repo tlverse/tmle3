@@ -49,7 +49,7 @@ LF_known <- R6Class(
     },
     get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
-      if(!is.null(self$base_likelihood)) {
+      if (!is.null(self$base_likelihood)) {
         preds <- self$mean_fun(learner_task, tmle_task, self$base_likelihood)
       } else {
         preds <- self$mean_fun(learner_task)
@@ -59,7 +59,7 @@ LF_known <- R6Class(
     },
     get_density = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
-      if(!is.null(self$base_likelihood)) {
+      if (!is.null(self$base_likelihood)) {
         preds <- self$density_fun(learner_task, tmle_task, self$base_likelihood)
       } else {
         preds <- self$density_fun(learner_task)
@@ -89,7 +89,7 @@ LF_known <- R6Class(
     density_fun = function() {
       return(private$.density_fun)
     },
-    base_likelihood = function(){
+    base_likelihood = function() {
       return(private$.base_likelihood)
     }
   ),

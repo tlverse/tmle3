@@ -93,8 +93,8 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
       warning("Node var_Y is in npsem but no learner is provided in `learner_list`. Defaulting to glmnet with `poisson` family.")
     }
     if (tmle_task$npsem[["Y"]]$variable_type$type == "binomial") {
-      mean_fun <- function(task, likelihood, tmle_task) {
-        EY <-  likelihood$get_likelihood(tmle_task, "Y")
+      mean_fun <- function(task, tmle_task, likelihood) {
+        EY <- likelihood$get_likelihood(tmle_task, "Y")
         return(EY * (1 - EY))
       }
       LF_var_Y <- LF_known$new("var_Y", mean_fun = mean_fun, base_likelihood = likelihood, type = "mean")

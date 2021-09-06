@@ -11,12 +11,15 @@ tmle3_Spec_spCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level = 0, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE,
+    initialize = function(formula, estimand = c("CATE", "OR", "RR"), binary_outcome = FALSE, treatment_level = 1, control_level = 0, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
+      if (binary_outcome && estimand %in% c("CATE")) {
+        append_interaction_matrix <- FALSE
+      }
       private$.options <- list(
-        estimand = estimand, formula = formula,
+        estimand = estimand, formula = formula, , binary_outcome = binary_outcome,
         treatment_level = treatment_level, control_level = control_level,
         append_interaction_matrix = append_interaction_matrix, wrap_in_Lrnr_glm_sp = wrap_in_Lrnr_glm_sp,
         likelihood_override = likelihood_override,
@@ -26,8 +29,10 @@ tmle3_Spec_spCausalGLM <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
       include_variance_node <- self$options$estimand == "CATE"
-      if (self$options$estimand == "RR") {
+      if (self$options$estimand %in% c("RR", "CATE") && !self$options$binary_outcome) {
         variable_types <- list(Y = variable_type("continuous"))
+      } else if (self$options$estimand %in% c("CATE") && self$options$binary_outcome) {
+        variable_types <- list(Y = variable_type("binomial"))
       } else if (self$options$estimand == "OR") {
         variable_types <- list(Y = variable_type("binomial"))
       }
@@ -35,7 +40,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
       private$.node_list <- node_list
       return(tmle_task)
     },
-    make_initial_likelihood = function(tmle_task, learner_list = NULL ) {
+    make_initial_likelihood = function(tmle_task, learner_list = NULL) {
       # Wrap baseline learner in semiparametric learner
       wrap_in_Lrnr_glm_sp <- self$options$wrap_in_Lrnr_glm_sp
       append_interaction_matrix <- self$options$append_interaction_matrix

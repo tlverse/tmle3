@@ -1,3 +1,5 @@
+context("spnpOR test")
+
 passes <- c()
 passes1 <- c()
 for(i in 1:1){

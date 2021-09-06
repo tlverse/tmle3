@@ -1,3 +1,6 @@
+context("spCATE, npCATE, npCATT test")
+
+
 passes <- c()
 passes1 <- c()
 passes2 <- c()

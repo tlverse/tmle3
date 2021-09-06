@@ -21,7 +21,7 @@ for(i in 1:1){
 n <- 500
 W <- runif(n, -1, 1)
 A <- rbinom(n, size = 1, prob = plogis(W))
-Y <-  rnorm(n, mean =  A*W + A+W, sd = 0.3)
+Y <-  rbinom(n, size = 1, prob = plogis(W)) #rnorm(n, mean =  A*W + A+W, sd = 0.3)
 data <- data.table(W,A,Y)
 lrnr_Y0W <- Lrnr_gam$new()
 lrnr_A <- Lrnr_gam$new()

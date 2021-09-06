@@ -166,7 +166,7 @@ Param_npCATE <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("ATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("CATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
       return(param_form)
     },
     cf_likelihood_treatment = function() {

@@ -168,7 +168,7 @@ Param_npOR <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("ATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("log({P(Y=1|A=1,W)/P(Y=0|A=1,W)}/{P(Y=1|A=0,W)/P(Y=0|A=0,W)})")
       return(param_form)
     },
     cf_likelihood_treatment = function() {

@@ -155,7 +155,7 @@ Param_spRR <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("ATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("log(E[Y|A=1,W]/E[Y|A=0,W])")
       return(param_form)
     },
     cf_likelihood_treatment = function() {

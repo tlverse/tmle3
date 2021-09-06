@@ -168,7 +168,7 @@ Param_npCATT <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("ATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("CATT[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
       return(param_form)
     },
     cf_likelihood_treatment = function() {
@@ -191,7 +191,7 @@ Param_npCATT <- R6Class(
     }
   ),
   private = list(
-    .type = "CATE",
+    .type = "CATT",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,

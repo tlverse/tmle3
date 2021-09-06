@@ -13,8 +13,8 @@ for(i in 1:1){
   A <- rbinom(n, size = 1, prob = plogis(W))
   Y <- rnorm(n, mean =  A+W, sd = 0.3)
   data <- data.table(W,A,Y)
-  lrnr_Y0W <- Lrnr_glmnet$new()
-  lrnr_A <- Lrnr_glm$new()
+  lrnr_Y0W <-  Lrnr_gam$new()
+  lrnr_A <- Lrnr_gam$new()
 
   node_list <- list (W = "W", A = "A", Y= "Y")
   learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W, var_Y = Lrnr_mean$new())

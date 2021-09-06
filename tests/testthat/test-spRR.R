@@ -13,8 +13,8 @@ for(i in 1:1){
   Y <-  rpois(n, exp(A  + A*W + W))
   data <- data.table(W,A,Y)
   data
-  lrnr_Y0W <- Lrnr_glmnet$new(family = "poisson")
-  lrnr_A <- Lrnr_glm$new()
+  lrnr_Y0W <- Lrnr_gam$new(family = poisson())
+  lrnr_A <- Lrnr_gam$new()
 
   node_list <- list (W = "W", A = "A", Y= "Y")
   learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W)

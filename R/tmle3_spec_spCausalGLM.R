@@ -11,13 +11,10 @@ tmle3_Spec_spCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "OR", "RR"), binary_outcome = FALSE, treatment_level = 1, control_level = 0, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE,
+    initialize = function(formula, estimand = c("CATE", "OR", "RR"), binary_outcome = FALSE, treatment_level = 1, control_level = 0, append_interaction_matrix = !(binary_outcome && estimand %in% c("CATE")), wrap_in_Lrnr_glm_sp = TRUE,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
-      if (binary_outcome && estimand %in% c("CATE")) {
-        append_interaction_matrix <- FALSE
-      }
       private$.options <- list(
         estimand = estimand, formula = formula, , binary_outcome = binary_outcome,
         treatment_level = treatment_level, control_level = control_level,

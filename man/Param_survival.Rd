@@ -49,6 +49,8 @@ Other Parameters:
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
 \code{\link{Param_spCATE}},
+\code{\link{Param_spOR}},
+\code{\link{Param_spRR}},
 \code{\link{Param_stratified}},
 \code{\link{define_param}()},
 \code{\link{tmle3_Fit}}

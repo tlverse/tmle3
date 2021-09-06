@@ -35,13 +35,15 @@ tlik <- Targeted_Likelihood$new(likelihood, updater = updater)
 param_cate <- Param_spCATE$new(tlik, formula_CATE  = ~1, intervention_list_treatment = list(define_lf(LF_static, "A", value = 1)), intervention_list_control = list(define_lf(LF_static, "A", value = 0)))
 
 
-```
 
-```{r}
 
 updater$update(tlik, tmle_task)
 ```
 
+```{r}
+param_cate$estimates(tmle_task)$psi
+sd(param_cate$estimates(tmle_task)$IC)
+```
 
 
 

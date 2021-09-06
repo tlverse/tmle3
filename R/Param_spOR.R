@@ -40,13 +40,13 @@
 #'     }
 #' }
 #' @export
-Param_spCATE <- R6Class(
-  classname = "Param_spCATE",
+Param_spOR <- R6Class(
+  classname = "Param_spOR",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood,  formula_CATE =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood,  formula_OR =~ 1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -55,7 +55,7 @@ Param_spCATE <- R6Class(
         intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
         intervention_list_control <- c(intervention_list_control, censoring_intervention)
       }
-      private$.formula_CATE <- formula_CATE
+      private$.formula_OR <- formula_OR
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
@@ -77,10 +77,9 @@ Param_spCATE <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       W <- tmle_task$get_tmle_node("W")
-      V <- model.matrix(self$formula_CATE, as.data.frame(W))
+      V <- model.matrix(self$formula_OR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = TRUE)[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
-
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
       g1 <- ifelse(A==1, g, 1-g)
       g0 <- 1-g1
@@ -89,24 +88,20 @@ Param_spCATE <- R6Class(
       #Q1 <- Q_packed[[2]]
       #Q <- Q_packed[[3]]
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
+      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
+      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Qorig <- Q
+      Q0 <- bound(Q0, 0.005)
+      Q1 <- bound(Q1, 0.005)
+      OR <- Q1*(1-Q1) / (Q0*(1-Q0))
 
-      #Extract current semiparametric coef
-      #print(data.table(Q1,Q0))
-      #beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
-      # Get conditional variances
-      var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
-      var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
-      var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
-      gradM <- V
-      num <- gradM * ( g1/var_Y1)
-      denom <- (g0/ var_Y0 + g1/var_Y1)
-      hstar <- - num/denom
-      H <- as.matrix((A*gradM  + hstar) /var_Y)
+      h_star <-    -1*as.vector((g1*OR) / (g1*OR + (1-g1)))
+      H <- as.matrix(V*(A  + hstar))
 
       # Store EIF component
       if(is_training_task) {
-        scale <- apply(V,2, function(v) {apply(self$weights*H *(A*v ),2,mean  ) })
+        scale <- apply(V,2, function(v){apply(self$weights*as.vector( Q1*(1-Q1) * Q0*(1-Q0) * g1 * (1-g1) / (g1 * Q1*(1-Q1) + (1-g1) *Q0*(1-Q0) )) * v*V,2,mean)})
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H%*% scaleinv) * (Y-Q)
       } else {
@@ -139,13 +134,14 @@ Param_spCATE <- R6Class(
       # Q0 <- Q_packed[[1]]
       # Q1 <- Q_packed[[2]]
       # Q <- Q_packed[[3]]
-
-      beta <- get_beta(W, A, self$formula_CATE, Q1, Q0, family = gaussian(), weights = weights)
-      CATE <- Q1 - Q0
+      Q0 <- bound(Q0, 0.0005)
+      Q1 <- bound(Q1, 0.0005)
+      beta <- get_beta(W, A, self$formula_OR, Q1, Q0, family = binomial(), weights = weights)
+      OR <- exp(V%*%beta)
 
       IC <- EIF
 
-      result <- list(psi = beta, IC = IC, CATE = CATE)
+      result <- list(psi = beta, IC = IC, OR = OR)
       return(result)
     }
   ),
@@ -169,16 +165,16 @@ Param_spCATE <- R6Class(
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_CATE = function(){
-      return(private$.formula_CATE)
+    formula_OR = function(){
+      return(private$.formula_OR)
     }
   ),
   private = list(
-    .type = "CATE",
+    .type = "OR",
     .cf_likelihood_treatment = NULL,
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
-    .formula_CATE = NULL,
+    .formula_OR = NULL,
     .submodel = list(Y = "gaussian_identity")
   )
 )

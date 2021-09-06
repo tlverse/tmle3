@@ -16,7 +16,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
-        estimand = estimand, formula = formula, , binary_outcome = binary_outcome,
+        estimand = estimand, formula = formula,  binary_outcome = binary_outcome,
         treatment_level = treatment_level, control_level = control_level,
         append_interaction_matrix = append_interaction_matrix, wrap_in_Lrnr_glm_sp = wrap_in_Lrnr_glm_sp,
         likelihood_override = likelihood_override,

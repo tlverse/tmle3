@@ -328,12 +328,6 @@ tmle3_Update <- R6Class(
       epsilon <- epsilon * EDnormed
       return(epsilon)
     },
-    submodel = function(epsilon, initial, H, observed) {
-      plogis(qlogis(initial) + H %*% epsilon)
-    },
-    loss_function = function(estimate, observed) {
-      -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
-    },
     apply_submodel = function(submodel, submodel_data, epsilon) {
       submodel(epsilon, submodel_data$initial, submodel_data$H, submodel_data$observed)
     },

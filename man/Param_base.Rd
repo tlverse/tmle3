@@ -71,6 +71,8 @@ Other Parameters:
 \code{\link{Param_TSM}},
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
+\code{\link{Param_npCATE}},
+\code{\link{Param_npOR}},
 \code{\link{Param_spCATE}},
 \code{\link{Param_spOR}},
 \code{\link{Param_spRR}},

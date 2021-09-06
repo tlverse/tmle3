@@ -84,7 +84,7 @@ Param_npCATE <- R6Class(
       A <- tmle_task$get_tmle_node("A", format = T )[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = T )[[1]]
       W_train <- training_task$get_tmle_node("W")
-      V_train <- model.matrix(self$formula_OR, as.data.frame(W_train))
+      V_train <- model.matrix(self$formula_CATE, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
       Y_train <- training_task$get_tmle_node("Y", format = TRUE)[[1]]
 
@@ -107,7 +107,7 @@ Param_npCATE <- R6Class(
       EIF_Y <- NULL
       # Store EIF component
       if(is_training_task) {
-        scale <- apply(V,2, function(v) {apply(self$weights  *(v ),2,mean  ) })
+        scale <- apply(V,2, function(v) {apply(self$weights * V*(v ),2,mean  ) })
 
         scaleinv <- solve(scale)
         EIF_Y <-   self$weights * (H %*% scaleinv) * as.vector(Y-Q)

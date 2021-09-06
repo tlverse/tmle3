@@ -84,7 +84,7 @@ Param_npCATT <- R6Class(
       A <- tmle_task$get_tmle_node("A", format = T )[[1]]
       Y <- tmle_task$get_tmle_node("Y", format = T )[[1]]
       W_train <- training_task$get_tmle_node("W")
-      V_train <- model.matrix(self$formula_OR, as.data.frame(W_train))
+      V_train <- model.matrix(self$formula_CATT, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
       Y_train <- training_task$get_tmle_node("Y", format = TRUE)[[1]]
 
@@ -104,15 +104,18 @@ Param_npCATT <- R6Class(
       H <- V*(A - (1-A)*(g1/g0))
 
       EIF_Y <- NULL
+      EIF_WA <- NULL
       # Store EIF component
       if(is_training_task) {
-        scale <- apply(V,2, function(v) {apply(self$weights  *(A*v ),2,mean  ) })
+        tryCatch({
+        scale <- apply(V,2, function(v) {apply(self$weights  *(A*v*V ),2,mean  ) })
 
         scaleinv <- solve(scale)
         EIF_Y <-   self$weights * (H %*% scaleinv) * as.vector(Y-Q)
         EIF_WA <-  apply(V, 2, function(v) {
           self$weights*(A*v*(Q1 - V%*%beta - Q0)) - mean(self$weights*(A*v*(Q1 - V%*%beta - Q0)))
         }) %*% scaleinv
+      }, error = function(...){})
 
         # print(dim(EIF_Y))
         #print(mean(EIF_Y))

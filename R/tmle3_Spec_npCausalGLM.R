@@ -11,7 +11,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level =0,
+    initialize = function(formula, estimand = c("CATE", "CATT", "OR", "RR"), treatment_level = 1, control_level =0,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
@@ -23,7 +23,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
     },
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
-      include_variance_node <- self$options$estimand == "CATE"
+      include_variance_node <- FALSE
 
       tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = FALSE, include_variance_node = include_variance_node)
 
@@ -42,7 +42,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       return(likelihood)
     },
     make_updater = function(convergence_type = "sample_size", verbose = TRUE,...) {
-      if(self$options$estimand == "CATE"){
+      if(self$options$estimand == "CATE" || self$options$estimand == "CATT"){
         updater <- tmle3_Update$new(maxit=100,one_dimensional = FALSE,   verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR"){
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose,delta_epsilon = 0.001, constrain_step = TRUE, bounds = 0.0025, ...)
@@ -67,11 +67,13 @@ tmle3_Spec_npCausalGLM <- R6Class(
       control <- define_lf(LF_static, "A", value = control_value)
       formula <- self$options$formula
       if(self$options$estimand == "CATE"){
-        param <- Param_spCATE$new(targeted_likelihood,formula, treatment, control)
+        param <- Param_npCATE$new(targeted_likelihood,formula, treatment, control)
+      } else if(self$options$estimand == "CATT"){
+        param <- Param_npCATT$new(targeted_likelihood,formula, treatment, control)
       } else if (self$options$estimand == "OR"){
-        param <- Param_spOR$new(targeted_likelihood,formula, treatment, control)
+        param <- Param_npOR$new(targeted_likelihood,formula, treatment, control)
       } else if (self$options$estimand == "RR"){
-        param <- Param_spRR$new(targeted_likelihood, formula, treatment, control)
+        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control)
       }
       return(list(param))
     }

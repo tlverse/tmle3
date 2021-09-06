@@ -15,16 +15,26 @@ library(sl3)
 n <- 200
 W <- runif(n, -1, 1)
 A <- rbinom(n, size = 1, prob = plogis(W))
-Y <- rnorm(n, mean =  A+W, sd = 0.1)
+Y <- rnorm(n, mean =  A+W, sd = 0.3)
 data <- data.table(W,A,Y)
 lrnr_Y0W <- Lrnr_glmnet$new()
 lrnr_A <- Lrnr_glm$new()
-lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1 , lrnr_Y0W, interaction_variable = "A", family = gaussian(), return_matrix_predictions = FALSE)
+ 
 node_list <- list (W = "W", A = "A", Y= "Y")
 learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W, var_Y = Lrnr_mean$new())
+# spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1, "CATE")
+# out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1, "CATE")
+out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
+out
+
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1, "CATT")
+out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
+out
+
 spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1, "CATE")
 out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
-
+out
 ```
 
  
@@ -39,12 +49,13 @@ Y <-  rbinom(n, size = 1, prob = plogis(A + W))
 data <- data.table(W,A,Y)
 lrnr_Y0W <- Lrnr_glmnet$new()
 lrnr_A <- Lrnr_glm$new()
-lrnr_sp <- Lrnr_glm_semiparametric$new(formula_sp=~1 , lrnr_Y0W, interaction_variable = "A", family = binomial(), return_matrix_predictions = FALSE)
 node_list <- list (W = "W", A = "A", Y= "Y")
 learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W)
 spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1, "OR")
 out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
 out
+
+
 ```
 
 

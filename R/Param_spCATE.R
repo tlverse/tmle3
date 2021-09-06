@@ -112,11 +112,12 @@ Param_spCATE <- R6Class(
       EIF_Y <- NULL
       # Store EIF component
       if(is_training_task) {
+        tryCatch({
          scale <- apply(V,2, function(v) {apply(self$weights * H *(A*v ),2,mean  ) })
 
         scaleinv <- solve(scale)
         EIF_Y <-   self$weights * (H %*% scaleinv) * as.vector(Y-Q)
-
+        },error = function(...){})
 
        # print(dim(EIF_Y))
         #print(mean(EIF_Y))

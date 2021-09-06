@@ -94,15 +94,13 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
     }
     if (tmle_task$npsem[["Y"]]$variable_type$type == "binomial") {
       mean_fun <- function(task, likelihood, tmle_task) {
-        EY <- sl3::unpack_predictions(likelihood$get_likelihood(tmle_task, "Y"))
-        EY <- EY[, ncol(EY)]
+        EY <-  likelihood$get_likelihood(tmle_task, "Y")
         return(EY * (1 - EY))
       }
       LF_var_Y <- LF_known$new("var_Y", mean_fun = mean_fun, base_likelihood = likelihood, type = "mean")
     } else {
       task_generator <- function(tmle_task, base_likelihood) {
-        EY <- sl3::unpack_predictions(base_likelihood$get_likelihood(tmle_task, "Y"))
-        EY <- EY[, ncol(EY)]
+        EY <- base_likelihood$get_likelihood(tmle_task, "Y")
         Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
         outcome <- (Y - EY)^2
         task <- tmle_task$get_regression_task("Y")

@@ -11,13 +11,14 @@ tmle3_Spec_spCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level = 0,
+    initialize = function(formula, estimand = c("CATE", "OR", "RR"), treatment_level = 1, control_level = 0, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
         estimand = estimand, formula = formula,
         treatment_level = treatment_level, control_level = control_level,
+        append_interaction_matrix = append_interaction_matrix, wrap_in_Lrnr_glm_sp = wrap_in_Lrnr_glm_sp,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
       )
@@ -34,8 +35,10 @@ tmle3_Spec_spCausalGLM <- R6Class(
 
       return(tmle_task)
     },
-    make_initial_likelihood = function(tmle_task, learner_list = NULL, append_interaction_matrix = TRUE, wrap_in_Lrnr_glm_sp = TRUE) {
+    make_initial_likelihood = function(tmle_task, learner_list = NULL ) {
       # Wrap baseline learner in semiparametric learner
+      wrap_in_Lrnr_glm_sp <- self$options$wrap_in_Lrnr_glm_sp
+      append_interaction_matrix <- self$options$append_interaction_matrix
       if (wrap_in_Lrnr_glm_sp) {
         learner_list[["Y"]] <- Lrnr_glm_semiparametric$new(formula_sp = self$options$formula, family = self$family, interaction_variable = "A", lrnr_baseline = learner_list[["Y"]], append_interaction_matrix = append_interaction_matrix)
       }

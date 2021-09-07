@@ -146,7 +146,7 @@ tmle3_Update <- R6Class(
 
             ED <- colMeans(EIF_components)
 
-            EDnormed <- ED / norm(ED, type = "2")
+            EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED)) #Ensures step size generalizes to many parameters better
             if (length(EIF_components) == 0 || ncol(EIF_components) != ncol(covariates_dt)) {
               stop("Not all params provide EIF components")
             }
@@ -155,7 +155,7 @@ tmle3_Update <- R6Class(
         )
         if (is.null(EIF_components)) {
           ED <- ED_from_estimates(self$current_estimates)
-          EDnormed <- ED / norm(ED, type = "2")
+          EDnormed <- ED / norm(ED, type = "2")  * sqrt(length(ED))
         }
         # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       } else {
@@ -283,7 +283,8 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
-        } else if (self$fluctuation_type == "weighted") {
+          Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
+          } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
               submodel_fit <- glm(observed ~ 1, submodel_data,

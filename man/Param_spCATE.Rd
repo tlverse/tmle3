@@ -65,6 +65,7 @@ Other Parameters:
 \code{\link{Param_npCATE}},
 \code{\link{Param_npCATT}},
 \code{\link{Param_npOR}},
+\code{\link{Param_npRR}},
 \code{\link{Param_npTSM}},
 \code{\link{Param_spOR}},
 \code{\link{Param_spRR}},

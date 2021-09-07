@@ -11,13 +11,13 @@ tmle3_Spec_npCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR"), treatment_level = 1, control_level = 0,
+    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0,
                           likelihood_override = NULL,
-                          variable_types = NULL, ...) {
+                          variable_types = NULL, delta_epsilon = 0.025,    ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
         estimand = estimand, formula = formula,
-        treatment_level = treatment_level, control_level = control_level,
+        treatment_level = treatment_level, control_level = control_level, delta_epsilon = delta_epsilon,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
       )
@@ -25,12 +25,22 @@ tmle3_Spec_npCausalGLM <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
       include_variance_node <- FALSE
+      scale_outcome <- FALSE
+      binary_outcome <- all(data[[node_list$Y]] %in% c(0,1))
+      private$.options$binary_outcome <- binary_outcome
       if (self$options$estimand == "RR") {
-        variable_types <- list(Y = variable_type("continuous"))
+        if(binary_outcome) {
+          type <- "binomial"
+        } else {
+          type <- "continuous"
+        }
+        variable_types <- list(Y = variable_type(type ))
+        #scale_outcome <- binary_outcome
       } else if (self$options$estimand == "OR") {
         variable_types <- list(Y = variable_type("binomial"))
       }
-      tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = FALSE, include_variance_node = include_variance_node)
+
+      tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = scale_outcome, include_variance_node = include_variance_node)
 
       return(tmle_task)
     },
@@ -47,15 +57,21 @@ tmle3_Spec_npCausalGLM <- R6Class(
       return(likelihood)
     },
     make_updater = function(convergence_type = "sample_size", verbose = TRUE, ...) {
+      delta_epsilon <- self$options$delta_epsilon
       if (!is.null(self$options$verbose)) {
         verbose <- self$options$verbose
       }
       if (self$options$estimand == "CATE" || self$options$estimand == "CATT" || self$options$estimand == "TSM") {
-        updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
+        updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, delta_epsilon = 1, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = 0.0025, ...)
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
+        if(!self$options$binary_outcome) {
+          bounds <- list(Y = c(0.0025, Inf), A = 0.005)
+        } else {
+          bounds <- list(Y = 0.0025, A = 0.005)
+        }
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = bounds, ...)
       }
       return(updater)
     },
@@ -90,7 +106,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       } else if (self$options$estimand == "OR") {
         param <- Param_npOR$new(targeted_likelihood, formula, treatment, control)
       } else if (self$options$estimand == "RR") {
-        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control)
+        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control, binary_outcome = self$options$binary_outcome)
       }
       return(list(param))
     }

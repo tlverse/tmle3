@@ -2,7 +2,7 @@
 #' The true conditional average treatment effect is projected onto a parametric working model using least-squares regression.
 #' Unlike \code{Param_npCATT}, this function uses all observations to compute the projection.
 #' This can be used to assess heterogeneity of the average treatment effect.
-#' We note that `formula_TSM = ~ 1` gives an estimator of the nonparametric average treatment effect (ATE).
+#' We note that `formula_RR = ~ 1` gives an estimator of the nonparametric average treatment effect (ATE).
 #'
 #' Parameter definition for the Average Treatment Effect (ATE).
 #' @importFrom R6 R6Class
@@ -21,7 +21,7 @@
 #'   \describe{
 #'     \item{\code{observed_likelihood}}{A \code{\link{Likelihood}} corresponding to the observed likelihood
 #'     }
-#'     \item{\code{formula_TSM}}{...
+#'     \item{\code{formula_RR}}{...
 #'     }
 #'     \item{\code{intervention_list_treatment}}{A list of objects inheriting from \code{\link{LF_base}}, representing the treatment intervention.
 #'     }
@@ -46,28 +46,36 @@
 #'     }
 #' }
 #' @export
-Param_npTSM <- R6Class(
-  classname = "Param_npTSM",
+Param_npRR <- R6Class(
+  classname = "Param_npRR",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE,outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
-      V <- model.matrix(formula_TSM, as.data.frame(W))
+      V <- model.matrix(formula_RR, as.data.frame(W))
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
+      private$.binary_outcome <- binary_outcome
+      if(binary_outcome) {
+        private$.submodel = list(Y = "binomial_logit")
+      } else {
+        private$.submodel = list(Y = "poisson_log")
+      }
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
         outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
         censoring_intervention <- define_lf(LF_static, outcome_censoring_node, value = 1)
-        intervention_list <- c(intervention_list, censoring_intervention)
+        intervention_list_treatment <- c(intervention_list_treatment, censoring_intervention)
+        intervention_list_control <- c(intervention_list_control, censoring_intervention)
       }
-      private$.formula_TSM <- formula_TSM
-      private$.cf_likelihood <- CF_Likelihood$new(observed_likelihood, intervention_list)
+      private$.formula_RR <- formula_RR
+      private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
+      private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
       training_task <- self$observed_likelihood$training_task
@@ -76,49 +84,51 @@ Param_npTSM <- R6Class(
       }
 
 
-      cf_task1 <- self$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
+      intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
 
       W <- tmle_task$get_tmle_node("W")
-      V <- model.matrix(self$formula_TSM, as.data.frame(W))
+      V <- model.matrix(self$formula_RR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Yf <- tmle_task$get_tmle_node("Y", format = T)
+
+      Y <- tmle_task$get_tmle_node("Y", format = F)
+
       W_train <- training_task$get_tmle_node("W")
-      V_train <- model.matrix(self$formula_TSM, as.data.frame(W_train))
+      V_train <- model.matrix(self$formula_RR, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
-      Y_train <- training_task$get_tmle_node("Y", format = TRUE)[[1]]
+      Y_train <- training_task$get_tmle_node("Y", format = F)[[1]]
 
-      intervention_nodes <- names(self$intervention_list)
-      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      cf_pA <- self$cf_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-
-      if (!is.null(ncol(pA)) && ncol(pA) > 1) {
-        pA <- apply(pA, 1, prod)
-      }
-      if (!is.null(ncol(cf_pA)) && ncol(cf_pA) > 1) {
-        cf_pA <- apply(cf_pA, 1, prod)
-      }
+      g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
+      g1 <- ifelse(A == 1, g, 1 - g)
+      g0 <- 1 - g1
 
       Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      Q1 <- as.vector(self$cf_likelihood$get_likelihoods(cf_task1, "Y", fold_number))
+      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
+      beta <- coef(glm.fit(V_train, Q1, offset = log(Q0), family = poisson(), weights = self$weights))
+      RR <- as.vector(exp(V %*% beta))
+      # var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
+      # var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
+      # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
-      beta1 <- coef(glm.fit(as.matrix(V_train), Q1, family = gaussian(), weights = self$weights, intercept = F))
-      Q1beta <- as.vector(V %*% beta1)
 
-      H <- V * (cf_pA / pA)
+      H <- V * (A / g1 - (1 - A) * RR * (1 / g0))
 
       EIF_Y <- NULL
       # Store EIF component
       if (is_training_task) {
         scale <- apply(V, 2, function(v) {
-          apply(self$weights * V * (v), 2, mean)
+          apply(self$weights * V * (v) * RR * Q0, 2, mean)
         })
 
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
-        EIF_WA <-
-          apply(V, 2, function(v) {
-            self$weights * (v * (Q1 - Q1beta) - mean(self$weights * v* (Q1 - Q1beta)))
-          }) %*% scaleinv
+        EIF_WA <- apply(V, 2, function(v) {
+          self$weights * (v * (RR*Q0 - Q1) - mean(self$weights * v*(RR*Q0 - Q1)))
+        }) %*% scaleinv
+
       }
 
 
@@ -128,51 +138,65 @@ Param_npTSM <- R6Class(
       if (is.null(tmle_task)) {
         tmle_task <- self$observed_likelihood$training_task
       }
-      cf_task1 <- self$cf_likelihood$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
+      cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
 
       W <- tmle_task$get_tmle_node("W")
-      V <- model.matrix(self$formula_TSM, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y", format = F)
+      V <- model.matrix(self$formula_RR, as.data.frame(W))
 
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
       EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
       EIF <- EIF$Y + EIF$WA
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q1 <- self$cf_likelihood$get_likelihoods(cf_task1, "Y", fold_number)
-      beta1 <- coef(glm.fit(V, Q1, family = gaussian(), weights = weights, intercept = F))
+      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
+      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+
+      beta <- coef(glm.fit(V, Q1, offset = log(Q0), family = poisson(), weights = self$weights))
+
+
+      RR <- exp(V %*% beta)
 
       IC <- as.matrix(EIF)
 
-      result <- list(psi = beta1, IC = IC)
+      result <- list(psi = beta, IC = IC, RR = RR)
       return(result)
     }
   ),
   active = list(
     name = function() {
-      param_form <- unlist(paste0(sprintf("E[%s_{%s}]: ", self$outcome_node, self$cf_likelihood$name), private$.formula_names)) # sprintf("CATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- private$.formula_names # sprintf("RR[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
       return(param_form)
     },
-    cf_likelihood = function() {
-      return(private$.cf_likelihood)
+    cf_likelihood_treatment = function() {
+      return(private$.cf_likelihood_treatment)
     },
-    intervention_list = function() {
-      return(self$cf_likelihood$intervention_list)
+    cf_likelihood_control = function() {
+      return(private$.cf_likelihood_control)
+    },
+    intervention_list_treatment = function() {
+      return(self$cf_likelihood_treatment$intervention_list)
+    },
+    intervention_list_control = function() {
+      return(self$cf_likelihood_control$intervention_list)
     },
     update_nodes = function() {
       return(c(self$outcome_node))
     },
-    formula_TSM = function() {
-      return(private$.formula_TSM)
+    formula_RR = function() {
+      return(private$.formula_RR)
     }
   ),
   private = list(
-    .type = "CATE",
-    .cf_likelihood = NULL,
+    .type = "RR",
+    .cf_likelihood_treatment = NULL,
+    .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
-    .formula_TSM = NULL,
-    .submodel = list(Y = "gaussian_identity"),
-    .formula_names = NULL
+    .formula_RR = NULL,
+    .submodel = list(Y = "binomial_logit"),
+    .formula_names = NULL,
+    .binary_outcome = NULL
   )
 )

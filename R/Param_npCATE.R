@@ -117,7 +117,7 @@ Param_npCATE <- R6Class(
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
         EIF_WA <- apply(V, 2, function(v) {
-          self$weights * (v * (Q1 - Q0 - CATE) - mean(self$weights * (Q1 - Q0 - CATE)))
+          self$weights * (v * (Q1 - Q0 - CATE) - mean(v*self$weights * (Q1 - Q0 - CATE)))
         }) %*% scaleinv
 
         # print(dim(EIF_Y))

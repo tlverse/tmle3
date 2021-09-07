@@ -35,7 +35,7 @@ tmle3_Fit <- R6Class(
       initial_psi <- sapply(
         self$tmle_params,
         function(tmle_param) {
-          tmle_param$estimates(self$tmle_task)$psi
+          tmle_param$estimates(self$tmle_task, ifelse(updater$cvtmle, "validation", "full"))$psi
         }
       )
       private$.initial_psi <- unlist(initial_psi)

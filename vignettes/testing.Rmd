@@ -15,16 +15,16 @@ passes <- c()
 passes1 <- c()
 passes2 <- c()
 
-for(i in 1:1){
+#for(i in 1:1){
   print(i)
 
 n <- 500
 W <- runif(n, -1, 1)
 A <- rbinom(n, size = 1, prob = plogis(W))
-Y <-  rbinom(n, size = 1, prob = plogis(W)) #rnorm(n, mean =  A*W + A+W, sd = 0.3)
+Y <-  rnorm(n, mean =  A*W + A+W, sd = 0.3)
 data <- data.table(W,A,Y)
-lrnr_Y0W <- Lrnr_gam$new()
-lrnr_A <- Lrnr_gam$new()
+lrnr_Y0W <- Lrnr_glm$new()
+lrnr_A <- Lrnr_glm$new()
  
 node_list <- list (W = "W", A = "A", Y= "Y")
 learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W )
@@ -34,23 +34,23 @@ spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "CATE")
 suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
  out <- out$summary
 passes <- cbind(passes , out$lower <= 1 & out$upper >= 1)
+out
 
-
-spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "CATT")
-suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "CATT", family = "binomial")
+ (out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
  out <- out$summary
 passes1 <- cbind(passes1 , out$lower <= 1 & out$upper >= 1)
-
+out
 
 spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1 + W, "CATE")
 suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
  out <- out$summary
 passes2 <- cbind(passes2 , out$lower <= 1 & out$upper >= 1)
-
+out
 print(rowMeans(passes))
 print(rowMeans(passes1))
 print(rowMeans(passes2))
-}
+ 
 
 ```
 
@@ -67,7 +67,7 @@ lrnr_A <- Lrnr_gam$new()
 node_list <- list (W = "W", A = "A", Y= "Y")
 learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W )
 
-spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1  + W, "TSM")
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1  + W, "TSM" )
 suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
  out <- out$summary
 passes2 <- cbind(passes2 , out$lower <= 1 & out$upper >= 1)

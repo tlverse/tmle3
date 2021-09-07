@@ -278,6 +278,7 @@ tmle3_Update <- R6Class(
         }
       } else {
         if (self$fluctuation_type == "standard") {
+
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
               offset = family_object$linkfun(submodel_data$initial),

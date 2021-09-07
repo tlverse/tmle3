@@ -30,9 +30,10 @@ tmle3_Spec_npCausalGLM <- R6Class(
       family <- self$options$family_fluctuation
 
       if(is.null(family) && self$options$estimand %in% c("CATE", "CATT", "TSM")) {
-        Y <- tmle_task$get_tmle_node("Y")
+        Y <- data[[node_list$Y]]
         if(all(Y %in% c( 0,1))) {
           family <- "binomial"
+          scale_outcome <- FALSE
         } else if (all(Y >=0)) {
           family <- "poisson"
           scale_outcome <- FALSE

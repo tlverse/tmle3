@@ -54,6 +54,7 @@ Param_spCATE <- R6Class(
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_CATE, as.data.frame(W))
+      private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
@@ -171,7 +172,7 @@ Param_spCATE <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("CATE[%s_{%s}-%s_{%s}]", self$outcome_node, self$cf_likelihood_treatment$name, self$outcome_node, self$cf_likelihood_control$name)
+      param_form <- sprintf("%s", private$.formula_names)
       return(param_form)
     },
     cf_likelihood_treatment = function() {
@@ -199,6 +200,7 @@ Param_spCATE <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_CATE = NULL,
-    .submodel = list(Y = "gaussian_identity")
+    .submodel = list(Y = "gaussian_identity"),
+    .formula_names = NULL
   )
 )

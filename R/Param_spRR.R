@@ -52,6 +52,10 @@ Param_spRR <- R6Class(
   public = list(
     initialize = function(observed_likelihood, formula_logRR = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
+      training_task <- self$observed_likelihood$training_task
+      W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
+      V <- model.matrix(formula_CATE, as.data.frame(W))
+      private$.formula_names <- colnames(V)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
         outcome_censoring_node <- observed_likelihood$censoring_nodes[[outcome_node]]
@@ -155,7 +159,7 @@ Param_spRR <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("log(E[Y|A=1,W]/E[Y|A=0,W])")
+      param_form <- private$.formula_names#sprintf("log(E[Y|A=1,W]/E[Y|A=0,W])")
       return(param_form)
     },
     cf_likelihood_treatment = function() {
@@ -183,6 +187,7 @@ Param_spRR <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_logRR = NULL,
-    .submodel = list(Y = "poisson_log")
+    .submodel = list(Y = "poisson_log"),
+    .formula_names = NULL
   )
 )

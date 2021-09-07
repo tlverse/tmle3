@@ -13,11 +13,11 @@ tmle3_Spec_spCausalGLM <- R6Class(
   public = list(
     initialize = function(formula, estimand = c("CATE", "OR", "RR"), binary_outcome = FALSE, treatment_level = 1, control_level = 0, append_interaction_matrix = !(binary_outcome && estimand %in% c("CATE")), wrap_in_Lrnr_glm_sp = TRUE,
                           likelihood_override = NULL,
-                          variable_types = NULL, ...) {
+                          variable_types = NULL, delta_epsilon = 0.1, ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
         estimand = estimand, formula = formula, binary_outcome = binary_outcome,
-        treatment_level = treatment_level, control_level = control_level,
+        treatment_level = treatment_level, control_level = control_level, delta_epsilon= delta_epsilon,
         append_interaction_matrix = append_interaction_matrix, wrap_in_Lrnr_glm_sp = wrap_in_Lrnr_glm_sp,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
@@ -53,13 +53,13 @@ tmle3_Spec_spCausalGLM <- R6Class(
 
       return(likelihood)
     },
-    make_updater = function(convergence_type = "sample_size", verbose = F, ...) {
+    make_updater = function(convergence_type = "sample_size", verbose = T, ...) {
       if (self$options$estimand == "CATE") {
         updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = 0.0025, ...)
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = self$options$delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = self$options$delta_epsilon, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
       }
       return(updater)
     },

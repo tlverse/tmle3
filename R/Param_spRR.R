@@ -148,12 +148,12 @@ Param_spRR <- R6Class(
       Q0 <- pmax(Q0, 0.0005)
       Q1 <- pmax(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logRR, Q1, Q0, family = poisson(), weights = weights)
-      V <- model.matrix(self$formula_logRR, as.data.frame(W))
-      RR <- as.vector(exp(V %*% beta))
+      #V <- model.matrix(self$formula_logRR, as.data.frame(W))
+      #RR <- as.vector(exp(V %*% beta))
 
       IC <- as.matrix(EIF)
 
-      result <- list(psi = beta, IC = IC, RR = RR, transform = exp)
+      result <- list(psi = beta, IC = IC,   transform = exp)
       return(result)
     }
   ),

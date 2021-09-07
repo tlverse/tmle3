@@ -51,6 +51,27 @@ print(rowMeans(passes))
 print(rowMeans(passes1))
 print(rowMeans(passes2))
 }
+
+```
+
+
+```{r}
+n <- 500
+W <- runif(n, -1, 1)
+A <- rbinom(n, size = 1, prob = plogis(W))
+Y <-  rnorm(n, mean =  A*W + A+W, sd = 0.3) #rnorm(n, mean =  A*W + A+W, sd = 0.3)
+data <- data.table(W,A,Y)
+lrnr_Y0W <- Lrnr_gam$new()
+lrnr_A <- Lrnr_gam$new()
+ 
+node_list <- list (W = "W", A = "A", Y= "Y")
+learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W )
+
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1  + W, "TSM")
+suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+ out <- out$summary
+passes2 <- cbind(passes2 , out$lower <= 1 & out$upper >= 1)
+out
 ```
 
  

@@ -90,6 +90,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   psi_transformed <- mapply(apply_transform, psi, transforms[index_vec])
   ci_transformed <- mapply(apply_transform, ci, transforms[index_vec])
   ci_transformed <- matrix(ci_transformed, nrow = nrow(ci), ncol = ncol(ci))
+
   summary_dt <- as.data.table(list(
     param_types[index_vec],
     param_names, init_psi, psi, se, ci,

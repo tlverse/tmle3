@@ -38,7 +38,7 @@ tmle3_Fit <- R6Class(
           tmle_param$estimates(self$tmle_task, ifelse(updater$cvtmle, "validation", "full"))$psi
         }
       )
-      private$.initial_psi <- unlist(initial_psi)
+      private$.initial_psi <- as.vector(unlist(initial_psi))
       private$.tmle_fit(max_it)
     },
     print = function() {
@@ -68,7 +68,7 @@ tmle3_Fit <- R6Class(
     },
     tmle_param_names = function() {
       if (is.null(private$.tmle_param_names)) {
-        private$.tmle_param_names <- unlist(sapply(self$tmle_params, `[[`, "name"))
+        private$.tmle_param_names <- as.vector(unlist(sapply(self$tmle_params, `[[`, "name")))
       }
       return(private$.tmle_param_names)
     },

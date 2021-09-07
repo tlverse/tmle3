@@ -11,7 +11,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "CATT", "OR", "RR"), treatment_level = 1, control_level = 0,
+    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR"), treatment_level = 1, control_level = 0,
                           likelihood_override = NULL,
                           variable_types = NULL, ...) {
       estimand <- match.arg(estimand)
@@ -50,7 +50,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       if (!is.null(self$options$verbose)) {
         verbose <- self$options$verbose
       }
-      if (self$options$estimand == "CATE" || self$options$estimand == "CATT") {
+      if (self$options$estimand == "CATE" || self$options$estimand == "CATT" || self$options$estimand == "TSM") {
         updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR") {
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = 0.0025, ...)
@@ -66,14 +66,23 @@ tmle3_Spec_npCausalGLM <- R6Class(
     make_params = function(tmle_task, targeted_likelihood) {
       treatment_value <- self$options$treatment_level
       control_value <- self$options$control_level
+      formula <- self$options$formula
       A_levels <- tmle_task$npsem[["A"]]$variable_type$levels
       if (!is.null(A_levels)) {
         treatment_value <- factor(treatment_value, levels = A_levels)
         control_value <- factor(control_value, levels = A_levels)
       }
-      treatment <- define_lf(LF_static, "A", value = treatment_value)
-      control <- define_lf(LF_static, "A", value = control_value)
-      formula <- self$options$formula
+      if (self$options$estimand == "TSM") {
+        # If TSM generate params for all levels
+        param <- lapply(union(treatment_value, control_value), function(value) {
+          treatment <- define_lf(LF_static, "A", value = value)
+          return(Param_npTSM$new(targeted_likelihood, formula, treatment))
+        })
+        return(param)
+      } else {
+        treatment <- define_lf(LF_static, "A", value = treatment_value)
+        control <- define_lf(LF_static, "A", value = control_value)
+      }
       if (self$options$estimand == "CATE") {
         param <- Param_npCATE$new(targeted_likelihood, formula, treatment, control)
       } else if (self$options$estimand == "CATT") {

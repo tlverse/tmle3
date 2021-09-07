@@ -72,8 +72,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       }
 
       tmle_task <- point_tx_task(data, node_list, variable_types, scale_outcome = scale_outcome, include_variance_node = include_variance_node)
-      print(tmle_task)
-      print(tmle_task$data)
+
       return(tmle_task)
     },
     make_initial_likelihood = function(tmle_task, learner_list = NULL) {

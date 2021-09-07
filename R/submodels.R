@@ -38,8 +38,8 @@ submodel_logistic_switch <- function(eps, offset, X, observed) {
 #' @param v ...
 #' @export
 loss_function_loglik_binomial <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  #loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
-  loss <- -1 * (observed * log(estimate) + (1-observed) * log(1-estimate))
+  # loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
+  loss <- -1 * (observed * log(estimate) + (1 - observed) * log(1 - estimate))
   if (!is.null(weights)) {
     loss <- weights * loss
   }

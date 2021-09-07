@@ -52,7 +52,7 @@ Param_npRR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE, family_fluctuation = c("poisson", "binomial"),outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE, family_fluctuation = c("poisson", "binomial"), outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       family_fluctuation <- match.arg(family_fluctuation)
       training_task <- self$observed_likelihood$training_task
@@ -61,7 +61,7 @@ Param_npRR <- R6Class(
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
       private$.binary_outcome <- binary_outcome
-      private$.submodel <- list(Y=family_fluctuation)
+      private$.submodel <- list(Y = family_fluctuation)
 
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
@@ -124,9 +124,8 @@ Param_npRR <- R6Class(
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
         EIF_WA <- apply(V, 2, function(v) {
-          self$weights * (v * (RR*Q0 - Q1) - mean(self$weights * v*(RR*Q0 - Q1)))
+          self$weights * (v * (RR * Q0 - Q1) - mean(self$weights * v * (RR * Q0 - Q1)))
         }) %*% scaleinv
-
       }
 
 

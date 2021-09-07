@@ -52,9 +52,9 @@ Param_npTSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list,  family_fluctuation = c( "binomial", "gaussian", "poisson"), outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list, family_fluctuation = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
       family_fluctuation <- match.arg(family_fluctuation)
-      private$.submodel <-  list(Y=family_fluctuation)
+      private$.submodel <- list(Y = family_fluctuation)
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
@@ -119,7 +119,7 @@ Param_npTSM <- R6Class(
         EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
         EIF_WA <-
           apply(V, 2, function(v) {
-            self$weights * (v * (Q1 - Q1beta) - mean(self$weights * v* (Q1 - Q1beta)))
+            self$weights * (v * (Q1 - Q1beta) - mean(self$weights * v * (Q1 - Q1beta)))
           }) %*% scaleinv
       }
 

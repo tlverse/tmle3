@@ -49,7 +49,7 @@ Param_npCATT <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_CATT = ~1, intervention_list_treatment, intervention_list_control,  family_fluctuation = c( "binomial", "gaussian", "poisson"),  outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_CATT = ~1, intervention_list_treatment, intervention_list_control, family_fluctuation = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
@@ -58,7 +58,7 @@ Param_npCATT <- R6Class(
       private$.targeted <- rep(T, ncol(V))
 
       family_fluctuation <- match.arg(family_fluctuation)
-      private$.submodel <-  list(Y=family_fluctuation)
+      private$.submodel <- list(Y = family_fluctuation)
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists

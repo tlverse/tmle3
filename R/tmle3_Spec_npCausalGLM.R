@@ -13,7 +13,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
   public = list(
     initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0, family_fluctuation = NULL,
                           likelihood_override = NULL,
-                          variable_types = NULL, delta_epsilon = 0.025,    ...) {
+                          variable_types = NULL, delta_epsilon = 0.025, ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
         estimand = estimand, formula = formula, family_fluctuation = family_fluctuation,
@@ -29,12 +29,11 @@ tmle3_Spec_npCausalGLM <- R6Class(
       Y <- data[[node_list$Y]]
       family <- self$options$family_fluctuation
 
-      if(is.null(family) && self$options$estimand %in% c("CATE", "CATT", "TSM")) {
-
-        if(all(Y %in% c( 0,1))) {
+      if (is.null(family) && self$options$estimand %in% c("CATE", "CATT", "TSM")) {
+        if (all(Y %in% c(0, 1))) {
           family <- "binomial"
           scale_outcome <- FALSE
-        } else if (all(Y >=0)) {
+        } else if (all(Y >= 0)) {
           family <- "poisson"
           scale_outcome <- FALSE
         } else {
@@ -42,31 +41,30 @@ tmle3_Spec_npCausalGLM <- R6Class(
           scale_outcome <- FALSE
         }
       } else if (is.null(family) && self$options$estimand == "RR") {
-
-        if(all(Y %in% c( 0,1))) {
+        if (all(Y %in% c(0, 1))) {
           family <- "binomial"
         } else {
           family <- "poisson"
           scale_outcome <- FALSE
         }
       } else if (!is.null(family)) {
-        if(family == "binomial") {
+        if (family == "binomial") {
           scale_outcome <- TRUE
-        } else{
+        } else {
           scale_outcome <- FALSE
         }
       }
       private$.options$family_fluctuation <- family
-      binary_outcome <- all(data[[node_list$Y]] %in% c(0,1))
+      binary_outcome <- all(data[[node_list$Y]] %in% c(0, 1))
       private$.options$binary_outcome <- binary_outcome
       if (self$options$estimand == "RR") {
-        if(binary_outcome) {
+        if (binary_outcome) {
           type <- "binomial"
         } else {
           type <- "continuous"
         }
-        variable_types <- list(Y = variable_type(type ))
-        #scale_outcome <- binary_outcome
+        variable_types <- list(Y = variable_type(type))
+        # scale_outcome <- binary_outcome
       } else if (self$options$estimand == "OR") {
         variable_types <- list(Y = variable_type("binomial"))
       }
@@ -97,7 +95,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       } else if (self$options$estimand == "OR") {
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        if(self$options$family_fluctuation == "poisson") {
+        if (self$options$family_fluctuation == "poisson") {
           bounds <- list(Y = c(0.0025, Inf), A = 0.005)
         } else {
           bounds <- list(Y = 0.0025, A = 0.005)

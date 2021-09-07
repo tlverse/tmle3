@@ -146,7 +146,7 @@ tmle3_Update <- R6Class(
 
             ED <- colMeans(EIF_components)
 
-            EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED)) #Ensures step size generalizes to many parameters better
+            EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED)) # Ensures step size generalizes to many parameters better
             if (length(EIF_components) == 0 || ncol(EIF_components) != ncol(covariates_dt)) {
               stop("Not all params provide EIF components")
             }
@@ -155,7 +155,7 @@ tmle3_Update <- R6Class(
         )
         if (is.null(EIF_components)) {
           ED <- ED_from_estimates(self$current_estimates)
-          EDnormed <- ED / norm(ED, type = "2")  * sqrt(length(ED))
+          EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED))
         }
         # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       } else {
@@ -257,9 +257,8 @@ tmle3_Update <- R6Class(
             method = "Brent"
           )
           epsilon <- optim_fit$par
-          #Qnew <-   self$apply_submodel(submodel, submodel_data, epsilon)
-          #print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
-
+          # Qnew <-   self$apply_submodel(submodel, submodel_data, epsilon)
+          # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
         } else {
           epsilon <- self$delta_epsilon
         }
@@ -278,7 +277,6 @@ tmle3_Update <- R6Class(
         }
       } else {
         if (self$fluctuation_type == "standard") {
-
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
               offset = family_object$linkfun(submodel_data$initial),
@@ -287,11 +285,11 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
-          #Qnew <-  family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit))
-          #print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
+          # Qnew <-  family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit))
+          # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
 
-          #Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
-          } else if (self$fluctuation_type == "weighted") {
+          # Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
+        } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
               submodel_fit <- glm(observed ~ 1, submodel_data,

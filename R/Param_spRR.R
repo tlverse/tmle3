@@ -149,7 +149,7 @@ Param_spRR <- R6Class(
 
       IC <- as.matrix(EIF)
 
-      result <- list(psi = beta, IC = IC, RR = RR)
+      result <- list(psi = beta, IC = IC, RR = RR, transform = exp)
       return(result)
     }
   ),

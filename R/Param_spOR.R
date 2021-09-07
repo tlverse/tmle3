@@ -144,13 +144,13 @@ Param_spOR <- R6Class(
       IC <- as.matrix(EIF)
 
 
-      result <- list(psi = beta, IC = IC, OR = OR)
+      result <- list(psi = beta, IC = IC, OR = OR, transform = exp)
       return(result)
     }
   ),
   active = list(
     name = function() {
-      param_form <- sprintf("log({P(Y=1|A=1,W)/P(Y=0|A=1,W)}/{P(Y=1|A=0,W)/P(Y=0|A=0,W)})")
+      param_form <- sprintf("logOR(Y,A|W)")
       return(param_form)
     },
     cf_likelihood_treatment = function() {

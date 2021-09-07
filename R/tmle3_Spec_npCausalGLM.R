@@ -11,12 +11,12 @@ tmle3_Spec_npCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0,
+    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0, family_fluctuation = NULL,
                           likelihood_override = NULL,
                           variable_types = NULL, delta_epsilon = 0.025,    ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
-        estimand = estimand, formula = formula,
+        estimand = estimand, formula = formula, family_fluctuation = family_fluctuation,
         treatment_level = treatment_level, control_level = control_level, delta_epsilon = delta_epsilon,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
@@ -25,7 +25,37 @@ tmle3_Spec_npCausalGLM <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
       include_variance_node <- FALSE
-      scale_outcome <- FALSE
+      scale_outcome <- TRUE
+      Y <- data[[node_list$Y]]
+      family <- self$options$family_fluctuation
+
+      if(is.null(family) && self$options$estimand %in% c("CATE", "CATT", "TSM")) {
+        Y <- tmle_task$get_tmle_node("Y")
+        if(all(Y %in% c( 0,1))) {
+          family <- "binomial"
+        } else if (all(Y >=0)) {
+          family <- "poisson"
+          scale_outcome <- FALSE
+        } else {
+          family <- "gaussian"
+          scale_outcome <- FALSE
+        }
+      } else if (is.null(family) && self$options$estimand == "RR") {
+        Y <- tmle_task$get_tmle_node("Y")
+        if(all(Y %in% c( 0,1))) {
+          family <- "binomial"
+        } else {
+          family <- "poisson"
+          scale_outcome <- FALSE
+        }
+      } else if (!is.null(family)) {
+        if(family == "binomial") {
+          scale_outcome <- TRUE
+        } else{
+          scale_outcome <- FALSE
+        }
+      }
+      private$.options$family_fluctuation <- family
       binary_outcome <- all(data[[node_list$Y]] %in% c(0,1))
       private$.options$binary_outcome <- binary_outcome
       if (self$options$estimand == "RR") {
@@ -66,11 +96,13 @@ tmle3_Spec_npCausalGLM <- R6Class(
       } else if (self$options$estimand == "OR") {
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        if(!self$options$binary_outcome) {
+        if(self$options$family_fluctuation == "poisson") {
           bounds <- list(Y = c(0.0025, Inf), A = 0.005)
         } else {
           bounds <- list(Y = 0.0025, A = 0.005)
         }
+
+
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = bounds, ...)
       }
       return(updater)
@@ -83,30 +115,35 @@ tmle3_Spec_npCausalGLM <- R6Class(
       treatment_value <- self$options$treatment_level
       control_value <- self$options$control_level
       formula <- self$options$formula
+      family <- self$options$family_fluctuation
       A_levels <- tmle_task$npsem[["A"]]$variable_type$levels
       if (!is.null(A_levels)) {
         treatment_value <- factor(treatment_value, levels = A_levels)
         control_value <- factor(control_value, levels = A_levels)
       }
+
+
+
       if (self$options$estimand == "TSM") {
         # If TSM generate params for all levels
         param <- lapply(union(treatment_value, control_value), function(value) {
           treatment <- define_lf(LF_static, "A", value = value)
-          return(Param_npTSM$new(targeted_likelihood, formula, treatment))
+          return(Param_npTSM$new(targeted_likelihood, formula, treatment, family_fluctuation = family))
         })
         return(param)
       } else {
         treatment <- define_lf(LF_static, "A", value = treatment_value)
         control <- define_lf(LF_static, "A", value = control_value)
       }
+
       if (self$options$estimand == "CATE") {
-        param <- Param_npCATE$new(targeted_likelihood, formula, treatment, control)
+        param <- Param_npCATE$new(targeted_likelihood, formula, treatment, control, family_fluctuation = family)
       } else if (self$options$estimand == "CATT") {
-        param <- Param_npCATT$new(targeted_likelihood, formula, treatment, control)
+        param <- Param_npCATT$new(targeted_likelihood, formula, treatment, control, family_fluctuation = family)
       } else if (self$options$estimand == "OR") {
         param <- Param_npOR$new(targeted_likelihood, formula, treatment, control)
       } else if (self$options$estimand == "RR") {
-        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control, binary_outcome = self$options$binary_outcome)
+        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control, binary_outcome = self$options$binary_outcome, family_fluctuation = family)
       }
       return(list(param))
     }

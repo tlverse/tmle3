@@ -52,7 +52,9 @@ Param_npTSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list,  family_fluctuation = c( "binomial", "gaussian", "poisson"), outcome_node = "Y") {
+      family_fluctuation <- match.arg(family_fluctuation)
+      private$.submodel <-  list(Y=family_fluctuation)
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
@@ -81,7 +83,7 @@ Param_npTSM <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_TSM, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y")
       W_train <- training_task$get_tmle_node("W")
       V_train <- model.matrix(self$formula_TSM, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
@@ -133,7 +135,7 @@ Param_npTSM <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_TSM, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y")
 
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
@@ -168,11 +170,11 @@ Param_npTSM <- R6Class(
     }
   ),
   private = list(
-    .type = "CATE",
+    .type = "TSM",
     .cf_likelihood = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_TSM = NULL,
-    .submodel = list(Y = "gaussian_identity"),
+    .submodel = list(Y = "binomial_identity"),
     .formula_names = NULL
   )
 )

@@ -234,6 +234,20 @@ print(rowMeans(passes1))
 
 
 ```{r}
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 , "RR", delta_epsilon = 0.01, family_fluctuation = "poisson")
+out <- suppressWarnings(tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+ out <- out$summary
+ out
+
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 , "RR", delta_epsilon = 10, family_fluctuation = "binomial")
+out <- suppressWarnings(tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+ out <- out$summary
+ out
+
+```
+
+
+```{r}
 
 
 out$tmle_task$npsem$Y$scale

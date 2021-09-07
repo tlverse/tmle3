@@ -52,19 +52,17 @@ Param_npRR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE,outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE, family_fluctuation = c("poisson", "binomial"),outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
+      family_fluctuation <- match.arg(family_fluctuation)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_RR, as.data.frame(W))
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
       private$.binary_outcome <- binary_outcome
-      if(binary_outcome) {
-        private$.submodel = list(Y = "binomial_logit")
-      } else {
-        private$.submodel = list(Y = "poisson_log")
-      }
+      private$.submodel <- list(Y=family_fluctuation)
+
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -91,14 +89,14 @@ Param_npRR <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_RR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Yf <- tmle_task$get_tmle_node("Y", format = T)
+
 
       Y <- tmle_task$get_tmle_node("Y", format = F)
 
       W_train <- training_task$get_tmle_node("W")
       V_train <- model.matrix(self$formula_RR, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
-      Y_train <- training_task$get_tmle_node("Y", format = F)[[1]]
+      Y_train <- training_task$get_tmle_node("Y", format = F)
 
       g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
       g1 <- ifelse(A == 1, g, 1 - g)

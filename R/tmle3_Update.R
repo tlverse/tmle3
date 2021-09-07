@@ -257,6 +257,9 @@ tmle3_Update <- R6Class(
             method = "Brent"
           )
           epsilon <- optim_fit$par
+          #Qnew <-   self$apply_submodel(submodel, submodel_data, epsilon)
+          #print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
+
         } else {
           epsilon <- self$delta_epsilon
         }
@@ -283,7 +286,10 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
-          Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
+          #Qnew <-  family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit))
+          #print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
+
+          #Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
           } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({

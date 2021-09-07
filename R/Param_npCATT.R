@@ -49,13 +49,16 @@ Param_npCATT <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_CATT = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_CATT = ~1, intervention_list_treatment, intervention_list_control,  family_fluctuation = c( "binomial", "gaussian", "poisson"),  outcome_node = "Y") {
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_CATE, as.data.frame(W))
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
+
+      family_fluctuation <- match.arg(family_fluctuation)
+      private$.submodel <-  list(Y=family_fluctuation)
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -82,7 +85,7 @@ Param_npCATT <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_CATT, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y")
       W_train <- training_task$get_tmle_node("W")
       V_train <- model.matrix(self$formula_CATT, as.data.frame(W_train))
       A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
@@ -138,7 +141,7 @@ Param_npCATT <- R6Class(
 
       W <- tmle_task$get_tmle_node("W")
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-      Y <- tmle_task$get_tmle_node("Y", format = T)[[1]]
+      Y <- tmle_task$get_tmle_node("Y")
 
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation

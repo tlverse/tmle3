@@ -53,7 +53,7 @@ Param_spOR <- R6Class(
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
-      V <- model.matrix(formula_CATE, as.data.frame(W))
+      V <- model.matrix(formula_logOR, as.data.frame(W))
       private$.formula_names <- colnames(V)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists
@@ -154,7 +154,7 @@ Param_spOR <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- .formula_names#sprintf("logOR(Y,A|W)")
+      param_form <- private$.formula_names#sprintf("logOR(Y,A|W)")
       return(param_form)
     },
     cf_likelihood_treatment = function() {

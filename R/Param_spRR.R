@@ -54,7 +54,7 @@ Param_spRR <- R6Class(
       super$initialize(observed_likelihood, list(), outcome_node)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
-      V <- model.matrix(formula_CATE, as.data.frame(W))
+      V <- model.matrix(formula_logRR, as.data.frame(W))
       private$.formula_names <- colnames(V)
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         # add delta_Y=0 to intervention lists

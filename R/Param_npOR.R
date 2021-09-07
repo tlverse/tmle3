@@ -157,6 +157,7 @@ Param_npOR <- R6Class(
       Q0 <- bound(Q0, 0.0005)
       Q1 <- bound(Q1, 0.0005)
       beta <- get_beta(W, A, self$formula_logOR, Q1, Q0, family = binomial(), weights = weights)
+
       V <- model.matrix(self$formula_logOR, as.data.frame(W))
       OR <- exp(V %*% beta)
 

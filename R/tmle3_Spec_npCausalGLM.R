@@ -50,9 +50,9 @@ tmle3_Spec_npCausalGLM <- R6Class(
       if (self$options$estimand == "CATE" || self$options$estimand == "CATT") {
         updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.01, constrain_step = TRUE, bounds = 0.0025, ...)
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.01, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
+        updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = 0.0025, constrain_step = TRUE, bounds = c(0.0025, Inf), ...)
       }
       return(updater)
     },

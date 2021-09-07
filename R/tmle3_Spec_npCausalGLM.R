@@ -46,7 +46,10 @@ tmle3_Spec_npCausalGLM <- R6Class(
 
       return(likelihood)
     },
-    make_updater = function(convergence_type = "sample_size", verbose = F, ...) {
+    make_updater = function(convergence_type = "sample_size", verbose = TRUE, ...) {
+      if (!is.null(self$options$verbose)) {
+        verbose <- self$options$verbose
+      }
       if (self$options$estimand == "CATE" || self$options$estimand == "CATT") {
         updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
       } else if (self$options$estimand == "OR") {

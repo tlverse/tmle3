@@ -173,7 +173,7 @@ Param_npOR <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- private$.formula_names#sprintf("logOR(Y,A|W)")
+      param_form <- private$.formula_names # sprintf("logOR(Y,A|W)")
       return(param_form)
     },
     cf_likelihood_treatment = function() {

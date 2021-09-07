@@ -17,7 +17,7 @@ tmle3_Spec_spCausalGLM <- R6Class(
       estimand <- match.arg(estimand)
       private$.options <- list(
         estimand = estimand, formula = formula, binary_outcome = binary_outcome,
-        treatment_level = treatment_level, control_level = control_level, delta_epsilon= delta_epsilon,
+        treatment_level = treatment_level, control_level = control_level, delta_epsilon = delta_epsilon,
         append_interaction_matrix = append_interaction_matrix, wrap_in_Lrnr_glm_sp = wrap_in_Lrnr_glm_sp,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
@@ -53,8 +53,8 @@ tmle3_Spec_spCausalGLM <- R6Class(
 
       return(likelihood)
     },
-    make_updater = function(convergence_type = "sample_size", verbose = T, ...) {
-      if(!is.null(self$options$verbose)) {
+    make_updater = function(convergence_type = "sample_size", verbose = TRUE, ...) {
+      if (!is.null(self$options$verbose)) {
         verbose <- self$options$verbose
       }
       if (self$options$estimand == "CATE") {

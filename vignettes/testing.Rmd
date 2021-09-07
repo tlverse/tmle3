@@ -179,8 +179,8 @@ library(sl3)
 passes <- c()
 for(i in 1:1){
   print(i)
-n <- 200
-W <- as.matrix(replicate(500, runif(n, -1, 1)))
+n <- 1000
+W <- as.matrix(replicate(1000, runif(n, -1, 1)))
 colnames(W) <- paste0("W", 1:ncol(W))
 A <- rbinom(n, size = 1, prob = plogis(W[,1]))
 Y <-  rpois(n, exp(A  + A*W[,1] + W[,1]))

@@ -201,7 +201,7 @@ Param_npOR <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_logOR = NULL,
-    .submodel = list(Y = "gaussian_identity"),
+    .submodel = list(Y = "binomial_logit"),
     .formula_names = NULL
   )
 )

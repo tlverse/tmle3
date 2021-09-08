@@ -29,7 +29,7 @@ survival_spec <- tmle3_Spec_coxph$new(formula = ~ 1  ,
   treatment_level = 1, control_level = 0
 )
 
-learner_list <- list(A_c = Lrnr_glmnet$new(), A = Lrnr_glmnet$new(), N = Lrnr_glmnet$new())
+learner_list <- list(A_c = Lrnr_xgboost$new(max_depth = 4), A = Lrnr_xgboost$new(max_depth = 4), N = Lrnr_xgboost$new(max_depth = 4))
 
 tmle_task <- survival_spec$make_tmle_task(vet_data, node_list)
  

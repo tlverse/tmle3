@@ -21,11 +21,11 @@ vet_data <- read.csv("https://raw.githubusercontent.com/tlverse/deming2019-works
 vet_data$trt <- vet_data$trt - 1
 vet_data$time <- ceiling(vet_data$time / 20)
 node_list <- list(
-  W = c("celltype", "karno", "diagtime", "age", "prior"), A = "trt", T_tilde = "time", Delta = "status",
+  W = c("celltype" ), A = "trt", T_tilde = "time", Delta = "status",
   time = "t", N = "N", A_c = "A_c", id = "X", pre_failure = "pre_failure"
 )
 
-survival_spec <- tmle3_Spec_coxph$new(formula = ~ 1 + as.numeric(karno),
+survival_spec <- tmle3_Spec_coxph$new(formula = ~ 1  ,
   treatment_level = 1, control_level = 0
 )
 

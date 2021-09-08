@@ -53,13 +53,13 @@ Param_coxph <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, formula_coxph = ~1, intervention_list_treatment, intervention_list_control, family_fluctuation = c("binomial"), outcome_node = "N") {
-      print(outcome_node)
+
       super$initialize(observed_likelihood, list(), outcome_node = outcome_node)
       family_fluctuation <- match.arg(family_fluctuation)
       training_task <- self$observed_likelihood$training_task
       W <- training_task$get_regression_task("W", is_time_variant = TRUE)$Y
-      print(W)
-      print(formula_coxph)
+
+
       V <- model.matrix(formula_coxph, as.data.frame(W))
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
@@ -125,7 +125,7 @@ Param_coxph <- R6Class(
       S_censor_mat <- cbind(1, S_censor_mat[, -ncol(S_censor_mat)])
       S_censor <- as.vector(S_censor_mat) # Back to long, CHECK
 
-      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights = prefailure * self$weights / S_censor)))
+      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights = self$weights)))
       HR <- as.vector(exp(Vt %*% beta))
 
       t_grid <- sort(unique(time))
@@ -198,7 +198,7 @@ Param_coxph <- R6Class(
 
 
 
-      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights = prefailure * self$weights / S_censor)))
+      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights =  self$weights )))
 
 
       HR <- exp(Vt %*% beta)

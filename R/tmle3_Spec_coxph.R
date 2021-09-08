@@ -25,6 +25,7 @@ tmle3_Spec_coxph <- R6Class(
 
     # TODO: check
     transform_data = function(data, node_list) {
+      data <- as.data.frame(data)
       T_tilde_name <- node_list$T_tilde
       Delta_name <- node_list$Delta
       T_tilde_data <- data[T_tilde_name]

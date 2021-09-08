@@ -55,6 +55,7 @@ Other Parameters:
 \code{\link{Param_ATT}},
 \code{\link{Param_MSM}},
 \code{\link{Param_base}},
+\code{\link{Param_coxph}},
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},
 \code{\link{Param_npCATE}},

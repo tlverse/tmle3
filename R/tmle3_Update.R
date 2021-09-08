@@ -171,8 +171,10 @@ tmle3_Update <- R6Class(
       # scale observed and predicted values for bounded continuous
       observed <- tmle_task$scale(observed, update_node)
       initial <- tmle_task$scale(initial, update_node)
-      weights <- tmle_task$get_regression_task(update_node)$weights
-
+      weights <- tmle_task$get_regression_task(update_node, is_time_variant = likelihood$factor_list[[update_node]]$is_time_variant)$weights
+      if (length(weights) != length(initial) || any(is.na(weights))) {
+        stop("Weights do not match length or are missing values.")
+      }
 
       # protect against qlogis(1)=Inf
 
@@ -213,6 +215,7 @@ tmle3_Update <- R6Class(
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
+
       # Extract submodel spec info
       EDnormed <- submodel_data$EDnormed
 
@@ -257,7 +260,8 @@ tmle3_Update <- R6Class(
             method = "Brent"
           )
           epsilon <- optim_fit$par
-          # Qnew <-   self$apply_submodel(submodel, submodel_data, epsilon)
+          Qnew <- self$apply_submodel(submodel, submodel_data, epsilon)
+
           # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
         } else {
           epsilon <- self$delta_epsilon
@@ -285,8 +289,13 @@ tmle3_Update <- R6Class(
               start = rep(0, ncol(submodel_data$H))
             )
           })
+
+
+
           # Qnew <-  family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit))
+
           # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
+
 
           # Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
         } else if (self$fluctuation_type == "weighted") {

@@ -200,7 +200,7 @@ tmle3_Task <- R6Class(
       nodes$covariates <- covariates
 
 
-      regression_data <- do.call(cbind, c(all_covariate_data, outcome_data, node_data))
+      regression_data <- as.data.table(do.call(cbind, c(all_covariate_data, outcome_data, node_data)))
 
       if ((is_time_variant) && (!is.null(self$nodes$time))) {
         regression_data$time <- self$time
@@ -216,8 +216,8 @@ tmle3_Task <- R6Class(
       } else {
         censoring <- rep(FALSE, nrow(regression_data))
       }
-
-      if (drop_censored) {
+      # TODO: multiviarate outcomes break in the else statement.
+      if (drop_censored || length(outcome) > 1) {
         indices <- intersect(indices, which(!censoring))
       } else {
         # impute arbitrary value for node Need to keep the data shape the same,
@@ -240,8 +240,6 @@ tmle3_Task <- R6Class(
         regression_data <- regression_data[indices, ]
         folds <- sl3::subset_folds(folds, indices)
       }
-
-
 
 
 

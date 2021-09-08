@@ -42,7 +42,7 @@ summary_from_estimates <- function(task, estimates, param_types = NULL,
   IC <- lapply(estimates, `[[`, "IC")
   IC <- do.call(cbind, IC)
   # for repeated measures, average IC values to get subject-level IC values
-  if (length(unique(task$id)) < length(task$id)) {
+  if (length(unique(task$id)) < length(task$id) && nrow(IC) != length(unique(task$id))) {
     combined <- (by(IC, as.numeric(task$id), colMeans, simplify = FALSE))
     IC <- do.call(rbind, combined)
   }

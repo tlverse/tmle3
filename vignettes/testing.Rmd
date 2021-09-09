@@ -19,7 +19,8 @@ passes<-c()
   print(i)
 D <- DAG.empty()
 D <- D + node("W1", distr = "runif",  min = -1, max = 1) + 
-  node("W2", distr = "runif",  min = -1, max = 1) + 
+  node("Wa2", distr = "rbinom", size = 1, prob = 0.5) + 
+   node("W2", distr = "rconst", const =Wa2 - 0.5 ) + 
    node("A", distr = "rbinom",  size = 1, prob = plogis(W1 + W2 )) +
   node("dNt", t = 1:tmax, EFU = TRUE , distr = "rbinom",  size = 1, prob = exp(0.5*A)*0.15*plogis(W1 + W2 )) +
   node("dCt", t = 1:tmax, EFU = TRUE,  distr = "rbinom",  size = 1, prob = 0*plogis(W1 + W2 + t)) 
@@ -55,10 +56,10 @@ data$Ttilde <- data_surv$Ttilde
   
  
 
-  doMC::registerDoMC(10)
+  doMC::registerDoMC(16)
   
-  tmle_spec_np <- tmle3_Spec_coxph$new(formula = ~1,  delta_epsilon = 0.1, verbose = T, treatment_level = 1, control_level = 0)
-  learner_list <- list(A = Lrnr_gam$new() , N = Lrnr_hal9001$new(smoothness_orders = 0, num_knots = 20, max_degree = 1), A_c = Lrnr_hal9001$new(smoothness_orders = 0, num_knots = 20, max_degree = 1) )
+  tmle_spec_np <- tmle3_Spec_coxph$new(formula = ~1,  delta_epsilon = 0.5, verbose = T, treatment_level = 1, control_level = 0)
+  learner_list <- list(A = Lrnr_glm$new() , N = Lrnr_glm$new(formula = ~.^2), A_c =  Lrnr_glm$new(formula = ~.^2)) 
   node_list <- list(  W = c("W1", "W2"), A = "A", T_tilde = "Ttilde", Delta = "Delta" )
  
   tmle3_fit <- suppressMessages(suppressWarnings(tmle3(tmle_spec_np, data, node_list, learner_list)))

@@ -150,13 +150,13 @@ Param_coxph <- R6Class(
 
 
         scaleinv <- solve(scale)
-        EIF_N <- self$weights * (H) * as.vector(dNt - pN)
+        EIF_N <- self$weights * (H %*% scaleinv) * as.vector(dNt - pN)
         EIF_WA <- apply(Vt, 2, function(v) {
           long_vec <- self$weights * (v * (HR * pN0 - pN1))
           wide_vec <- self$long_to_mat(long_vec, id, time)
           means <- colMeans(wide_vec)
           as.vector(t(t(wide_vec) - means))
-        })
+        }) %*% scaleinv
       }
 
 
@@ -190,7 +190,7 @@ Param_coxph <- R6Class(
 
       EIF <- apply(EIF, 2, function(col) {
         rowSums(self$long_to_mat(col, id, time))
-      }) %*% EIFs$scaleinv
+      }) #%*% EIFs$scaleinv
 
       pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
       pC <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)

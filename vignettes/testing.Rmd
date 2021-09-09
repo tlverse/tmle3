@@ -62,7 +62,7 @@ data$Ttilde <- data_surv$Ttilde
  
   tmle3_fit <- suppressMessages(suppressWarnings(tmle3(tmle_spec_np, data, node_list, learner_list)))
   
-  print(tmle3_fit$summary)
+  
   passes <- c(passes, tmle3_fit$summary$lower <= 0.5  & tmle3_fit$summary$upper >= 0.5 )
   print(mean(passes))
 }

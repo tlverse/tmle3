@@ -138,7 +138,7 @@ Param_coxph <- R6Class(
 
       H <- as.matrix(Vt * (prefailure / S_censor / S_surv) * (A / g1 * HR - (1 - A) / g0))
 
-      print(quantile(H))
+      #print(quantile(H))
 
       EIF_N <- NULL
 

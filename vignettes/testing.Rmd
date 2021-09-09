@@ -15,7 +15,7 @@ library(sl3)
 ```{r}
 passes<-c()
  for(i in 1:200){
-   tmax <- 4
+   tmax <- 5
   print(i)
 D <- DAG.empty()
 D <- D + node("W1", distr = "runif",  min = -1, max = 1) + 
@@ -27,20 +27,21 @@ D <- set.DAG(D)
 data <- sim(D, n = 1000)
 data
  
-data_N <- data[, grep("[d][N].+", colnames(data))]
-data_C <- data[, grep("[d][C].+", colnames(data))]
+data_N <- data[, grep("[d][N].+", colnames(data)), drop = F]
+data_C <- data[, grep("[d][C].+", colnames(data)), drop = F]
 
 data_surv <-  as.data.frame(do.call(rbind, lapply(1:nrow(data), function(i) {
   rowN <- data_N[i,]
   rowC <- data_C[i,]
   t <- which(rowN==1)
   tc <- which(rowC==1)
-  if(length(tc)==0){
-    tc <- tmax
-  }
   if(length(t)==0){
     t <- tmax+2
   }
+  if(length(tc)==0){
+    tc <- tmax + 1
+  }
+   
   Ttilde <- min(t,tc)
   Delta <- t <= tc
   return(matrix(c(Ttilde,Delta), nrow=1))
@@ -62,7 +63,7 @@ data$Ttilde <- data_surv$Ttilde
  
   tmle3_fit <- suppressMessages(suppressWarnings(tmle3(tmle_spec_np, data, node_list, learner_list)))
   
-  
+  print(tmle3_fit$summary)
   passes <- c(passes, tmle3_fit$summary$lower <= 0.5  & tmle3_fit$summary$upper >= 0.5 )
   print(mean(passes))
 }

@@ -61,7 +61,7 @@ tmle3_Spec_coxph <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
       data_list <- self$transform_data(data, node_list)
-      tmle_task <- survival_tx_task(data_list$long_data, data_list$long_node_list, variable_types )
+      tmle_task <- survival_tx_task(data_list$long_data, data_list$long_node_list, variable_types)
 
       return(tmle_task)
     },

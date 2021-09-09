@@ -53,7 +53,6 @@ Param_coxph <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, formula_coxph = ~1, intervention_list_treatment, intervention_list_control, family_fluctuation = c("binomial"), outcome_node = "N") {
-
       super$initialize(observed_likelihood, list(), outcome_node = outcome_node)
       family_fluctuation <- match.arg(family_fluctuation)
       training_task <- self$observed_likelihood$training_task
@@ -123,7 +122,7 @@ Param_coxph <- R6Class(
       pC_mat <- self$long_to_mat(pC, id, time)
       S_censor_mat <- self$hm_to_sm(pC_mat)
       S_censor_mat <- cbind(1, S_censor_mat[, -ncol(S_censor_mat)])
-      S_censor <-  pmax(as.vector(S_censor_mat), 0.005)# Back to long, CHECK
+      S_censor <- pmax(as.vector(S_censor_mat), 0.005) # Back to long, CHECK
       pN_mat <- self$long_to_mat(pN, id, time)
       S_surv_mat <- self$hm_to_sm(pN_mat)
       S_surv_mat <- cbind(1, S_surv_mat[, -ncol(S_surv_mat)])
@@ -136,9 +135,9 @@ Param_coxph <- R6Class(
       t_grid <- sort(unique(time))
 
 
-      H <- as.matrix(Vt * (prefailure / S_censor / S_surv) * (A / g1 * HR - (1 - A) / g0))
+      H <- as.matrix(Vt * (prefailure / S_censor) * (A / g1 * HR - (1 - A) / g0))
 
-      #print(quantile(H))
+      # print(quantile(H))
 
       EIF_N <- NULL
 
@@ -151,23 +150,20 @@ Param_coxph <- R6Class(
 
 
         scaleinv <- solve(scale)
-        EIF_N <- self$weights * (H %*% scaleinv) * as.vector(dNt - pN)
+        EIF_N <- self$weights * (H) * as.vector(dNt - pN)
         EIF_WA <- apply(Vt, 2, function(v) {
           long_vec <- self$weights * (v * (HR * pN0 - pN1))
           wide_vec <- self$long_to_mat(long_vec, id, time)
           means <- colMeans(wide_vec)
           as.vector(t(t(wide_vec) - means))
-        }) %*% scaleinv
-
-
-
+        })
       }
 
 
 
 
 
-      return(list(N = H, EIF = list(N = EIF_N, WA = EIF_WA)))
+      return(list(N = H, EIF = list(N = EIF_N, WA = EIF_WA, scaleinv = scaleinv)))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {
       if (is.null(tmle_task)) {
@@ -188,12 +184,13 @@ Param_coxph <- R6Class(
       id <- tmle_task$id
       long_order <- order(id, time)
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIFs <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIF <- EIFs
       EIF <- EIF$N + EIF$WA
 
       EIF <- apply(EIF, 2, function(col) {
         rowSums(self$long_to_mat(col, id, time))
-      })
+      }) %*% EIFs$scaleinv
 
       pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
       pC <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
@@ -209,7 +206,7 @@ Param_coxph <- R6Class(
 
 
 
-      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights =  self$weights )))
+      beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights = self$weights)))
 
 
       HR <- exp(Vt %*% beta)

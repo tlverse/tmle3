@@ -11,7 +11,7 @@
 #' @param ... extra arguments.
 #' @export
 #' @rdname survival_tx
-survival_tx_npsem <- function(node_list, variable_types = NULL ) {
+survival_tx_npsem <- function(node_list, variable_types = NULL) {
   # make the tmle task
 
   # define censoring (lost to followup node)
@@ -38,7 +38,7 @@ survival_tx_npsem <- function(node_list, variable_types = NULL ) {
 survival_tx_task <- function(data, node_list, variable_types = NULL, ...) {
   setDT(data)
 
-  npsem <- survival_tx_npsem(node_list, variable_types )
+  npsem <- survival_tx_npsem(node_list, variable_types)
 
   if (!is.null(node_list$id)) {
     tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time, ...)

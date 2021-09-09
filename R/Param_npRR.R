@@ -52,16 +52,16 @@ Param_npRR <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE, family_fluctuation = c("poisson", "binomial"), outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node)
-      family_fluctuation <- match.arg(family_fluctuation)
+    initialize = function(observed_likelihood, formula_RR = ~1, intervention_list_treatment, intervention_list_control, binary_outcome = FALSE, submodel = c("poisson", "binomial"), outcome_node = "Y") {
+      submodel <- match.arg(submodel)
+      super$initialize(observed_likelihood, list(), outcome_node, submodel = submodel)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_RR, as.data.frame(W))
       private$.formula_names <- colnames(V)
       private$.targeted <- rep(T, ncol(V))
       private$.binary_outcome <- binary_outcome
-      private$.submodel <- list(Y = family_fluctuation)
+
 
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
@@ -192,7 +192,6 @@ Param_npRR <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_RR = NULL,
-    .submodel = list(Y = "binomial_logit"),
     .formula_names = NULL,
     .binary_outcome = NULL
   )

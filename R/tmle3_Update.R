@@ -117,6 +117,7 @@ tmle3_Update <- R6Class(
 
       # USE first parameter to get submodel spec
       submodel_spec <- self$tmle_params[[1]]$get_submodel_spec(update_node)
+
       submodel_name <- submodel_spec$name
       # Check compatibility of tmle_params with submodel
       lapply(self$tmle_params, function(tmle_param) {
@@ -210,9 +211,9 @@ tmle3_Update <- R6Class(
       submodel_data$submodel_spec <- submodel_spec
       # To support arbitrary likelihood-dependent risk functions for updating.
       # Is carrying this stuff around a problem computationally?
-      submodel_data$tmle_task <- tmle_task
-      submodel_data$likelihood <- likelihood
-      submodel_data$fold_number <- fold_number
+      # submodel_data$tmle_task <- tmle_task
+      # submodel_data$likelihood <- likelihood
+      # submodel_data$fold_number <- fold_number
 
       return(submodel_data)
     },
@@ -232,9 +233,7 @@ tmle3_Update <- R6Class(
       family_object <- submodel_spec$family
       loss_function <- submodel_spec$loss_function
       submodel <- submodel_spec$submodel_function
-      training_likelihood <- submodel_data$likelihood
-      training_task <- submodel_data$tmle_task
-      training_fold <- submodel_data$fold_number
+
       # Subset to only numericals needed for fitting.
       submodel_data <- submodel_data[c("observed", "H", "initial", "weights")]
 
@@ -247,11 +246,12 @@ tmle3_Update <- R6Class(
           )
         }
 
+        weights <- submodel_data$weights
 
         risk <- function(epsilon) {
           submodel_estimate <- self$apply_submodel(submodel, submodel_data, epsilon)
-          loss <- loss_function(submodel_estimate, submodel_data$observed, weights = submodel_data$weights, likelihood = training_likelihood, tmle_task = training_task, fold_number = training_fold)
-          mean(loss)
+          loss <- loss_function(submodel_estimate, submodel_data$observed)
+          weighted.mean(loss, weights)
         }
 
 

@@ -53,7 +53,7 @@ Param_coxph <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, formula_coxph = ~1, intervention_list_treatment, intervention_list_control, family_fluctuation = c("binomial"), outcome_node = "N") {
-      super$initialize(observed_likelihood, list(), outcome_node = outcome_node)
+      super$initialize(observed_likelihood, list(), outcome_node = outcome_node, submodel =  list(N = "binomial_logit"))
       family_fluctuation <- match.arg(family_fluctuation)
       training_task <- self$observed_likelihood$training_task
       W <- training_task$get_regression_task("W", is_time_variant = TRUE)$Y
@@ -247,7 +247,6 @@ Param_coxph <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_coxph = NULL,
-    .submodel = list(N = "binomial_logit"),
     .formula_names = NULL
   )
 )

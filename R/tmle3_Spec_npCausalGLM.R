@@ -11,12 +11,12 @@ tmle3_Spec_npCausalGLM <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0, family_fluctuation = NULL,
+    initialize = function(formula, estimand = c("CATE", "CATT", "TSM", "OR", "RR"), treatment_level = 1, control_level = 0, submodel = NULL,
                           likelihood_override = NULL,
                           variable_types = NULL, delta_epsilon = 0.025, ...) {
       estimand <- match.arg(estimand)
       private$.options <- list(
-        estimand = estimand, formula = formula, family_fluctuation = family_fluctuation,
+        estimand = estimand, formula = formula, submodel = submodel,
         treatment_level = treatment_level, control_level = control_level, delta_epsilon = delta_epsilon,
         likelihood_override = likelihood_override,
         variable_types = variable_types, ...
@@ -27,7 +27,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       include_variance_node <- FALSE
       scale_outcome <- TRUE
       Y <- data[[node_list$Y]]
-      family <- self$options$family_fluctuation
+      family <- self$options$submodel
 
       if (is.null(family) && self$options$estimand %in% c("CATE", "CATT", "TSM")) {
         if (all(Y %in% c(0, 1))) {
@@ -54,7 +54,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
           scale_outcome <- FALSE
         }
       }
-      private$.options$family_fluctuation <- family
+      private$.options$submodel <- family
       binary_outcome <- all(data[[node_list$Y]] %in% c(0, 1))
       private$.options$binary_outcome <- binary_outcome
       if (self$options$estimand == "RR") {
@@ -95,7 +95,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       } else if (self$options$estimand == "OR") {
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
-        if (self$options$family_fluctuation == "poisson") {
+        if (self$options$submodel == "poisson") {
           bounds <- list(Y = c(0.0025, Inf), A = 0.005)
         } else {
           bounds <- list(Y = 0.0025, A = 0.005)
@@ -114,7 +114,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
       treatment_value <- self$options$treatment_level
       control_value <- self$options$control_level
       formula <- self$options$formula
-      family <- self$options$family_fluctuation
+      family <- self$options$submodel
       A_levels <- tmle_task$npsem[["A"]]$variable_type$levels
       if (!is.null(A_levels)) {
         treatment_value <- factor(treatment_value, levels = A_levels)
@@ -127,7 +127,7 @@ tmle3_Spec_npCausalGLM <- R6Class(
         # If TSM generate params for all levels
         param <- lapply(union(treatment_value, control_value), function(value) {
           treatment <- define_lf(LF_static, "A", value = value)
-          return(Param_npTSM$new(targeted_likelihood, formula, treatment, family_fluctuation = family))
+          return(Param_npTSM$new(targeted_likelihood, formula, treatment, submodel = family))
         })
         return(param)
       } else {
@@ -136,13 +136,13 @@ tmle3_Spec_npCausalGLM <- R6Class(
       }
 
       if (self$options$estimand == "CATE") {
-        param <- Param_npCATE$new(targeted_likelihood, formula, treatment, control, family_fluctuation = family)
+        param <- Param_npCATE$new(targeted_likelihood, formula, treatment, control, submodel = family)
       } else if (self$options$estimand == "CATT") {
-        param <- Param_npCATT$new(targeted_likelihood, formula, treatment, control, family_fluctuation = family)
+        param <- Param_npCATT$new(targeted_likelihood, formula, treatment, control, submodel = family)
       } else if (self$options$estimand == "OR") {
         param <- Param_npOR$new(targeted_likelihood, formula, treatment, control)
       } else if (self$options$estimand == "RR") {
-        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control, binary_outcome = self$options$binary_outcome, family_fluctuation = family)
+        param <- Param_npRR$new(targeted_likelihood, formula, treatment, control, binary_outcome = self$options$binary_outcome, submodel = family)
       }
       return(list(param))
     }

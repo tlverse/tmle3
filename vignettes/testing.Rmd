@@ -139,39 +139,44 @@ passes2 <- c()
 for(i in 1:100){
   print(i)
 
-n <- 500
+n <- 1000
 W <- runif(n, -1, 1)
 A <- rbinom(n, size = 1, prob = plogis(W))
 Y <-  rnorm(n, mean =  A*W + A+W, sd = 0.3)
 data <- data.table(W,A,Y)
-lrnr_Y0W <- Lrnr_glm$new()
+lrnr_Y0W <- Lrnr_glmnet$new(formula = ~.^2)
 lrnr_A <- Lrnr_glm$new()
  
 node_list <- list (W = "W", A = "A", Y= "Y")
 learner_list <- list(A  = lrnr_A, Y = lrnr_Y0W )
-# spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1, "CATE")
-# out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) 
+spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1, "CATE")
+out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list)
 print("CATE")
-spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "CATE")
-# suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
-#  out <- out$summary
-# passes <- cbind(passes , out$lower <= 1 & out$upper >= 1)
-# out
+```
+
+```{r}
+spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "TSM", submodel = "gaussian")
+suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+ 
+ out$tmle_params[[1]]$submodel
 print("CATT")
+ 
+
+
 spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1 + W, "CATT")
  (out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
- out$summary
+out <- out$summary
 passes1 <- cbind(passes1 , out$lower <= 1 & out$upper >= 1)
  
-# print("CATE")
-# spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1 + W, "CATE")
-# suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
-#  out <- out$summary
-# passes2 <- cbind(passes2 , out$lower <= 1 & out$upper >= 1)
-# out
-# print(rowMeans(passes))
-# print(rowMeans(passes1))
-# print(rowMeans(passes2))
+print("CATE")
+spec_spCATE <- tmle3_Spec_spCausalGLM$new(~1 + W, "CATE")
+suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list) )
+ out <- out$summary
+passes2 <- cbind(passes2 , out$lower <= 1 & out$upper >= 1)
+out
+print(rowMeans(passes))
+print(rowMeans(passes1))
+print(rowMeans(passes2))
 }
 
 ```

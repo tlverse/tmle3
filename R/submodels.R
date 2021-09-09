@@ -1,9 +1,50 @@
+
+# To port to sl3 at some point:
+
+#' Log likelihood loss for outcomes between 0 and 1
+#'
+#' @param estimate prediction
+#' @param observed observed outcome
+#' @export
+loss_loglik_binomial <- function(estimate, observed) {
+  # loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
+  loss <- -1 * (observed * log(estimate) + (1 - observed) * log(1 - estimate))
+  return(loss)
+}
+#' log likelihood loss
+#' @param estimate prediction
+#' @param observed observed outcome
+#' @export
+loss_loglik <- function(estimate, observed) {
+  loss <- -1 * log(estimate)
+  return(loss)
+}
+
+#' Poisson/log-linear loss for nonnegative variables
+#'
+#' @param estimate prediction
+#' @param observed observed outcome
+#' @export
+loss_poisson <- function(estimate, observed ) {
+  loss <- estimate - observed * log(estimate)
+  return(loss)
+}
+
+
+
+
+
+
+
+
 #' Generate Fluctuation Submodel from \code{family} object.
 #'
 #' @param family ...
 #'
 #' @export
 #
+
+
 generate_submodel_from_family <- function(family) {
   linkfun <- family$linkfun
   linkinv <- family$linkinv
@@ -30,81 +71,7 @@ submodel_logistic_switch <- function(eps, offset, X, observed) {
   output <- ifelse(observed == 1, output, 1 - output)
 }
 
-#' Log likelihood loss for binary variables
-#'
-#' @param estimate ...
-#' @param observed ...
-#' @param weights ...
-#' @param v ...
-#' @export
-loss_function_loglik_binomial <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  # loss <- -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
-  loss <- -1 * (observed * log(estimate) + (1 - observed) * log(1 - estimate))
-  if (!is.null(weights)) {
-    loss <- weights * loss
-  }
-  return(loss)
-}
-#' @export
-loss_function_loglik <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  loss <- -1 * log(estimate)
-  if (!is.null(weights)) {
-    loss <- weights * loss
-  }
-  return(loss)
-}
 
-#' Linear (gaussian) Submodel Fluctuation
-#'
-#' @param eps ...
-#' @param X ...
-#' @param offset ...
-#'
-#'
-#' @export
-#
-submodel_linear <- generate_submodel_from_family(gaussian())
-#' Least-squares loss for binary variables
-#'
-#' @param estimate ...
-#' @param observed ...
-#' @param weights ...
-#' @param likelihood ...
-#' @export
-loss_function_least_squares <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  loss <- (observed - estimate)^2
-  if (!is.null(weights)) {
-    loss <- weights * loss
-  }
-  return(loss)
-}
-
-
-#' Log-linear (Poisson) Submodel Fluctuation
-#'
-#' @param eps ...
-#' @param X ...
-#' @param offset ...
-#'
-#'
-#' @export
-#
-submodel_exp <- generate_submodel_from_family(poisson())
-
-#' Poisson/log-linear loss for nonnegative variables
-#'
-#' @param estimate ...
-#' @param observed ...
-#' @param weights ...
-#' @param likelihood ...
-#' @export
-loss_function_poisson <- function(estimate, observed, weights = NULL, likelihood = NULL, tmle_task = NULL, fold_number = NULL) {
-  loss <- estimate - observed * log(estimate)
-  if (!is.null(weights)) {
-    loss <- weights * loss
-  }
-  return(loss)
-}
 
 #' Generate loss function loss from family object or string
 #' @param family ...
@@ -117,11 +84,11 @@ generate_loss_function_from_family <- function(family) {
     stop("Unsupported family object.")
   }
   if (family == "poisson") {
-    return(loss_function_poisson)
+    return(loss_poisson)
   } else if (family == "gaussian") {
-    return(loss_function_least_squares)
+    return(loss_squared_error)
   } else if (family == "binomial") {
-    return(loss_function_loglik_binomial)
+    return(loss_loglik_binomial)
   }
 }
 
@@ -147,6 +114,11 @@ make_submodel_spec <- function(name, family = NULL, submodel_function = NULL, lo
 #' @param name Either a name for a submodel spec obtainable from environment (name -->  get(paste0("submodel_spec_",name))}), a family object or string, or a string of the form "family_link" (e.g. "binomial_logit").
 #' @export
 get_submodel_spec <- function(name) {
+  # If list, assume it is already a spec
+
+  if(is.list(name)){
+    return(name)
+  }
   output <- NULL
   tryCatch(
     {
@@ -163,6 +135,7 @@ get_submodel_spec <- function(name) {
       output <- make_submodel_spec(name, family)
     },
     error = function(...) {
+      print(...)
       try({
         output <<- get(paste0("submodel_spec_", name))
       })
@@ -178,4 +151,4 @@ get_submodel_spec <- function(name) {
 #' @export
 submodel_spec_logistic_switch <- list(name = "logistic_switch", family = function() {
   stop("Does not support family-based updating. Please use optim instead.")
-}, submodel_function = submodel_logistic_switch, loss_function = loss_function_loglik)
+}, submodel_function = submodel_logistic_switch, loss_function = loss_loglik)

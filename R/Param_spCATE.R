@@ -50,7 +50,7 @@ Param_spCATE <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, formula_CATE = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node)
+      super$initialize(observed_likelihood, list(), outcome_node, submodel = list(Y = "gaussian_identity"))
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_CATE, as.data.frame(W))
@@ -200,7 +200,6 @@ Param_spCATE <- R6Class(
     .cf_likelihood_control = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_CATE = NULL,
-    .submodel = list(Y = "gaussian_identity"),
     .formula_names = NULL
   )
 )

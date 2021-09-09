@@ -37,6 +37,10 @@ for (i in 1:1) {
   out <- out$summary
   passes2 <- c(passes2, out$lower <= 1 & out$upper >= 1)
 
+  spec_spCATE <- tmle3_Spec_npCausalGLM$new(~1, "TSM")
+  suppressWarnings(out <- tmle3(spec_spCATE, data, node_list, learner_list = learner_list))
+  out <- out$summary
+
   print(mean(passes))
   print(mean(passes1))
   print(mean(passes2))

@@ -52,10 +52,9 @@ Param_npTSM <- R6Class(
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list, family_fluctuation = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
-      family_fluctuation <- match.arg(family_fluctuation)
-      private$.submodel <- list(Y = family_fluctuation)
-      super$initialize(observed_likelihood, list(), outcome_node)
+    initialize = function(observed_likelihood, formula_TSM = ~1, intervention_list, submodel = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
+      submodel <- match.arg(submodel)
+      super$initialize(observed_likelihood, list(), outcome_node, submodel = submodel)
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_TSM, as.data.frame(W))
@@ -174,7 +173,6 @@ Param_npTSM <- R6Class(
     .cf_likelihood = NULL,
     .supports_outcome_censoring = TRUE,
     .formula_TSM = NULL,
-    .submodel = list(Y = "binomial_identity"),
     .formula_names = NULL
   )
 )

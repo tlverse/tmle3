@@ -113,8 +113,8 @@ Param_coxph <- R6Class(
 
       pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
       pC <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
-      pN0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "N", fold_number))
-      pN1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "N", fold_number)
+      pN0 <- as.vector(self$observed_likelihood$get_likelihoods(cf_task0, "N", fold_number))
+      pN1 <- self$observed_likelihood$get_likelihoods(cf_task1, "N", fold_number)
 
       time <- tmle_task$time
       id <- tmle_task$id
@@ -123,7 +123,12 @@ Param_coxph <- R6Class(
       pC_mat <- self$long_to_mat(pC, id, time)
       S_censor_mat <- self$hm_to_sm(pC_mat)
       S_censor_mat <- cbind(1, S_censor_mat[, -ncol(S_censor_mat)])
-      S_censor <- as.vector(S_censor_mat) # Back to long, CHECK
+      S_censor <-  pmax(as.vector(S_censor_mat), 0.005)# Back to long, CHECK
+      pN_mat <- self$long_to_mat(pN, id, time)
+      S_surv_mat <- self$hm_to_sm(pN_mat)
+      S_surv_mat <- cbind(1, S_surv_mat[, -ncol(S_surv_mat)])
+
+      S_surv <- pmax(as.vector(S_surv_mat), 0.005)
 
       beta <- suppressWarnings(coef(glm.fit(Vt, pN1, offset = log(pN0), family = poisson(), weights = self$weights)))
       HR <- as.vector(exp(Vt %*% beta))
@@ -131,15 +136,18 @@ Param_coxph <- R6Class(
       t_grid <- sort(unique(time))
 
 
-      H <- as.matrix(Vt * (prefailure / S_censor) * (A / g1 * HR - (1 - A) / g0))
+      H <- as.matrix(Vt * (prefailure / S_censor / S_surv) * (A / g1 * HR - (1 - A) / g0))
 
+      print(quantile(H))
 
       EIF_N <- NULL
+
       # Store EIF component
       if (is_training_task) {
         scale <- apply(Vt, 2, function(v) {
           apply(self$weights * Vt * (v) * HR * pN0, 2, sum) / length(unique(id))
         })
+
 
 
         scaleinv <- solve(scale)
@@ -150,6 +158,9 @@ Param_coxph <- R6Class(
           means <- colMeans(wide_vec)
           as.vector(t(t(wide_vec) - means))
         }) %*% scaleinv
+
+
+
       }
 
 
@@ -186,8 +197,8 @@ Param_coxph <- R6Class(
 
       pN <- self$observed_likelihood$get_likelihoods(tmle_task, "N", fold_number)
       pC <- self$observed_likelihood$get_likelihoods(tmle_task, "A_c", fold_number)
-      pN0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "N", fold_number)
-      pN1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "N", fold_number)
+      pN0 <- self$observed_likelihood$get_likelihoods(cf_task0, "N", fold_number)
+      pN1 <- self$observed_likelihood$get_likelihoods(cf_task1, "N", fold_number)
 
 
 
@@ -204,7 +215,7 @@ Param_coxph <- R6Class(
       HR <- exp(Vt %*% beta)
 
       IC <- as.matrix(EIF)
-      print(colMeans(IC))
+
       result <- list(psi = beta, IC = IC, HR = HR, transform = exp)
       return(result)
     }

@@ -170,7 +170,9 @@ tmle3_Update <- R6Class(
 
       # scale observed and predicted values for bounded continuous
       observed <- tmle_task$scale(observed, update_node)
+      # TODO sometimes prediction bounds suprass outcome bounds which leads to error
       initial <- tmle_task$scale(initial, update_node)
+
       weights <- tmle_task$get_regression_task(update_node, is_time_variant = likelihood$factor_list[[update_node]]$is_time_variant)$weights
       if (length(weights) != length(initial) || any(is.na(weights))) {
         stop("Weights do not match length or are missing values.")

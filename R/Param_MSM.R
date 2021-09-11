@@ -53,10 +53,10 @@ Param_MSM <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, strata_variable, strata_name = "V",
-                              msm = "A + V", weight = "Cond.Prob.", weight_ub = 1 / 0.025,
-                              continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
-                              ...,
-                              covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
+                          msm = "A + V", weight = "Cond.Prob.", weight_ub = 1 / 0.025,
+                          continuous_treatment = FALSE, treatment_values = NULL, n_samples = 30,
+                          ...,
+                          covariate_node = "W", treatment_node = "A", outcome_node = "Y") {
       super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
       private$.strata_variable <- strata_variable
       private$.strata_name <- strata_name

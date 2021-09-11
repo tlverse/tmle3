@@ -3,7 +3,6 @@ context("Pass in known likelihood factors as input")
 library(data.table)
 library(sl3)
 library(tmle3)
-library(tmle3shift)
 set.seed(12345)
 
 sim_data <- function(n_obs = 1e3, n_w = 1, tx_mult = 2) {
@@ -71,18 +70,14 @@ learner_list <- list(
 )
 
 # pass defined likelihood into existing spec
-tmle_spec <- tmle_shift(
-  shift_val = 0.5,
-  likelihood_override = likelihood_def
-)
+if (require("tmle3shift")) {
+  tmle_spec <- tmle_shift(
+    shift_val = 0.5,
+    likelihood_override = likelihood_def
+  )
 
 tmle_task <- tmle_spec$make_tmle_task(sim_obj$data, node_list)
 likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner_list)
 g_task <- tmle_task$get_regression_task("A")
 lf_g <- likelihood$factor_list[["A"]]
 g_samp <- lf_g$sample(g_task)
-
-# tmle_fit <- tmle3(tmle_spec, sim_obj$data, node_list, learner_list)
-#
-# psi <- tmle_fit$estimates[[1]]$psi
-# var_eif <- as.numeric(var(tmle_fit$estimates[[1]]$IC))

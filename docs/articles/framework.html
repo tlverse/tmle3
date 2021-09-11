@@ -6,13 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>`tmle3` Framework Overview • tmle</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="`tmle3` Framework Overview">
-<meta property="og:description" content="">
-<meta name="twitter:card" content="summary">
+<meta property="og:description" content="tmle3">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -24,7 +24,7 @@
   gtag('config', 'UA-115145808-1');
 </script>
 </head>
-<body>
+<body data-spy="scroll" data-target="#toc">
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -37,7 +37,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tmle</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -59,7 +59,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/tlverse/tmle3">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fas fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -76,13 +76,13 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>
+      <h1 data-toc-skip>
 <code>tmle3</code> Framework Overview</h1>
                         <h4 class="author"><a href="https://github.com/jeremyrcoyle">Jeremy Coyle</a></h4>
             
-            <h4 class="date">2020-03-06</h4>
+            <h4 class="date">2021-03-13</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/tlverse/tmle3/blob/master/vignettes/framework.Rmd"><code>vignettes/framework.Rmd</code></a></small>
       <div class="hidden name"><code>framework.Rmd</code></div>
 
     </div>
@@ -98,13 +98,14 @@
 <h3 class="hasAnchor">
 <a href="#motivating-example" class="anchor"></a>Motivating Example</h3>
 <p>We use data from the Collaborative Perinatal Project (CPP), available in the <code>sl3</code> package. To simplify this example, we define a binary intervention variable, <code>parity01</code> – an indicator of having one or more children before the current child and a binary outcome, <code>haz01</code> – an indicator of having an above average height for age.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(tmle3)</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(sl3)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(cpp)</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">cpp &lt;-<span class="st"> </span>cpp[<span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(cpp[, <span class="st">"haz"</span>]), ]</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">cpp<span class="op">$</span>parity01 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(cpp<span class="op">$</span>parity <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb1-6" data-line-number="6">cpp[<span class="kw"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span>(cpp)] &lt;-<span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">cpp<span class="op">$</span>haz01 &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(cpp<span class="op">$</span>haz <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tlverse.org/tmle3">tmle3</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tlverse.org/sl3">sl3</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">)</span>
+<span class="va">cpp</span> <span class="op">&lt;-</span> <span class="va">cpp</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">[</span>, <span class="st">"haz"</span><span class="op">]</span><span class="op">)</span>, <span class="op">]</span>
+<span class="va">cpp</span><span class="op">$</span><span class="va">parity01</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">$</span><span class="va">parity</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>
+<span class="va">cpp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span>
+<span class="va">cpp</span><span class="op">$</span><span class="va">haz01</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">$</span><span class="va">haz</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
 <div id="npsem" class="section level1">
@@ -125,14 +126,15 @@
 <p>In the case of our CPP example, we use the classic point treatment NPSEM which defines three nodes: <span class="math inline">\(X = (W, A, Y)\)</span>, where <span class="math inline">\(W\)</span> is a set of baseline covariates, <span class="math inline">\(A\)</span> is our exposure of interest (<code>parity01</code>), and <span class="math inline">\(Y\)</span> is our outcome of interest (<code>haz01</code>). We define the following SCM:</p>
 <p><span class="math display">\[W = f_W(U_W)\]</span> <span class="math display">\[A = f_A(W, U_A)\]</span> <span class="math display">\[Y = f_Y(W, U_Y)\]</span></p>
 <p>In <code>tmle3</code>, this is done using the <code>define_node</code> function for each node. <code>define_node</code> allows a user to specify the node_name, which columns in the data comprise the node, and a list of parent nodes.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">npsem &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"W"</span>, <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="st">"apgar1"</span>, <span class="st">"apgar5"</span>, <span class="st">"gagebrth"</span>, <span class="st">"mage"</span>,</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="st">"meducyrs"</span>, <span class="st">"sexn"</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">  )),</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"A"</span>, <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"parity01"</span>), <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"W"</span>)),</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">  <span class="kw"><a href="../reference/tmle3_Node.html">define_node</a></span>(<span class="st">"Y"</span>, <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"haz01"</span>), <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"A"</span>, <span class="st">"W"</span>))</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">npsem</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="fu"><a href="../reference/tmle3_Node.html">define_node</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+    <span class="st">"apgar1"</span>, <span class="st">"apgar5"</span>, <span class="st">"gagebrth"</span>, <span class="st">"mage"</span>,
+    <span class="st">"meducyrs"</span>, <span class="st">"sexn"</span>
+  <span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="../reference/tmle3_Node.html">define_node</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"parity01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"W"</span><span class="op">)</span><span class="op">)</span>,
+  <span class="fu"><a href="../reference/tmle3_Node.html">define_node</a></span><span class="op">(</span><span class="st">"Y"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"haz01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"W"</span><span class="op">)</span><span class="op">)</span>
+<span class="op">)</span></code></pre></div>
 <p>Nodes also track information about the data types of the variables (continuous, categorical, binomial, etc). Here, that information is being estimated automatically from the data. In the future, each node will also contain information about censoring indicators, where applicable, but this is not yet implemented.</p>
 </div>
 <div id="tmle3_task" class="section level3">
@@ -140,13 +142,16 @@
 <a href="#tmle3_task" class="anchor"></a><code>tmle3_Task</code>
 </h3>
 <p>A <code>tmle3_Task</code> is an object comprised of observed data, and the NPSEM defined above:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">tmle_task &lt;-<span class="st"> </span>tmle3_Task<span class="op">$</span><span class="kw">new</span>(cpp, <span class="dt">npsem =</span> npsem)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tmle_task</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/tmle3_Task.html">tmle3_Task</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">cpp</span>, npsem <span class="op">=</span> <span class="va">npsem</span><span class="op">)</span></code></pre></div>
 <p>This task object contains methods to help subset the data as needed for various steps in the TMLE process:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># get the outcome node data</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(tmle_task<span class="op">$</span><span class="kw">get_tmle_node</span>(<span class="st">"Y"</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the outcome node data</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">tmle_task</span><span class="op">$</span><span class="fu">get_tmle_node</span><span class="op">(</span><span class="st">"Y"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] 1 1 1 0 0 1</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="co"># get the sl3 task corresponding to an outcome regression</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2">tmle_task<span class="op">$</span><span class="kw">get_regression_task</span>(<span class="st">"Y"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get the sl3 task corresponding to an outcome regression</span>
+<span class="va">tmle_task</span><span class="op">$</span><span class="fu">get_regression_task</span><span class="op">(</span><span class="st">"Y"</span><span class="op">)</span></code></pre></div>
 <pre><code>## A sl3 Task with 1441 obs and these nodes:
 ## $covariates
 ##          A         W1         W2         W3         W4         W5         W6 
@@ -162,6 +167,9 @@
 ## NULL
 ## 
 ## $offset
+## NULL
+## 
+## $time
 ## NULL</code></pre>
 <p>A <code>tmle3_Task</code> is a special kind of <code>sl3_Task</code> that can be used to estimate factors of a likelihood from data. The process of defining and estimating a likelihood is described next.</p>
 </div>
@@ -204,27 +212,30 @@ dx_1, \ldots, dx_J\]</span></p>
 <h3 class="hasAnchor">
 <a href="#example-1" class="anchor"></a>Example</h3>
 <p>Going back to our CPP data example, we will estimate the marginal likelihood of <span class="math inline">\(W\)</span>, using NP-MLE, the conditional density of <span class="math inline">\(A\)</span> given <span class="math inline">\(W\)</span> using a GLM fit via <code>sl3</code> and the conditional mean of <span class="math inline">\(Y\)</span> given <span class="math inline">\(A\)</span> and <span class="math inline">\(W\)</span> using another GLM fit via <code>sl3</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co"># set up sl3 learners for tmle3 fit</span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_glm_fast)</a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_mean)</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb8-5" data-line-number="5"><span class="co"># define and fit likelihood</span></a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">factor_list &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_emp, <span class="st">"W"</span>),</a>
-<a class="sourceLine" id="cb8-8" data-line-number="8">  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_fit, <span class="st">"A"</span>, lrnr_glm_fast),</a>
-<a class="sourceLine" id="cb8-9" data-line-number="9">  <span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_fit, <span class="st">"Y"</span>, lrnr_glm_fast, <span class="dt">type=</span><span class="st">"mean"</span>)</a>
-<a class="sourceLine" id="cb8-10" data-line-number="10">)</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># set up sl3 learners for tmle3 fit</span>
+<span class="va">lrnr_glm_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span><span class="op">(</span><span class="va">Lrnr_glm_fast</span><span class="op">)</span>
+<span class="va">lrnr_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span><span class="op">(</span><span class="va">Lrnr_mean</span><span class="op">)</span>
+
+<span class="co"># define and fit likelihood</span>
+<span class="va">factor_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="fu"><a href="../reference/define_lf.html">define_lf</a></span><span class="op">(</span><span class="va">LF_emp</span>, <span class="st">"W"</span><span class="op">)</span>,
+  <span class="fu"><a href="../reference/define_lf.html">define_lf</a></span><span class="op">(</span><span class="va">LF_fit</span>, <span class="st">"A"</span>, <span class="va">lrnr_glm_fast</span><span class="op">)</span>,
+  <span class="fu"><a href="../reference/define_lf.html">define_lf</a></span><span class="op">(</span><span class="va">LF_fit</span>, <span class="st">"Y"</span>, <span class="va">lrnr_glm_fast</span>, type<span class="op">=</span><span class="st">"mean"</span><span class="op">)</span>
+<span class="op">)</span></code></pre></div>
 <p>The particular likelihood factors and estimation strategies to use will of course depend on the parameter of interest. Once this list of likelihood factors is defined, we can construct a <code>Likelihood</code> object and train it on the data contained in <code>tmle_task</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">likelihood_def &lt;-<span class="st"> </span>Likelihood<span class="op">$</span><span class="kw">new</span>(factor_list)</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">likelihood &lt;-<span class="st"> </span>likelihood_def<span class="op">$</span><span class="kw">train</span>(tmle_task)</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(likelihood)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">likelihood_def</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Likelihood.html">Likelihood</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">factor_list</span><span class="op">)</span>
+<span class="va">likelihood</span> <span class="op">&lt;-</span> <span class="va">likelihood_def</span><span class="op">$</span><span class="fu">train</span><span class="op">(</span><span class="va">tmle_task</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">likelihood</span><span class="op">)</span></code></pre></div>
 <pre><code>## W: Lf_emp
 ## A: LF_fit
 ## Y: LF_fit</code></pre>
 <p>A <code>tmle3</code> <code>Likelihood</code> is actually a special type of <code>sl3</code> learner, so the syntax to train it on data is analogous.</p>
 <p>Having fit the likelihood, we can now get likelihood values for any <code>tmle3_Task</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">likelihood_values &lt;-<span class="st"> </span>likelihood<span class="op">$</span><span class="kw">get_likelihoods</span>(tmle_task,<span class="st">"Y"</span>)</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(likelihood_values)</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">likelihood_values</span> <span class="op">&lt;-</span> <span class="va">likelihood</span><span class="op">$</span><span class="fu">get_likelihoods</span><span class="op">(</span><span class="va">tmle_task</span>,<span class="st">"Y"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">likelihood_values</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] 0.5792991 0.5792991 0.6909451 0.6909451 0.6909451 0.4523370</code></pre>
 </div>
 <div id="counterfactual-likelihoods" class="section level2">
@@ -249,13 +260,16 @@ dx_1, \ldots, dx_J\]</span></p>
 <h3 class="hasAnchor">
 <a href="#example-2" class="anchor"></a>Example</h3>
 <p>For our CPP example, we’ll define a simple intervention where we set all treatment <span class="math inline">\(A = 1\)</span>:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">intervention &lt;-<span class="st"> </span><span class="kw"><a href="../reference/define_lf.html">define_lf</a></span>(LF_static, <span class="st">"A"</span>, <span class="dt">value =</span> <span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">intervention</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_lf.html">define_lf</a></span><span class="op">(</span><span class="va">LF_static</span>, <span class="st">"A"</span>, value <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
 <p>We can then use this to construct a counterfactual likelihood:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">cf_likelihood &lt;-<span class="st"> </span><span class="kw"><a href="../reference/CF_Likelihood.html">make_CF_Likelihood</a></span>(likelihood, intervention)</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cf_likelihood</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CF_Likelihood.html">make_CF_Likelihood</a></span><span class="op">(</span><span class="va">likelihood</span>, <span class="va">intervention</span><span class="op">)</span></code></pre></div>
 <p>A <code>cf_likelihood</code> is a likelihood object, and so has the same behavior as the observed likelihood object defined above, but with the observed likelihood factors being replaced by the defined intervention likelihood factors.</p>
 <p>In particular, we can get likelihood values under the counterfactual likelihood:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">cf_likelihood_values &lt;-<span class="st"> </span>cf_likelihood<span class="op">$</span><span class="kw">get_likelihoods</span>(tmle_task, <span class="st">"A"</span>)</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(cf_likelihood_values)</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cf_likelihood_values</span> <span class="op">&lt;-</span> <span class="va">cf_likelihood</span><span class="op">$</span><span class="fu">get_likelihoods</span><span class="op">(</span><span class="va">tmle_task</span>, <span class="st">"A"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cf_likelihood_values</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] 1 1 0 0 0 1</code></pre>
 <p>We see that the likelihood values for the <span class="math inline">\(A\)</span> node are all either 0 or 1, as would be expected from an indicator likelihood function. In addition, the likelihood values for the non-intervention nodes have not changed.</p>
 </div>
@@ -264,8 +278,9 @@ dx_1, \ldots, dx_J\]</span></p>
 <a href="#counterfactual-tasks" class="anchor"></a>Counterfactual Tasks</h3>
 <p>Each <code>CF_Likelihood</code> can generate one or more counterfactual tasks. These are <code>tmle3_Task</code>s in which observed values are replaced with counterfactual values according to the specified intervention distribution. For deterministic interventions, only one task will be generated. However, stochastic interventions, when implemented, will generate several such tasks, one for each combination of possible values of the intervention node(s).</p>
 <p>To enumerate these tasks, use <code>enumerate_cf_tasks</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1">cf_likelihood_tasks &lt;-<span class="st"> </span>cf_likelihood<span class="op">$</span><span class="kw">enumerate_cf_tasks</span>(tmle_task)</a>
-<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(cf_likelihood_tasks[[<span class="dv">1</span>]]<span class="op">$</span>data)</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cf_likelihood_tasks</span> <span class="op">&lt;-</span> <span class="va">cf_likelihood</span><span class="op">$</span><span class="fu">enumerate_cf_tasks</span><span class="op">(</span><span class="va">tmle_task</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cf_likelihood_tasks</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></code></pre></div>
 <pre><code>##    apgar1 apgar5 gagebrth mage meducyrs sexn parity01 haz01
 ## 1:      8      9      287   21       12    1        1     1
 ## 2:      8      9      287   21       12    1        1     1
@@ -283,7 +298,8 @@ dx_1, \ldots, dx_J\]</span></p>
 <p>In the TMLE framework, we define a target parameter <span class="math inline">\(\Psi(P)\)</span> as a mapping from a probability distribution <span class="math inline">\(P \in \mathcal{M}\)</span> to a set of real numbers <span class="math inline">\(\mathbb{R}^d\)</span>. Here <span class="math inline">\(\mathcal{M}\)</span> is implied by the NPSEM we defined above.</p>
 <p>In <code>tmle3</code>, we define parameter objects as objects inheriting from the <code>Param_base</code> class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the “clever covariates” needed to calculate a TMLE update to the likelihood.</p>
 <p>Here, we define a treatment-specific mean (TSM) parameter based on the intervention we defined previously:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1">tsm &lt;-<span class="st"> </span><span class="kw"><a href="../reference/define_param.html">define_param</a></span>(Param_TSM, likelihood, intervention)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tsm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_param.html">define_param</a></span><span class="op">(</span><span class="va">Param_TSM</span>, <span class="va">likelihood</span>, <span class="va">intervention</span><span class="op">)</span></code></pre></div>
 <pre><code>## Warning in super$initialize(observed_likelihood, ..., outcome_node =
 ## outcome_node): Parameter was passed a non-Targeted Likelihood object so
 ## estimates cannot be updated from initial</code></pre>
@@ -298,8 +314,9 @@ dx_1, \ldots, dx_J\]</span></p>
 <p>Therefore, the update procedure, as well as the structure of the <code>Param_base</code> parameter objects are subject to substantial changes in the near future.</p>
 <p>Currently, the <code>tmle3_Update</code> object also has a hard-coded submodel (logistic), loss function (log-likelihood), and solver (GLM). These need to be generalized so updates can be done for a range of submodels, loss functions, and solvers.</p>
 <p>Current Usage:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1">updater &lt;-<span class="st"> </span>tmle3_Update<span class="op">$</span><span class="kw">new</span>()</a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">targeted_likelihood &lt;-<span class="st"> </span>Targeted_Likelihood<span class="op">$</span><span class="kw">new</span>(likelihood, updater)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">updater</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/tmle3_Update.html">tmle3_Update</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span>
+<span class="va">targeted_likelihood</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Targeted_Likelihood.html">Targeted_Likelihood</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">likelihood</span>, <span class="va">updater</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="target-parameter" class="section level1">
 <h1 class="hasAnchor">
@@ -307,18 +324,21 @@ dx_1, \ldots, dx_J\]</span></p>
 <p>In the TMLE framework, we define a target parameter <span class="math inline">\(\Psi(P)\)</span> as a mapping from a probability distribution <span class="math inline">\(P \in \mathcal{M}\)</span> to a set of real numbers <span class="math inline">\(\mathbb{R}^d\)</span>. Here <span class="math inline">\(\mathcal{M}\)</span> is implied by the NPSEM we defined above.</p>
 <p>In <code>tmle3</code>, we define parameter objects as objects inheriting from the <code>Param_base</code> class, which keep track of not only the mapping from a probability distribution to a parameter value, but also the corresponding EIF of the parameter, and the “clever covariates” needed to calculate a TMLE update to the likelihood.</p>
 <p>Here, we define a treatment specific mean (TSM) parameter based on the intervention we defined previously:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1">tsm &lt;-<span class="st"> </span><span class="kw"><a href="../reference/define_param.html">define_param</a></span>(Param_TSM, likelihood, intervention)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tsm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_param.html">define_param</a></span><span class="op">(</span><span class="va">Param_TSM</span>, <span class="va">likelihood</span>, <span class="va">intervention</span><span class="op">)</span></code></pre></div>
 <pre><code>## Warning in super$initialize(observed_likelihood, ..., outcome_node =
 ## outcome_node): Parameter was passed a non-Targeted Likelihood object so
 ## estimates cannot be updated from initial</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" data-line-number="1">updater<span class="op">$</span>tmle_params &lt;-<span class="st"> </span>tsm</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">updater</span><span class="op">$</span><span class="va">tmle_params</span> <span class="op">&lt;-</span> <span class="va">tsm</span></code></pre></div>
 <p><strong>TODO: provide details about parameter definition</strong></p>
 </div>
 <div id="tmle3_fit---putting-it-all-together" class="section level1">
 <h1 class="hasAnchor">
 <a href="#tmle3_fit---putting-it-all-together" class="anchor"></a><code>tmle3_Fit</code> - Putting it all together</h1>
 <p>Now that we have specified all the components required for the TMLE procedure, we can generate an object that manages all the components and finally calculate an appropriate TML estimator.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1">tmle_fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tmle3_Fit.html">fit_tmle3</a></span>(tmle_task, targeted_likelihood, tsm, updater)</a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tmle_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tmle3_Fit.html">fit_tmle3</a></span><span class="op">(</span><span class="va">tmle_task</span>, <span class="va">targeted_likelihood</span>, <span class="va">tsm</span>, <span class="va">updater</span><span class="op">)</span></code></pre></div>
 <pre><code>## Warning in learner$predict_fold(learner_task, fold_number):
 ## Lrnr_glm_fast_TRUE_Cholesky is not a cv-aware learner, so self$predict_fold
 ## reverts to self$predict
@@ -330,7 +350,8 @@ dx_1, \ldots, dx_J\]</span></p>
 ## Warning in learner$predict_fold(learner_task, fold_number):
 ## Lrnr_glm_fast_TRUE_Cholesky is not a cv-aware learner, so self$predict_fold
 ## reverts to self$predict</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(tmle_fit)</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">tmle_fit</span><span class="op">)</span></code></pre></div>
 <pre><code>## A tmle3_Fit that took 1 step(s)
 ##    type      param  init_est  tmle_est         se     lower     upper
 ## 1:  TSM E[Y_{A=1}] 0.5280522 0.5280522 0.01464371 0.4993511 0.5567533
@@ -341,35 +362,40 @@ dx_1, \ldots, dx_J\]</span></p>
 <h1 class="hasAnchor">
 <a href="#tmle-specification" class="anchor"></a>TMLE Specification</h1>
 <p>The <code>tmle3</code> framework described above is completely general, and allows most components of the TMLE procedure to be specified in a modular way. However, most end users will not be interested in manually specifying all of these components. Therefore, <code>tmle3</code> implements a <code>tmle3_Spec</code> object that bundles a set of components into a <em>specification</em> that, with minimal additional detail, can be run by an end-user:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" data-line-number="1">nodes &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">W =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"apgar1"</span>, <span class="st">"apgar5"</span>, <span class="st">"gagebrth"</span>, <span class="st">"mage"</span>, <span class="st">"meducyrs"</span>,</a>
-<a class="sourceLine" id="cb29-2" data-line-number="2">                    <span class="st">"sexn"</span>),</a>
-<a class="sourceLine" id="cb29-3" data-line-number="3">              <span class="dt">A =</span> <span class="st">"parity01"</span>,</a>
-<a class="sourceLine" id="cb29-4" data-line-number="4">              <span class="dt">Y =</span> <span class="st">"haz01"</span>)</a>
-<a class="sourceLine" id="cb29-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb29-6" data-line-number="6">lrnr_glm_fast &lt;-<span class="st"> </span><span class="kw"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_glm_fast)</a>
-<a class="sourceLine" id="cb29-7" data-line-number="7">lrnr_mean &lt;-<span class="st"> </span><span class="kw"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span>(Lrnr_mean)</a>
-<a class="sourceLine" id="cb29-8" data-line-number="8">learner_list &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="dt">Y =</span> lrnr_mean, <span class="dt">A =</span> lrnr_glm_fast)</a>
-<a class="sourceLine" id="cb29-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb29-10" data-line-number="10"><span class="co"># make a new copy to deal with data.table weirdness</span></a>
-<a class="sourceLine" id="cb29-11" data-line-number="11">cpp2 &lt;-<span class="st"> </span>data.table<span class="op">::</span><span class="kw">copy</span>(cpp)</a>
-<a class="sourceLine" id="cb29-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb29-13" data-line-number="13">tmle_fit_from_spec &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tmle3.html">tmle3</a></span>(<span class="kw"><a href="../reference/tmle_TSM_all.html">tmle_TSM_all</a></span>(), cpp2, nodes, learner_list)</a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>W <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"apgar1"</span>, <span class="st">"apgar5"</span>, <span class="st">"gagebrth"</span>, <span class="st">"mage"</span>, <span class="st">"meducyrs"</span>,
+                    <span class="st">"sexn"</span><span class="op">)</span>,
+              A <span class="op">=</span> <span class="st">"parity01"</span>,
+              Y <span class="op">=</span> <span class="st">"haz01"</span><span class="op">)</span>
+
+<span class="va">lrnr_glm_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span><span class="op">(</span><span class="va">Lrnr_glm_fast</span><span class="op">)</span>
+<span class="va">lrnr_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tlverse.org/sl3/reference/Lrnr_base.html">make_learner</a></span><span class="op">(</span><span class="va">Lrnr_mean</span><span class="op">)</span>
+<span class="va">learner_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">lrnr_mean</span>, A <span class="op">=</span> <span class="va">lrnr_glm_fast</span><span class="op">)</span>
+
+<span class="co"># make a new copy to deal with data.table weirdness</span>
+<span class="va">cpp2</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html">copy</a></span><span class="op">(</span><span class="va">cpp</span><span class="op">)</span>
+
+<span class="va">tmle_fit_from_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tmle3.html">tmle3</a></span><span class="op">(</span><span class="fu"><a href="../reference/tmle_TSM_all.html">tmle_TSM_all</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">cpp2</span>, <span class="va">nodes</span>, <span class="va">learner_list</span><span class="op">)</span></code></pre></div>
 <pre><code>## Warning in learner$predict_fold(learner_task, fold_number):
 ## Lrnr_glm_fast_TRUE_Cholesky is not a cv-aware learner, so self$predict_fold
 ## reverts to self$predict</code></pre>
 <pre><code>## Warning in learner$predict_fold(learner_task, fold_number): Lrnr_mean is not a
+## cv-aware learner, so self$predict_fold reverts to self$predict
+
+## Warning in learner$predict_fold(learner_task, fold_number): Lrnr_mean is not a
+## cv-aware learner, so self$predict_fold reverts to self$predict
+
+## Warning in learner$predict_fold(learner_task, fold_number): Lrnr_mean is not a
 ## cv-aware learner, so self$predict_fold reverts to self$predict</code></pre>
 <pre><code>## Warning in learner$predict_fold(learner_task, fold_number):
 ## Lrnr_glm_fast_TRUE_Cholesky is not a cv-aware learner, so self$predict_fold
-## reverts to self$predict</code></pre>
-<pre><code>## Warning in learner$predict_fold(learner_task, fold_number): Lrnr_mean is not a
-## cv-aware learner, so self$predict_fold reverts to self$predict</code></pre>
-<pre><code>## Warning in learner$predict_fold(learner_task, fold_number):
+## reverts to self$predict
+
+## Warning in learner$predict_fold(learner_task, fold_number):
 ## Lrnr_glm_fast_TRUE_Cholesky is not a cv-aware learner, so self$predict_fold
 ## reverts to self$predict</code></pre>
-<pre><code>## Warning in learner$predict_fold(learner_task, fold_number): Lrnr_mean is not a
-## cv-aware learner, so self$predict_fold reverts to self$predict</code></pre>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/print.html">print</a></span>(tmle_fit_from_spec)</a></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">tmle_fit_from_spec</span><span class="op">)</span></code></pre></div>
 <pre><code>## A tmle3_Fit that took 1 step(s)
 ##    type      param init_est  tmle_est         se     lower     upper
 ## 1:  TSM E[Y_{A=0}]  0.55517 0.6979470 0.04692307 0.6059795 0.7899146
@@ -399,28 +425,11 @@ dx_1, \ldots, dx_J\]</span></p>
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-        <div id="tocnav">
-      <h2 class="hasAnchor">
-<a href="#tocnav" class="anchor"></a>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-<li><a href="#introduction">Introduction</a></li>
-      <li><a href="#npsem">NPSEM</a></li>
-      <li>
-<a href="#likelihood">Likelihood</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#counterfactual-likelihoods">Counterfactual Likelihoods</a></li>
-      </ul>
-</li>
-      <li><a href="#update-procedure">Update Procedure</a></li>
-      <li><a href="#update-procedure-1">Update Procedure</a></li>
-      <li><a href="#target-parameter">Target Parameter</a></li>
-      <li><a href="#tmle3_fit---putting-it-all-together"><code>tmle3_Fit</code> - Putting it all together</a></li>
-      <li><a href="#tmle-specification">TMLE Specification</a></li>
-      <li><a href="#conclusion">Conclusion</a></li>
-      </ul>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
 </div>
-      </div>
 
 </div>
 
@@ -431,7 +440,7 @@ dx_1, \ldots, dx_J\]</span></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

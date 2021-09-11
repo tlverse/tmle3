@@ -46,6 +46,9 @@
     <loc>http://tlverse.org/tmle3/reference/Param_ATT.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/Param_MSM.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/Param_TSM.html</loc>
   </url>
   <url>
@@ -59,6 +62,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/Param_stratified.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/Param_survival.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/Targeted_Likelihood.html</loc>
@@ -112,6 +118,9 @@
     <loc>http://tlverse.org/tmle3/reference/summary_from_estimates.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/survival_tx.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3.html</loc>
   </url>
   <url>
@@ -133,6 +142,9 @@
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_ATT.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_MSM.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_OR.html</loc>
   </url>
   <url>
@@ -148,10 +160,16 @@
     <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_stratified.html</loc>
   </url>
   <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Spec_survival.html</loc>
+  </url>
+  <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Task.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_Update.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle3_Update_survival.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle3_vim.html</loc>
@@ -164,6 +182,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_ATT.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_MSM.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_OR.html</loc>
@@ -179,6 +200,9 @@
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/tmle_stratified.html</loc>
+  </url>
+  <url>
+    <loc>http://tlverse.org/tmle3/reference/tmle_survival.html</loc>
   </url>
   <url>
     <loc>http://tlverse.org/tmle3/reference/train_lf.html</loc>

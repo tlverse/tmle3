@@ -19,9 +19,11 @@ simulate_data <- function(n_sim = 2e2) {
   Wname <- grep("W", colnames(dat), value = TRUE)
   dat <- dat[, c("ID", Wname, "A", "T.tilde", "Delta")]
   # input: scalar q, W vector. computes for all W, the S(q|A,W)
-  true_surv_one <- function(q, W, A = 1) sapply(W, function(w) {
+  true_surv_one <- function(q, W, A = 1) {
+    sapply(W, function(w) {
       1 - pexp(q, rate = 1 + .7 * w^2 - .8 * A)
     })
+  }
   # input: vector q. mean(S(q|A,W)|A), average out W. loop over q
   true_surv <- function(q_grid, surv_fn, A) {
     W_grid <- seq(0, 1.5, .01)

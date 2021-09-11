@@ -51,12 +51,12 @@ tmle3_Update <- R6Class(
   public = list(
     # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
-                              constrain_step = FALSE, delta_epsilon = 1e-4,
-                              convergence_type = c("scaled_var", "sample_size"),
-                              fluctuation_type = c("standard", "weighted"),
-                              optim_delta_epsilon = TRUE,
-                              use_best = FALSE,
-                              verbose = FALSE) {
+                          constrain_step = FALSE, delta_epsilon = 1e-4,
+                          convergence_type = c("scaled_var", "sample_size"),
+                          fluctuation_type = c("standard", "weighted"),
+                          optim_delta_epsilon = TRUE,
+                          use_best = FALSE,
+                          verbose = FALSE) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -110,9 +110,9 @@ tmle3_Update <- R6Class(
       private$.step_number <- current_step
     },
     generate_submodel_data = function(likelihood, tmle_task,
-                                          fold_number = "full",
-                                          update_node = "Y",
-                                          drop_censored = FALSE) {
+                                      fold_number = "full",
+                                      update_node = "Y",
+                                      drop_censored = FALSE) {
 
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {

@@ -1,0 +1,12 @@
+citHeader("Please cite the following when using the 'tmle3' software package.")
+
+year <- format(Sys.Date(), "%Y")
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(bibtype = "Manual",
+         title = "{tmle3}: The Extensible {TMLE} Framework",
+         author = person("Jeremy", "Coyle"),
+         year = year,
+         note = note,
+         doi = "10.5281/zenodo.4603358",
+         url = "https://github.com/tlverse/tmle3")

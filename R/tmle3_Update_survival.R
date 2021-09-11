@@ -47,12 +47,12 @@ tmle3_Update_survival <- R6Class(
   inherit = tmle3_Update,
   public = list(
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
-                              constrain_step = FALSE, delta_epsilon = 1e-4,
-                              convergence_type = c("scaled_var", "sample_size"),
-                              fluctuation_type = c("standard", "weighted"),
-                              use_best = FALSE,
-                              verbose = FALSE,
-                              fit_method = "l2") {
+                          constrain_step = FALSE, delta_epsilon = 1e-4,
+                          convergence_type = c("scaled_var", "sample_size"),
+                          fluctuation_type = c("standard", "weighted"),
+                          use_best = FALSE,
+                          verbose = FALSE,
+                          fit_method = "l2") {
       super$initialize(
         maxit = maxit, cvtmle = cvtmle,
         one_dimensional = one_dimensional,
@@ -74,49 +74,52 @@ tmle3_Update_survival <- R6Class(
         # TODO: check
         # print("l2")
         # mean_eic <- self$get_mean_eic(self$update_fold)
-        epsilon_n <- tryCatch({
-          alpha <- 0
-          norm_func <- self$norm_l2
-          lambda.min.ratio <- 1e-2
+        epsilon_n <- tryCatch(
+          {
+            alpha <- 0
+            norm_func <- self$norm_l2
+            lambda.min.ratio <- 1e-2
 
-          ind <- 1
-          while (ind == 1) {
-            submodel_fit <- glmnet::glmnet(
-              x = submodel_data$H,
-              y = submodel_data$observed,
-              offset = qlogis(submodel_data$initial),
-              family = "binomial",
-              alpha = alpha,
-              standardize = FALSE,
-              intercept = FALSE,
-              lambda.min.ratio = lambda.min.ratio,
-              # nlambda = 2e2
-              nlambda = 1e2
-              # TODO: check
-              # penalty.factor = 1/abs(mean_eic)
-            )
-            norms <- apply(submodel_fit$beta, 2, norm_func)
-            ind <- max(which(norms <= self$delta_epsilon))
-            if (ind > 1) break
+            ind <- 1
+            while (ind == 1) {
+              submodel_fit <- glmnet::glmnet(
+                x = submodel_data$H,
+                y = submodel_data$observed,
+                offset = qlogis(submodel_data$initial),
+                family = "binomial",
+                alpha = alpha,
+                standardize = FALSE,
+                intercept = FALSE,
+                lambda.min.ratio = lambda.min.ratio,
+                # nlambda = 2e2
+                nlambda = 1e2
+                # TODO: check
+                # penalty.factor = 1/abs(mean_eic)
+              )
+              norms <- apply(submodel_fit$beta, 2, norm_func)
+              ind <- max(which(norms <= self$delta_epsilon))
+              if (ind > 1) break
 
-            fit_lambda <- submodel_fit$lambda
+              fit_lambda <- submodel_fit$lambda
 
-            if (fit_lambda == 1) {
-              stop("only one lambda could be fit")
+              if (fit_lambda == 1) {
+                stop("only one lambda could be fit")
+              }
+
+              # try to estimate what the correct lambda value is and go a bit beyond that
+              norm_ratio <- self$delta_epsilon / norms[2]
+              lambda_guess <- fit_lambda[1] - norm_ratio * (fit_lambda[1] - fit_lambda[2])
+              lambda_min_ratio <- 0.8 * lambda_guess / fit_lambda[1]
+              # lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
             }
-
-            # try to estimate what the correct lambda value is and go a bit beyond that
-            norm_ratio <- self$delta_epsilon / norms[2]
-            lambda_guess <- fit_lambda[1] - norm_ratio * (fit_lambda[1] - fit_lambda[2])
-            lambda_min_ratio <- 0.8 * lambda_guess / fit_lambda[1]
-            # lambda.min.ratio <- sort(submodel_fit$lambda, decreasing = TRUE)[2] / max(submodel_fit$lambda)
+            epsilon_n <- submodel_fit$beta[, ind]
+          },
+          error = function(e) {
+            # TODO: check
+            print(e)
+            return(rep(0, ncol(submodel_data$H)))
           }
-          epsilon_n <- submodel_fit$beta[, ind]
-        }, error = function(e) {
-          # TODO: check
-          print(e)
-          return(rep(0, ncol(submodel_data$H)))
-        })
+        )
         epsilon <- epsilon_n
         # TODO: check if necessary
         # NOTE: this protects against collinear covariates

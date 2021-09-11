@@ -14,6 +14,7 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4603358.svg)](https://doi.org/10.5281/zenodo.4603358)
 
 > The *Extensible* TMLE framework
 
@@ -57,6 +58,13 @@ remotes::install_github("tlverse/tmle3")
 
 -----
 
+## Issues
+
+If you encounter any bugs or have any specific feature requests, please
+[file an issue](https://github.com/tlverse/tmle3/issues).
+
+-----
+
 ## Getting Started
 
 The best place to get started is the “Framework Overview” document,
@@ -65,16 +73,36 @@ may be found at <https://tlverse.org/tmle3/articles/framework.html>.
 
 -----
 
-## Issues
+## Contributions
 
-If you encounter any bugs or have any specific feature requests, please
-[file an issue](https://github.com/tlverse/tmle3/issues).
+Contributions are very welcome. Interested contributors should consult
+our [contribution
+guidelines](https://github.com/tlverse/tmle3/blob/master/CONTRIBUTING.md)
+prior to submitting a pull request.
+
+-----
+
+## Citation
+
+After using the `tmle3` R package, please cite the following:
+
+``` 
+    @software{coyle2021tmle3-rpkg,
+      author = {Coyle, Jeremy R},
+      title = {{tmle3}: The Extensible {TMLE} Framework},
+      year = {2021},
+      howpublished = {\url{https://github.com/tlverse/tmle3}},
+      note = {{R} package version 0.2.0},
+      url = {https://doi.org/10.5281/zenodo.4603358},
+      doi = {10.5281/zenodo.4603358}
+    }
+```
 
 -----
 
 ## License
 
-© 2017-2020 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
+© 2017-2021 [Jeremy R. Coyle](https://github.com/jeremyrcoyle)
 
 The contents of this repository are distributed under the GPL-3 license.
 See file `LICENSE` for details.

@@ -12,7 +12,7 @@ tmle3_Spec_MSM <- R6Class(
   inherit = tmle3_Spec,
   public = list(
     initialize = function(msm = "A + V", weight = "Cond.Prob.", weight_ub = 1 / 0.025,
-                              n_samples = 30, ...) {
+                          n_samples = 30, ...) {
       super$initialize(
         msm = msm, weight = weight, weight_ub = weight_ub, n_samples = n_samples, ...
       )

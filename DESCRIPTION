@@ -1,6 +1,6 @@
 Package: tmle3
 Title: The Extensible TMLE Framework
-Version: 0.1.8
+Version: 0.2.1
 Authors@R: c(
   person("Jeremy", "Coyle", email = "jeremyrcoyle@gmail.com",
          role = c("aut", "cre", "cph"),
@@ -15,10 +15,10 @@ Description: A general framework supporting the implementation of targeted
     target parameters through a unified interface. The goal is that the exposed
     framework be as general as the mathematical framework upon which it draws.
 Depends:
-    R (>= 3.2.2),
+    R (>= 3.6.0),
     graphics
 Imports:
-    sl3 (>= 1.3.7),
+    sl3 (>= 1.4.2),
     delayed,
     data.table,
     assertthat,
@@ -27,7 +27,6 @@ Imports:
     methods,
     ggplot2,
     stats,
-    Rsolnp,
     foreach,
     mvtnorm,
     magrittr,
@@ -40,15 +39,14 @@ Suggests:
     tableone,
     speedglm,
     rmarkdown,
+    Rsolnp,
     nnls,
     tmle,
-    tmle3shift,
     future,
     future.apply,
     xgboost
 Remotes:
-    github::tlverse/sl3,
-    github::tlverse/tmle3shift
+    github::tlverse/sl3
 License: GPL-3
 URL: https://tlverse.org/tmle3
 BugReports: https://github.com/tlverse/tmle3/issues
@@ -56,5 +54,5 @@ Encoding: UTF-8
 LazyData: yes
 LazyLoad: yes
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1.9000
+RoxygenNote: 7.1.1.9001
 Roxygen: list(markdown = TRUE, r6 = FALSE)

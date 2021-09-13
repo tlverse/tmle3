@@ -50,7 +50,7 @@ Param_spOR <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, formula_logOR = ~1, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node,  submodel = list(Y = "binomial_logit"))
+      super$initialize(observed_likelihood, list(), outcome_node, submodel = list(Y = "binomial_logit"))
       training_task <- self$observed_likelihood$training_task
       W <- training_task <- self$observed_likelihood$training_task$get_tmle_node("W")
       V <- model.matrix(formula_logOR, as.data.frame(W))
@@ -89,8 +89,8 @@ Param_spOR <- R6Class(
       # Q1 <- Q_packed[[2]]
       # Q <- Q_packed[[3]]
       Q <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number))
-      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number))
-      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number))
+      Q0 <- as.vector(self$observed_likelihood$get_likelihood(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$observed_likelihood$get_likelihood(cf_task1, "Y", fold_number))
       Qorig <- Q
       Q0 <- bound(Q0, 0.005)
       Q1 <- bound(Q1, 0.005)

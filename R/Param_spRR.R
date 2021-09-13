@@ -91,8 +91,8 @@ Param_spRR <- R6Class(
       # Q1 <- Q_packed[[2]]
       # Q <- Q_packed[[3]]
       Q <- as.vector(self$observed_likelihood$get_likelihood(tmle_task, "Y", fold_number))
-      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task0, "Y", fold_number))
-      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihood(cf_task1, "Y", fold_number))
+      Q0 <- as.vector(self$observed_likelihood$get_likelihood(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$observed_likelihood$get_likelihood(cf_task1, "Y", fold_number))
       Qorig <- Q
 
       Q0 <- pmax(Q0, 0.005)
@@ -100,7 +100,7 @@ Param_spRR <- R6Class(
 
       RR <- as.vector(Q1 / Q0)
       gradM <- V
-      mstar <- RR + (1 - A) * 1
+      # mstar <- RR + (1 - A) * 1
       num <- gradM * (RR * g1)
       denom <- RR * g1 + g0
       hstar <- -num / denom
@@ -145,8 +145,8 @@ Param_spRR <- R6Class(
       # Q1 <- Q_packed[[2]]
       # Q <- Q_packed[[3]]
 
-      Q0 <- pmax(Q0, 0.0005)
-      Q1 <- pmax(Q1, 0.0005)
+      Q0 <- pmax(Q0, 0.005)
+      Q1 <- pmax(Q1, 0.005)
       beta <- get_beta(W, A, self$formula_logRR, Q1, Q0, family = poisson(), weights = weights)
       # V <- model.matrix(self$formula_logRR, as.data.frame(W))
       # RR <- as.vector(exp(V %*% beta))

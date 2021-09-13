@@ -20,10 +20,10 @@ Param_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(observed_likelihood, ...,  outcome_node = "Y", submodel = NULL) {
+    initialize = function(observed_likelihood, ..., outcome_node = "Y", submodel = NULL) {
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
-      if(is.null(submodel)) { # Default submodel
+      if (is.null(submodel)) { # Default submodel
         submodel <- list("A" = get_submodel_spec("binomial_logit"), "Y" = get_submodel_spec("binomial_logit"), "default" = get_submodel_spec("binomial_logit"))
       } else if (is.list(submodel)) { # Convert to submodel spec list
         submodel_names <- names(submodel)
@@ -72,14 +72,12 @@ Param_base <- R6Class(
       return(submodel_name == private$.submodel[[node]]$name)
     },
     get_submodel_spec = function(update_node) {
-
       if (!(update_node %in% names(self$submodel))) {
         update_node <- "default"
       }
 
       spec <- self$submodel[[update_node]]
-      if(!is.list(spec)) {
-
+      if (!is.list(spec)) {
         spec <- get_submodel_spec(spec)
         private$.submodel[[update_node]] <- spec
       }

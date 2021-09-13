@@ -148,8 +148,8 @@ Param_npOR <- R6Class(
       EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
       EIF <- EIF$Y + EIF$WA
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
-      Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
-      Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
+      Q0 <- self$observed_likelihood$get_likelihoods(cf_task0, "Y", fold_number)
+      Q1 <- self$observed_likelihood$get_likelihoods(cf_task1, "Y", fold_number)
       Qtest <- ifelse(A == 1, Q1, Q0)
       if (!all(Qtest - Q == 0)) {
         stop("Q and Q1,Q0 dont match")

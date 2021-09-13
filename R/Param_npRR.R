@@ -85,34 +85,43 @@ Param_npRR <- R6Class(
       cf_task1 <- self$cf_likelihood_treatment$enumerate_cf_tasks(tmle_task)[[1]]
       cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
+      pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      pA1 <- self$observed_likelihood$get_likelihoods(cf_task1, intervention_nodes, fold_number)
+      pA0 <- self$observed_likelihood$get_likelihoods(cf_task0, intervention_nodes, fold_number)
+      cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+      cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
+
+      if (!is.null(ncol(cf_pA_treatment)) && ncol(cf_pA_treatment) > 1) {
+        cf_pA_treatment <- apply(cf_pA_treatment, 1, prod)
+      }
+      if (!is.null(ncol(cf_pA_control)) && ncol(cf_pA_control) > 1) {
+        cf_pA_control <- apply(cf_pA_control, 1, prod)
+      }
+      if (!is.null(ncol(pA)) && ncol(pA) > 1) {
+        pA <- apply(pA, 1, prod)
+      }
 
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_RR, as.data.frame(W))
       A <- tmle_task$get_tmle_node("A", format = T)[[1]]
-
-
       Y <- tmle_task$get_tmle_node("Y", format = F)
 
       W_train <- training_task$get_tmle_node("W")
       V_train <- model.matrix(self$formula_RR, as.data.frame(W_train))
-      A_train <- training_task$get_tmle_node("A", format = TRUE)[[1]]
-      Y_train <- training_task$get_tmle_node("Y", format = F)
 
-      g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
-      g1 <- ifelse(A == 1, g, 1 - g)
-      g0 <- 1 - g1
 
       Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
-      Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
-      Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
-      beta <- coef(glm.fit(V_train, Q1, offset = log(Q0), family = poisson(), weights = self$weights))
+      Q0 <- as.vector(self$observed_likelihood$get_likelihoods(cf_task0, "Y", fold_number))
+      Q1 <- as.vector(self$observed_likelihood$get_likelihoods(cf_task1, "Y", fold_number))
+
+      suppressWarnings(beta <- coef(glm.fit(V_train, Q1, offset = log(Q0), family = poisson(), weights = self$weights)))
       RR <- as.vector(exp(V %*% beta))
       # var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
       # var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
       # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
 
-      H <- V * (A / g1 - (1 - A) * RR * (1 / g0))
+      H <- V/pA * (cf_pA_treatment   - cf_pA_control * RR )
 
       EIF_Y <- NULL
       # Store EIF component
@@ -151,7 +160,7 @@ Param_npRR <- R6Class(
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number)
 
-      beta <- coef(glm.fit(V, Q1, offset = log(Q0), family = poisson(), weights = self$weights))
+      suppressWarnings(beta <- coef(glm.fit(V, Q1, offset = log(Q0), family = poisson(), weights = self$weights)))
 
 
       RR <- exp(V %*% beta)

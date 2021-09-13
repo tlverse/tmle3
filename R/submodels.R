@@ -25,7 +25,7 @@ loss_loglik <- function(estimate, observed) {
 #' @param estimate prediction
 #' @param observed observed outcome
 #' @export
-loss_poisson <- function(estimate, observed ) {
+loss_poisson <- function(estimate, observed) {
   loss <- estimate - observed * log(estimate)
   return(loss)
 }
@@ -116,7 +116,7 @@ make_submodel_spec <- function(name, family = NULL, submodel_function = NULL, lo
 get_submodel_spec <- function(name) {
   # If list, assume it is already a spec
 
-  if(is.list(name)){
+  if (is.list(name)) {
     return(name)
   }
   output <- NULL

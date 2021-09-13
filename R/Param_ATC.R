@@ -98,7 +98,7 @@ Param_ATC <- R6Class(
     param_att = function() {
       return(private$.param_att)
     },
-    submodel = function(){
+    submodel = function() {
       self$param_att$submodel
     }
   ),

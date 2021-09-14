@@ -136,30 +136,39 @@ tmle3_Update <- R6Class(
       covariates_dt <- do.call(cbind, node_covariates)
 
       if (self$one_dimensional) {
-        EIF_components <- NULL
+        errored <- FALSE
         # If EIF components are provided use those instead of the full EIF
         tryCatch(
           {
-            EIF_components <- lapply(clever_covariates, function(item) {
-              item$EIF[[update_node]]
-            })
-            EIF_components <- do.call(cbind, EIF_components)
 
-            ED <- colMeans(EIF_components)
+            EIF_components <- lapply(self$current_estimates, function(item) {
+              item$IC_list[[update_node]]
+            })
+            EIF_components <- as.matrix(do.call(cbind, EIF_components))
+            print(head(EIF_components))
+            if(ncol(EIF_components)==1) {
+              ED <- mean(EIF_components)
+            } else {
+              ED <- colMeans(EIF_components)
+            }
+
 
             EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED)) # Ensures step size generalizes to many parameters better
             if (length(EIF_components) == 0 || ncol(EIF_components) != ncol(covariates_dt)) {
               stop("Not all params provide EIF components")
             }
           },
-          error = function(...) {}
+          error = function(...) { errored <<- TRUE }
         )
-        if (is.null(EIF_components)) {
+
+        if (errored) {
+
           ED <- ED_from_estimates(self$current_estimates)
           EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED))
         }
         # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       } else {
+
         EDnormed <- NULL
       }
 

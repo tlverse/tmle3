@@ -74,7 +74,7 @@ Param_npCATE <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = F) {
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
@@ -123,6 +123,7 @@ Param_npCATE <- R6Class(
       H <- V/pA * (cf_pA_treatment   - cf_pA_control  )
 
       EIF_Y <- NULL
+      EIF_WA <- NULL
       # Store EIF component
       if (is_training_task) {
         scale <- apply(V, 2, function(v) {
@@ -157,7 +158,8 @@ Param_npCATE <- R6Class(
 
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIF_list <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIF <- EIF_list
       EIF <- EIF$Y + EIF$WA
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number)
@@ -170,7 +172,7 @@ Param_npCATE <- R6Class(
 
       IC <- as.matrix(EIF)
 
-      result <- list(psi = beta, IC = IC, CATE = CATE)
+      result <- list(psi = beta, IC = IC, IC_list = EIF_list, CATE = CATE)
       return(result)
     }
   ),

@@ -182,7 +182,7 @@ Param_contCATE <- R6Class(
   ),
   active = list(
     name = function() {
-      param_form <- c(paste0("1(A=0)*",private$.formula_names$bin),
+      param_form <- c(paste0("1(A>0)*",private$.formula_names$bin),
                       paste0("A*",private$.formula_names$cont))
     },
     cf_likelihood = function() {

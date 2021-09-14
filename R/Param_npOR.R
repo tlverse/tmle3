@@ -68,7 +68,7 @@ Param_npOR <- R6Class(
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },
-    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = TRUE) {
+    clever_covariates = function(tmle_task = NULL, fold_number = "full", is_training_task = F) {
       training_task <- self$observed_likelihood$training_task
       if (is.null(tmle_task)) {
         tmle_task <- training_task
@@ -145,7 +145,8 @@ Param_npOR <- R6Class(
       Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
       weights <- tmle_task$weights
       # clever_covariates happen here (for this param) only, but this is repeated computation
-      EIF <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIF_list <- self$clever_covariates(tmle_task, fold_number, is_training_task = TRUE)$EIF
+      EIF <- EIF_list
       EIF <- EIF$Y + EIF$WA
       Q <- self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number)
       Q0 <- self$observed_likelihood$get_likelihoods(cf_task0, "Y", fold_number)
@@ -167,7 +168,7 @@ Param_npOR <- R6Class(
 
       IC <- EIF
 
-      result <- list(psi = beta, IC = IC, OR = OR, transform = exp)
+      result <- list(psi = beta, IC = IC, OR = OR, IC_list = EIF_list, transform = exp)
       return(result)
     }
   ),

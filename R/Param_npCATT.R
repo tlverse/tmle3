@@ -81,20 +81,20 @@ Param_npCATT <- R6Class(
       cf_task0 <- self$cf_likelihood_control$enumerate_cf_tasks(tmle_task)[[1]]
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
       pA <- self$observed_likelihood$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      if(!is.null(ncol(pA)) && ncol(pA)==2) {
-        pG <- as.matrix(pA)[,2]
-        pA <- as.matrix(pA)[,1]
+      if (!is.null(ncol(pA)) && ncol(pA) == 2) {
+        pG <- as.matrix(pA)[, 2]
+        pA <- as.matrix(pA)[, 1]
       } else {
         pG <- 1
       }
 
-      pA1 <- as.matrix(self$observed_likelihood$get_likelihoods(cf_task1, intervention_nodes, fold_number))[,1]
-      pA0 <- as.matrix(self$observed_likelihood$get_likelihoods(cf_task0, intervention_nodes, fold_number))[,1]
+      pA1 <- as.matrix(self$observed_likelihood$get_likelihoods(cf_task1, intervention_nodes, fold_number))[, 1]
+      pA0 <- as.matrix(self$observed_likelihood$get_likelihoods(cf_task0, intervention_nodes, fold_number))[, 1]
       cf_pA_treatment <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       cf_pA_control <- self$cf_likelihood_control$get_likelihoods(tmle_task, intervention_nodes, fold_number)
-      treated <- self$cf_likelihood_treatment$get_likelihoods(training_task, intervention_nodes, fold_number)   # uses training task
+      treated <- self$cf_likelihood_treatment$get_likelihoods(training_task, intervention_nodes, fold_number) # uses training task
       if (!is.null(ncol(cf_pA_treatment)) && ncol(cf_pA_treatment) > 1) {
-        treated <- as.matrix(treated)[,1]
+        treated <- as.matrix(treated)[, 1]
         cf_pA_treatment <- apply(cf_pA_treatment, 1, prod)
       }
       if (!is.null(ncol(cf_pA_control)) && ncol(cf_pA_control) > 1) {
@@ -117,13 +117,13 @@ Param_npCATT <- R6Class(
       Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
       Q1 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task1, "Y", fold_number))
 
-      beta <- coef(glm.fit(V_train, Q1 - Q0, family = gaussian(), weights = treated*self$weights))
+      beta <- coef(glm.fit(V_train, Q1 - Q0, family = gaussian(), weights = treated * self$weights))
 
       # var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
       # var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
       # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
-      H <- V/pG * (cf_pA_treatment - cf_pA_control * (pA1 / pA0))
+      H <- V / pG * (cf_pA_treatment - cf_pA_control * (pA1 / pA0))
 
       EIF_Y <- NULL
       EIF_WA <- NULL
@@ -160,14 +160,14 @@ Param_npCATT <- R6Class(
       intervention_nodes <- union(names(self$intervention_list_treatment), names(self$intervention_list_control))
       treated <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, intervention_nodes, fold_number)
       if (!is.null(ncol(treated)) && ncol(treated) > 1) {
-        treated <- as.matrix(treated)[,1]
+        treated <- as.matrix(treated)[, 1]
       }
 
 
 
 
       W <- tmle_task$get_tmle_node("W")
-      V  <- model.matrix(self$formula_CATT, as.data.frame(W))
+      V <- model.matrix(self$formula_CATT, as.data.frame(W))
 
 
       weights <- tmle_task$weights
@@ -179,7 +179,7 @@ Param_npCATT <- R6Class(
       Q0 <- self$observed_likelihood$get_likelihoods(cf_task0, "Y", fold_number)
       Q1 <- self$observed_likelihood$get_likelihoods(cf_task1, "Y", fold_number)
 
-      beta <- coef(glm.fit(V, Q1 - Q0, family = gaussian(), weights = treated*self$weights))
+      beta <- coef(glm.fit(V, Q1 - Q0, family = gaussian(), weights = treated * self$weights))
 
       CATE <- Q1 - Q0
 

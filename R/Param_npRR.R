@@ -121,7 +121,7 @@ Param_npRR <- R6Class(
       # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
 
-      H <- V/pA * (cf_pA_treatment   - cf_pA_control * RR )
+      H <- V / pA * (cf_pA_treatment - cf_pA_control * RR)
 
       EIF_Y <- NULL
       EIF_WA <- NULL

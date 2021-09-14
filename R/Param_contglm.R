@@ -1,8 +1,6 @@
-#' Nonparametric inference for user-specified parametric working models for the conditional treatment effect.
-#' The true conditional average treatment effect is projected onto a parametric working model using least-squares regression.
-#' Unlike \code{Param_npCATT}, this function uses all observations to compute the projection.
-#' This can be used to assess heterogeneity of the average treatment effect.
-#' We note that `formula_CATE = ~ 1` gives an estimator of the nonparametric average treatment effect (ATE).
+#' Nonparametric inference for user-specified linear working models for user-specified conditional continuous treatment effect contrasts.
+#' Treatment must be nonnegative with `A=0` being the control assignment.
+#' Specifically, the user-specified model is of the form `fA(E[Y|A,W]) - fA0(E[Y|A=0,W])  = 1(A >0) * formula_binary(W) + A * (formula_binary)`
 #'
 #' Parameter definition for the Average Treatment Effect (ATE).
 #' @importFrom R6 R6Class
@@ -46,13 +44,13 @@
 #'     }
 #' }
 #' @export
-Param_contCATE <- R6Class(
-  classname = "Param_contCATE",
+Param_contglm <- R6Class(
+  classname = "Param_contglm",
   portable = TRUE,
   class = TRUE,
   inherit = Param_base,
   public = list(
-    initialize = function(observed_likelihood, formula_CATE_binary = ~1, formula_CATE_continuous = ~1, submodel = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
+    initialize = function(observed_likelihood, formula_CATE_binary = ~1, formula_CATE_continuous = ~1, fA, fA0, dfA, dfA0, transform = NULL,  submodel = c("binomial", "gaussian", "poisson"), outcome_node = "Y") {
       submodel <- match.arg(submodel)
       super$initialize(observed_likelihood, list(), outcome_node, submodel = submodel)
       training_task <- self$observed_likelihood$training_task
@@ -61,6 +59,7 @@ Param_contCATE <- R6Class(
       Vcont <- model.matrix(formula_CATE_continuous, as.data.frame(W))
       private$.formula_names <- list(bin = colnames(Vbin), cont = colnames(Vcont))
       private$.targeted <- rep(T, ncol(Vbin))
+      private$.custom_functions <- list(fA = fA, fA0 = fA0, dfA = dfA, dfA0 = dfA0, transform = transform)
 
       intervention_list <- list()
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
@@ -117,21 +116,24 @@ Param_contCATE <- R6Class(
       Q0 <- as.vector(self$observed_likelihood$get_likelihoods(cftask0, "Y", fold_number))
 
       V_full <- cbind(A_binary_train * V_train_binary, A_binary_train * A_train * V_train_cont)
+      custom_funs <- self$custom_functions
 
       # var_Y <- self$cf_likelihood_treatment$get_likelihoods(tmle_task, "var_Y", fold_number)
       # var_Y0 <- self$cf_likelihood_treatment$get_likelihoods(cf_task0, "var_Y", fold_number)
       # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
 
-      H_binary <- V_binary * (A_binary - (1 - A_binary) * pA1 / pA0)
-      H_cont <- V_cont * (A_binary * A - (1 - A_binary) * EA / pA0)
+      H_binary <- V_binary * (A_binary * custom_funs$dfA(Q) - (1 - A_binary) * pA1 / pA0 * custom_funs$dfA0(Q0) )
+      H_cont <- V_cont * (A_binary * A * custom_funs$dfA(Q)  - (1 - A_binary) * EA / pA0 * custom_funs$dfA0(Q0))
       H <- Delta / G * cbind(H_binary, H_cont)
       EIF_Y <- NULL
       EIF_WA <- NULL
       # Store EIF component
       if (is_training_task) {
-        beta <- coef(glm.fit(V_full, Q-Q0, family = gaussian(), weights = self$weights, intercept = FALSE))
-        CATE <- as.vector(V_full %*% beta)
+        true_contrast <- custom_funs$fA(Q) - custom_funs$fA0(Q0)
+        beta <- coef(glm.fit(V_full, true_contrast, family = gaussian(), weights = self$weights, intercept = FALSE))
+        contrast <- as.vector(V_full %*% beta)
+
         scale <- apply(V_full, 2, function(v) {
           apply(self$weights * V_full * (v), 2, mean)
         })
@@ -139,7 +141,7 @@ Param_contCATE <- R6Class(
         scaleinv <- solve(scale)
         EIF_Y <- self$weights * (H %*% scaleinv) * as.vector(Y - Q)
         EIF_WA <- apply(V_full, 2, function(v) {
-          self$weights * (v * (Q - Q0 - CATE) - mean(v * self$weights * (Q - Q0 - CATE)))
+          self$weights * (v * (true_contrast - contrast) - mean(v * self$weights * (true_contrast - contrast)))
         }) %*% scaleinv
 
         # print(dim(EIF_Y))
@@ -154,7 +156,7 @@ Param_contCATE <- R6Class(
         tmle_task <- self$observed_likelihood$training_task
       }
 
-
+      custom_funs <- self$custom_functions
       W <- tmle_task$get_tmle_node("W")
       V_binary <- model.matrix(self$formula_CATE_binary, as.data.frame(W))
       V_cont <- model.matrix(self$formula_CATE_continuous, as.data.frame(W))
@@ -173,13 +175,15 @@ Param_contCATE <- R6Class(
       Q0 <- as.vector(self$observed_likelihood$get_likelihoods(cftask0, "Y", fold_number))
 
       V_full <- cbind(A_binary * V_binary, A_binary * A * V_cont)
-      beta <- coef(glm.fit(V_full, Q - Q0, family = gaussian(), weights = self$weights))
+      true_contrast <- custom_funs$fA(Q) - custom_funs$fA0(Q0)
+      beta <- coef(glm.fit(V_full, true_contrast, family = gaussian(), weights = self$weights, intercept = FALSE))
+      contrast <- as.vector(V_full %*% beta)
 
 
 
       IC <- as.matrix(EIF)
 
-      result <- list(psi = beta, IC = IC, IC_list = IC_list)
+      result <- list(psi = beta, IC = IC, IC_list = IC_list, transform = self$custom_functions$transform)
       return(result)
     }
   ),
@@ -204,6 +208,9 @@ Param_contCATE <- R6Class(
     },
     formula_CATE_binary = function() {
       return(private$.formula_CATE_binary)
+    },
+    custom_functions = function(){
+      return(private$.custom_functions)
     }
   ),
   private = list(
@@ -212,6 +219,7 @@ Param_contCATE <- R6Class(
     .supports_outcome_censoring = TRUE,
     .formula_CATE_binary = NULL,
     .formula_CATE_continuous = NULL,
-    .formula_names = NULL
+    .formula_names = NULL,
+    .custom_functions = NULL
   )
 )

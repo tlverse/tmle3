@@ -47,7 +47,7 @@ LF_derived <- R6Class(
     },
     delayed_train = function(tmle_task) {
       # call task generator
-      derived_task <- self$task_generator(tmle_task, self$base_likelihood )
+      derived_task <- self$task_generator(tmle_task, self$base_likelihood)
 
       # just return prefit learner if that's what we have
       # otherwise, make a delayed fit and return that
@@ -64,7 +64,7 @@ LF_derived <- R6Class(
       private$.learner <- learner_fit
     },
     get_mean = function(tmle_task, fold_number) {
-      derived_task <- self$task_generator(tmle_task, self$base_likelihood )
+      derived_task <- self$task_generator(tmle_task, self$base_likelihood)
       learner <- self$learner
       preds <- learner$predict_fold(derived_task, fold_number)
 

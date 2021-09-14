@@ -140,13 +140,12 @@ tmle3_Update <- R6Class(
         # If EIF components are provided use those instead of the full EIF
         tryCatch(
           {
-
             EIF_components <- lapply(self$current_estimates, function(item) {
               item$IC_list[[update_node]]
             })
             EIF_components <- as.matrix(do.call(cbind, EIF_components))
 
-            if(ncol(EIF_components)==1) {
+            if (ncol(EIF_components) == 1) {
               ED <- mean(EIF_components)
             } else {
               ED <- colMeans(EIF_components)
@@ -158,17 +157,17 @@ tmle3_Update <- R6Class(
               stop("Not all params provide EIF components")
             }
           },
-          error = function(...) { errored <<- TRUE }
+          error = function(...) {
+            errored <<- TRUE
+          }
         )
 
         if (errored) {
-
           ED <- ED_from_estimates(self$current_estimates)
           EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED))
         }
         # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
       } else {
-
         EDnormed <- NULL
       }
 

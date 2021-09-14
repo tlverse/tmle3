@@ -75,7 +75,8 @@ library(data.table)
 library(sl3)
 ci <- c()
  
-n <- 1000
+for(i in 1:100){
+n <- 3000
 W <- runif(n, min = -1, max = 1)
 Abinary <- rbinom(n ,size = 1, plogis(W))
 A <- rgamma(n, shape = 1, rate = exp(W))
@@ -87,29 +88,53 @@ node_list <- list(W = "W", A = "A", Y = "Y")
 learner_list <- list(
   A = Lrnr_gam$new(),
   A_binary = Lrnr_gam$new(),
-  Y = Lrnr_stratified$new(Lrnr_gam$new(), variable_stratify = c("A_binary"))
+  Y = Lrnr_stratified$new(Lrnr_glmnet$new(formula = ~.^2, family = "poisson"), variable_stratify = c("A_binary"))
  
 )
-spec <- tmle3_Spec_contCATE$new(~1+W, ~1)
+ 
+spec <- tmle3_Spec_contglm$new(~1+W, ~1)
 fit <- tmle3(spec, data, node_list, learner_list)
-fit
+ 
+psi <-  fit$summary$tmle_est
+se <- fit$summary$se
+ci <-  cbind(ci, psi - 1.96 * se   <= c(0,1,1) &  psi + 1.96 * se   >= c(0,1,1))
+print(apply(ci,1,mean))
+}
+
 ```
 
 
+
 ```{r}
-tmle_task <- point_tx_continuous_task(data, node_list, include_A_binary = TRUE)
-lik <- point_tx_continuous_likelihood(tmle_task, learner_list)
-lik <- Targeted_Likelihood$new(lik)
-param <- Param_contCATE$new(lik, formula_CATE_binary= ~ 1, formula_CATE_cont = ~ 1 + W)
 
-lik$updater$update(lik,tmle_task)
-
-est <- param$estimates(tmle_task, "validation") 
-se <- apply(est$IC,2,sd)
-psi <- est$psi
-print(psi)
-print(apply(est$IC,2,mean))
-ci <-  cbind(ci, psi - 1.96 * se / sqrt(n) <= c(0,1,1) &  psi + 1.96 * se / sqrt(n) >= c(0,1,1))
+ 
+library(data.table)
+library(sl3)
+ci <- c()
+ 
+for(i in 1:100){
+n <- 3000
+W <- runif(n, min = -1, max = 1)
+Abinary <- rbinom(n ,size = 1, plogis(W))
+A <- rgamma(n, shape = 1, rate = exp(W))
+A <- A * Abinary
+quantile(A)
+Y <- rpois(n, exp(A * (1 + W  ) + W))
+data <- data.table(W,A,Y)
+node_list <- list(W = "W", A = "A", Y = "Y")
+learner_list <- list(
+  A = Lrnr_gam$new(),
+  A_binary = Lrnr_gam$new(),
+  Y = Lrnr_stratified$new(Lrnr_glmnet$new(formula = .^2, family = "poisson"), variable_stratify = c("A_binary"))
+ 
+)
+ 
+spec <- tmle3_Spec_contglm$new(~1+W, ~1, fA = function(x){ log(x)}, dfA = function(x){1/x}, submodel = "poisson")
+fit <- tmle3(spec, data, node_list, learner_list)
+ print(fit$summary)
+psi <-  fit$summary$tmle_est
+se <- fit$summary$se
+ci <-  cbind(ci, psi - 1.96 * se   <= c(0,1,1) &  psi + 1.96 * se   >= c(0,1,1))
 print(apply(ci,1,mean))
 }
 

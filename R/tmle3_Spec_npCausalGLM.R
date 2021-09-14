@@ -160,6 +160,5 @@ tmle3_Spec_npCausalGLM <- R6Class(
   ),
   private = list(
     .options = NULL
-
   )
 )

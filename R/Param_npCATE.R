@@ -106,9 +106,9 @@ Param_npCATE <- R6Class(
       W_train <- training_task$get_tmle_node("W")
       V_train <- model.matrix(self$formula_CATE, as.data.frame(W_train))
 
-      #g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
-      #g1 <- ifelse(A == 1, g, 1 - g)
-      #g0 <- 1 - g1
+      # g <- self$observed_likelihood$get_likelihoods(tmle_task, "A", fold_number)
+      # g1 <- ifelse(A == 1, g, 1 - g)
+      # g0 <- 1 - g1
 
       Q <- as.vector(self$observed_likelihood$get_likelihoods(tmle_task, "Y", fold_number))
       Q0 <- as.vector(self$cf_likelihood_treatment$get_likelihoods(cf_task0, "Y", fold_number))
@@ -120,7 +120,7 @@ Param_npCATE <- R6Class(
       # var_Y1 <- self$cf_likelihood_treatment$get_likelihoods(cf_task1, "var_Y", fold_number)
 
 
-      H <- V/pA * (cf_pA_treatment   - cf_pA_control  )
+      H <- V / pA * (cf_pA_treatment - cf_pA_control)
 
       EIF_Y <- NULL
       EIF_WA <- NULL
@@ -153,7 +153,7 @@ Param_npCATE <- R6Class(
       W <- tmle_task$get_tmle_node("W")
       V <- model.matrix(self$formula_CATE, as.data.frame(W))
 
-      #A <- tmle_task$get_tmle_node("A", format = T)[[1]]
+      # A <- tmle_task$get_tmle_node("A", format = T)[[1]]
       Y <- tmle_task$get_tmle_node("Y")
 
       weights <- tmle_task$weights

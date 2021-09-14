@@ -56,6 +56,7 @@ Other Parameters:
 \code{\link{Param_TSM}},
 \code{\link{Param_base}},
 \code{\link{Param_contCATE}},
+\code{\link{Param_contglm}},
 \code{\link{Param_coxph}},
 \code{\link{Param_delta}},
 \code{\link{Param_mean}},

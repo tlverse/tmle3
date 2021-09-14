@@ -91,7 +91,13 @@ tmle3_Spec_npCausalGLM <- R6Class(
         verbose <- self$options$verbose
       }
       if (self$options$estimand == "CATE" || self$options$estimand == "CATT" || self$options$estimand == "TSM") {
-        updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, delta_epsilon = 1, verbose = verbose, constrain_step = FALSE, bounds = c(-Inf, Inf), ...)
+        bounds <- list(Y = c(-Inf, Inf), A = 0.005)
+        if (self$options$submodel == "poisson") {
+          bounds <- list(Y = c(0.0025, Inf), A = 0.005)
+        } else if (self$options$submodel == "binomial") {
+          bounds <- list(Y = 0.0025, A = 0.005)
+        }
+        updater <- tmle3_Update$new(maxit = 100, one_dimensional = FALSE, delta_epsilon = 1, verbose = verbose, constrain_step = FALSE, bounds = bounds, ...)
       } else if (self$options$estimand == "OR") {
         updater <- tmle3_Update$new(maxit = 200, one_dimensional = TRUE, convergence_type = convergence_type, verbose = verbose, delta_epsilon = delta_epsilon, constrain_step = TRUE, bounds = 0.0025, ...)
       } else if (self$options$estimand == "RR") {
@@ -150,13 +156,10 @@ tmle3_Spec_npCausalGLM <- R6Class(
   active = list(
     options = function() {
       return(private$.options)
-    },
-    family = function() {
-      return(private$.families[[self$options$estimand]])
     }
   ),
   private = list(
-    .options = NULL,
-    .families = list("CATE" = gaussian(), "RR" = poisson(), "OR" = binomial())
+    .options = NULL
+
   )
 )

@@ -145,7 +145,7 @@ tmle3_Update <- R6Class(
               item$IC_list[[update_node]]
             })
             EIF_components <- as.matrix(do.call(cbind, EIF_components))
-            print(head(EIF_components))
+
             if(ncol(EIF_components)==1) {
               ED <- mean(EIF_components)
             } else {

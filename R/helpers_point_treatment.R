@@ -32,9 +32,9 @@ point_tx_task <- function(data, node_list, variable_types = NULL, scale_outcome 
   npsem <- point_tx_npsem(node_list, variable_types, scale_outcome, include_variance_node)
 
   if (!is.null(node_list$id)) {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, weights = node_list$weights, ...)
   } else {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem,  weights = node_list$weights, ...)
   }
 
   return(tmle_task)

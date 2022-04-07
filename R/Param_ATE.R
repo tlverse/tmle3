@@ -117,7 +117,7 @@ Param_ATE <- R6Class(
       psi <- weighted.mean(EY1 - EY0, tmle_task$weights)
 
       IC <- HA * (Y - EY) + (EY1 - EY0) - psi
-      IC <- IC * weights
+      IC <- IC * tmle_task$weights
       result <- list(psi = psi, IC = IC)
       return(result)
     }

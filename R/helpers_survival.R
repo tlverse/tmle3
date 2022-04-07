@@ -41,9 +41,9 @@ survival_tx_task <- function(data, node_list, variable_types = NULL, ...) {
   npsem <- survival_tx_npsem(node_list, variable_types)
 
   if (!is.null(node_list$id)) {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time,  weights = node_list$weights, ...)
   } else {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem,  weights = node_list$weights, ...)
   }
 
   return(tmle_task)

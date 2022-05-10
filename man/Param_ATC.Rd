@@ -56,6 +56,7 @@ Does yet not support dynamic rule or stochastic interventions.
 
 \seealso{
 Other Parameters: 
+\code{\link{Param_ADSM}},
 \code{\link{Param_ATE}},
 \code{\link{Param_ATT}},
 \code{\link{Param_MSM}},

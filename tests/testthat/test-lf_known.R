@@ -64,8 +64,8 @@ learner_list <- list(
 )
 
 # pass defined likelihood into existing spec
-if (require("tmle3shift")) {
-  tmle_spec <- tmle_shift(
+if (requireNamespace("tmle3shift", quietly = TRUE)) {
+  tmle_spec <- tmle3shift::tmle_shift(
     shift_val = 0.5,
     likelihood_override = likelihood_def
   )

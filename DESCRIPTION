@@ -42,6 +42,7 @@ Suggests:
     Rsolnp,
     nnls,
     tmle,
+    tmle3shift,
     future,
     future.apply,
     xgboost

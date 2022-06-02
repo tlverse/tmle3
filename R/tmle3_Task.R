@@ -64,8 +64,8 @@ tmle3_Task <- R6Class(
         if ((current_node$scale) &&
           (current_type$type == "continuous") &&
           (is.null(current_type$bounds))) {
-          min_x <- min(variable_data)
-          max_x <- max(variable_data)
+          min_x <- min(variable_data, na.rm=TRUE)
+          max_x <- max(variable_data, na.rm=TRUE)
           range <- max_x - min_x
           lower <- min_x #- 0.1 * range
           upper <- max_x #+ 0.1 * range

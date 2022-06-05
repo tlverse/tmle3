@@ -15,7 +15,7 @@ Description: A general framework supporting the implementation of targeted
     target parameters through a unified interface. The goal is that the exposed
     framework be as general as the mathematical framework upon which it draws.
 Depends:
-    R (>= 3.6.0),
+    R (>= 4.2.0),
     graphics
 Imports:
     sl3 (>= 1.4.2),

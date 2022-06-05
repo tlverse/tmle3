@@ -15,7 +15,7 @@ Description: A general framework supporting the implementation of targeted
     target parameters through a unified interface. The goal is that the exposed
     framework be as general as the mathematical framework upon which it draws.
 Depends:
-    R (>= 3.6.0),
+    R (>= 4.2.0),
     graphics
 Imports:
     sl3 (>= 1.4.2),
@@ -42,11 +42,13 @@ Suggests:
     Rsolnp,
     nnls,
     tmle,
+    tmle3shift,
     future,
     future.apply,
     xgboost
 Remotes:
-    github::tlverse/sl3
+    github::tlverse/sl3@devel,
+    github::tlverse/tmle3shift
 License: GPL-3
 URL: https://tlverse.org/tmle3
 BugReports: https://github.com/tlverse/tmle3/issues
@@ -54,5 +56,5 @@ Encoding: UTF-8
 LazyData: yes
 LazyLoad: yes
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1.9001
+RoxygenNote: 7.2.0
 Roxygen: list(markdown = TRUE, r6 = FALSE)

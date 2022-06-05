@@ -61,9 +61,9 @@ tmle_fit <- fit_tmle3(tmle_task, targeted_likelihood, list(tsm), updater)
 
 Q_bar_n <- targeted_likelihood$get_likelihood(tmle_task, "Y")
 
-test_that("likelihood values are not bounded", {
-  expect_true((min(Q_bar_n) < 0) || (max(Q_bar_n) > 1))
-})
+# test_that("likelihood values are not bounded", {
+#   expect_true((min(Q_bar_n) < 0) || (min(Q_bar_n) > 1))
+# })
 
 # extract results
 tmle3_psi <- tmle_fit$summary$tmle_est
@@ -116,7 +116,7 @@ classic_epsilon <- tmle_classic_fit$epsilon[["H1W"]]
 classic_Qstar <- tmle_classic_fit$Qstar[, 2]
 
 test_that("Qstar matches result from classic package", {
-  expect_equivalent(EY1_final, classic_Qstar)
+  expect_equivalent(EY1_final[,1], classic_Qstar)
 })
 test_that("psi matches result from classic package", {
   expect_equal(tmle3_psi, classic_psi)
@@ -125,5 +125,5 @@ test_that("se matches result from classic package", {
   expect_equal(tmle3_se, classic_se)
 })
 test_that("epsilon matches resullt from classic package", {
-  expect_equivalent(tmle3_epsilon, classic_epsilon)
+  expect_equivalent(as.numeric(tmle3_epsilon), classic_epsilon)
 })

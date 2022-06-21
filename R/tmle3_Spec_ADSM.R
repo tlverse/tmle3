@@ -19,7 +19,7 @@ tmle3_Spec_ADSM <- R6::R6Class(
         g_adapt = g_adapt, ...
       )
     },
-    make_params = function(tmle_task, likelihood) {
+    make_params = function(tmle_task, likelihood, ...) {
       g_treat <-self$options$g_treat
       g_adapt <- self$options$g_adapt
       if (!(is.vector(g_treat) &

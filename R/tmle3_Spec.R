@@ -21,7 +21,7 @@ tmle3_Spec <- R6Class(
     make_tmle_task = function(data, node_list, ...) {
       variable_types <- self$options$variable_types
 
-      tmle_task <- point_tx_task(data, node_list, variable_types)
+      tmle_task <- point_tx_task(data, node_list, variable_types, ...)
 
       return(tmle_task)
     },

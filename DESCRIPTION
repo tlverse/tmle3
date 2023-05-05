@@ -18,7 +18,7 @@ Depends:
     R (>= 3.6.0),
     graphics
 Imports:
-    sl3 (>= 1.4.2),
+    sl3 (>= 1.4.5),
     delayed,
     data.table,
     assertthat,
@@ -46,7 +46,7 @@ Suggests:
     future.apply,
     xgboost
 Remotes:
-    github::tlverse/sl3
+    github::tlverse/sl3@devel
 License: GPL-3
 URL: https://tlverse.org/tmle3
 BugReports: https://github.com/tlverse/tmle3/issues

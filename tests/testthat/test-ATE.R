@@ -60,6 +60,8 @@ tmle_params <- tmle_spec$make_params(tmle_task, targeted_likelihood)
 updater$tmle_params <- tmle_params
 ate <- tmle_params[[1]]
 
+# print(ate$get_submodel_spec("Y"))
+
 cf_task1 <- ate$cf_likelihood_treatment$cf_tasks[[1]]
 cf_task0 <- ate$cf_likelihood_control$cf_tasks[[1]]
 

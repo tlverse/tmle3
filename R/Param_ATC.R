@@ -61,6 +61,7 @@ Param_ATC <- R6Class(
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
       private$.outcome_node <- outcome_node
       private$.param_att <- Param_ATT$new(observed_likelihood, intervention_list_control, intervention_list_treatment, outcome_node)
+      private$.submodel <- private$.param_att$submodel
     },
     clever_covariates = function(tmle_task = NULL, fold_number = "full") {
       att_cc <- self$param_att$clever_covariates(tmle_task, fold_number)
@@ -96,6 +97,9 @@ Param_ATC <- R6Class(
     },
     param_att = function() {
       return(private$.param_att)
+    },
+    submodel = function(){
+      self$param_att$submodel
     }
   ),
   private = list(

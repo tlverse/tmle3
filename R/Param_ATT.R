@@ -55,7 +55,7 @@ Param_ATT <- R6Class(
   inherit = Param_base,
   public = list(
     initialize = function(observed_likelihood, intervention_list_treatment, intervention_list_control, outcome_node = "Y") {
-      super$initialize(observed_likelihood, list(), outcome_node)
+      super$initialize(observed_likelihood, list(), outcome_node, submodel =  list("A" = "logistic_switch", "Y" = "binomial_logit"))
       private$.cf_likelihood_treatment <- CF_Likelihood$new(observed_likelihood, intervention_list_treatment)
       private$.cf_likelihood_control <- CF_Likelihood$new(observed_likelihood, intervention_list_control)
     },

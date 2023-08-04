@@ -41,20 +41,29 @@ LF_known <- R6Class(
   class = TRUE,
   inherit = LF_base,
   public = list(
-    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, ..., type = "density") {
+    initialize = function(name, mean_fun = stub_known, density_fun = stub_known, base_likelihood = NULL, ..., type = "density") {
       super$initialize(name, ..., type = type)
       private$.mean_fun <- mean_fun
       private$.density_fun <- density_fun
+      private$.base_likelihood <- base_likelihood
     },
     get_mean = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
-      preds <- self$mean_fun(learner_task)
+      if (!is.null(self$base_likelihood)) {
+        preds <- self$mean_fun(learner_task, tmle_task, self$base_likelihood)
+      } else {
+        preds <- self$mean_fun(learner_task)
+      }
 
       return(preds)
     },
     get_density = function(tmle_task, fold_number) {
       learner_task <- tmle_task$get_regression_task(self$name, scale = FALSE)
-      preds <- self$density_fun(learner_task)
+      if (!is.null(self$base_likelihood)) {
+        preds <- self$density_fun(learner_task, tmle_task, self$base_likelihood)
+      } else {
+        preds <- self$density_fun(learner_task)
+      }
 
       outcome_type <- learner_task$outcome_type
       observed <- outcome_type$format(learner_task$Y)
@@ -79,11 +88,15 @@ LF_known <- R6Class(
 
     density_fun = function() {
       return(private$.density_fun)
+    },
+    base_likelihood = function() {
+      return(private$.base_likelihood)
     }
   ),
   private = list(
     .name = NULL,
     .mean_fun = NULL,
-    .density_fun = NULL
+    .density_fun = NULL,
+    .base_likelihood = NULL
   )
 )

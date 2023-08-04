@@ -10,28 +10,31 @@
 #' @param ... extra arguments.
 #' @export
 #' @rdname point_tx
-point_tx_npsem <- function(node_list, variable_types = NULL) {
+point_tx_npsem <- function(node_list, variable_types = NULL, scale_outcome = TRUE, include_variance_node = FALSE) {
   # make tmle_task
   npsem <- list(
     define_node("W", node_list$W, variable_type = variable_types$W),
     define_node("A", node_list$A, c("W"), variable_type = variable_types$A),
-    define_node("Y", node_list$Y, c("A", "W"), variable_type = variable_types$Y, scale = TRUE)
+    define_node("Y", node_list$Y, c("A", "W"), variable_type = variable_types$Y, scale = scale_outcome)
   )
+  if (include_variance_node) {
+    npsem$var_Y <- define_node("var_Y", node_list$Y, c("A", "W"), variable_type = variable_types$var_Y, scale = FALSE)
+  }
 
   return(npsem)
 }
 
 #' @export
 #' @rdname point_tx
-point_tx_task <- function(data, node_list, variable_types = NULL, ...) {
+point_tx_task <- function(data, node_list, variable_types = NULL, scale_outcome = TRUE, include_variance_node = FALSE, ...) {
   setDT(data)
 
-  npsem <- point_tx_npsem(node_list, variable_types)
+  npsem <- point_tx_npsem(node_list, variable_types, scale_outcome, include_variance_node)
 
   if (!is.null(node_list$id)) {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, weights = node_list$weights, ...)
   } else {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem,  weights = node_list$weights, ...)
   }
 
   return(tmle_task)
@@ -82,5 +85,32 @@ point_tx_likelihood <- function(tmle_task, learner_list) {
 
   likelihood_def <- Likelihood$new(factor_list)
   likelihood <- likelihood_def$train(tmle_task)
+
+  # If conditional variance needs to be estimated, do so.
+  if ("var_Y" %in% names(tmle_task$npsem)) {
+    if (is.null(learner_list[["var_Y"]])) {
+      learner_list[["var_Y"]] <- Lrnr_glmnet$new(family = "poisson")
+      warning("Node var_Y is in npsem but no learner is provided in `learner_list`. Defaulting to glmnet with `poisson` family.")
+    }
+    if (tmle_task$npsem[["Y"]]$variable_type$type == "binomial") {
+      mean_fun <- function(task, tmle_task, likelihood) {
+        EY <- likelihood$get_likelihood(tmle_task, "Y")
+        return(EY * (1 - EY))
+      }
+      LF_var_Y <- LF_known$new("var_Y", mean_fun = mean_fun, base_likelihood = likelihood, type = "mean")
+    } else {
+      task_generator <- function(tmle_task, base_likelihood) {
+        EY <- base_likelihood$get_likelihood(tmle_task, "Y")
+        Y <- tmle_task$get_tmle_node("Y", format = TRUE)[[1]]
+        outcome <- (Y - EY)^2
+        task <- tmle_task$get_regression_task("Y")
+        column_names <- task$add_columns(data.table("var_Y" = outcome))
+        task <- task$next_in_chain(outcome = "var_Y", column_names = column_names)
+      }
+      LF_var_Y <- LF_derived$new("var_Y", learner_list[["var_Y"]], likelihood, task_generator = task_generator, type = "mean")
+    }
+    likelihood$add_factors(LF_var_Y)
+  }
+
   return(likelihood)
 }

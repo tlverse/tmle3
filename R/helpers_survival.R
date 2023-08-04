@@ -23,10 +23,12 @@ survival_tx_npsem <- function(node_list, variable_types = NULL) {
     define_node("T_tilde", node_list$T_tilde, c("A", "W"), variable_type = variable_types$T_tilde),
     define_node("Delta", node_list$Delta, variable_type = variable_types$Delta),
     censoring,
-    # TODO: remove t parent, handle in get_regression
     define_node("N", node_list$N, c("A", "W"), variable_type = variable_types$N, censoring_node = censoring),
+    # TODO: remove t parent, handle in get_regression
+
     define_node("A_c", node_list$A_c, c("A", "W"), variable_type = variable_types$A_c, censoring_node = censoring)
   )
+
 
   return(npsem)
 }
@@ -39,9 +41,9 @@ survival_tx_task <- function(data, node_list, variable_types = NULL, ...) {
   npsem <- survival_tx_npsem(node_list, variable_types)
 
   if (!is.null(node_list$id)) {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem, id = node_list$id, time = node_list$time,  weights = node_list$weights, ...)
   } else {
-    tmle_task <- tmle3_Task$new(data, npsem = npsem, ...)
+    tmle_task <- tmle3_Task$new(data, npsem = npsem,  weights = node_list$weights, ...)
   }
 
   return(tmle_task)

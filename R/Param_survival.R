@@ -51,7 +51,7 @@ Param_survival <- R6Class(
       } else {
         private$.targeted <- times %in% target_times
       }
-      super$initialize(observed_likelihood, ..., outcome_node = outcome_node)
+      super$initialize(observed_likelihood, ..., outcome_node = outcome_node, submodel =  list(N = "binomial_logit"))
     },
     long_to_mat = function(x, id, time) {
       dt <- data.table(id = id, time = time, x = as.vector(x))
@@ -200,6 +200,7 @@ Param_survival <- R6Class(
     .cf_likelihood = NULL,
     .supports_outcome_censoring = TRUE,
     .times = NULL,
-    .target_times = NULL
+    .target_times = NULL,
+    .submodel = list("N" = "binomial_logit")
   )
 )

@@ -52,11 +52,11 @@ tmle3_Update <- R6Class(
     # TODO: change maxit for test
     initialize = function(maxit = 100, cvtmle = TRUE, one_dimensional = FALSE,
                           constrain_step = FALSE, delta_epsilon = 1e-4,
-                          convergence_type = c("scaled_var", "sample_size"),
+                          convergence_type = c("scaled_var", "sample_size", "exact"),
                           fluctuation_type = c("standard", "weighted"),
                           optim_delta_epsilon = TRUE,
                           use_best = FALSE,
-                          verbose = FALSE) {
+                          verbose = FALSE, bounds = list(Y = 1e-5, A = 0.005)) {
       private$.maxit <- maxit
       private$.cvtmle <- cvtmle
       private$.one_dimensional <- one_dimensional
@@ -67,6 +67,7 @@ tmle3_Update <- R6Class(
       private$.optim_delta_epsilon <- optim_delta_epsilon
       private$.use_best <- use_best
       private$.verbose <- verbose
+      private$.bounds <- bounds
     },
     collapse_covariates = function(estimates, clever_covariates) {
       ED <- ED_from_estimates(estimates)
@@ -114,6 +115,18 @@ tmle3_Update <- R6Class(
                                       update_node = "Y",
                                       drop_censored = FALSE) {
 
+      # USE first parameter to get submodel spec
+      submodel_spec <- self$tmle_params[[1]]$get_submodel_spec(update_node)
+
+      submodel_name <- submodel_spec$name
+      # Check compatibility of tmle_params with submodel
+      lapply(self$tmle_params, function(tmle_param) {
+        if (update_node %in% tmle_param$update_nodes) {
+          if (!(tmle_param$supports_submodel(submodel_name, update_node))) {
+            stop(paste0("Incompatible parameter-specific submodel specs for update node: Parameter `", tmle_param$name, "`` does not support the submodel `", submodel_name, "` for update node `", update_node, "`."))
+          }
+        }
+      })
       # TODO: change clever covariates to allow only calculating some nodes
       clever_covariates <- lapply(self$tmle_params, function(tmle_param) {
         tmle_param$clever_covariates(tmle_task, fold_number)
@@ -123,8 +136,31 @@ tmle3_Update <- R6Class(
       covariates_dt <- do.call(cbind, node_covariates)
 
       if (self$one_dimensional) {
-        observed_task <- likelihood$training_task
-        covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+        EIF_components <- NULL
+        # If EIF components are provided use those instead of the full EIF
+        tryCatch(
+          {
+            EIF_components <- lapply(clever_covariates, function(item) {
+              item$EIF[[update_node]]
+            })
+            EIF_components <- do.call(cbind, EIF_components)
+
+            ED <- colMeans(EIF_components)
+
+            EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED)) # Ensures step size generalizes to many parameters better
+            if (length(EIF_components) == 0 || ncol(EIF_components) != ncol(covariates_dt)) {
+              stop("Not all params provide EIF components")
+            }
+          },
+          error = function(...) {}
+        )
+        if (is.null(EIF_components)) {
+          ED <- ED_from_estimates(self$current_estimates)
+          EDnormed <- ED / norm(ED, type = "2") * sqrt(length(ED))
+        }
+        # covariates_dt <- self$collapse_covariates(self$current_estimates, covariates_dt)
+      } else {
+        EDnormed <- NULL
       }
 
       observed <- tmle_task$get_tmle_node(update_node)
@@ -135,16 +171,25 @@ tmle3_Update <- R6Class(
 
       # scale observed and predicted values for bounded continuous
       observed <- tmle_task$scale(observed, update_node)
+      # TODO sometimes prediction bounds suprass outcome bounds which leads to error
       initial <- tmle_task$scale(initial, update_node)
 
+      weights <- tmle_task$get_regression_task(update_node, is_time_variant = likelihood$factor_list[[update_node]]$is_time_variant)$weights
+      if (length(weights) != length(initial) || any(is.na(weights))) {
+        stop("Weights do not match length or are missing values.")
+      }
 
       # protect against qlogis(1)=Inf
-      initial <- bound(initial, 0.005)
+
+      initial <- bound(initial, self$bounds(update_node))
+
+
 
       submodel_data <- list(
         observed = observed,
         H = covariates_dt,
-        initial = initial
+        initial = initial,
+        weights = weights
       )
 
 
@@ -156,14 +201,42 @@ tmle3_Update <- R6Class(
           submodel_data <- list(
             observed = submodel_data$observed[subset],
             H = submodel_data$H[subset, , drop = FALSE],
-            initial = submodel_data$initial[subset]
+            initial = submodel_data$initial[subset],
+            weights = submodel_data$weights[subset]
           )
         }
       }
 
+      submodel_data$EDnormed <- EDnormed
+      submodel_data$submodel_spec <- submodel_spec
+      # To support arbitrary likelihood-dependent risk functions for updating.
+      # Is carrying this stuff around a problem computationally?
+      # submodel_data$tmle_task <- tmle_task
+      # submodel_data$likelihood <- likelihood
+      # submodel_data$fold_number <- fold_number
+
       return(submodel_data)
     },
     fit_submodel = function(submodel_data) {
+
+      # Extract submodel spec info
+      EDnormed <- submodel_data$EDnormed
+
+      if (!is.null(EDnormed)) {
+        # Collapse clever covariates
+        submodel_data$H <- as.matrix(submodel_data$H) %*% EDnormed
+      } else {
+        EDnormed <- 1
+      }
+
+      submodel_spec <- submodel_data$submodel_spec
+      family_object <- submodel_spec$family
+      loss_function <- submodel_spec$loss_function
+      submodel <- submodel_spec$submodel_function
+
+      # Subset to only numericals needed for fitting.
+      submodel_data <- submodel_data[c("observed", "H", "initial", "weights")]
+
       if (self$constrain_step) {
         ncol_H <- ncol(submodel_data$H)
         if (!(is.null(ncol_H) || (ncol_H == 1))) {
@@ -173,11 +246,12 @@ tmle3_Update <- R6Class(
           )
         }
 
+        weights <- submodel_data$weights
 
         risk <- function(epsilon) {
-          submodel_estimate <- self$apply_submodel(submodel_data, epsilon)
-          loss <- self$loss_function(submodel_estimate, submodel_data$observed)
-          mean(loss)
+          submodel_estimate <- self$apply_submodel(submodel, submodel_data, epsilon)
+          loss <- loss_function(submodel_estimate, submodel_data$observed)
+          weighted.mean(loss, weights)
         }
 
 
@@ -188,9 +262,13 @@ tmle3_Update <- R6Class(
             method = "Brent"
           )
           epsilon <- optim_fit$par
+          Qnew <- self$apply_submodel(submodel, submodel_data, epsilon)
+
+          # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
         } else {
           epsilon <- self$delta_epsilon
         }
+
 
         risk_val <- risk(epsilon)
         risk_zero <- risk(0)
@@ -207,18 +285,28 @@ tmle3_Update <- R6Class(
         if (self$fluctuation_type == "standard") {
           suppressWarnings({
             submodel_fit <- glm(observed ~ H - 1, submodel_data,
-              offset = qlogis(submodel_data$initial),
-              family = binomial(),
+              offset = family_object$linkfun(submodel_data$initial),
+              family = family_object,
+              weights = submodel_data$weights,
               start = rep(0, ncol(submodel_data$H))
             )
           })
+
+
+
+          # Qnew <-  family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit))
+
+          # print(colMeans(submodel_data$H*(submodel_data$observed - Qnew)))
+
+
+          # Qnew <- family_object$linkinv(family_object$linkfun(submodel_data$initial) + submodel_data$H %*% coef(submodel_fit) )
         } else if (self$fluctuation_type == "weighted") {
           if (self$one_dimensional) {
             suppressWarnings({
-              submodel_fit <- glm(observed ~ -1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
-                weights = as.numeric(H),
+              submodel_fit <- glm(observed ~ 1, submodel_data,
+                offset = family_object$linkfun(submodel_data$initial),
+                family = family_object,
+                weights = as.numeric(H) * submodel_data$weights,
                 start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -229,8 +317,9 @@ tmle3_Update <- R6Class(
             )
             suppressWarnings({
               submodel_fit <- glm(observed ~ H - 1, submodel_data,
-                offset = qlogis(submodel_data$initial),
-                family = binomial(),
+                offset = family_object$linkfun(submodel_data$initial),
+                family = family_object,
+                weights = submodel_data$weights,
                 start = rep(0, ncol(submodel_data$H))
               )
             })
@@ -248,16 +337,14 @@ tmle3_Update <- R6Class(
         cat(sprintf("(max) epsilon: %e ", max_eps))
       }
 
+      # Convert univariate epsilon back to multivariate epsilon if needed.
+      # This is change allows us to store the actual epsilon in each update step (noting that EIF changes each iteration)
+
+      epsilon <- epsilon * EDnormed
       return(epsilon)
     },
-    submodel = function(epsilon, initial, H) {
-      plogis(qlogis(initial) + H %*% epsilon)
-    },
-    loss_function = function(estimate, observed) {
-      -1 * ifelse(observed == 1, log(estimate), log(1 - estimate))
-    },
-    apply_submodel = function(submodel_data, epsilon) {
-      self$submodel(epsilon, submodel_data$initial, submodel_data$H)
+    apply_submodel = function(submodel, submodel_data, epsilon) {
+      submodel(epsilon, submodel_data$initial, submodel_data$H, submodel_data$observed)
     },
     apply_update = function(tmle_task, likelihood, fold_number, new_epsilon, update_node) {
 
@@ -267,8 +354,8 @@ tmle3_Update <- R6Class(
         fold_number, update_node,
         drop_censored = FALSE
       )
-
-      updated_likelihood <- self$apply_submodel(submodel_data, new_epsilon)
+      submodel <- submodel_data$submodel_spec$submodel
+      updated_likelihood <- self$apply_submodel(submodel, submodel_data, new_epsilon)
 
       if (any(!is.finite(updated_likelihood))) {
         stop("Likelihood was updated to contain non-finite values.\n
@@ -295,11 +382,17 @@ tmle3_Update <- R6Class(
         ED_threshold <- se_Dstar / min(log(n), 10)
       } else if (self$convergence_type == "sample_size") {
         ED_threshold <- 1 / n
+      } else if (self$convergence_type == "exact") {
+        ED_threshold <- min(1 / n, 1e-8)
       }
 
       # get |P_n D*| of any number of parameter estimates
+
+
       ED <- ED_from_estimates(estimates)
+
       # zero out any that are from nontargeted parameter components
+
       ED <- ED * private$.targeted_components
       current_step <- self$step_number
 
@@ -366,6 +459,17 @@ tmle3_Update <- R6Class(
         private$.update_nodes,
         new_update_nodes
       ))
+    },
+    bounds = function(node) {
+      bounds <- private$.bounds
+      if (is.numeric(bounds)) {
+        return(bounds)
+      } else if (is.null(bounds[[node]])) {
+        bounds <- 0.005
+      } else {
+        bounds <- bounds[[node]]
+      }
+      return(bounds)
     }
   ),
   active = list(
@@ -456,6 +560,7 @@ tmle3_Update <- R6Class(
     .use_best = NULL,
     .verbose = FALSE,
     .targeted_components = NULL,
-    .current_estimates = NULL
+    .current_estimates = NULL,
+    .bounds = NULL
   )
 )

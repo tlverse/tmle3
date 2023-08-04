@@ -40,12 +40,11 @@ survival_spec <- tmle_survival(
 tmle_task <- survival_spec$make_tmle_task(df_long, node_list)
 initial_likelihood <- survival_spec$make_initial_likelihood(tmle_task, learner_list)
 
-up <- tmle3_Update_survival$new(
+up <- tmle3_Update$new(
   maxit = 3e1,
   cvtmle = TRUE,
   convergence_type = "scaled_var",
   delta_epsilon = 1e-2,
-  fit_method = "l2",
   use_best = TRUE,
   verbose = TRUE
 )

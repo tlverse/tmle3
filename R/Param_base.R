@@ -20,9 +20,23 @@ Param_base <- R6Class(
   portable = TRUE,
   class = TRUE,
   public = list(
-    initialize = function(observed_likelihood, ..., outcome_node = "Y") {
+    initialize = function(observed_likelihood, ...,  outcome_node = "Y", submodel = NULL) {
       private$.observed_likelihood <- observed_likelihood
       private$.outcome_node <- outcome_node
+      if(is.null(submodel)) { # Default submodel
+        submodel <- list("A" = get_submodel_spec("binomial_logit"), "Y" = get_submodel_spec("binomial_logit"), "default" = get_submodel_spec("binomial_logit"))
+      } else if (is.list(submodel)) { # Convert to submodel spec list
+        submodel_names <- names(submodel)
+
+        submodel <- lapply(submodel, get_submodel_spec) # For each node, convert to submodel spec list. #get_submodel_spec does nothing if item is already a list
+        names(submodel) <- submodel_names
+      } else {
+        submodel <- list("default" = get_submodel_spec(submodel))
+      }
+
+
+      private$.submodel <- submodel
+
 
       if (!is.null(observed_likelihood$censoring_nodes[[outcome_node]])) {
         if (!self$supports_outcome_censoring) {
@@ -50,6 +64,27 @@ Param_base <- R6Class(
     },
     print = function() {
       cat(sprintf("%s: %s\n", class(self)[1], self$name))
+    },
+    supports_submodel = function(submodel_name, node) {
+      if (!(node %in% names(private$.submodel))) {
+        node <- "default"
+      }
+      return(submodel_name == private$.submodel[[node]]$name)
+    },
+    get_submodel_spec = function(update_node) {
+
+      if (!(update_node %in% names(self$submodel))) {
+        update_node <- "default"
+      }
+
+      spec <- self$submodel[[update_node]]
+      if(!is.list(spec)) {
+
+        spec <- get_submodel_spec(spec)
+        private$.submodel[[update_node]] <- spec
+      }
+
+      return(spec)
     }
   ),
   active = list(
@@ -71,6 +106,12 @@ Param_base <- R6Class(
     },
     targeted = function() {
       return(private$.targeted)
+    },
+    submodel = function() {
+      return(private$.submodel)
+    },
+    weights = function() {
+      return(self$observed_likelihood$training_task$weights)
     }
   ),
   private = list(
@@ -78,7 +119,8 @@ Param_base <- R6Class(
     .observed_likelihood = NULL,
     .outcome_node = NULL,
     .targeted = TRUE,
-    .supports_outcome_censoring = FALSE
+    .supports_outcome_censoring = FALSE,
+    .submodel = NULL
   )
 )
 

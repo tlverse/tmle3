@@ -114,10 +114,10 @@ Param_ATE <- R6Class(
       EY1 <- self$observed_likelihood$get_likelihood(cf_task_treatment, self$outcome_node, fold_number)
       EY0 <- self$observed_likelihood$get_likelihood(cf_task_control, self$outcome_node, fold_number)
 
-      psi <- mean(EY1 - EY0)
+      psi <- weighted.mean(EY1 - EY0, tmle_task$weights)
 
       IC <- HA * (Y - EY) + (EY1 - EY0) - psi
-
+      IC <- IC * tmle_task$weights
       result <- list(psi = psi, IC = IC)
       return(result)
     }

@@ -177,7 +177,6 @@ tmle3_Task <- R6Class(
 
       return(data)
     },
-    # TODO: add time_variance
     get_regression_task = function(target_node, scale = FALSE, drop_censored = FALSE, is_time_variant = FALSE) {
       npsem <- self$npsem
       target_node_object <- npsem[[target_node]]

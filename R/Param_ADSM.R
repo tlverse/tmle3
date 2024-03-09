@@ -134,7 +134,8 @@ Param_ADSM <- R6Class(
       psi <- mean(EY1 * self$g_adapt + EY0 * (1 - self$g_adapt))
 
       # Need to double check
-      IC <- HA * (Y - EY) + (EY1 * self$g_adapt + EY0 * (1 - self$g_adapt)) - psi
+      # IC <- HA * (Y - EY) + (EY1 * self$g_adapt + EY0 * (1 - self$g_adapt)) - psi
+      IC <- HA * (Y - EY)
 
       result <- list(psi = psi, IC = IC)
       return(result)

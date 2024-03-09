@@ -46,6 +46,7 @@ Parameter definition for the Average Treatment Effect (ATE).
 
 \seealso{
 Other Parameters: 
+\code{\link{Param_ADSM}},
 \code{\link{Param_ATC}},
 \code{\link{Param_ATT}},
 \code{\link{Param_MSM}},

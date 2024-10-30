@@ -47,7 +47,7 @@ Suggests:
     future.apply,
     xgboost
 Remotes:
-  github::tlverse/sl3@devel
+  github::tlverse/sl3@fix-tests
 Additional_repositories:
   https://tlverse.r-universe.dev
 License: GPL-3

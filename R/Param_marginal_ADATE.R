@@ -93,7 +93,7 @@ Param_marginal_ADATE <- R6Class(
 
       HA <- HA_treatment - HA_control
 
-      HA <- bound(HA, c(-40, 40))
+      # HA <- bound(HA, c(-40, 40))
       return(list(Y = HA))
     },
     estimates = function(tmle_task = NULL, fold_number = "full") {

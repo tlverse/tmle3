@@ -39,6 +39,8 @@ Useful for example, in calculating attributable risks.
 
 \seealso{
 Other Parameters: 
+\code{\link{Param_ADATE}},
+\code{\link{Param_ADSM}},
 \code{\link{Param_ATC}},
 \code{\link{Param_ATE}},
 \code{\link{Param_ATT}},
@@ -46,6 +48,8 @@ Other Parameters:
 \code{\link{Param_TSM}},
 \code{\link{Param_base}},
 \code{\link{Param_delta}},
+\code{\link{Param_marginal_ADATE}},
+\code{\link{Param_marginal_ADSM}},
 \code{\link{Param_stratified}},
 \code{\link{Param_survival}},
 \code{\link{define_param}()},
